@@ -1,6 +1,35 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+  <script>
+    // منع ظهور الصفحة قبل التحقق
+    document.documentElement.style.display = 'none';
+
+    (async function verifyAccess() {
+        const token = sessionStorage.getItem("admin_token");
+        
+        if (!token) {
+            window.location.replace("/static/admin-login.html");
+            return;
+        }
+
+        try {
+            const res = await fetch("/api/admin/verify", {
+                headers: { "x-admin-token": token }
+            });
+
+            if (res.ok) {
+                // الكود صحيح، أظهر الصفحة الآن
+                document.documentElement.style.display = 'block';
+            } else {
+                throw new Error();
+            }
+        } catch (err) {
+            sessionStorage.removeItem("admin_token");
+            window.location.replace("/static/admin-login.html");
+        }
+    })();
+</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>لوحة الإدارة المالية | Ramallah Time</title>
