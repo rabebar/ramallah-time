@@ -198,6 +198,24 @@
     </div>
   </div>
   <script>
+    (async function verifyAccess() {
+    const token = sessionStorage.getItem("admin_token");
+    if (!token) {
+        window.location.href = "/static/admin-login.html";
+        return;
+    }
+
+    // التحقق من صحة الكود مع السيرفر
+    const res = await fetch("/api/admin/verify", {
+        headers: { "x-admin-token": token }
+    });
+
+    if (!res.ok) {
+        alert("انتهت صلاحية الجلسة أو الكود خاطئ.");
+        sessionStorage.removeItem("admin_token");
+        window.location.href = "/static/admin-login.html";
+    }
+})();
     "use strict";
 
     // 1. استرجاع كود الأمان الخاص بالأدمن من المتصفح
