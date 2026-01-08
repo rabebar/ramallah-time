@@ -609,3 +609,36 @@ def activate_subscription(
         "total_revenue": place.payment_total,
     }
 
+class ChatRequest(BaseModel):
+    message: str
+
+@app.post("/api/ai-guide")
+async def ramallah_ai_guide(req: ChatRequest, db: Session = Depends(get_db)):
+    if not client:
+        raise HTTPException(status_code=503, detail="خدمة الذكاء الاصطناعي غير متوفرة")
+
+    # جلب أسماء المنشآت وتصنيفاتها ومناطقها ليعرفها الـ AI
+    places = db.query(Place).filter(Place.subscription_status == "active").all()
+    context_data = ""
+    for p in places:
+        context_data += f"- اسم المكان: {p.name}, التصنيف: {p.category}, المنطقة: {p.area}, الوصف: {p.description}\n"
+
+    system_instruction = (
+        "أنت 'مساعد رام الله تايم الذكي'. مهمتك مساعدة الزوار في العثور على أفضل الأماكن في مدينة رام الله. "
+        "استخدم البيانات التالية فقط للإجابة على المستخدم: \n" + context_data + 
+        "\nإذا سألك المستخدم عن مكان غير موجود في القائمة، أخبره بلباقة أنك لا تملك معلومات عنه حالياً وتمنى له يوماً سعيداً في رام الله."
+        "\nاجعل أسلوبك ودوداً وصبوراً واقترح عليهم التواصل مع المكان عبر واتساب (الموجود في تطبيقنا)."
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": req.message}
+            ],
+            temperature=0.7
+        )
+        return {"reply": response.choices[0].message.content}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
