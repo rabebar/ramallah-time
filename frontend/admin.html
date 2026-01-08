@@ -2,9 +2,9 @@
 <html lang="ar" dir="rtl">
 <head>
  <script>
-    "use strict";
+   "use strict";
 
-    // 1. نظام الحماية: منع ظهور الصفحة قبل التحقق من كود الأدمن
+    // 1. نظام الحماية
     document.documentElement.style.display = 'none';
     const adminToken = sessionStorage.getItem("admin_token");
 
@@ -19,7 +19,7 @@
             });
             if (res.ok) {
                 document.documentElement.style.display = 'block';
-                loadData(); // تشغيل جلب البيانات إذا كان الكود صحيحاً
+                loadData();
             } else {
                 throw new Error();
             }
@@ -29,12 +29,9 @@
         }
     })();
 
-    // 2. المتغيرات العالمية
     let allPlaces = [];
 
-    /**
-     * 3. جلب البيانات من السيرفر (بما فيها الأماكن المخفية والمنتهية)
-     */
+    // 2. جلب البيانات
     async function loadData() {
         try {
             const res = await fetch("/api/places?limit=1000&include_hidden=true", {
@@ -49,9 +46,7 @@
         }
     }
 
-    /**
-     * 4. حساب الإحصائيات المالية والإدارية
-     */
+    // 3. الإحصائيات
     function calculateStats() {
         let revenue = 0, active = 0, pending = 0, expired = 0;
         allPlaces.forEach(p => {
@@ -66,82 +61,37 @@
         document.getElementById("countExpired").innerText = expired;
     }
 
-    /**
-     * 5. عرض البيانات في الجدول (مع أزرار التفعيل والتعديل والحذف)
-     */
+    // 4. عرض الجدول
     function renderData() {
         const tbody = document.getElementById("placesList");
         const searchTerm = document.getElementById("adminSearch").value.toLowerCase();
         tbody.innerHTML = "";
-
-        const filtered = allPlaces.filter(p => 
-            p.name.toLowerCase().includes(searchTerm) || 
-            (p.phone && p.phone.includes(searchTerm))
-        );
+        const filtered = allPlaces.filter(p => p.name.toLowerCase().includes(searchTerm) || (p.phone && p.phone.includes(searchTerm)));
 
         filtered.forEach(p => {
-            let statusBadge = `<span class="badge bg-active">نشط</span>`;
-            let btnText = "تجديد";
-            if (p.subscription_status === 'pending') {
-                statusBadge = `<span class="badge bg-pending">طلب جديد</span>`;
-                btnText = "تفعيل وقبض";
-            } else if (p.is_expired) {
-                statusBadge = `<span class="badge bg-expired">منتهي</span>`;
-                btnText = "إعادة تفعيل";
-            }
-
+            let statusBadge = p.subscription_status === 'pending' ? `<span class="badge bg-pending">طلب جديد</span>` : (p.is_expired ? `<span class="badge bg-expired">منتهي</span>` : `<span class="badge bg-active">نشط</span>`);
+            let btnText = p.subscription_status === 'pending' ? "تفعيل" : "تجديد";
             const endDate = p.subscription_end ? new Date(p.subscription_end).toLocaleDateString('ar-EG') : "لم يحدد";
 
             tbody.innerHTML += `
                 <tr>
                     <td>#${p.id}</td>
-                    <td>
-                        <div style="font-weight:900;">${p.name}</div>
-                        <div style="font-size:12px; color:var(--text-dim);">${p.owner_email || 'بدون إيميل'}</div>
-                    </td>
+                    <td><div style="font-weight:900;">${p.name}</div><div style="font-size:12px; color:var(--text-dim);">${p.owner_email || ''}</div></td>
                     <td>${statusBadge}</td>
-                    <td style="font-size:13px;">${endDate}</td>
+                    <td>${endDate}</td>
                     <td style="color:var(--success); font-weight:900;">$${(p.payment_total || 0).toFixed(2)}</td>
                     <td>
                         <div style="display:flex; gap:8px;">
-                            <button onclick="openModal(${p.id})" title="${btnText}" style="background:var(--success); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-check"></i></button>
-                            <button onclick="openEditModal(${p.id})" title="تعديل البيانات" style="background:var(--primary); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deletePlace(${p.id})" title="حذف نهائي" style="background:transparent; color:var(--danger); border:1px solid var(--danger); padding:8px 12px; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="openModal(${p.id})" style="background:var(--success); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-check"></i></button>
+                            <button onclick="openEditModal(${p.id})" style="background:var(--primary); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deletePlace(${p.id})" style="background:transparent; color:var(--danger); border:1px solid var(--danger); padding:8px 12px; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </td>
-                </tr>
-            `;
+                </tr>`;
         });
     }
 
-    /**
-     * 6. وظائف نافذة التفعيل والقبض المالي
-     */
-    function openModal(id) {
-        document.getElementById("targetId").value = id;
-        document.getElementById("activateModal").style.display = "flex";
-    }
-    function closeModal() { document.getElementById("activateModal").style.display = "none"; }
-
-    async function confirmActivation() {
-        const id = document.getElementById("targetId").value;
-        const months = document.getElementById("subMonths").value;
-        const amount = document.getElementById("subAmount").value;
-        if (!amount) return alert("يرجى إدخال المبلغ المستلم");
-
-        try {
-            const res = await fetch(`/api/places/${id}/activate`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "x-admin-token": adminToken },
-                body: JSON.stringify({ months: parseInt(months), amount: parseFloat(amount) })
-            });
-            if (res.ok) { alert("✅ تم التفعيل بنجاح."); closeModal(); loadData(); }
-        } catch (e) { alert("خطأ في الاتصال."); }
-    }
-
-    /**
-     * 7. وظائف نافذة التعديل الشاملة
-     */
+    // 5. التعديل الشامل وإدارة الصور (الجديد)
     function openEditModal(id) {
         const p = allPlaces.find(item => item.id === id);
         if (!p) return;
@@ -149,55 +99,84 @@
         document.getElementById("edit_name").value = p.name || "";
         document.getElementById("edit_category").value = p.category || "";
         document.getElementById("edit_area").value = p.area || "";
+        document.getElementById("edit_address").value = p.address || "";
         document.getElementById("edit_phone").value = p.phone || "";
         document.getElementById("edit_whatsapp").value = p.whatsapp || "";
+        document.getElementById("edit_facebook").value = p.facebook || "";
+        document.getElementById("edit_instagram").value = p.instagram || "";
+        document.getElementById("edit_website").value = p.website || "";
         document.getElementById("edit_open_hours").value = p.open_hours || "";
+        document.getElementById("edit_lat").value = p.latitude || "";
+        document.getElementById("edit_lng").value = p.longitude || "";
         document.getElementById("edit_description").value = p.description || "";
         document.getElementById("edit_tags").value = p.tags || "";
+
+        const imgContainer = document.getElementById("edit_images_container");
+        imgContainer.innerHTML = (p.images || []).map(img => `
+            <div style="position:relative; width:80px; height:80px;">
+                <img src="${img.image_url}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+                <button onclick="deleteImage(${img.id})" style="position:absolute; top:-5px; left:-5px; background:var(--danger); color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:10px;">X</button>
+            </div>`).join('');
         document.getElementById("editPlaceModal").style.display = "flex";
     }
-    function closeEditModal() { document.getElementById("editPlaceModal").style.display = "none"; }
+
+    async function deleteImage(imgId) {
+        if (!confirm("حذف الصورة؟")) return;
+        const res = await fetch(`/api/places/images/${imgId}`, { method: "DELETE", headers: { "x-admin-token": adminToken } });
+        if (res.ok) { alert("تم الحذف."); loadData(); closeEditModal(); }
+    }
 
     async function saveEdit() {
         const id = document.getElementById("edit_id").value;
-        const p = allPlaces.find(item => item.id == id);
         const payload = {
             name: document.getElementById("edit_name").value,
             category: document.getElementById("edit_category").value,
             area: document.getElementById("edit_area").value,
+            address: document.getElementById("edit_address").value,
             phone: document.getElementById("edit_phone").value,
             whatsapp: document.getElementById("edit_whatsapp").value,
+            facebook: document.getElementById("edit_facebook").value,
+            instagram: document.getElementById("edit_instagram").value,
+            website: document.getElementById("edit_website").value,
             open_hours: document.getElementById("edit_open_hours").value,
+            latitude: parseFloat(document.getElementById("edit_lat").value) || null,
+            longitude: parseFloat(document.getElementById("edit_lng").value) || null,
             description: document.getElementById("edit_description").value,
-            tags: document.getElementById("edit_tags").value,
-            // الحفاظ على الحقول الأخرى كما هي
-            address: p.address, website: p.website, instagram: p.instagram, facebook: p.facebook, 
-            map_url: p.map_url, latitude: p.latitude, longitude: p.longitude, price_range: p.price_range
+            tags: document.getElementById("edit_tags").value
         };
 
-        try {
-            const res = await fetch(`/api/places/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json", "x-admin-token": adminToken },
-                body: JSON.stringify(payload)
-            });
-            if (res.ok) { alert("✅ تم التعديل."); closeEditModal(); loadData(); }
-        } catch (e) { alert("خطأ في الحفظ."); }
+        const res = await fetch(`/api/places/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "x-admin-token": adminToken },
+            body: JSON.stringify(payload)
+        });
+
+        const newImgs = document.getElementById("edit_new_images").files;
+        if (newImgs.length > 0) {
+            const formData = new FormData();
+            for (let f of newImgs) formData.append("images", f);
+            await fetch(`/api/places/${id}/images`, { method: "POST", headers: { "x-admin-token": adminToken }, body: formData });
+        }
+
+        if (res.ok) { alert("تم الحفظ!"); closeEditModal(); loadData(); }
     }
 
-    /**
-     * 8. الحذف والخروج
-     */
+    function closeEditModal() { document.getElementById("editPlaceModal").style.display = "none"; }
+
+    // 6. التفعيل والحذف والخروج
+    function openModal(id) { document.getElementById("targetId").value = id; document.getElementById("activateModal").style.display = "flex"; }
+    function closeModal() { document.getElementById("activateModal").style.display = "none"; }
+    async function confirmActivation() {
+        const id = document.getElementById("targetId").value, months = document.getElementById("subMonths").value, amount = document.getElementById("subAmount").value;
+        const res = await fetch(`/api/places/${id}/activate`, { method: "POST", headers: { "Content-Type": "application/json", "x-admin-token": adminToken }, body: JSON.stringify({ months: parseInt(months), amount: parseFloat(amount) }) });
+        if (res.ok) { closeModal(); loadData(); }
+    }
     async function deletePlace(id) {
         if (!confirm("حذف نهائي؟")) return;
         const res = await fetch(`/api/places/${id}`, { method: "DELETE", headers: { "x-admin-token": adminToken } });
         if (res.ok) loadData();
     }
-
-    function logout() {
-        sessionStorage.removeItem("admin_token");
-        window.location.href = "/static/admin-login.html";
-    }
+    function logout() { sessionStorage.removeItem("admin_token"); window.location.href = "/static/admin-login.html"; }
 </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -607,38 +586,26 @@
     // تشغيل الجلب التلقائي عند فتح الصفحة
     window.onload = loadData;
   </script>
-  <!-- نافذة تعديل بيانات المنشأة الشاملة -->
+<!-- نافذة تعديل بيانات المنشأة الشاملة جداً -->
 <div id="editPlaceModal" class="modal">
-    <div class="modal-content" style="max-width: 600px;">
-        <h2 style="margin-top:0; color:var(--primary); font-weight:900;">تعديل بيانات المنشأة</h2>
+    <div class="modal-content" style="max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto;">
+        <h2 style="margin-top:0; color:var(--primary); font-weight:900;">تعديل البيانات الشاملة</h2>
         
         <input type="hidden" id="edit_id">
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div>
-                <label class="stat-label">اسم المكان:</label>
-                <input type="text" id="edit_name" class="modal-input">
-            </div>
-            <div>
-                <label class="stat-label">التصنيف:</label>
-                <input type="text" id="edit_category" class="modal-input">
-            </div>
-            <div>
-                <label class="stat-label">المنطقة:</label>
-                <input type="text" id="edit_area" class="modal-input">
-            </div>
-            <div>
-                <label class="stat-label">الهاتف:</label>
-                <input type="text" id="edit_phone" class="modal-input">
-            </div>
-            <div>
-                <label class="stat-label">واتساب:</label>
-                <input type="text" id="edit_whatsapp" class="modal-input">
-            </div>
-            <div>
-                <label class="stat-label">ساعات العمل:</label>
-                <input type="text" id="edit_open_hours" class="modal-input">
-            </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div><label class="stat-label">اسم المكان:</label><input type="text" id="edit_name" class="modal-input"></div>
+            <div><label class="stat-label">التصنيف:</label><input type="text" id="edit_category" class="modal-input"></div>
+            <div><label class="stat-label">المنطقة:</label><input type="text" id="edit_area" class="modal-input"></div>
+            <div><label class="stat-label">العنوان التفصيلي:</label><input type="text" id="edit_address" class="modal-input"></div>
+            <div><label class="stat-label">الهاتف:</label><input type="text" id="edit_phone" class="modal-input"></div>
+            <div><label class="stat-label">واتساب:</label><input type="text" id="edit_whatsapp" class="modal-input"></div>
+            <div><label class="stat-label">فيسبوك:</label><input type="text" id="edit_facebook" class="modal-input"></div>
+            <div><label class="stat-label">انستجرام:</label><input type="text" id="edit_instagram" class="modal-input"></div>
+            <div><label class="stat-label">الموقع الإلكتروني:</label><input type="text" id="edit_website" class="modal-input"></div>
+            <div><label class="stat-label">ساعات العمل:</label><input type="text" id="edit_open_hours" class="modal-input"></div>
+            <div><label class="stat-label">خط العرض (Lat):</label><input type="number" step="any" id="edit_lat" class="modal-input"></div>
+            <div><label class="stat-label">خط الطول (Lng):</label><input type="number" step="any" id="edit_lng" class="modal-input"></div>
         </div>
         
         <label class="stat-label">وصف المكان:</label>
@@ -647,8 +614,19 @@
         <label class="stat-label">الكلمات المفتاحية (Tags):</label>
         <input type="text" id="edit_tags" class="modal-input" placeholder="wifi, parking...">
 
+        <!-- قسم إدارة الصور -->
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
+        <h3 style="font-size: 16px; font-weight: 900; color: var(--success);"><i class="fa-solid fa-images"></i> إدارة صور المنشأة</h3>
+        
+        <div id="edit_images_container" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+            <!-- الصور الحالية ستظهر هنا مع زر حذف -->
+        </div>
+
+        <label class="stat-label">إضافة صور جديدة:</label>
+        <input type="file" id="edit_new_images" multiple accept="image/*" class="modal-input" style="padding-top:12px;">
+
         <div style="display:flex; gap:10px; margin-top:20px;">
-            <button onclick="saveEdit()" style="flex:2; height:50px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:900; cursor:pointer;">حفظ التعديلات</button>
+            <button onclick="saveEdit()" style="flex:2; height:50px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:900; cursor:pointer;">حفظ كافة التعديلات</button>
             <button onclick="closeEditModal()" style="flex:1; height:50px; background:transparent; border:1px solid var(--border); color:var(--text-dim); border-radius:12px; cursor:pointer;">إلغاء</button>
         </div>
     </div>
