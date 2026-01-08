@@ -98,11 +98,25 @@ def get_db():
         db.close()
 
 @app.get("/")
-def home():
-    # حماية بسيطة لو ملف index.html غير موجود
+def home(user_agent: Optional[str] = Header(None)):
+    ua = user_agent.lower() if user_agent else ""
+    
+    # قائمة شاملة لكافة الأجهزة المحمولة
+    mobile_indicators = [
+        "iphone", "android", "phone", "mobile", 
+        "up.browser", "up.link", "mmp", "midp", "wap"
+    ]
+    
+    # فحص إذا كان الزائر يستخدم موبايل
+    is_mobile = any(indicator in ua for indicator in mobile_indicators)
+
+    if is_mobile:
+        mobile_path = os.path.join(FRONTEND_DIR, "mobile.html")
+        if os.path.exists(mobile_path):
+            return FileResponse(mobile_path)
+
+    # إذا كان كمبيوتر أو لم يتأكد النظام، يفتح الموقع الرئيسي
     index_path = os.path.join(FRONTEND_DIR, "index.html")
-    if not os.path.exists(index_path):
-        raise HTTPException(status_code=404, detail="index.html غير موجود داخل مجلد frontend")
     return FileResponse(index_path)
 
 @app.get("/places")

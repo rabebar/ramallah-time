@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+  <script>
+    // إذا كان عرض الشاشة أقل من 768 بكسل (موبايل)، قم بالتحويل فوراً
+    if (window.innerWidth <= 768) {
+        window.location.replace("/static/mobile.html");
+    }
+</script>
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
