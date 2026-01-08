@@ -24,16 +24,34 @@
   </div>
 
   <script>
-    function adminLogin(e) {
-      e.preventDefault();
-      const token = document.getElementById("token").value.trim();
-      
-      // حفظ الكود في المتصفح
+    async function adminLogin(e) {
+  e.preventDefault();
+  const token = document.getElementById("token").value.trim();
+  const btn = e.target.querySelector("button");
+
+  btn.disabled = true;
+  btn.innerText = "جاري التحقق...";
+
+  try {
+    const res = await fetch("/api/admin/verify", {
+      headers: { "x-admin-token": token }
+    });
+
+    if (res.ok) {
+      // إذا كان الكود صحيحاً، يتم حفظه والتوجيه
       sessionStorage.setItem("admin_token", token);
-      
-      // توجيه لصفحة الأدمن
       window.location.href = "/static/admin.html";
+    } else {
+      alert("كود الأمان خاطئ! لا يمكنك الدخول.");
+      btn.disabled = false;
+      btn.innerText = "دخول";
     }
+  } catch (err) {
+    alert("حدث خطأ في الاتصال بالسيرفر.");
+    btn.disabled = false;
+    btn.innerText = "دخول";
+  }
+}
   </script>
 </body>
 </html>

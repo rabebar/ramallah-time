@@ -362,6 +362,11 @@ def get_single_place(
     p_out.is_expired = is_expired(place)
     return p_out
 
+@app.get("/api/admin/verify")
+def verify_admin(x_admin_token: Optional[str] = Header(None)):
+    if x_admin_token != ADMIN_SECRET_KEY:
+        raise HTTPException(status_code=401, detail="كود الأمان خاطئ")
+    return {"status": "success"}
 
 @app.post("/api/owner-login")
 def owner_login(data: dict, db: Session = Depends(get_db)):
