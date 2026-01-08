@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  
+  <title>تصفّح الأماكن | Ramallah Time</title>
+  
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#050b14">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="/static/style.css">
+
+  <style>
+    :root {
+      --primary-color: #3b82f6;
+      --success-color: #10b981;
+      --bg-dark: #050b14;
+      --card-bg: rgba(15, 23, 42, 0.95);
+      --text-muted: #94a3b8;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      font-family: 'Cairo', sans-serif;
+      color: #ffffff;
+      margin: 0;
+      line-height: 1.7;
+    }
+
+    .container-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .page-header {
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .page-header h1 {
+      font-size: 38px;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .search-panel {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 25px;
+      padding: 25px;
+      margin-bottom: 40px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .form-input {
+      height: 55px;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      padding: 0 20px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 16px;
+      min-width: 250px;
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary-color);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .places-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 25px;
+    }
+
+    .place-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .place-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--primary-color);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+   
+.card-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+
+
+    .premium-badge {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: linear-gradient(135deg, #ffd700, #b8860b);
+      color: #000;
+      padding: 5px 15px;
+      border-radius: 10px;
+      font-weight: 900;
+      font-size: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .card-body {
+      padding: 22px;
+      flex-grow: 1;
+    }
+
+    .distance-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--primary-color);
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-weight: 900;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .place-title {
+      font-size: 22px;
+      font-weight: 900;
+      margin: 0 0 12px 0;
+      color: #fff;
+    }
+
+    .place-meta {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      flex: 1;
+      height: 48px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .wa-btn { background: var(--success-color); color: #000; }
+    .wa-btn:hover { background: #059669; }
+
+    .map-btn { background: var(--primary-color); color: #fff; }
+    .map-btn:hover { background: #2563eb; }
+
+    .phone-btn { background: #f59e0b; color: #000; }
+    .phone-btn:hover { background: #d97706; }
+
+    .top-navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      direction: rtl;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .nav-actions a {
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-weight: 800;
+      text-decoration: none;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: 0.3s;
+    }
+
+    .search-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      background: rgba(11, 18, 34, 0.8);
+      padding: 20px;
+      border-radius: 20px;
+    }
+
+    .search-panel .form-input, 
+    .search-panel button, 
+    .search-panel .btn-ghost,
+    .search-panel .btn-primary {
+      height: 55px !important; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 15px;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    #nearMeBtn {
+      min-width: 140px; 
+      white-space: nowrap;
+      padding: 0 20px;
+    }
+
+    .nav-actions a.btn-ghost {
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+    }
+    .nav-actions a.btn-primary {
+        background-color: #3b82f6 !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+
+    .search-panel button.btn-primary {
+        background-color: #3b82f6 !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    .search-panel button#nearMeBtn {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        color: #3b82f6 !important;
+        border: 1px solid #3b82f6 !important;
+    }
+
+    .search-panel a.btn-ghost {
+        color: #ffffff !important;
+        opacity: 0.7;
+    }
+
+    .card-image-wrapper {
+      width: 100%;
+      height: 230px;
+      overflow: hidden;
+      background: #1e293b;
+    }
+
+    .card-image-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-body {
+      padding: 20px;
+      background: #0b1222;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .place-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .places-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 25px;
+      margin-top: 30px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <header class="top-navbar">
+    <div class="logo-main" onclick="window.location.href='/'">
+      <i class="fa-solid fa-location-dot logo-icon"></i>
+      <span class="logo-text">Ramallah Time | رام الله تايم</span>
+    </div>
+    <div class="nav-actions">
+      <a class="btn-ghost" href="/"><i class="fa-solid fa-house"></i> الرئيسية</a>
+      <a class="btn-primary" href="/add-place"><i class="fa-solid fa-plus-circle"></i> أضف مكانك</a>
+    </div>
+  </header>
+
+  <div class="container-wrap">
+    
+    <div class="page-header">
+      <h1>تصفّح أفضل الأماكن</h1>
+      <p style="color:var(--text-muted); font-weight:700;">اكتشف المطاعم، الفنادق، والخدمات في مدينة رام الله</p>
+    </div>
+
+    <section class="search-panel">
+      
+      <input type="text" id="qInput" class="form-input" placeholder="عن ماذا تبحث؟ (كنافة، مسبح..)">
+      
+      <select id="catSelect" class="form-input">
+        <option value="">كل الأقسام</option>
+        <option value="restaurants">مطاعم</option>
+        <option value="cafes">كافيهات</option>
+        <option value="hotels">فنادق وشقق</option>
+        <option value="pools">مسابح ومنتجعات</option>
+        <option value="mens_salon">صالونات رجالي</option>
+        <option value="women_salon">صالونات نسائي</option>
+        <option value="kids">ألعاب أطفال</option>
+        <option value="gyms">رياضة وجيم</option>
+      </select>
+
+      <button onclick="startSearch()" class="btn-primary" style="height:55px; min-width:120px;">
+        <i class="fa-solid fa-magnifying-glass"></i> بحث
+      </button>
+
+      <button id="nearMeBtn" class="btn-ghost" style="height:55px;">
+        <i class="fa-solid fa-location-arrow"></i> قريب مني
+      </button>
+
+      <a href="/places" class="btn-ghost" style="height:55px;"><i class="fa-solid fa-sync"></i></a>
+    </section>
+
+    <div id="statusInfo" style="margin-bottom:20px; font-weight:800; color:var(--primary-color);"></div>
+    
+    <div id="gridContainer" class="places-grid">
+    </div>
+
+    <div id="noResults" style="display:none; text-align:center; padding:80px 20px;">
+      <i class="fa-solid fa-search-minus" style="font-size:60px; color:#334155; margin-bottom:20px;"></i>
+      <h2 style="color:#64748b; font-weight:900;">عذراً، لم نجد أي نتائج..</h2>
+      <p style="color:var(--text-muted);">جرب تغيير كلمات البحث أو اختر قسماً آخر.</p>
+    </div>
+
+  </div>
+
+  <script>
+    "use strict";
+
+    let fetchedPlaces = []; 
+
+    async function fetchPlaces() {
+      const container = document.getElementById("gridContainer");
+      const info = document.getElementById("statusInfo");
+      const noResults = document.getElementById("noResults");
+
+      container.innerHTML = `
+        <div style="text-align:center; padding:100px; width:100%;">
+            <i class="fa-solid fa-spinner fa-spin fa-3x" style="color:#3b82f6;"></i>
+            <p style="margin-top:20px; font-weight:800; font-size:18px;">جارٍ جلب البيانات..</p>
+        </div>`;
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const apiEndpoint = "/api/places?" + urlParams.toString();
+
+      document.getElementById("qInput").value = urlParams.get("q") || "";
+      document.getElementById("catSelect").value = urlParams.get("cat") || "";
+
+      try {
+        const response = await fetch(apiEndpoint);
+        if (!response.ok) throw new Error("Server Error");
+
+        const data = await response.json();
+        const items = data.items || [];
+        
+        fetchedPlaces = items; 
+
+        container.innerHTML = "";
+        info.innerText = `تم العثور على ${items.length} مكان`;
+
+        if (items.length === 0) {
+          noResults.style.display = "block";
+          return;
+        }
+        noResults.style.display = "none";
+
+        items.forEach(place => {
+          const cardEl = document.createElement("div");
+          cardEl.className = "place-card";
+          cardEl.style.cursor = "pointer";
+
+          cardEl.onclick = (e) => {
+            if (!e.target.closest('.card-actions')) {
+                openDetails(place.id);
+            }
+          };
+
+          let imageUrl = "https://via.placeholder.com/600x400?text=Ramallah+Time";
+          if (place.images && place.images.length > 0) {
+            imageUrl = place.images[0].image_url;
+          }
+
+          let distanceHtml = "";
+          if (place.distance !== null && place.distance !== undefined) {
+            distanceHtml = `
+              <div class="distance-tag">
+                <i class="fa-solid fa-person-walking"></i>
+                على بُعد ${place.distance} كم
+              </div>`;
+          }
+
+          cardEl.innerHTML = `
+            <div class="card-image-wrapper">
+              ${place.is_premium ? '<div class="premium-badge"><i class="fa-solid fa-crown"></i> مُميز</div>' : ''}
+              <img src="${imageUrl}" alt="${place.name}" loading="lazy">
+            </div>
+            
+            <div class="card-body">
+              ${distanceHtml}
+              <h3 class="place-title">${place.name}</h3>
+              
+              <div class="place-meta">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>${translateCategory(place.category)}</span>
+              </div>
+
+              ${place.area ? `
+                <div class="place-meta">
+                  <i class="fa-solid fa-location-dot"></i>
+                  <span>${place.area}</span>
+                </div>` : ''}
+
+              <div class="card-actions">
+                ${place.whatsapp ? `
+                  <a href="https://wa.me/${place.whatsapp.replace(/\+/g,'')}" target="_blank" class="action-btn wa-btn">
+                    <i class="fa-brands fa-whatsapp"></i> واتساب
+                  </a>` : ''}
+                
+                ${place.phone ? `
+                  <a href="tel:${place.phone}" target="_blank" class="action-btn phone-btn">
+                    <i class="fa-solid fa-phone"></i> اتصال
+                  </a>` : ''}
+
+                ${place.map_url ? `
+                  <a href="${place.map_url}" target="_blank" class="action-btn map-btn">
+                    <i class="fa-solid fa-map-location-dot"></i> الخريطة
+                  </a>` : ''}
+
+                <button onclick="openEditModal(${place.id})" class="action-btn btn-ghost" style="border-color: #f59e0b; color: #f59e0b; flex: none; width: 50px;">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+              </div>
+            </div>`;
+          container.appendChild(cardEl);
+        });
+
+      } catch (err) {
+        container.innerHTML = `
+          <div style="text-align:center; color:#ef4444; padding:50px; font-weight:900;">
+            <i class="fa-solid fa-circle-exclamation fa-2x"></i>
+            <p>فشل تحميل البيانات. تأكد من تشغيل السيرفر وحذف قاعدة البيانات القديمة.</p>
+          </div>`;
+      }
+    }
+
+    function startSearch() {
+      const q = document.getElementById("qInput").value.trim();
+      const cat = document.getElementById("catSelect").value;
+      const url = new URL(window.location);
+      
+      if(q) url.searchParams.set("q", q); else url.searchParams.delete("q");
+      if(cat) url.searchParams.set("cat", cat); else url.searchParams.delete("cat");
+      
+      window.location.href = url.href;
+    }
+
+    document.getElementById("nearMeBtn").addEventListener("click", () => {
+      const btn = document.getElementById("nearMeBtn");
+      if (!navigator.geolocation) {
+        alert("متصفحك لا يدعم تحديد الموقع.");
+        return;
+      }
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديد..';
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const url = new URL(window.location);
+          url.searchParams.set("near", "1");
+          url.searchParams.set("lat", position.coords.latitude);
+          url.searchParams.set("lng", position.coords.longitude);
+          window.location.href = url.href;
+        },
+        () => {
+          alert("يرجى تفعيل إذن الموقع في المتصفح.");
+          btn.innerHTML = '<i class="fa-solid fa-location-arrow"></i> قريب مني';
+        }
+      );
+    });
+
+    function openDetails(id) {
+      const p = fetchedPlaces.find(item => item.id === id);
+      if (!p) return;
+
+      const imgUrl = (p.images && p.images.length > 0) ? p.images[0].image_url : "https://via.placeholder.com/600x400?text=Ramallah+Time";
+      document.getElementById("det_img").src = imgUrl;
+      document.getElementById("det_name").innerText = p.name;
+      document.getElementById("det_desc").innerText = p.description || "لا يوجد وصف تفصيلي متوفر حالياً لهذا المكان.";
+      document.getElementById("det_hours").innerText = p.open_hours || "غير محدد";
+      document.getElementById("det_price").innerText = p.price_range || "غير محدد";
+      document.getElementById("det_address").innerText = p.address || p.area || "مدينة رام الله";
+
+    const webLink = document.getElementById("det_web_link");
+    if (p.website) {
+        webLink.href = p.website.startsWith('http') ? p.website : 'https://' + p.website;
+        webLink.style.display = "flex";
+    } else {
+        webLink.style.display = "none";
+    }
+
+    const instaLink = document.getElementById("det_insta_link");
+    if (p.instagram) {
+        const user = p.instagram.replace('@', '');
+        instaLink.href = `https://instagram.com/${user}`;
+        instaLink.style.display = "flex";
+    } else {
+        instaLink.style.display = "none";
+    }
+
+    const fbLink = document.getElementById("det_fb_link");
+    if (p.facebook) {
+        fbLink.href = p.facebook.startsWith('http') ? p.facebook : 'https://facebook.com/' + p.facebook;
+        fbLink.style.display = "flex";
+    } else {
+        fbLink.style.display = "none";
+    }
+
+      const distEl = document.getElementById("det_dist");
+      if (p.distance) {
+          distEl.innerHTML = `<i class="fa-solid fa-person-walking"></i> يبعد عنك ${p.distance} كم`;
+          distEl.style.display = "block";
+      } else {
+          distEl.style.display = "none";
+      }
+
+      document.getElementById("detailsModal").style.display = "block";
+    }
+
+    function closeEditModal() {
+        document.getElementById("editModal").style.display = "none";
+    }
+
+    function openEditModal(id) {
+      const p = fetchedPlaces.find(item => item.id === id);
+      if (!p) return;
+
+      document.getElementById("edit_admin_token").value = "";
+
+      document.getElementById("edit_id").value = p.id;
+      document.getElementById("edit_name").value = p.name || "";
+      document.getElementById("edit_area").value = p.area || "";
+      document.getElementById("edit_phone").value = p.phone || "";
+      document.getElementById("edit_map_url").value = p.map_url || "";
+      document.getElementById("edit_desc").value = p.description || "";
+      
+      const list = document.getElementById("edit_images_list");
+      list.innerHTML = "";
+      if (p.images) {
+        p.images.forEach(img => {
+          list.innerHTML += `
+            <div id="img_wrap_${img.id}" style="position:relative; width:80px; height:80px;">
+              <img src="${img.image_url}" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
+              <button onclick="confirmDeleteImg(${img.id})" style="position:absolute; top:-5px; left:-5px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:12px;">×</button>
+            </div>`;
+        });
+      }
+
+      document.getElementById("editModal").dataset.fullItem = JSON.stringify(p);
+      document.getElementById("editModal").style.display = "block";
+    }
+
+    async function confirmDeleteImg(imgId) {
+      const token = document.getElementById("edit_admin_token").value;
+      if (!token) return alert("أدخل كلمة السر في أول خانة فوق أولاً");
+      
+      if (!confirm("هل تريد حذف هذه الصورة؟")) return;
+
+      try {
+        const res = await fetch(`/api/places/images/${imgId}`, {
+          method: "DELETE",
+          headers: { "x-admin-token": token }
+        });
+        if (res.ok) {
+          document.getElementById(`img_wrap_${imgId}`).remove();
+        } else { alert("كلمة السر خطأ"); }
+      } catch (e) { alert("خطأ في الاتصال"); }
+    }
+
+    async function deletePlace() {
+      const id = document.getElementById("edit_id").value;
+      const token = document.getElementById("edit_admin_token").value;
+      if (!token) return alert("يرجى إدخال كلمة السر في أول خانة فوق");
+      
+      if (!confirm("تحذير نهائي: سيتم حذف كل شيء. هل أنت متأكد؟")) return;
+
+      try {
+        const res = await fetch(`/api/places/${id}`, {
+          method: "DELETE",
+          headers: { "x-admin-token": token }
+        });
+        if (res.ok) {
+          alert("تم الحذف بنجاح.");
+          location.reload();
+        } else { alert("كلمة السر خطأ"); }
+      } catch (e) { alert("خطأ في الاتصال"); }
+    }
+
+    async function saveEdit() {
+      const id = document.getElementById("edit_id").value;
+      const token = document.getElementById("edit_admin_token").value;
+      const oldData = JSON.parse(document.getElementById("editModal").dataset.fullItem);
+      
+      if (!token) return alert("كلمة السر مطلوبة للحفظ!");
+
+      const payload = {
+        ...oldData,
+        name: document.getElementById("edit_name").value.trim(),
+        area: document.getElementById("edit_area").value.trim(),
+        phone: document.getElementById("edit_phone").value.trim(),
+        map_url: document.getElementById("edit_map_url").value.trim(),
+        description: document.getElementById("edit_desc").value.trim()
+      };
+
+      try {
+        const res = await fetch(`/api/places/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "x-admin-token": token },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error("كلمة السر خطأ");
+
+        const newPhotos = document.getElementById("edit_new_photos").files;
+        if (newPhotos.length > 0) {
+          const fd = new FormData();
+          for (let f of newPhotos) fd.append("images", f);
+          await fetch(`/api/places/${id}/images`, {
+            method: "POST",
+            headers: { "x-admin-token": token },
+            body: fd
+          });
+        }
+
+        alert("تم الحفظ بنجاح!");
+        location.reload();
+      } catch (e) { alert(e.message); }
+    }
+
+    function translateCategory(cat) {
+      const cats = {
+        restaurants: "مطاعم", cafes: "كافيهات", hotels: "فنادق وشقق", 
+        pools: "مسابح", mens_salon: "صالونات رجالي", women_salon: "نسائي",
+        kids: "أطفال", gyms: "رياضة وجيم"
+      };
+      return cats[cat] || "قسم عام";
+    }
+
+    window.onload = fetchPlaces;
+  </script>
+
+  <div id="editModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:10000; padding:20px; overflow-y:auto; direction:rtl;">
+    <div style="max-width:700px; margin:20px auto; background:#0b1222; padding:30px; border-radius:25px; border:2px solid #f59e0b;">
+        <h2 style="color:#f59e0b; margin-top:0; font-weight:900;">إدارة بيانات المكان</h2>
+
+        <div style="background:rgba(245,158,11,0.1); padding:15px; border-radius:15px; margin-bottom:25px; border:1px solid #f59e0b;">
+            <label style="display:block; margin-bottom:8px; font-weight:900; color:#f59e0b;">أدخل كلمة السر أولاً للتحكم بالمحل:</label>
+            <input type="password" id="edit_admin_token" class="form-input" style="width:100%; border-color:#f59e0b;" placeholder="كلمة السر مطلوبة هنا">
+        </div>
+
+        <input type="hidden" id="edit_id">
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+            <div>
+                <label style="display:block; margin:10px 0 5px; font-weight:800; color:#fff;">اسم المكان</label>
+                <input type="text" id="edit_name" class="form-input" style="width:100%;">
+            </div>
+            <div>
+                <label style="display:block; margin:10px 0 5px; font-weight:800; color:#fff;">المنطقة</label>
+                <input type="text" id="edit_area" class="form-input" style="width:100%;">
+            </div>
+        </div>
+
+        <label style="display:block; margin:15px 0 5px; font-weight:800; color:#fff;">وصف المكان</label>
+        <textarea id="edit_desc" class="form-input" style="width:100%; height:100px; padding:10px;"></textarea>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:10px;">
+            <div>
+                <label style="display:block; margin:10px 0 5px; font-weight:800; color:#fff;">رقم الهاتف</label>
+                <input type="text" id="edit_phone" class="form-input" style="width:100%;">
+            </div>
+            <div>
+                <label style="display:block; margin:10px 0 5px; font-weight:800; color:#fff;">رابط الخريطة</label>
+                <input type="text" id="edit_map_url" class="form-input" style="width:100%;">
+            </div>
+        </div>
+
+        <div style="margin-top:25px; border-top:1px solid #333; padding-top:20px;">
+            <label style="display:block; margin-bottom:15px; font-weight:900; color:var(--primary-color);">
+                <i class="fa-solid fa-images"></i> إدارة الصور الحالية (اضغط × للحذف):
+            </label>
+            <div id="edit_images_list" style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:20px;"></div>
+
+            <label style="font-size:14px; color:#94a3b8; font-weight:800;">رفع صور إضافية لهذا المكان:</label>
+            <input type="file" id="edit_new_photos" multiple accept="image/*" class="form-input" style="padding-top:12px; height:50px;">
+        </div>
+
+        <div style="display:flex; gap:15px; margin-top:35px; border-top:1px solid #333; padding-top:25px;">
+            <button onclick="saveEdit()" class="btn-primary" style="flex:2; background:#f59e0b; color:#000; height:55px; border-radius:15px; font-weight:900; cursor:pointer; border:none;">حفظ التعديلات النهائية</button>
+            <button onclick="closeEditModal()" class="btn-ghost" style="flex:1; height:55px; border-radius:15px; cursor:pointer; border:1px solid #333; background:transparent; color:#fff;">إلغاء</button>
+        </div>
+
+        <div style="margin-top:25px; text-align:center;">
+            <button onclick="deletePlace()" style="background:transparent; color:#ef4444; border:1px solid #ef4444; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:800;">
+                <i class="fa-solid fa-trash-can"></i> حذف هذا المحل نهائياً من الموقع
+            </button>
+        </div>
+    </div>
+  </div>
+
+  <div id="detailsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:9999; padding:20px; overflow-y:auto; direction:rtl;">
+    <div style="max-width:700px; margin:20px auto; background:#0b1222; border-radius:25px; border:1px solid #3b82f6; overflow:hidden; box-shadow:0 0 50px rgba(0,0,0,0.8);">
+            <img id="det_img" src="" style="width:100%; height:auto; max-height:70vh; object-fit:contain; background:#000; display:block;">
+        
+        <div style="padding:30px;">
+            <h1 id="det_name" style="margin:0 0 10px 0; font-size:32px; font-weight:900; color:#fff;"></h1>
+            <div id="det_dist" style="color:#3b82f6; font-weight:900; margin-bottom:20px; font-size:18px;"></div>
+            
+            <p id="det_desc" style="color:#cbd5e1; font-size:18px; line-height:1.8; margin-bottom:25px;"></p>
+            <div style="color:var(--text-muted); font-weight:700; margin-bottom:20px; display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-map-location-dot" style="color:var(--primary-color); font-size:20px;"></i>
+                <span id="det_address" style="color:#fff; font-size:16px;"></span>
+            </div>
+
+            <div id="det_social_box" style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:25px;">
+                <a id="det_web_link" href="#" target="_blank" class="action-btn" style="background:rgba(255,255,255,0.05); color:#fff; border:1px solid #333; display:none; flex:none; padding:0 15px;">
+                    <i class="fa-solid fa-globe"></i> الموقع الإلكتروني
+                </a>
+                <a id="det_insta_link" href="#" target="_blank" class="action-btn" style="background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color:#fff; display:none; flex:none; padding:0 15px;">
+                    <i class="fa-brands fa-instagram"></i> انستجرام
+                </a>
+                <a id="det_fb_link" href="#" target="_blank" class="action-btn" style="background:#1877f2; color:#fff; display:none; flex:none; padding:0 15px;">
+                    <i class="fa-brands fa-facebook"></i> فيسبوك
+                </a>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:20px;">
+                <div style="font-weight:800;"><i class="fa-solid fa-clock" style="color:#3b82f6;"></i> الساعات: <span id="det_hours" style="color:#fff;"></span></div>
+                <div style="font-weight:800;"><i class="fa-solid fa-money-bill" style="color:#10b981;"></i> الأسعار: <span id="det_price" style="color:#fff;"></span></div>
+            </div>
+
+            <div style="margin-top:35px;">
+                <button onclick="document.getElementById('detailsModal').style.display='none'" class="btn-primary" style="width:100%; height:60px; border-radius:15px; font-weight:900; font-size:18px; cursor:pointer;">إغلاق هذه النافذة</button>
+            </div>
+        </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+
+  <title>Ramallah Time | رام الله تايم</title>
+  <meta name="description" content="Ramallah Time — دليل رام الله: مطاعم، كافيهات، فنادق، مسابح، صالونات، ألعاب أطفال. تواصل واتساب مباشر." />
+  <meta name="robots" content="index,follow" />
+
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#050b14" />
+
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="Ramallah Time" />
+
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Ramallah Time | رام الله تايم" />
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/192/192431.png" />
+
+  <meta property="og:title" content="Ramallah Time | رام الله تايم" />
+  <meta property="og:description" content="دليل رام الله: مطاعم، كافيهات، فنادق، مسابح، صالونات، ألعاب أطفال. تواصل واتساب مباشر." />
+  <meta property="og:type" content="website" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="/static/style.css" />
+
+  <style>
+    :root{
+      --bg:#050b14;
+      --panel:#0b1222;
+      --muted:#94a3b8;
+      --primary:#3b82f6;
+      --success:#10b981;
+      --border:rgba(255,255,255,0.08);
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      overflow-y: auto !important;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+      background: var(--bg);
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .top-navbar {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(59,130,246,0.18);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 14px 18px;
+    }
+    .logo-main{
+      display:flex; align-items:center; gap:12px;
+      cursor:pointer; user-select:none;
+      text-decoration: none;
+    }
+    .logo-text{
+      font-size: 22px; font-weight: 900; color:#fff;
+    }
+    .logo-icon{ font-size: 22px; color: var(--primary); }
+
+    .nav-actions{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+
+    .btn-primary{
+      display:inline-flex; align-items:center; gap:8px;
+      background: var(--primary);
+      color:#000;
+      border:none;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 900;
+      cursor:pointer;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+    .btn-ghost{
+      display:inline-flex; align-items:center; gap:8px;
+      background: transparent;
+      color:#fff;
+      border:1px solid rgba(255,255,255,0.12);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 800;
+      cursor:pointer;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+
+    .hero{
+      padding: 70px 18px 40px 18px;
+      background: radial-gradient(900px 280px at 50% 0%, rgba(59,130,246,0.18), rgba(0,0,0,0));
+      text-align:center;
+    }
+    .hero h1{
+      margin: 0;
+      font-size: 54px;
+      line-height: 1.1;
+      font-weight: 900;
+      color:#fff;
+      text-shadow: 0 0 18px rgba(59,130,246,0.18);
+    }
+    .hero p{
+      margin: 18px auto 0;
+      max-width: 980px;
+      color: var(--muted);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.8;
+    }
+
+    .search-wrap{
+      max-width: 980px;
+      margin: 28px auto 0;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:center;
+      flex-wrap: wrap;
+    }
+    .search-input{
+      flex: 1;
+      min-width: 260px;
+      height: 52px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
+      padding: 0 14px;
+      color: #fff;
+      font-weight: 800;
+      outline: none;
+    }
+    .search-input::placeholder{ color: rgba(148,163,184,0.8); font-weight:700; }
+    .search-btn{
+      height: 52px;
+      padding: 0 16px;
+      border-radius: 14px;
+      border: none;
+      background: var(--primary);
+      color: #000;
+      font-weight: 900;
+      cursor: pointer;
+      display:inline-flex; align-items:center; gap:10px;
+    }
+
+    .section{
+      padding: 40px 18px;
+    }
+    .section-title{
+      text-align:center;
+      color:#fff;
+      font-weight: 900;
+      font-size: 30px;
+      margin: 0 0 18px 0;
+    }
+    .section-sub{
+      text-align:center;
+      color: var(--muted);
+      font-weight: 700;
+      margin: 0 0 22px 0;
+    }
+
+    .grid{
+      max-width: 1100px;
+      margin: 0 auto;
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .card{
+      background: rgba(11,18,34,0.85);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px;
+      padding: 16px;
+      text-decoration:none;
+      color:#fff;
+      transition: transform .18s ease, border-color .18s ease;
+    }
+    .card:hover{
+      transform: translateY(-3px);
+      border-color: rgba(59,130,246,0.30);
+    }
+    .card-row{
+      display:flex; align-items:center; gap: 12px;
+    }
+    .card i{
+      font-size: 26px;
+      width: 40px;
+      height: 40px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .card h3{
+      margin: 0;
+      font-size: 17px;
+      font-weight: 900;
+    }
+    .card p{
+      margin: 6px 0 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .featured{
+      max-width:1100px; margin: 0 auto;
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }
+    .place{
+      background: rgba(11,18,34,0.85);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px;
+      overflow:hidden;
+      text-decoration:none;
+      color:#fff;
+    }
+    .place .img{
+      height: 160px;
+      background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(16,185,129,0.18));
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .place .body{
+      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .place .name{
+      font-weight: 900;
+      font-size: 16px;
+      margin:0;
+    }
+    .place .meta{
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 13px;
+      margin:0;
+    }
+    .place .actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top: 6px;
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      color:#fff;
+      font-weight: 900;
+      text-decoration:none;
+      cursor:pointer;
+      font-size: 13px;
+    }
+    .pill.whatsapp{
+      border-color: rgba(16,185,129,0.35);
+    }
+
+    footer{
+      margin-top: 40px;
+      background: #020617;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 36px 18px;
+    }
+    .footer-grid{
+      max-width: 1100px;
+      margin: 0 auto;
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 22px;
+    }
+    .footer-brand{
+      font-weight: 900;
+      color:#fff;
+      margin:0 0 10px 0;
+      font-size: 18px;
+    }
+    .footer-about{
+      color: var(--muted);
+      font-weight: 700;
+      line-height: 1.9;
+      margin:0;
+      font-size: 14px;
+    }
+    .footer-links{
+      list-style:none; padding:0; margin:10px 0 0 0;
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .footer-links a{
+      color:#fff;
+      text-decoration:none;
+      font-weight: 800;
+      opacity: .9;
+    }
+    .footer-links a:hover{ opacity: 1; text-decoration:underline; }
+    .footer-bottom{
+      max-width:1100px;
+      margin: 22px auto 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 16px;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 12px;
+      text-align:center;
+      line-height:1.9;
+    }
+
+    @media (max-width: 520px){
+      .hero h1{ font-size: 40px; }
+      .hero p{ font-size: 16px; }
+    }
+  </style>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JHXZ7VEWP7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JHXZ7VEWP7');
+  </script>
+</head>
+
+<body>
+  <noscript style="display:block;padding:14px;background:#111827;color:#fff;text-align:center;font-weight:800;">
+    هذا الموقع يحتاج تفعيل JavaScript ليعمل بشكل كامل.
+  </noscript>
+
+  <header class="top-navbar">
+    <div class="logo-main" onclick="window.location.href='/'">
+      <i class="fa-solid fa-location-dot logo-icon"></i>
+      <span class="logo-text">Ramallah Time | رام الله تايم</span>
+    </div>
+
+    <div class="nav-actions">
+      <a class="btn-ghost" href="/places"><i class="fa-solid fa-compass"></i> تصفّح الأماكن</a>
+      <a class="btn-ghost" href="/owner-login"><i class="fa-solid fa-right-to-bracket"></i> تسجيل دخول</a>
+      <a class="btn-primary" href="/add-place"><i class="fa-solid fa-store"></i> أضف مكانك</a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1>دليل رام الله الأقوى</h1>
+    <p>
+      مطاعم • كافيهات • فنادق وشقق • مسابح ومنتجعات • صالونات • ألعاب أطفال
+      <br>
+      تواصل مباشر عبر واتساب مع كل مكان — بسرعة وبوضوح.
+    </p>
+
+    <div class="search-wrap">
+      <input id="q" class="search-input" type="text" placeholder="ابحث باسم المكان أو كلمة (مثلاً: كنافة، فندق، مسبح)..." />
+      <button id="searchBtn" class="search-btn" type="button">
+        <i class="fa-solid fa-magnifying-glass"></i> بحث
+      </button>
+      <button id="nearBtn" class="btn-ghost" type="button">
+        <i class="fa-solid fa-location-crosshairs"></i> قريب مني
+      </button>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">الأقسام</h2>
+    <p class="section-sub">اختر القسم المناسب، وادخل على القائمة مباشرة.</p>
+
+    <div class="grid">
+      <a class="card" href="/places?cat=restaurants">
+        <div class="card-row">
+          <i class="fa-solid fa-utensils" style="color:#3b82f6;"></i>
+          <div>
+            <h3>مطاعم</h3>
+            <p>أفضل مطاعم رام الله وتجارب الأكل.</p>
+          </div>
+        </div>
+      </a>
+
+      <a class="card" href="/places?cat=cafes">
+        <div class="card-row">
+          <i class="fa-solid fa-mug-hot" style="color:#10b981;"></i>
+          <div>
+            <h3>كافيهات</h3>
+            <p>قهوة، جلسات، ومكان مريح.</p>
+          </div>
+        </div>
+      </a>
+
+      <a class="card" href="/places?cat=hotels">
+        <div class="card-row">
+          <i class="fa-solid fa-hotel" style="color:#ffd700;"></i>
+          <div>
+            <h3>فنادق وشقق</h3>
+            <p>إقامة، حجز، وخيارات مريحة.</p>
+          </div>
+        </div>
+      </a>
+
+      <a class="card" href="/places?cat=pools">
+        <div class="card-row">
+          <i class="fa-solid fa-person-swimming" style="color:#38bdf8;"></i>
+          <div>
+            <h3>مسابح ومنتجعات</h3>
+            <p>يوم صيفي، استرخاء، وحجز مباشر.</p>
+          </div>
+        </div>
+      </a>
+
+      <a class="card" href="/places?cat=mens_salon">
+        <div class="card-row">
+          <i class="fa-solid fa-scissors" style="color:#a78bfa;"></i>
+          <div>
+            <h3>صالونات رجالي</h3>
+            <p>حلاقة وعناية — واتساب للحجز.</p>
+          </div>
+        </div>
+      </a>
+
+      <a class="card" href="/places?cat=women_salon">
+        <div class="card-row">
+          <i class="fa-solid fa-spa" style="color:#fb7185;"></i>
+          <div>
+            <h3>صالونات نسائي</h3>
+            <p>تجميل وسبا — تواصل سريع.</p>
+          </div>
+        </div>
+      </a>
+
+      <a class="card" href="/places?cat=kids">
+        <div class="card-row">
+          <i class="fa-solid fa-children" style="color:#f59e0b;"></i>
+          <div>
+            <h3>ألعاب أطفال</h3>
+            <p>ملاهي ونشاطات عائلية.</p>
+          </div>
+        </div>
+      </a>
+
+      <a class="card" href="/places?cat=gyms">
+        <div class="card-row">
+          <i class="fa-solid fa-dumbbell" style="color:#22c55e;"></i>
+          <div>
+            <h3>رياضة وجيم</h3>
+            <p>نوادي، تدريب، ولياقة.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div style="max-width:1100px; margin: 18px auto 0; text-align:center;">
+      <a class="btn-primary" href="/add-place">
+        <i class="fa-solid fa-store"></i> أصحاب المحلات: أضف مكانك الآن
+      </a>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 10px;">
+    <h2 class="section-title">أماكن مقترحة</h2>
+    <p class="section-sub">هنا رح تظهر أماكن Premium/موصى بها (قريباً). حالياً مجرد نموذج.</p>
+
+    <div class="featured" id="featuredGrid">
+    <!-- سيتم تحميل الأماكن هنا تلقائياً -->
+</div>
+      <a class="place" href="/places">
+        <div class="img"></div>
+        <div class="body">
+          <p class="name">مكان مثال (سيظهر هنا اسم المحل)</p>
+          <p class="meta"><i class="fa-solid fa-location-dot"></i> رام الله • قسم: مطاعم</p>
+          <div class="actions">
+            <span class="pill whatsapp"><i class="fa-brands fa-whatsapp"></i> واتساب</span>
+            <span class="pill"><i class="fa-solid fa-map"></i> خريطة</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="place" href="/places">
+        <div class="img"></div>
+        <div class="body">
+          <p class="name">مكان مثال (Premium)</p>
+          <p class="meta"><i class="fa-solid fa-location-dot"></i> رام الله • قسم: كافيهات</p>
+          <div class="actions">
+            <span class="pill whatsapp"><i class="fa-brands fa-whatsapp"></i> واتساب</span>
+            <span class="pill"><i class="fa-solid fa-map"></i> خريطة</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="place" href="/places">
+        <div class="img"></div>
+        <div class="body">
+          <p class="name">مكان مثال (حجز سريع)</p>
+          <p class="meta"><i class="fa-solid fa-location-dot"></i> رام الله • قسم: مسابح</p>
+          <div class="actions">
+            <span class="pill whatsapp"><i class="fa-brands fa-whatsapp"></i> واتساب</span>
+            <span class="pill"><i class="fa-solid fa-map"></i> خريطة</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <h3 class="footer-brand">Ramallah Time | رام الله تايم <i class="fa-solid fa-location-dot"></i></h3>
+        <p class="footer-about">
+          دليل محلي يساعد الزوار على اكتشاف أفضل الأماكن في رام الله والتواصل مباشرة عبر واتساب مع أصحاب المحلات.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="footer-brand">روابط سريعة</h3>
+        <ul class="footer-links">
+          <li><a href="/places?cat=restaurants">مطاعم</a></li>
+          <li><a href="/places?cat=cafes">كافيهات</a></li>
+          <li><a href="/places?cat=hotels">فنادق وشقق</a></li>
+          <li><a href="/places?cat=kids">ألعاب أطفال</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="footer-brand">أصحاب المحلات</h3>
+        <ul class="footer-links">
+          <li><a href="/add-place" style="color:var(--primary); font-weight:900;"><i class="fa-solid fa-plus-circle"></i> أضف مكانك الآن</a></li>
+          <li><a href="/owner-login"><i class="fa-solid fa-gauge-high"></i> بوابة الوصول (Portal)</a></li>
+          <li><a href="javascript:void(0)" onclick="openLegalPortal('terms')">شروط الاستخدام</a></li>
+          <li><a href="javascript:void(0)" onclick="openLegalPortal('privacy')">سياسة الخصوصية</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="footer-brand">الدعم</h3>
+        <p class="footer-about" dir="ltr" style="margin-top:10px;">
+          <i class="fa-brands fa-whatsapp"></i> +970 59 406 0648
+        </p>
+        <p class="footer-about">للاستفسارات أو إضافة أماكن جديدة.</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>
+        ملاحظة: المعلومات المعروضة تعتمد على ما يقدّمه أصحاب المحلات وقد تتغير (ساعات/أسعار/عروض).
+      </div>
+      <div>
+        &copy; 2026 Ramallah Time | رام الله تايم — جميع الحقوق محفوظة.
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/ramallah.js?v=2"></script>
+
+  <script>
+    function openLegalPortal(type) {
+      const legalContent = {
+        terms: {
+          title: "شروط الاستخدام",
+          body: "Ramallah Time هو دليل معلوماتي. أنت توافق على استخدام الموقع بشكل قانوني وعدم نشر محتوى مضلل أو مسيء. يحق لإدارة الموقع تعديل/إزالة أي إدراج يخالف السياسات أو يسيء للسمعة العامة."
+        },
+        privacy: {
+          title: "سياسة الخصوصية",
+          body: "قد نقوم بجمع بيانات تقنية عامة (مثل صفحات تمت زيارتها) لتحسين الخدمة. معلومات التواصل (واتساب/هاتف) المعروضة تخص أصحاب المحلات كما زودونا بها. لا نقوم ببيع بيانات المستخدمين."
+        }
+      };
+
+      const content = legalContent[type];
+      const popup = window.open("", "_blank", "width=600,height=700");
+      if (!popup) {
+        alert("يرجى السماح بالنوافذ المنبثقة (Pop-ups) لمشاهدة النص.");
+        return;
+      }
+      popup.document.write(`
+        <html>
+        <head>
+          <title>${content.title}</title>
+          <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+          <style>
+            body { background:#020617; color:#d1d5db; font-family:'Cairo',sans-serif; padding:40px; direction:rtl; line-height:2; }
+            h1 { color:#3b82f6; font-weight:900; border-bottom:2px solid #3b82f6; padding-bottom:10px; }
+            p { font-size:16px; margin-top:20px; }
+            .btn { background:#3b82f6; color:#000; border:none; padding:10px 20px; border-radius:10px; cursor:pointer; font-weight:900; margin-top:20px; font-family:inherit; }
+          </style>
+        </head>
+        <body>
+          <h1>${content.title}</h1>
+          <p>${content.body}</p>
+          <button class="btn" onclick="window.close()">إغلاق</button>
+        </body>
+        </html>
+     `);
+      popup.document.close();
+    }
+  </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(()=>{});
+    }
+  </script>
+  <script>
+async function loadFeaturedPlaces() {
+    const grid = document.getElementById("featuredGrid");
+    try {
+        // جلب آخر 6 أماكن مضافة
+        const res = await fetch("/api/places?limit=6");
+        const data = await res.json();
+        
+        if (!data.items || data.items.length === 0) {
+            grid.innerHTML = "<p style='grid-column:1/-1; text-align:center; color:#94a3b8;'>لا توجد أماكن مضافة حالياً.</p>";
+            return;
+        }
+
+        grid.innerHTML = data.items.map(p => {
+            // معالجة رابط الواتساب لتجنب خلل الـ null
+            const waNum = p.whatsapp ? p.whatsapp.replace(/\D/g, '').replace(/^0/, '970') : null;
+            const waLink = waNum ? `https://wa.me/${waNum}` : "#";
+
+            return `
+                <div class="place">
+                    <div class="img" style="background-image: url('${p.images?.[0]?.image_url || '/static/placeholder.jpg'}'); background-size: cover; background-position: center;"></div>
+                    <div class="body">
+                        <p class="name">${p.name} ${p.is_premium ? '⭐' : ''}</p>
+                        <p class="meta"><i class="fa-solid fa-location-dot"></i> ${p.area || 'رام الله'} • ${p.category}</p>
+                        <div class="actions">
+                            ${waNum ? `<a href="${waLink}" target="_blank" class="pill whatsapp"><i class="fa-brands fa-whatsapp"></i> واتساب</a>` : ''}
+                            <a href="${p.map_url || '#'}" target="_blank" class="pill"><i class="fa-solid fa-map"></i> خريطة</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error("خطأ في تحميل الأماكن:", e);
+    }
+}
+
+// تشغيل الوظيفة عند تحميل الصفحة
+document.addEventListener("DOMContentLoaded", loadFeaturedPlaces);
+</script>
+</body>
+</html>

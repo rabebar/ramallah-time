@@ -1,0 +1,11 @@
+.env
+users.db
+__pycache__/
+*.pyc
+*.log
+images/uploaded_*
+images/processed_*
+uploaded_*
+processed_*
+backup/
+images

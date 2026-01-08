@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ramallah Time | دليل الزائر</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root { 
+            --primary: #3b82f6; 
+            --bg: #050b14; 
+            --card: #0b1222; 
+            --muted: #94a3b8; 
+            --success: #10b981; 
+        }
+
+        body { 
+            background: var(--bg); 
+            color: white; 
+            margin: 0; 
+            font-family: 'Cairo', sans-serif; 
+            overflow-x: hidden; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* شريط تثبيت التطبيق */
+        #installBanner {
+            display: none;
+            background: var(--primary);
+            padding: 12px 15px;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+        }
+
+        .search-header { 
+            position: sticky; 
+            top: 0; 
+            background: var(--bg); 
+            padding: 15px; 
+            z-index: 1000; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+        .search-bar { 
+            display: flex; 
+            align-items: center; 
+            background: var(--card); 
+            border-radius: 15px; 
+            padding: 10px 15px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+        }
+        .search-bar input { 
+            flex: 1; 
+            background: transparent; 
+            border: none; 
+            color: white; 
+            outline: none; 
+            font-family: inherit; 
+            font-size: 14px;
+        }
+
+        .categories-scroll { 
+            display: flex; 
+            overflow-x: auto; 
+            gap: 12px; 
+            padding: 15px; 
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch; 
+        }
+        .categories-scroll::-webkit-scrollbar { display: none; }
+
+        .cat-btn { 
+            flex: 0 0 auto; 
+            text-align: center; 
+            color: var(--muted); 
+            font-size: 11px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            width: 75px; 
+            scroll-snap-align: start;
+        }
+        .cat-btn i { 
+            width: 55px; 
+            height: 55px; 
+            background: var(--card); 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 20px; 
+            margin: 0 auto 8px auto; 
+            border: 1px solid rgba(255,255,255,0.05); 
+            transition: all 0.2s ease;
+        }
+        .cat-btn:active i { transform: scale(0.9); background: var(--primary); color: white; }
+
+        .place-card { background: var(--card); border-radius: 20px; overflow: hidden; margin: 0 15px 20px 15px; border: 1px solid rgba(255,255,255,0.06); }
+        .card-img { height: 160px; width: 100%; object-fit: cover; background: #1a2236; }
+        .card-content { padding: 15px; }
+        .card-title { font-size: 18px; font-weight: 900; margin: 0; }
+        .card-info { font-size: 12px; color: var(--muted); margin: 5px 0 15px; }
+
+        .card-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .action-btn { height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 16px; }
+        .btn-wa { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .btn-ph { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
+        .btn-map { background: rgba(255, 255, 255, 0.05); color: white; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #050b14; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { color: var(--muted); text-decoration: none; text-align: center; font-size: 12px; flex: 1; font-weight: 800; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 22px; display: block; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+<!-- شاشة ترحيب مطورة -->
+<div id="mobile-splash" style="position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s;">
+    <i class="fa-solid fa-location-dot" style="font-size: 80px; color: var(--primary); margin-bottom: 20px;"></i>
+    <h2 style="font-weight: 900; font-size: 30px; margin-bottom: 5px;">رام الله تايم</h2>
+    <p style="color: var(--success); font-weight: 800; font-size: 14px;">أعلن هنا: 0594060648</p>
+</div>
+
+<!-- بنر تثبيت التطبيق -->
+<div id="installBanner" style="display: none; background: var(--card); padding: 15px; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 2000;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <i class="fa-solid fa-mobile-screen-button" style="color: var(--primary); font-size: 20px;"></i>
+        <div>
+            <div style="font-size: 13px; font-weight: 900;">ثبّت التطبيق الآن</div>
+            <div style="font-size: 11px; color: var(--muted);">لتصفح أسرع وبدون إنترنت</div>
+        </div>
+    </div>
+    <button onclick="triggerInstall()" style="background: var(--primary); color: white; border: none; padding: 8px 18px; border-radius: 10px; font-weight: 900; font-size: 13px;">تثبيت</button>
+</div>
+
+<div class="app-shell" style="padding-bottom: 90px;">
+    <header class="search-header">
+        <div class="brand-identity" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+            <i class="fa-solid fa-location-dot" style="font-size: 24px; color: var(--primary);"></i>
+            <span style="font-size: 20px; font-weight: 900;">رام الله تايم</span>
+        </div>
+        <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass" style="margin-left:10px; color:var(--muted);"></i>
+            <input type="text" id="searchInput" placeholder="ابحث عن مطعم، كافيه، مسبح..." oninput="doSearch()">
+        </div>
+    </header>
+
+    <div class="categories-scroll">
+        <div class="cat-btn" onclick="filterCat('restaurants')"><i class="fa-solid fa-utensils"></i><span>مطاعم</span></div>
+        <div class="cat-btn" onclick="filterCat('cafes')"><i class="fa-solid fa-mug-hot"></i><span>كافيهات</span></div>
+        <div class="cat-btn" onclick="filterCat('hotels')"><i class="fa-solid fa-hotel"></i><span>فنادق</span></div>
+        <div class="cat-btn" onclick="filterCat('pools')"><i class="fa-solid fa-person-swimming"></i><span>مسابح</span></div>
+        <div class="cat-btn" onclick="filterCat('mens_salon')"><i class="fa-solid fa-scissors"></i><span>صالون رجالي</span></div>
+        <div class="cat-btn" onclick="filterCat('women_salon')"><i class="fa-solid fa-spa"></i><span>صالون نسائي</span></div>
+        <div class="cat-btn" onclick="filterCat('kids')"><i class="fa-solid fa-children"></i><span>ألعاب أطفال</span></div>
+        <div class="cat-btn" onclick="filterCat('gyms')"><i class="fa-solid fa-dumbbell"></i><span>رياضة وجيم</span></div>
+    </div>
+
+    <div id="placesFeed">
+        <p style="text-align:center; padding:50px; color:var(--muted);">جارٍ اكتشاف أماكن رام الله...</p>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <div class="nav-item active" onclick="location.reload()"><i class="fa-solid fa-house"></i>الرئيسية</div>
+    <div class="nav-item" onclick="getNearby()"><i class="fa-solid fa-location-crosshairs"></i>قريب مني</div>
+</nav>
+
+<script>
+    let allPlaces = [];
+    let deferredPrompt;
+
+    // 1. إخفاء شاشة الترحيب
+    setTimeout(() => {
+        const splash = document.getElementById('mobile-splash');
+        if(splash) {
+            splash.style.opacity = '0';
+            setTimeout(() => splash.style.display = 'none', 500);
+        }
+    }, 1500);
+
+    // 2. جلب البيانات
+    async function initApp() {
+        try {
+            const res = await fetch('/api/places');
+            const data = await res.json();
+            allPlaces = data.items;
+            render(allPlaces);
+        } catch(e) { 
+            document.getElementById("placesFeed").innerHTML = '<p style="text-align:center; padding:50px;">خطأ في الاتصال بالسيرفر.</p>'; 
+        }
+    }
+
+    // 3. رسم البطاقات
+   function render(items) {
+    const feed = document.getElementById("placesFeed");
+    if(items.length === 0) {
+        feed.innerHTML = '<p style="text-align:center; padding:50px; color:var(--muted);">لا توجد نتائج.</p>';
+        return;
+    }
+    feed.innerHTML = items.map(p => {
+        let waLink = "#", displayWa = "none";
+        if (p.whatsapp && p.whatsapp.trim() !== "") {
+            let num = p.whatsapp.replace(/\D/g, '');
+            if (num.startsWith('05')) num = '970' + num.substring(1);
+            if (num.startsWith('5')) num = '970' + num;
+            waLink = `https://wa.me/${num}`;
+            displayWa = "flex";
+        }
+
+        // تحضير نص المسافة إذا توفرت من السيرفر
+        const distanceText = (p.distance !== null && p.distance !== undefined) 
+            ? ` • <span style="color:var(--primary)">يبعد ${p.distance} كم</span>` 
+            : "";
+
+        return `
+            <div class="place-card">
+                <img class="card-img" src="${p.images?.[0]?.image_url || '/images/placeholder.jpg'}" onerror="this.src='/images/placeholder.jpg'">
+                <div class="card-content">
+                    <h3 class="card-title">${p.name}</h3>
+                    <div class="card-info">
+                        <i class="fa-solid fa-location-dot"></i> ${p.area || 'رام الله'} ${distanceText}
+                    </div>
+                    <div class="card-actions">
+                        <a href="${waLink}" style="display: ${displayWa}" class="action-btn btn-wa" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="tel:${p.phone || ''}" class="action-btn btn-ph" style="display: ${p.phone ? 'flex' : 'none'}"><i class="fa-solid fa-phone"></i></a>
+                        <a href="${p.map_url || '#'}" target="_blank" class="action-btn btn-map"><i class="fa-solid fa-route"></i></a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+    // 4. البحث والفلترة
+    function doSearch() {
+        const q = document.getElementById("searchInput").value.toLowerCase();
+        render(allPlaces.filter(p => p.name.toLowerCase().includes(q) || p.area?.toLowerCase().includes(q)));
+    }
+
+    function filterCat(category) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        render(allPlaces.filter(p => p.category === category));
+    }
+
+    async function getNearby() {
+    if (!navigator.geolocation) {
+        alert("عذراً، متصفحك لا يدعم خاصية تحديد الموقع.");
+        return;
+    }
+
+    // إظهار رسالة مؤقتة للمستخدم
+    const feed = document.getElementById("placesFeed");
+    feed.innerHTML = '<p style="text-align:center; padding:50px; color:var(--muted);">جارٍ تحديد موقعك لجلب أقرب الأماكن...</p>';
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        try {
+            // طلب الأماكن من السيرفر مع إرسال الإحداثيات لترتيبها حسب المسافة
+            const res = await fetch(`/api/places?lat=${lat}&lng=${lng}`);
+            const data = await res.json();
+            allPlaces = data.items;
+            render(allPlaces); // إعادة رسم البطاقات بالترتيب الجديد
+        } catch (e) {
+            alert("فشل الاتصال بالسيرفر لجلب الأماكن القريبة.");
+            render(allPlaces); // العودة للوضع العادي في حال الفشل
+        }
+    }, (error) => {
+        alert("يرجى السماح بالوصول للموقع (GPS) لتتمكن من رؤية الأماكن القريبة منك.");
+        render(allPlaces);
+    });
+}
+
+    // 5. منطق تثبيت التطبيق
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('installBanner').style.display = 'flex';
+    });
+
+    async function triggerInstall() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                document.getElementById('installBanner').style.display = 'none';
+            }
+            deferredPrompt = null;
+        }
+    }
+
+    window.addEventListener('appinstalled', () => {
+        document.getElementById('installBanner').style.display = 'none';
+    });
+
+    // تسجيل Service Worker
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").catch(()=>{});
+    }
+
+    // تشغيل التطبيق
+    initApp();
+</script>
+</body>
+</html>

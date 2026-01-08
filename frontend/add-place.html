@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>إضافة مكان جديد | Ramallah Time</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --bg-dark: #050b14;
+      --card-bg: rgba(11, 18, 34, 0.95);
+      --input-bg: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.1);
+      --text-muted: #94a3b8;
+      --success: #10b981;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      font-family: 'Cairo', sans-serif;
+      color: #fff;
+      margin: 0; padding: 0;
+      line-height: 1.8;
+      overflow-x: hidden;
+    }
+
+    /* نظام الخطوات العلوي */
+    .steps-container {
+      max-width: 600px; margin: 40px auto 30px;
+      display: flex; justify-content: space-between; position: relative;
+    }
+    .steps-container::before {
+      content: ""; position: absolute; top: 20px; left: 0; right: 0;
+      height: 2px; background: var(--border); z-index: 1;
+    }
+    .step-item {
+      position: relative; z-index: 2; text-align: center; width: 40px;
+    }
+    .step-number {
+      width: 40px; height: 40px; background: #0f172a; border: 2px solid #1e293b;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-weight: 900; color: var(--text-muted); transition: 0.4s;
+    }
+    .step-item.active .step-number {
+      border-color: var(--primary); color: var(--primary); background: var(--bg-dark);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    }
+    .step-label {
+      font-size: 11px; margin-top: 8px; font-weight: 800; color: var(--text-muted);
+      position: absolute; width: 80px; left: -20px;
+    }
+    .step-item.active .step-label { color: #fff; }
+
+    /* الحاويات */
+    .wrapper { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
+    .form-step { display: none; animation: slideIn 0.4s ease-out; }
+    .form-step.active { display: block; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .form-card {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 30px; padding: 40px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    .section-title {
+      font-size: 24px; font-weight: 900; color: var(--primary);
+      margin-bottom: 25px; display: flex; align-items: center; gap: 15px;
+    }
+
+    .ai-box {
+      background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(16,185,129,0.08));
+      border: 2px dashed var(--primary); border-radius: 20px;
+      padding: 30px; text-align: center; cursor: pointer; margin-bottom: 30px;
+      transition: 0.3s;
+    }
+    .ai-box:hover { background: rgba(59,130,246,0.15); border-color: #fff; }
+
+    .field-group { margin-bottom: 20px; }
+    .field-label { display: block; margin-bottom: 10px; font-weight: 800; font-size: 15px; color: #e2e8f0; }
+    .form-input {
+      width: 100%; height: 58px; background: var(--input-bg);
+      border: 2px solid var(--border); border-radius: 15px;
+      color: #fff; padding: 0 18px; font-family: inherit; font-weight: 700;
+      outline: none; transition: 0.3s;
+    }
+    .form-input:focus { border-color: var(--primary); background: rgba(59,130,246,0.05); }
+    textarea.form-input { height: 130px; padding: 18px; }
+
+    .nav-buttons { display: flex; gap: 15px; margin-top: 40px; }
+    .btn-action {
+      height: 65px; border-radius: 18px; font-weight: 900; font-size: 18px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 12px; transition: 0.3s; border: none; font-family: inherit;
+    }
+    .btn-next { background: var(--primary); color: #000; flex: 2; }
+    .btn-prev { background: #1e293b; color: #fff; flex: 1; }
+    .btn-submit { background: var(--success); color: #000; flex: 2; }
+    
+    .loading-overlay {
+      position: fixed; inset: 0; background: rgba(2,6,23,0.9);
+      z-index: 1000; display: none; flex-direction: column;
+      align-items: center; justify-content: center; backdrop-filter: blur(8px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- واجهة التحميل أثناء الحفظ أو المسح الذكي -->
+  <div class="loading-overlay" id="globalLoader">
+    <i class="fa-solid fa-spinner fa-spin fa-4x" style="color:var(--primary); margin-bottom:20px;"></i>
+    <h2 id="loaderText" style="font-weight:900;">جارٍ المعالجة...</h2>
+  </div>
+
+  <header class="top-navbar">
+    <div class="logo-main" onclick="window.location.href='/'">
+      <i class="fa-solid fa-location-dot logo-icon"></i>
+      <span class="logo-text">Ramallah Time | رام الله تايم</span>
+    </div>
+    <div class="nav-actions">
+      <a class="btn-ghost" href="/places" style="border:1px solid rgba(255,255,255,0.1); padding:8px 15px; border-radius:10px;">تصفح الأماكن</a>
+    </div>
+  </header>
+
+  <!-- مؤشر الخطوات العلوي -->
+  <div class="steps-container">
+    <div class="step-item active" id="dot1"><div class="step-number">1</div><div class="step-label">الحساب</div></div>
+    <div class="step-item" id="dot2"><div class="step-number">2</div><div class="step-label">المكان</div></div>
+    <div class="step-item" id="dot3"><div class="step-number">3</div><div class="step-label">الموقع</div></div>
+    <div class="step-item" id="dot4"><div class="step-number">4</div><div class="step-label">التواصل</div></div>
+    <div class="step-item" id="dot5"><div class="step-number">5</div><div class="step-label">الصور</div></div>
+  </div>
+
+  <div class="wrapper">
+    <div class="form-card">
+      <form id="placeForm">
+        
+        <!-- الخطوة 1: الأمان والحساب (مهمة جداً للوحة التحكم) -->
+        <div class="form-step active" id="step1">
+          <div class="section-title"><i class="fa-solid fa-user-lock"></i> إنشاء حساب المالك</div>
+          <div class="field-group">
+            <label class="field-label">البريد الإلكتروني (سيكون اسم المستخدم) *</label>
+            <input id="in_owner_email" type="email" class="form-input" placeholder="mail@example.com" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label">كلمة السر (للدخول للوحة تحكم محلك) *</label>
+            <input id="in_owner_password" type="password" class="form-input" placeholder="********" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label">اسم المسؤول / المالك</label>
+            <input id="in_owner_name" type="text" class="form-input" placeholder="الاسم الكامل">
+          </div>
+        </div>
+
+        <!-- الخطوة 2: معلومات المكان (مع الماسح الذكي) -->
+        <div class="form-step" id="step2">
+          <div class="ai-box" onclick="document.getElementById('aiFileInput').click()">
+            <i class="fa-solid fa-wand-magic-sparkles" style="font-size:40px; color:var(--primary); margin-bottom:15px;"></i>
+            <h3>الماسح الذكي AI</h3>
+            <p style="color:var(--text-muted); font-size:14px;">ارفع صورة كرت المحل أو المنيو وسنقوم بتعبئة البيانات فوراً!</p>
+            <input type="file" id="aiFileInput" accept="image/*" style="display:none" onchange="triggerAiAnalysis(this)">
+          </div>
+
+          <div class="section-title"><i class="fa-solid fa-store"></i> معلومات المنشأة</div>
+          <div class="field-group">
+            <label class="field-label">اسم المكان *</label>
+            <input id="in_name" type="text" class="form-input" placeholder="مثلاً: كافيه القدس">
+          </div>
+          <div class="field-group">
+            <label class="field-label">التصنيف *</label>
+            <select id="in_category" class="form-input" style="appearance: none;">
+              <option value="restaurants">مطاعم</option>
+              <option value="cafes">كافيهات</option>
+              <option value="hotels">فنادق وشقق</option>
+              <option value="pools">مسابح ومنتجعات</option>
+              <option value="mens_salon">صالونات رجالي</option>
+              <option value="women_salon">صالونات نسائي</option>
+              <option value="kids">ألعاب أطفال</option>
+              <option value="gyms">رياضة وجيم</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">وصف تفصيلي عن المكان والخدمات</label>
+            <textarea id="in_desc" class="form-input" placeholder="ماذا يقدم المكان؟ ما الذي يميزكم؟"></textarea>
+          </div>
+        </div>
+
+        <!-- الخطوة 3: الموقع الجغرافي (الدقيق) -->
+        <div class="form-step" id="step3">
+          <div class="section-title"><i class="fa-solid fa-map-location-dot"></i> تحديد الموقع الجغرافي</div>
+          <div class="field-group">
+            <label class="field-label">المنطقة / الحي</label>
+            <input id="in_area" type="text" class="form-input" placeholder="مثلاً: الماصيون">
+          </div>
+          <div class="field-group">
+            <label class="field-label">العنوان (شارع أو معلم قريب)</label>
+            <input id="in_address" type="text" class="form-input" placeholder="عمارة كذا، بجانب كذا">
+          </div>
+          <div class="field-group">
+            <label class="field-label">رابط خرائط جوجل (URL)</label>
+            <input id="in_map_url" type="text" class="form-input" placeholder="لصق الرابط من تطبيق الخرائط">
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+            <div class="field-group">
+              <label class="field-label">خط العرض (Lat)</label>
+              <input id="in_lat" type="number" step="any" class="form-input">
+            </div>
+            <div class="field-group">
+              <label class="field-label">خط الطول (Lng)</label>
+              <input id="in_lng" type="number" step="any" class="form-input">
+            </div>
+          </div>
+          <button type="button" onclick="getMyLocation()" style="width:100%; height:50px; border-radius:12px; border:1px solid var(--primary); background:rgba(59,130,246,0.1); color:var(--primary); font-weight:800; cursor:pointer;">
+            <i class="fa-solid fa-location-crosshairs"></i> حدد موقعي الحالي الآن تلقائياً
+          </button>
+        </div>
+
+        <!-- الخطوة 4: قنوات التواصل والشبكات -->
+        <div class="form-step" id="step4">
+          <div class="section-title"><i class="fa-solid fa-share-nodes"></i> التواصل والشبكات</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+            <div class="field-group"><label class="field-label">الهاتف</label><input id="in_phone" type="text" class="form-input"></div>
+            <div class="field-group"><label class="field-label">واتساب</label><input id="in_whatsapp" type="text" class="form-input"></div>
+          </div>
+          <div class="field-group"><label class="field-label">الموقع الإلكتروني</label><input id="in_website" type="text" class="form-input"></div>
+          <div class="field-group"><label class="field-label">انستجرام</label><input id="in_instagram" type="text" class="form-input" placeholder="@username"></div>
+          <div class="field-group"><label class="field-label">فيسبوك</label><input id="in_facebook" type="text" class="form-input" placeholder="رابط الصفحة"></div>
+        </div>
+
+        <!-- الخطوة 5: التفاصيل الإضافية والصور -->
+        <div class="form-step" id="step5">
+          <div class="section-title"><i class="fa-solid fa-images"></i> اللمسات الأخيرة والصور</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+            <div class="field-group"><label class="field-label">ساعات العمل</label><input id="in_hours" type="text" class="form-input" placeholder="9 صباحاً - 11 مساءً"></div>
+            <div class="field-group">
+              <label class="field-label">نطاق الأسعار</label>
+              <select id="in_price" class="form-input">
+                <option value="$">اقتصادي ($)</option>
+                <option value="$$" selected>متوسط ($$)</option>
+                <option value="$$$">مرتفع ($$$)</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">الكلمات المفتاحية (Tags)</label>
+            <input id="in_tags" type="text" class="form-input" placeholder="wifi, parking, family...">
+          </div>
+          <div class="field-group">
+            <label class="field-label">صور المكان (اختر صور واضحة وجميلة) *</label>
+            <input id="in_photos" type="file" multiple accept="image/*" class="form-input" style="padding-top:12px;">
+          </div>
+        </div>
+
+        <!-- أزرار التحكم في الخطوات -->
+        <div class="nav-buttons">
+          <button type="button" class="btn-action btn-prev" id="prevBtn" style="display:none;" onclick="moveStep(-1)">السابق</button>
+          <button type="button" class="btn-action btn-next" id="nextBtn" onclick="moveStep(1)">التالي</button>
+          <button type="button" class="btn-action btn-submit" id="submitBtn" style="display:none;" onclick="finalSubmit()">إرسال الطلب النهائي</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+  <script>
+    let currentStep = 1;
+    const totalSteps = 5;
+
+    // دالة التنقل بين الخطوات
+    function moveStep(n) {
+      // التحقق من الحقول المطلوبة قبل الانتقال للخطوة التالية
+      if (n > 0) {
+        if (currentStep === 1) {
+          if (!document.getElementById('in_owner_email').value || !document.getElementById('in_owner_password').value) {
+            alert("يرجى إدخال البريد الإلكتروني وكلمة السر لإنشاء حسابك.");
+            return;
+          }
+        }
+        if (currentStep === 2) {
+          if (!document.getElementById('in_name').value) {
+            alert("يرجى إدخال اسم المكان للمتابعة.");
+            return;
+          }
+        }
+      }
+
+      // إخفاء الخطوة الحالية
+      document.getElementById(`step${currentStep}`).classList.remove("active");
+      document.getElementById(`dot${currentStep}`).classList.remove("active");
+
+      // تحديث الرقم
+      currentStep += n;
+
+      // إظهار الخطوة الجديدة
+      document.getElementById(`step${currentStep}`).classList.add("active");
+      document.getElementById(`dot${currentStep}`).classList.add("active");
+
+      // التحكم في أزرار التنقل
+      document.getElementById("prevBtn").style.display = (currentStep === 1) ? "none" : "flex";
+      
+      if (currentStep === totalSteps) {
+        document.getElementById("nextBtn").style.display = "none";
+        document.getElementById("submitBtn").style.display = "flex";
+      } else {
+        document.getElementById("nextBtn").style.display = "flex";
+        document.getElementById("submitBtn").style.display = "none";
+      }
+
+      // العودة لأعلى الصفحة عند الانتقال
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // دالة تحديد الموقع التلقائي
+    function getMyLocation() {
+      if (!navigator.geolocation) return alert("متصفحك لا يدعم تحديد الموقع الجغرافي.");
+      
+      const loader = document.getElementById("globalLoader");
+      document.getElementById("loaderText").innerText = "جاري تحديد إحداثيات موقعك...";
+      loader.style.display = "flex";
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          document.getElementById('in_lat').value = position.coords.latitude;
+          document.getElementById('in_lng').value = position.coords.longitude;
+          loader.style.display = "none";
+          alert("تم تحديد إحداثياتك بنجاح!");
+        },
+        (error) => {
+          loader.style.display = "none";
+          alert("تعذر الوصول لموقعك. يرجى التأكد من تفعيل GPS.");
+        }
+      );
+    }
+
+    // دالة الماسح الذكي AI
+    async function triggerAiAnalysis(inputElement) {
+      if (!inputElement.files || !inputElement.files[0]) return;
+      
+      const loader = document.getElementById("globalLoader");
+      document.getElementById("loaderText").innerText = "الذكاء الاصطناعي يحلل الصورة الآن...";
+      loader.style.display = "flex";
+      
+      const formData = new FormData();
+      formData.append("image", inputElement.files[0]);
+
+      try {
+        const response = await fetch("/api/ai-scan", { method: "POST", body: formData });
+        if (!response.ok) throw new Error("فشل التحليل");
+        
+        const data = await response.json();
+        
+        // تعبئة الحقول المستخرجة
+        if (data.name) document.getElementById('in_name').value = data.name;
+        if (data.area) document.getElementById('in_area').value = data.area;
+        if (data.phone) document.getElementById('in_phone').value = data.phone;
+        if (data.whatsapp) document.getElementById('in_whatsapp').value = data.whatsapp;
+        if (data.description) document.getElementById('in_desc').value = data.description;
+        if (data.category) document.getElementById('in_category').value = data.category;
+        
+        alert("تم استخراج البيانات بنجاح! يرجى مراجعتها.");
+      } catch (err) {
+        alert("لم نتمكن من قراءة الصورة، يرجى إدخال البيانات يدوياً.");
+      } finally {
+        loader.style.display = "none";
+      }
+    }
+
+    // دالة الحفظ النهائي الشاملة
+    async function finalSubmit() {
+      const btn = document.getElementById("submitBtn");
+      const loader = document.getElementById("globalLoader");
+      
+      const ownerEmail = document.getElementById("in_owner_email").value.trim();
+      const ownerPass = document.getElementById("in_owner_password").value.trim();
+
+      btn.disabled = true;
+      document.getElementById("loaderText").innerText = "جاري إنشاء حسابك وحفظ المكان...";
+      loader.style.display = "flex";
+
+      const payload = {
+        name: document.getElementById("in_name").value.trim(),
+        category: document.getElementById("in_category").value,
+        owner_email: ownerEmail,
+        owner_password: ownerPass,
+        owner_name: document.getElementById("in_owner_name").value.trim() || null,
+        area: document.getElementById("in_area").value.trim() || null,
+        address: document.getElementById("in_address").value.trim() || null,
+        description: document.getElementById("in_desc").value.trim() || null,
+        phone: document.getElementById("in_phone").value.trim() || null,
+        whatsapp: document.getElementById("in_whatsapp").value.trim() || null,
+        website: document.getElementById("in_website").value.trim() || null,
+        instagram: document.getElementById("in_instagram").value.trim() || null,
+        facebook: document.getElementById("in_facebook").value.trim() || null,
+        map_url: document.getElementById("in_map_url").value.trim() || null,
+        latitude: parseFloat(document.getElementById("in_lat").value) || null,
+        longitude: parseFloat(document.getElementById("in_lng").value) || null,
+        open_hours: document.getElementById("in_hours").value.trim() || null,
+        price_range: document.getElementById("in_price").value,
+        tags: document.getElementById("in_tags").value.trim() || null
+      };
+
+      try {
+        // الخطوة 1: إنشاء المكان والحساب
+        const response = await fetch("/api/places", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "حدث خطأ أثناء الحفظ");
+
+        // الخطوة 2: رفع الصور (باستخدام كلمة السر كتوكن)
+        const photos = document.getElementById("in_photos").files;
+        if (photos.length > 0) {
+          document.getElementById("loaderText").innerText = "جاري رفع الصور...";
+          const imgData = new FormData();
+          for (let i = 0; i < photos.length; i++) {
+            imgData.append("images", photos[i]);
+          }
+          await fetch(`/api/places/${result.id}/images`, {
+            method: "POST",
+            headers: { "x-admin-token": ownerPass },
+            body: imgData
+          });
+        }
+
+        loader.style.display = "none";
+        alert("تهانينا! تم تسجيل مكانك بنجاح. سيتم مراجعته وتفعيله قريباً.");
+        window.location.href = "/places";
+
+      } catch (err) {
+        loader.style.display = "none";
+        btn.disabled = false;
+        alert("فشل الإرسال: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

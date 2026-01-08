@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+gunicorn
+sqlalchemy
+psycopg2-binary
+pydantic[email]
+python-multipart
+openai
+python-dotenv

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>دخول الإدارة | Ramallah Time</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    body { background: #020617; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Cairo', sans-serif; }
+    .login-box { background: #0f172a; padding: 40px; border-radius: 20px; border: 1px solid #1e293b; text-align: center; width: 100%; max-width: 350px; }
+    h1 { color: #fff; margin-bottom: 30px; }
+    input { width: 100%; height: 50px; background: #1e293b; border: 1px solid #334155; color: #fff; text-align: center; border-radius: 10px; font-size: 16px; margin-bottom: 20px; outline: none; box-sizing: border-box;}
+    button { width: 100%; height: 50px; background: #3b82f6; color: #fff; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+    button:hover { background: #2563eb; }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h1>🛡️ بوابة الإدارة</h1>
+    <form onsubmit="adminLogin(event)">
+      <input type="password" id="token" placeholder="أدخل كود الأمان" required>
+      <button type="submit">دخول</button>
+    </form>
+  </div>
+
+  <script>
+    function adminLogin(e) {
+      e.preventDefault();
+      const token = document.getElementById("token").value.trim();
+      
+      // حفظ الكود في المتصفح
+      sessionStorage.setItem("admin_token", token);
+      
+      // توجيه لصفحة الأدمن
+      window.location.href = "/static/admin.html";
+    }
+  </script>
+</body>
+</html>

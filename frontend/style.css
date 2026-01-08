@@ -1,0 +1,264 @@
+/* =========================================
+   Ramallah Time - القالب البصري الموحد
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+
+:root {
+    --bg-dark: #050b14;           /* الخلفية العميقة */
+    --bg-panel: #0b1222;          /* لون الكروت والألواح */
+    --primary: #3b82f6;           /* اللون الأزرق الأساسي */
+    --primary-glow: rgba(59, 130, 246, 0.2);
+    --success: #10b981;           /* اللون الأخضر للنجاح والمال */
+    --warning: #f59e0b;           /* اللون البرتقالي للتنبيهات */
+    --danger: #ef4444;            /* اللون الأحمر للأخطاء والحذف */
+    --text-main: #ffffff;         /* النص الأساسي */
+    --text-muted: #94a3b8;        /* النص الباهت أو الثانوي */
+    --border: rgba(255, 255, 255, 0.08); /* لون الحدود الخفيفة */
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Cairo', sans-serif;
+    direction: rtl; /* دعم اللغة العربية */
+    line-height: 1.6;
+    scroll-behavior: smooth;
+}
+
+/* تحسين شكل السكرول بار (شريط التمرير) */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: 0.3s;
+}
+
+/* المكونات العالمية: الأزرار */
+.btn-main {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: var(--primary);
+    color: #000;
+    padding: 12px 24px;
+    border-radius: 14px;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: 0.3s;
+}
+
+.btn-main:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--primary-glow);
+}
+
+.btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--primary);
+}
+/* =========================================
+   مكونات النوافذ والحقول (Forms & Inputs)
+   ========================================= */
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.label-title {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.input-field {
+    width: 100%;
+    height: 55px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    color: #fff;
+    padding: 0 18px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-field:focus {
+    border-color: var(--primary);
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+textarea.input-field {
+    height: 120px;
+    padding: 15px;
+    resize: vertical;
+}
+
+/* =========================================
+   نظام الشبكات والبطاقات (Grids & Cards)
+   ========================================= */
+
+.main-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.card-panel {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 25px;
+    transition: 0.3s;
+}
+
+.card-panel:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    transform: translateY(-5px);
+}
+
+/* الأوسمة (Badges) */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.badge-premium {
+    background: linear-gradient(135deg, #ffd700, #f59e0b);
+    color: #000;
+    animation: pulse-gold 2s infinite;
+}
+
+@keyframes pulse-gold {
+    0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+/* =========================================
+   التذييل (Footer) المطور
+   ========================================= */
+
+footer {
+    margin-top: 60px;
+    padding: 60px 20px;
+    background-color: #020617;
+    border-top: 1px solid var(--border);
+}
+
+.footer-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 40px;
+}
+
+.footer-title {
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 12px;
+}
+
+.footer-links a {
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.footer-links a:hover {
+    color: var(--primary);
+    padding-right: 5px;
+}
+
+/* =========================================
+   التجاوب مع الشاشات (Responsive)
+   ========================================= */
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 15px;
+    }
+    
+    .top-navbar {
+        padding: 12px 15px;
+    }
+    
+    .logo-text {
+        font-size: 18px;
+    }
+    
+    .nav-actions {
+        gap: 8px;
+    }
+    
+    .btn-main {
+        padding: 10px 18px;
+        font-size: 14px;
+    }
+    
+    .welcome-card {
+        text-align: center;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        padding: 20px;
+    }
+}
