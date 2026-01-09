@@ -130,6 +130,7 @@ def _validate_extension(filename: str) -> str:
     if ext not in ALLOWED_IMAGE_EXT:
         raise HTTPException(status_code=400, detail="نوع الملف غير مدعوم")
     return ext
+
 # --- دوال المساعدة للحالة ---
 def is_expired(place: Place) -> bool:
     if place.subscription_status == "pending":
@@ -154,7 +155,6 @@ async def scan_place_with_ai(image: UploadFile = File(...)):
     image_data = await image.read()
     base64_image = base64.b64encode(image_data).decode("utf-8")
 
-    # التعليمات المصححة (حذف المتغيرات غير المعرفة)
     system_prompt = (
         "أنت مساعد ذكي لاستخراج بيانات الأعمال. استخرج المعلومات التالية من الصورة: "
         "(name, category, phone, area, address, description, whatsapp, instagram, facebook). "
@@ -226,7 +226,7 @@ def create_place(
     db.refresh(new_place)
     return schemas.PlaceAuthOut.model_validate(new_place)
 
-# --- جلب كافة الأماكن (دعم GPS والفلترة والخصوصية) ---
+# --- [معدل ومحصن] جلب كافة الأماكن ---
 @app.get("/api/places", response_model=schemas.PlacesResponse)
 def get_all_places(
     q: Optional[str] = Query(None),
@@ -249,37 +249,42 @@ def get_all_places(
     results = []
 
     for p in items_db:
-        status = get_place_status(p)
-        is_owner = (x_admin_token == p.owner_password) if x_admin_token else False
+        try:
+            status = get_place_status(p)
+            # حصانة ضد القيم الفارغة في كلمة المرور (سبب الخطأ 500)
+            is_owner = (x_admin_token and p.owner_password and x_admin_token == p.owner_password)
 
-        # سياسة العرض: الأدمن والمالك يرون كل شيء، الزوار يرون النشط فقط
-        if not (include_hidden and is_admin) and not is_owner:
-            if status in ("pending", "expired"): continue
+            # سياسة العرض
+            if not (include_hidden and is_admin) and not is_owner:
+                if status in ("pending", "expired"): continue
 
-        # اختيار القالب (كامل للأدمن/المالك، عام للزوار)
-        schema_model = schemas.PlaceAuthOut if (is_admin or is_owner) else schemas.PlaceOut
-        p_out = schema_model.model_validate(p)
-        
-        p_out.subscription_status = status
-        p_out.is_expired = is_expired(p)
+            # اختيار القالب المناسب
+            schema_model = schemas.PlaceAuthOut if (is_admin or is_owner) else schemas.PlaceOut
+            p_out = schema_model.model_validate(p)
+            
+            p_out.subscription_status = status
+            p_out.is_expired = is_expired(p)
 
-        if lat and lng and p.latitude:
-            p_out.distance = calculate_haversine(lat, lng, p.latitude, p.longitude)
-        
-        results.append(p_out)
+            if lat and lng and p.latitude:
+                p_out.distance = calculate_haversine(lat, lng, p.latitude, p.longitude)
+            
+            results.append(p_out)
+        except:
+            continue # تخطي أي سجل يحتوي على بيانات تالفة بدلاً من تعطيل التطبيق
 
-    # الترتيب: المميز أولاً، ثم المسافة، ثم الأحدث
-    results.sort(key=lambda x: (not x.is_premium, x.distance if x.distance else 99999, -x.id))
+    # الترتيب: المميز أولاً، ثم المسافة
+    results.sort(key=lambda x: (not getattr(x, 'is_premium', False), getattr(x, 'distance', 99999) or 99999))
 
     return {"items": results, "total": len(results)}
-# --- جلب مكان واحد (دعم الخصوصية الكاملة) ---
+
+# --- [معدل] جلب مكان واحد ---
 @app.get("/api/places/{place_id}", response_model=schemas.PlaceAuthOut)
 def get_single_place(place_id: int, db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
     place = db.query(Place).options(joinedload(Place.images)).filter(Place.id == place_id).first()
     if not place: raise HTTPException(status_code=404, detail="المكان غير موجود")
     
     is_admin = (x_admin_token == ADMIN_SECRET_KEY)
-    is_owner = (x_admin_token == place.owner_password) if x_admin_token else False
+    is_owner = (x_admin_token and place.owner_password and x_admin_token == place.owner_password)
     
     if not is_admin and not is_owner:
         if get_place_status(place) in ("pending", "expired"):
@@ -291,7 +296,7 @@ def get_single_place(place_id: int, db: Session = Depends(get_db), x_admin_token
     p_out.is_expired = is_expired(place)
     return p_out
 
-# --- التحقق من الأدمن وتسجيل دخول المالك (المشفر) ---
+# --- التحقق من الأدمن وتسجيل دخول المالك ---
 @app.get("/api/admin/verify")
 def verify_admin(x_admin_token: Optional[str] = Header(None)):
     if x_admin_token != ADMIN_SECRET_KEY: raise HTTPException(status_code=401)
@@ -303,40 +308,52 @@ def owner_login(data: dict, db: Session = Depends(get_db)):
     password = data.get("password", "").strip()
     place = db.query(Place).filter(Place.owner_email == email).first()
     
-    if not place or not pwd_context.verify(password, place.owner_password):
+    if not place or not place.owner_password:
         raise HTTPException(status_code=401, detail="معلومات الدخول خاطئة")
+    
+    # التحقق من كلمة السر المشفرة
+    try:
+        if not pwd_context.verify(password, place.owner_password):
+            raise HTTPException(status_code=401, detail="معلومات الدخول خاطئة")
+    except:
+        # في حال كانت قديمة جداً وغير مشفرة
+        if password != place.owner_password:
+            raise HTTPException(status_code=401, detail="معلومات الدخول خاطئة")
     
     return {
         "place_id": place.id, "place_name": place.name,
-        "owner_password": place.owner_password, # الهاش يستخدم كتوكن للجلسة
+        "owner_password": place.owner_password,
         "subscription_status": get_place_status(place), "is_expired": is_expired(place)
     }
 
-# --- التعديل الشامل المرن (تحديث كافة الخانات) ---
+# --- التعديل الشامل المرن ---
 @app.put("/api/places/{place_id}", response_model=schemas.PlaceAuthOut)
 def update_place(place_id: int, payload: dict, db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
     p = db.query(Place).filter(Place.id == place_id).first()
     if not p: raise HTTPException(status_code=404)
     
     is_admin = (x_admin_token == ADMIN_SECRET_KEY)
-    is_owner = (x_admin_token == p.owner_password)
+    is_owner = (x_admin_token and p.owner_password and x_admin_token == p.owner_password)
     if not is_admin and not is_owner: raise HTTPException(status_code=401)
 
     for key, value in payload.items():
         if hasattr(p, key):
-            if key == "owner_password" and value and not value.startswith("$2b$"):
-                value = pwd_context.hash(value) # تشفير الباسورد إذا تغير
+            if key == "owner_password" and value and not str(value).startswith("$2b$"):
+                value = pwd_context.hash(str(value)) 
             setattr(p, key, value)
     
     db.commit()
     db.refresh(p)
     return schemas.PlaceAuthOut.model_validate(p)
 
-# --- إدارة الصور (رفع وحذف) ---
+# --- إدارة الصور ---
 @app.post("/api/places/{place_id}/images")
 async def upload_images(place_id: int, images: List[UploadFile] = File(...), db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
     p = db.query(Place).filter(Place.id == place_id).first()
-    if not p or not (x_admin_token == ADMIN_SECRET_KEY or x_admin_token == p.owner_password):
+    is_admin = (x_admin_token == ADMIN_SECRET_KEY)
+    is_owner = (x_admin_token and p.owner_password and x_admin_token == p.owner_password)
+    
+    if not p or not (is_admin or is_owner):
         raise HTTPException(status_code=401)
     
     uploaded = []
@@ -356,7 +373,11 @@ def delete_image(image_id: int, db: Session = Depends(get_db), x_admin_token: Op
     img = db.query(PlaceImage).filter(PlaceImage.id == image_id).first()
     if not img: raise HTTPException(status_code=404)
     p = db.query(Place).filter(Place.id == img.place_id).first()
-    if not (x_admin_token == ADMIN_SECRET_KEY or x_admin_token == p.owner_password):
+    
+    is_admin = (x_admin_token == ADMIN_SECRET_KEY)
+    is_owner = (x_admin_token and p.owner_password and x_admin_token == p.owner_password)
+    
+    if not (is_admin or is_owner):
         raise HTTPException(status_code=401)
     
     try:
@@ -367,7 +388,7 @@ def delete_image(image_id: int, db: Session = Depends(get_db), x_admin_token: Op
     db.commit()
     return {"status": "deleted"}
 
-# --- المساعد الذكي لرام الله (مصحح وآمن) ---
+# --- المساعد الذكي ---
 class ChatRequest(BaseModel):
     message: str
 
@@ -391,11 +412,14 @@ async def ramallah_ai_guide(req: ChatRequest, db: Session = Depends(get_db)):
         return {"reply": res.choices[0].message.content}
     except: return {"reply": "عذراً، واجهت مشكلة في التفكير، حاول ثانية."}
 
-# --- الحذف والتفعيل (للأدمن) ---
+# --- الحذف والتفعيل ---
 @app.delete("/api/places/{place_id}")
 def delete_place(place_id: int, db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
     p = db.query(Place).filter(Place.id == place_id).first()
-    if not p or not (x_admin_token == ADMIN_SECRET_KEY or x_admin_token == p.owner_password):
+    is_admin = (x_admin_token == ADMIN_SECRET_KEY)
+    is_owner = (x_admin_token and p.owner_password and x_admin_token == p.owner_password)
+    
+    if not p or not (is_admin or is_owner):
         raise HTTPException(status_code=401)
     db.delete(p)
     db.commit()
