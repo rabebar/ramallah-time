@@ -32,7 +32,7 @@ api_key = os.environ.get("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key) if api_key else None
 
 # --- نظام التشفير ---
-pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
 
 # --- الحسابات الجغرافية ---
 def calculate_haversine(lat1, lon1, lat2, lon2):
