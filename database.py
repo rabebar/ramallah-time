@@ -47,7 +47,8 @@ class Place(Base):
     name = Column(String(200), nullable=False, index=True)
     category = Column(String(80), nullable=False, index=True)
 
-    area = Column(String(120), nullable=True, index=True)
+    area = Column(String(500), nullable=True, index=True)
+
     address = Column(String(255), nullable=True)
     description = Column(Text, nullable=True)
 
