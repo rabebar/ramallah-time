@@ -32,7 +32,8 @@ api_key = os.environ.get("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key) if api_key else None
 
 # --- نظام التشفير ---
-pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+
 
 # --- الحسابات الجغرافية ---
 def calculate_haversine(lat1, lon1, lat2, lon2):
@@ -309,40 +310,36 @@ def owner_login(data: dict, db: Session = Depends(get_db)):
     password = data.get("password", "").strip()
     place = db.query(Place).filter(Place.owner_email == email).first()
     
-    if not place or not place.owner_password:
-        raise HTTPException(status_code=401, detail="معلومات الدخول خاطئة")
-    
-    # التحقق من كلمة السر المشفرة
-    try:
-        if not pwd_context.verify(password, place.owner_password):
-            raise HTTPException(status_code=401, detail="معلومات الدخول خاطئة")
-    except:
-        # في حال كانت قديمة جداً وغير مشفرة
-        if password != place.owner_password:
-            raise HTTPException(status_code=401, detail="معلومات الدخول خاطئة")
-    
+    if not place or not place.owner_password or not pwd_context.verify(password, place.owner_password):
+        raise HTTPException(status_code=401, detail="كلمة السر غير صحيحة")
+
     return {
-        "place_id": place.id, "place_name": place.name,
+        "place_id": place.id,
+        "place_name": place.name,
         "owner_password": place.owner_password,
-        "subscription_status": get_place_status(place), "is_expired": is_expired(place)
+        "subscription_status": get_place_status(place),
+        "is_expired": is_expired(place)
     }
 
-# --- التعديل الشامل المرن ---
+
 @app.put("/api/places/{place_id}", response_model=schemas.PlaceAuthOut)
 def update_place(place_id: int, payload: dict, db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
     p = db.query(Place).filter(Place.id == place_id).first()
-    if not p: raise HTTPException(status_code=404)
-    
+    if not p:
+        raise HTTPException(status_code=404)
+
     is_admin = (x_admin_token == ADMIN_SECRET_KEY)
     is_owner = (x_admin_token and p.owner_password and x_admin_token == p.owner_password)
-    if not is_admin and not is_owner: raise HTTPException(status_code=401)
+    if not is_admin and not is_owner:
+        raise HTTPException(status_code=401)
 
     for key, value in payload.items():
         if hasattr(p, key):
-            if key == "owner_password" and value and not str(value).startswith("$2b$"):
-             value = pwd_context.hash(str(value)[:72]) 
+            if key == "owner_password" and value:
+                if not pwd_context.identify(value):
+                    value = pwd_context.hash(str(value)[:72])
             setattr(p, key, value)
-    
+
     db.commit()
     db.refresh(p)
     return schemas.PlaceAuthOut.model_validate(p)
