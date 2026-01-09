@@ -297,47 +297,41 @@ def get_all_places(
 
     query = db.query(Place).options(joinedload(Place.images))
 
-    if cat:
-        query = query.filter(Place.category == cat)
-    if area:
-        query = query.filter(Place.area == area)
+    if cat: query = query.filter(Place.category == cat)
+    if area: query = query.filter(Place.area == area)
     if q:
         search = f"%{q.strip()}%"
-        query = query.filter(
-            or_(
-                Place.name.ilike(search),
-                Place.area.ilike(search),
-                Place.description.ilike(search),
-                Place.tags.ilike(search),
-            )
-        )
+        query = query.filter(or_(Place.name.ilike(search), Place.area.ilike(search), 
+                                 Place.description.ilike(search), Place.tags.ilike(search)))
 
     items_db = query.all()
     results = []
 
     for p in items_db:
         status = get_place_status(p)
+        
+        # فحص هل الزائر هو صاحب هذا المكان تحديداً
+        is_this_owner = (x_admin_token == p.owner_password) if x_admin_token else False
 
-        if not include_hidden and (status == "expired" or status == "pending"):
+        if not include_hidden and not is_this_owner and (status == "expired" or status == "pending"):
             continue
 
-        p_out = schemas.PlaceOut.from_orm(p)
+        # إذا كان أدمن أو صاحب المكان يرى البيانات كاملة (AuthOut)
+        if is_admin or is_this_owner:
+            schema_model = schemas.PlaceAuthOut
+        else:
+            schema_model = schemas.PlaceOut
+
+        p_out = schema_model.model_validate(p)
         p_out.subscription_status = status
         p_out.is_expired = is_expired(p)
 
-        if (
-            lat is not None and lng is not None
-            and p.latitude is not None and p.longitude is not None
-        ):
+        if lat is not None and lng is not None and p.latitude and p.longitude:
             p_out.distance = calculate_haversine(lat, lng, p.latitude, p.longitude)
 
         results.append(p_out)
 
-    if lat is not None and lng is not None:
-        results.sort(key=lambda x: (not x.is_premium, x.distance if x.distance is not None else 9999))
-    else:
-        results.sort(key=lambda x: (not x.is_premium, x.id), reverse=True)
-
+    results.sort(key=lambda x: (not x.is_premium, x.distance if x.distance else 9999))
     return {"items": results[:limit], "total": len(results)}
 
 
@@ -358,24 +352,20 @@ def get_single_place(
 
     status = get_place_status(place)
 
-    # التحقق: هل السائل هو الأدمن أو صاحب المكان؟
+    # التحقق: هل السائل هو الأدمن أو صاحب هذا المكان تحديداً؟
     is_admin = (x_admin_token == ADMIN_SECRET_KEY)
-    is_owner = (x_admin_token == place.owner_password)
+    is_owner = (x_admin_token == place.owner_password) if x_admin_token else False
 
-    # إذا لم يكن أدمن ولا صاحب المكان، وكان المكان مخفياً (معلق أو منتهي)
+    # إذا لم يكن أدمن ولا صاحب مكان، وكان المكان معلقاً أو منتهياً، نمنع الزائر العادي
     if not is_admin and not is_owner:
         if status in ("pending", "expired"):
-            raise HTTPException(status_code=404, detail="المكان غير موجود")
+            raise HTTPException(status_code=404, detail="المكان غير موجود حالياً")
         
-        # الأهم هنا: إذا كان زائر عادي، سنقوم بمسح البيانات الحساسة قبل إرسالها
-        # رغم أننا نستخدم PlaceAuthOut كقالب، سنفرغ الحقول يدوياً للأمان
-        p_out = schemas.PlaceAuthOut.from_orm(place)
-        p_out.owner_password = None
-        p_out.owner_email = None
-        return p_out
+        # للزائر العادي: نستخدم قالب PlaceOut (بيانات عامة فقط)
+        return schemas.PlaceOut.model_validate(place)
 
-    # إذا وصل الكود هنا، يعني السائل هو (أدمن) أو (صاحب مكان)، نرسل له البيانات كاملة
-    p_out = schemas.PlaceAuthOut.from_orm(place)
+    # للأدمن أو صاحب المكان: نستخدم قالب PlaceAuthOut (بيانات كاملة + سرية)
+    p_out = schemas.PlaceAuthOut.model_validate(place)
     p_out.subscription_status = status
     p_out.is_expired = is_expired(place)
     return p_out
