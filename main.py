@@ -55,10 +55,7 @@ def calculate_haversine(lat1, lon1, lat2, lon2):
 # --- دورة حياة التطبيق ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from database import Base, engine
-    print("--- جاري تنظيف وتحديث قاعدة البيانات ---")
-    # السطر التالي سيمسح الجداول القديمة المسببة للخطأ (مرة واحدة فقط)
-    Base.metadata.drop_all(bind=engine) 
+    print("--- نظام رام الله تايم يعمل الآن ---")
     init_db()
     yield
 

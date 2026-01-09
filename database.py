@@ -17,11 +17,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_FILENAME = os.getenv("DB_FILENAME", "ramallah.db")
+# تغيير اسم القاعدة لضمان إقلاع نظيف بنسبة 100%
+DB_FILENAME = os.getenv("DB_FILENAME", "ramallah_final.db")
 DB_PATH = os.path.join(BASE_DIR, DB_FILENAME)
 
 # جلب رابط قاعدة البيانات من البيئة (Render) أو استخدام المحلي
-DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
+DATABASE_URL = os.getenv("DATABASE_URL", f: "sqlite:///{DB_PATH}")
 
 # تصحيح الرابط إذا كان يبدأ بـ postgres:// ليصبح postgresql:// (مطلوب لريندر)
 if DATABASE_URL.startswith("postgres://"):
@@ -64,12 +65,12 @@ class Place(Base):
     price_range = Column(String(50), nullable=True)
     tags = Column(String(255), nullable=True)
 
-    # ---------------- Owner Account (Updated) ---------------- #
+    # ---------------- Owner Account ---------------- #
     owner_email = Column(String(255), nullable=True, unique=True, index=True)
     owner_password = Column(String(100), nullable=True)
     owner_name = Column(String(200), nullable=True)
 
-    # ---------------- Subscription System (Enhanced) ---------------- #
+    # ---------------- Subscription System ---------------- #
     subscription_status = Column(String(20), default="pending", nullable=False)
     subscription_type = Column(String(50), nullable=True)
     subscription_start = Column(DateTime, nullable=True)
