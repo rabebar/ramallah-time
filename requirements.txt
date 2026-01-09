@@ -7,4 +7,4 @@ pydantic[email]
 python-multipart
 openai
 python-dotenv
-passlib[bcrypt]
+passlib[argon2]
