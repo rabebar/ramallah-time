@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict
 
 class PlaceImageOut(BaseModel):
     id: int
@@ -9,10 +9,10 @@ class PlaceImageOut(BaseModel):
     caption: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
-# القالب الأساسي لكافة الحقول (بدون البيانات الحساسة)
+# جعلنا name و category اختيارية مؤقتاً لضمان عدم حدوث خطأ 422 مع البيانات القديمة
 class PlaceBase(BaseModel):
-    name: str
-    category: str
+    name: Optional[str] = "غير مسمى"
+    category: Optional[str] = "عام"
     area: Optional[str] = None
     address: Optional[str] = None
     description: Optional[str] = None
@@ -30,15 +30,14 @@ class PlaceBase(BaseModel):
     is_premium: bool = False
     is_verified: bool = False
 
-# يستخدم عند إنشاء أو تحديث مكان
+# استبدلنا EmailStr بـ str عادية لتجنب أخطاء التحقق المتشددة
 class PlaceCreate(PlaceBase):
-    owner_email: Optional[EmailStr] = None
+    owner_email: Optional[str] = None
     owner_password: Optional[str] = None
     owner_name: Optional[str] = None
     subscription_type: Optional[str] = None
     payment_method: Optional[str] = None
 
-# ما يراه الزوار في الموقع العام
 class PlaceOut(PlaceBase):
     id: int
     created_at: Optional[datetime] = None
@@ -50,7 +49,6 @@ class PlaceOut(PlaceBase):
     payment_total: float = 0.0
     model_config = ConfigDict(from_attributes=True)
 
-# ما يراه الأدمن والمالك (يحتوي على كلمات السر والإيميلات)
 class PlaceAuthOut(PlaceOut):
     owner_email: Optional[str] = None
     owner_password: Optional[str] = None
@@ -58,7 +56,6 @@ class PlaceAuthOut(PlaceOut):
     subscription_type: Optional[str] = None
     payment_status: Optional[str] = None
 
-# القالب الذي تسبب في الخطأ (تمت إعادته الآن)
 class PlacesResponse(BaseModel):
     items: List[PlaceOut]
     total: int
