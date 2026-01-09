@@ -22,7 +22,7 @@ DB_FILENAME = os.getenv("DB_FILENAME", "ramallah_final.db")
 DB_PATH = os.path.join(BASE_DIR, DB_FILENAME)
 
 # جلب رابط قاعدة البيانات من البيئة (Render) أو استخدام المحلي
-DATABASE_URL = os.getenv("DATABASE_URL", f: "sqlite:///{DB_PATH}")
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
 
 # تصحيح الرابط إذا كان يبدأ بـ postgres:// ليصبح postgresql:// (مطلوب لريندر)
 if DATABASE_URL.startswith("postgres://"):
