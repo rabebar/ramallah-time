@@ -194,7 +194,9 @@ def create_place(
             raise HTTPException(status_code=400, detail="هذا البريد مسجل مسبقاً")
 
     # تشفير كلمة السر باستخدام Bcrypt
-    hashed_password = pwd_context.hash(payload.owner_password) if payload.owner_password else None
+    hashed_password = pwd_context.hash(payload.owner_password[:72]) if payload.owner_password else None
+
+
 
     new_place = Place(
         name=payload.name, category=payload.category, area=payload.area,
@@ -338,7 +340,7 @@ def update_place(place_id: int, payload: dict, db: Session = Depends(get_db), x_
     for key, value in payload.items():
         if hasattr(p, key):
             if key == "owner_password" and value and not str(value).startswith("$2b$"):
-                value = pwd_context.hash(str(value)) 
+             value = pwd_context.hash(str(value)[:72]) 
             setattr(p, key, value)
     
     db.commit()
