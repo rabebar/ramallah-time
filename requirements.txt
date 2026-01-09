@@ -8,3 +8,4 @@ python-multipart
 openai
 python-dotenv
 passlib[argon2]
+passlib[bcrypt]
