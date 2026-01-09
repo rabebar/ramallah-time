@@ -50,10 +50,15 @@ class PlaceOut(PlaceBase):
     payment_total: float = 0.0
     model_config = ConfigDict(from_attributes=True)
 
-# ما يراه الأدمن (يحتوي على كلمات السر والإيميلات)
+# ما يراه الأدمن والمالك (يحتوي على كلمات السر والإيميلات)
 class PlaceAuthOut(PlaceOut):
     owner_email: Optional[str] = None
     owner_password: Optional[str] = None
     owner_name: Optional[str] = None
     subscription_type: Optional[str] = None
     payment_status: Optional[str] = None
+
+# القالب الذي تسبب في الخطأ (تمت إعادته الآن)
+class PlacesResponse(BaseModel):
+    items: List[PlaceOut]
+    total: int
