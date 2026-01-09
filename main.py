@@ -8,16 +8,10 @@ import math
 from datetime import datetime, timedelta
 from contextlib import asynccontextmanager
 from typing import Optional, List
-from passlib.context import CryptContext
+
 from fastapi import (
-    FastAPI,
-    Depends,
-    HTTPException,
-    Query,
-    UploadFile,
-    File,
-    Form,
-    Header
+    FastAPI, Depends, HTTPException, Query, 
+    UploadFile, File, Form, Header
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -25,17 +19,21 @@ from fastapi.responses import FileResponse
 
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
-
+from passlib.context import CryptContext
 from openai import OpenAI
 
 from database import SessionLocal, init_db, Place, PlaceImage
 import schemas
 
+# --- الإعدادات والمفاتيح ---
 ADMIN_SECRET_KEY = os.environ.get("ADMIN_SECRET_KEY", "ADMIN123123123")
-
 api_key = os.environ.get("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key) if api_key else None
 
+# --- نظام التشفير ---
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# --- الحسابات الجغرافية ---
 def calculate_haversine(lat1, lon1, lat2, lon2):
     if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
         return None
@@ -49,27 +47,19 @@ def calculate_haversine(lat1, lon1, lat2, lon2):
              math.cos(phi1) * math.cos(phi2) *
              math.sin(delta_lambda / 2.0) ** 2)
         c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
-        distance = R * c
-        return round(distance, 2)
-    except Exception as e:
-        print(f"Error calculating distance: {e}")
+        return round(R * c, 2)
+    except:
         return None
 
+# --- دورة حياة التطبيق ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("--- جارٍ تشغيل نظام رام الله تايم (النسخة المحدثة) ---")
+    print("--- جارٍ تشغيل نظام رام الله تايم (النسخة المستقرة النهائية) ---")
     init_db()
     yield
     print("--- جارٍ إغلاق النظام ---")
 
-app = FastAPI(
-    title="Ramallah Time API",
-    version="3.1.0",
-    lifespan=lifespan
-)
-
-# تعريف محرك التشفير يكون خارج أقواس FastAPI
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+app = FastAPI(title="Ramallah Time API", version="3.6.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -79,17 +69,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- إدارة المجلدات والملفات الثابتة ---
 FRONTEND_DIR = "frontend"
 IMAGES_DIR = "images"
-UPLOADS_DIR = "uploads"
 PLACE_IMAGES_DIR = os.path.join(IMAGES_DIR, "places")
 
-for directory in [IMAGES_DIR, UPLOADS_DIR, PLACE_IMAGES_DIR]:
-    if not os.path.exists(directory):
-        os.makedirs(directory, exist_ok=True)
+for directory in [IMAGES_DIR, PLACE_IMAGES_DIR]:
+    os.makedirs(directory, exist_ok=True)
 
 app.mount("/images", StaticFiles(directory=IMAGES_DIR), name="images")
-
 if os.path.exists(FRONTEND_DIR):
     app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
@@ -100,109 +88,48 @@ def get_db():
     finally:
         db.close()
 
+# --- توجيه الصفحات الرئيسية ---
 @app.get("/")
 def home(user_agent: Optional[str] = Header(None)):
     ua = user_agent.lower() if user_agent else ""
-    
-    # قائمة شاملة لكافة الأجهزة المحمولة
-    mobile_indicators = [
-        "iphone", "android", "phone", "mobile", 
-        "up.browser", "up.link", "mmp", "midp", "wap"
-    ]
-    
-    # فحص إذا كان الزائر يستخدم موبايل
-    is_mobile = any(indicator in ua for indicator in mobile_indicators)
-
-    if is_mobile:
+    mobile_indicators = ["iphone", "android", "phone", "mobile"]
+    if any(ind in ua for ind in mobile_indicators):
         mobile_path = os.path.join(FRONTEND_DIR, "mobile.html")
-        if os.path.exists(mobile_path):
-            return FileResponse(mobile_path)
-
-    # إذا كان كمبيوتر أو لم يتأكد النظام، يفتح الموقع الرئيسي
-    index_path = os.path.join(FRONTEND_DIR, "index.html")
-    return FileResponse(index_path)
+        if os.path.exists(mobile_path): return FileResponse(mobile_path)
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
 @app.get("/places")
 def places_page():
-    path = os.path.join(FRONTEND_DIR, "places.html")
-    return FileResponse(path if os.path.exists(path) else os.path.join(FRONTEND_DIR, "index.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "places.html"))
 
 @app.get("/add-place")
 def add_place_page():
-    path = os.path.join(FRONTEND_DIR, "add-place.html")
-    return FileResponse(path if os.path.exists(path) else os.path.join(FRONTEND_DIR, "index.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "add-place.html"))
 
 @app.get("/owner-login")
 def owner_login_page():
-    path = os.path.join(FRONTEND_DIR, "owner-login.html")
-    return FileResponse(path if os.path.exists(path) else os.path.join(FRONTEND_DIR, "index.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "owner-login.html"))
 
 @app.get("/owner-dashboard")
 def owner_dashboard_page():
-    path = os.path.join(FRONTEND_DIR, "owner-dashboard.html")
-    return FileResponse(path if os.path.exists(path) else os.path.join(FRONTEND_DIR, "index.html"))
+    return FileResponse(os.path.join(FRONTEND_DIR, "owner-dashboard.html"))
 
 @app.get("/manifest.json")
 def get_manifest():
-    manifest_path = os.path.join(FRONTEND_DIR, "manifest.json")
-    if not os.path.exists(manifest_path):
-        raise HTTPException(status_code=404, detail="manifest.json غير موجود داخل مجلد frontend")
-    return FileResponse(manifest_path, media_type="application/json")
+    return FileResponse(os.path.join(FRONTEND_DIR, "manifest.json"), media_type="application/json")
 
 @app.get("/sw.js")
 def get_sw():
-    sw_path = os.path.join(FRONTEND_DIR, "sw.js")
-    if not os.path.exists(sw_path):
-        raise HTTPException(status_code=404, detail="sw.js غير موجود داخل مجلد frontend")
-    return FileResponse(sw_path, media_type="application/javascript")
+    return FileResponse(os.path.join(FRONTEND_DIR, "sw.js"), media_type="application/javascript")
 
+# --- التحقق من الصور ---
 ALLOWED_IMAGE_EXT = {"jpg", "jpeg", "png", "webp"}
-
 def _validate_extension(filename: str) -> str:
-    extension = (filename.split(".")[-1] if "." in filename else "").lower().strip()
-    if extension not in ALLOWED_IMAGE_EXT:
-        raise HTTPException(status_code=400, detail="نوع الملف غير مدعوم. يرجى رفع صور فقط.")
-    return extension
-
-@app.post("/api/ai-scan")
-async def scan_place_with_ai(image: UploadFile = File(...)):
-    if not client:
-        raise HTTPException(status_code=503, detail="خدمة الذكاء الاصطناعي غير مفعلة (مفتاح API مفقود).")
-
-    # ✅ تحقّق سريع من الامتداد (حتى لو AI يقدر يقرأ، احنا نمنع ملفات مش صور)
-    _validate_extension(image.filename or "")
-
-    image_data = await image.read()
-    base64_image = base64.b64encode(image_data).decode("utf-8")
-
-    system_instruction = (
-        
-        "أنت 'مساعد رام الله تايم الذكي'. خبير متخصص في مدينة رام الله. "
-        "لديك مصدرين للمعلومات:\n"
-        "1. بياناتنا الخاصة (الأولوية لها): \n" + context_data + "\n"
-        "2. معلوماتك العامة عن مدينة رام الله ومعالمها الشهيرة.\n\n"
-        "إذا سألك المستخدم عن مكان موجود في 'بياناتنا الخاصة'، قدم له التفاصيل وشجعه على التواصل معهم عبر واتساب التطبيق.\n"
-        "إذا سألك عن مكان شهير في رام الله وغير موجود في بياناتنا، قدم له معلوماتك العامة عنه بأسلوب ودود وأخبره أننا نسعى لإضافته لدليلنا قريباً.\n"
-        "اجعل ردودك قصيرة، جذابة، وباللهجة الفلسطينية البيضاء المحببة."
-    )
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": system_instruction},
-                {"role": "user", "content": [
-                    {"type": "text", "text": "Extract business details."},
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
-                ]}
-            ],
-            temperature=0.2,
-            response_format={"type": "json_object"}
-        )
-        ai_json = response.choices[0].message.content
-        return json.loads(ai_json)
-    except Exception as error:
-        raise HTTPException(status_code=500, detail=f"فشل التحليل: {str(error)}")
-
+    ext = (filename.split(".")[-1] if "." in filename else "").lower().strip()
+    if ext not in ALLOWED_IMAGE_EXT:
+        raise HTTPException(status_code=400, detail="نوع الملف غير مدعوم")
+    return ext
+# --- دوال المساعدة للحالة ---
 def is_expired(place: Place) -> bool:
     if place.subscription_status == "pending":
         return False
@@ -217,59 +144,77 @@ def get_place_status(place: Place) -> str:
         return "expired"
     return "active"
 
+# --- [مصحح] الماسح الذكي بالذكاء الاصطناعي ---
+@app.post("/api/ai-scan")
+async def scan_place_with_ai(image: UploadFile = File(...)):
+    if not client:
+        raise HTTPException(status_code=503, detail="مفتاح OpenAI مفقود")
+    _validate_extension(image.filename or "")
+    image_data = await image.read()
+    base64_image = base64.b64encode(image_data).decode("utf-8")
+
+    # التعليمات المصححة (حذف المتغيرات غير المعرفة)
+    system_prompt = (
+        "أنت مساعد ذكي لاستخراج بيانات الأعمال. استخرج المعلومات التالية من الصورة: "
+        "(name, category, phone, area, address, description, whatsapp, instagram, facebook). "
+        "أعد النتيجة حصراً بتنسيق JSON. اترك الحقول المفقودة فارغة."
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": [
+                    {"type": "text", "text": "Extract business info from this image:"},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
+                ]}
+            ],
+            temperature=0.1,
+            response_format={"type": "json_object"}
+        )
+        return json.loads(response.choices[0].message.content)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"خطأ في التحليل: {str(e)}")
+
+# --- إضافة منشأة جديدة (مع تشفير كلمة السر) ---
 @app.post("/api/places", response_model=schemas.PlaceAuthOut)
 def create_place(
     payload: schemas.PlaceCreate,
     db: Session = Depends(get_db),
     x_admin_token: Optional[str] = Header(None),
 ):
-    # 1. التحقق هل السائل هو الأدمن
     is_admin = (x_admin_token == ADMIN_SECRET_KEY)
-
-    # 2. التحقق من وجود البريد وكلمة السر للمستخدم العادي
+    
     if not is_admin:
-        if not payload.owner_email:
-            raise HTTPException(status_code=400, detail="البريد الإلكتروني مطلوب")
-        if not payload.owner_password:
-            raise HTTPException(status_code=400, detail="كلمة السر مطلوبة لكي تتمكن من إدارة مكانك لاحقاً")
-
-    # 3. منع تكرار البريد الإلكتروني
-    if payload.owner_email:
+        if not payload.owner_email or not payload.owner_password:
+            raise HTTPException(status_code=400, detail="البريد وكلمة السر مطلوبان للتسجيل")
         existing = db.query(Place).filter(Place.owner_email == payload.owner_email).first()
         if existing:
-            raise HTTPException(status_code=400, detail="هذا البريد مسجل مسبقاً، يرجى تسجيل الدخول")
+            raise HTTPException(status_code=400, detail="هذا البريد مسجل مسبقاً")
 
-    # 4. إنشاء الكائن الجديد في قاعدة البيانات
+    # تشفير كلمة السر باستخدام Bcrypt
+    hashed_password = pwd_context.hash(payload.owner_password) if payload.owner_password else None
+
     new_place = Place(
-        name=payload.name.strip(),
-        category=payload.category.strip(),
-        area=payload.area,
-        address=payload.address,
-        description=payload.description,
-        phone=payload.phone,
-        whatsapp=payload.whatsapp,
-        website=payload.website,
-        instagram=payload.instagram,
-        facebook=payload.facebook,
-        map_url=payload.map_url,
-        latitude=payload.latitude,
-        longitude=payload.longitude,
-        open_hours=payload.open_hours,
-        price_range=payload.price_range,
-        tags=payload.tags,
-        owner_email=payload.owner_email.lower().strip() if payload.owner_email else None,
-        owner_password=pwd_context.hash(payload.owner_password) if payload.owner_password else None,
-        owner_name=payload.owner_name,
+        name=payload.name, category=payload.category, area=payload.area,
+        address=payload.address, description=payload.description,
+        phone=payload.phone, whatsapp=payload.whatsapp,
+        website=payload.website, instagram=payload.instagram,
+        facebook=payload.facebook, map_url=payload.map_url,
+        latitude=payload.latitude, longitude=payload.longitude,
+        open_hours=payload.open_hours, price_range=payload.price_range,
+        tags=payload.tags, owner_email=payload.owner_email,
+        owner_password=hashed_password, owner_name=payload.owner_name,
         subscription_type=payload.subscription_type,
         payment_method=payload.payment_method,
-        subscription_status="active" if is_admin else "pending", # الأدمن يفعّل فوراً
+        subscription_status="active" if is_admin else "pending",
         payment_status="pending",
         is_premium=payload.is_premium if is_admin else False,
         is_verified=payload.is_verified if is_admin else False,
         created_at=datetime.utcnow(),
     )
 
-    # 5. إذا كان المنشئ هو الأدمن، نمنح سنة اشتراك مجانية فوراً
     if is_admin:
         now = datetime.utcnow()
         new_place.subscription_start = now
@@ -278,358 +223,191 @@ def create_place(
     db.add(new_place)
     db.commit()
     db.refresh(new_place)
-    
-    # 6. إرجاع البيانات باستخدام القالب الجديد "AuthOut" لكي يرى المالك كلمة سره فوراً
-    return schemas.PlaceAuthOut.from_orm(new_place)
+    return schemas.PlaceAuthOut.model_validate(new_place)
 
+# --- جلب كافة الأماكن (دعم GPS والفلترة والخصوصية) ---
 @app.get("/api/places", response_model=schemas.PlacesResponse)
 def get_all_places(
     q: Optional[str] = Query(None),
     cat: Optional[str] = Query(None),
-    area: Optional[str] = Query(None),
     lat: Optional[float] = Query(None),
     lng: Optional[float] = Query(None),
-    limit: int = Query(40, ge=1, le=2000),
     include_hidden: bool = Query(False),
     db: Session = Depends(get_db),
     x_admin_token: Optional[str] = Header(None),
 ):
     is_admin = (x_admin_token == ADMIN_SECRET_KEY)
-    if include_hidden and not is_admin:
-        include_hidden = False
-
     query = db.query(Place).options(joinedload(Place.images))
 
     if cat: query = query.filter(Place.category == cat)
-    if area: query = query.filter(Place.area == area)
     if q:
         search = f"%{q.strip()}%"
-        query = query.filter(or_(Place.name.ilike(search), Place.area.ilike(search), 
-                                 Place.description.ilike(search), Place.tags.ilike(search)))
+        query = query.filter(or_(Place.name.ilike(search), Place.area.ilike(search), Place.tags.ilike(search)))
 
     items_db = query.all()
     results = []
 
     for p in items_db:
         status = get_place_status(p)
-        
-        # فحص هل الزائر هو صاحب هذا المكان تحديداً
-        is_this_owner = (x_admin_token == p.owner_password) if x_admin_token else False
+        is_owner = (x_admin_token == p.owner_password) if x_admin_token else False
 
-        if not include_hidden and not is_this_owner and (status == "expired" or status == "pending"):
-            continue
+        # سياسة العرض: الأدمن والمالك يرون كل شيء، الزوار يرون النشط فقط
+        if not (include_hidden and is_admin) and not is_owner:
+            if status in ("pending", "expired"): continue
 
-        # إذا كان أدمن أو صاحب المكان يرى البيانات كاملة (AuthOut)
-        if is_admin or is_this_owner:
-            schema_model = schemas.PlaceAuthOut
-        else:
-            schema_model = schemas.PlaceOut
-
+        # اختيار القالب (كامل للأدمن/المالك، عام للزوار)
+        schema_model = schemas.PlaceAuthOut if (is_admin or is_owner) else schemas.PlaceOut
         p_out = schema_model.model_validate(p)
+        
         p_out.subscription_status = status
         p_out.is_expired = is_expired(p)
 
-        if lat is not None and lng is not None and p.latitude and p.longitude:
+        if lat and lng and p.latitude:
             p_out.distance = calculate_haversine(lat, lng, p.latitude, p.longitude)
-
+        
         results.append(p_out)
 
-    results.sort(key=lambda x: (not x.is_premium, x.distance if x.distance else 9999))
-    return {"items": results[:limit], "total": len(results)}
+    # الترتيب: المميز أولاً، ثم المسافة، ثم الأحدث
+    results.sort(key=lambda x: (not x.is_premium, x.distance if x.distance else 99999, -x.id))
 
-
+    return {"items": results, "total": len(results)}
+# --- جلب مكان واحد (دعم الخصوصية الكاملة) ---
 @app.get("/api/places/{place_id}", response_model=schemas.PlaceAuthOut)
-def get_single_place(
-    place_id: int,
-    db: Session = Depends(get_db),
-    x_admin_token: Optional[str] = Header(None),
-):
-    place = (
-        db.query(Place)
-        .options(joinedload(Place.images))
-        .filter(Place.id == place_id)
-        .first()
-    )
-    if not place:
-        raise HTTPException(status_code=404, detail="المكان غير موجود")
-
-    status = get_place_status(place)
-
-    # التحقق: هل السائل هو الأدمن أو صاحب هذا المكان تحديداً؟
+def get_single_place(place_id: int, db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
+    place = db.query(Place).options(joinedload(Place.images)).filter(Place.id == place_id).first()
+    if not place: raise HTTPException(status_code=404, detail="المكان غير موجود")
+    
     is_admin = (x_admin_token == ADMIN_SECRET_KEY)
     is_owner = (x_admin_token == place.owner_password) if x_admin_token else False
-
-    # إذا لم يكن أدمن ولا صاحب مكان، وكان المكان معلقاً أو منتهياً، نمنع الزائر العادي
+    
     if not is_admin and not is_owner:
-        if status in ("pending", "expired"):
-            raise HTTPException(status_code=404, detail="المكان غير موجود حالياً")
-        
-        # للزائر العادي: نستخدم قالب PlaceOut (بيانات عامة فقط)
+        if get_place_status(place) in ("pending", "expired"):
+            raise HTTPException(status_code=404, detail="المكان غير متاح حالياً")
         return schemas.PlaceOut.model_validate(place)
-
-    # للأدمن أو صاحب المكان: نستخدم قالب PlaceAuthOut (بيانات كاملة + سرية)
+    
     p_out = schemas.PlaceAuthOut.model_validate(place)
-    p_out.subscription_status = status
+    p_out.subscription_status = get_place_status(place)
     p_out.is_expired = is_expired(place)
     return p_out
 
+# --- التحقق من الأدمن وتسجيل دخول المالك (المشفر) ---
 @app.get("/api/admin/verify")
 def verify_admin(x_admin_token: Optional[str] = Header(None)):
-    if x_admin_token != ADMIN_SECRET_KEY:
-        raise HTTPException(status_code=401, detail="كود الأمان خاطئ")
+    if x_admin_token != ADMIN_SECRET_KEY: raise HTTPException(status_code=401)
     return {"status": "success"}
 
 @app.post("/api/owner-login")
 def owner_login(data: dict, db: Session = Depends(get_db)):
     email = data.get("email", "").strip().lower()
     password = data.get("password", "").strip()
-    
-    if not email or not password:
-        raise HTTPException(status_code=400, detail="البيانات ناقصة")
-
     place = db.query(Place).filter(Place.owner_email == email).first()
-
-    # التحقق من وجود الحساب ومطابقة كلمة السر المشفرة
+    
     if not place or not pwd_context.verify(password, place.owner_password):
         raise HTTPException(status_code=401, detail="معلومات الدخول خاطئة")
-
+    
     return {
-        "place_id": place.id,
-        "place_name": place.name,
-        "owner_password": place.owner_password, 
-        "subscription_status": get_place_status(place),
-        "is_expired": is_expired(place),
+        "place_id": place.id, "place_name": place.name,
+        "owner_password": place.owner_password, # الهاش يستخدم كتوكن للجلسة
+        "subscription_status": get_place_status(place), "is_expired": is_expired(place)
     }
 
-
-@app.post("/api/places/{place_id}/request-renew")
-def request_renewal(
-    place_id: int,
-    db: Session = Depends(get_db),
-    x_admin_token: Optional[str] = Header(None),
-):
+# --- التعديل الشامل المرن (تحديث كافة الخانات) ---
+@app.put("/api/places/{place_id}", response_model=schemas.PlaceAuthOut)
+def update_place(place_id: int, payload: dict, db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
     p = db.query(Place).filter(Place.id == place_id).first()
-    if not p:
-        raise HTTPException(status_code=404, detail="المكان غير موجود")
-
-    if x_admin_token != ADMIN_SECRET_KEY and x_admin_token != p.owner_password:
-        raise HTTPException(status_code=401, detail="غير مصرح لك")
-
-    p.subscription_status = "pending"
-    db.commit()
-    return {"msg": "تم استلام الطلب، سيتم التواصل معك للتفعيل."}
-
-
-@app.put("/api/places/{place_id}")
-def update_place(
-    place_id: int,
-    payload: dict,
-    db: Session = Depends(get_db),
-    x_admin_token: Optional[str] = Header(None),
-):
-    p = db.query(Place).filter(Place.id == place_id).first()
-    if not p:
-        raise HTTPException(status_code=404, detail="المكان غير موجود")
-
-    is_admin = (x_admin_token == ADMIN_SECRET_KEY)
-    # التحقق من صاحب المكان (مقارنة التوكن بالهاش المخزن)
-    is_owner = (x_admin_token == p.owner_password)
+    if not p: raise HTTPException(status_code=404)
     
-    if not is_admin and not is_owner:
-        raise HTTPException(status_code=401, detail="غير مصرح لك بالتعديل")
+    is_admin = (x_admin_token == ADMIN_SECRET_KEY)
+    is_owner = (x_admin_token == p.owner_password)
+    if not is_admin and not is_owner: raise HTTPException(status_code=401)
 
-    # تحديث الحقول
     for key, value in payload.items():
         if hasattr(p, key):
-            # ❗ إذا تم تعديل كلمة السر، يجب تشفيرها فوراً
-            if key == "owner_password" and value:
-                value = pwd_context.hash(value)
+            if key == "owner_password" and value and not value.startswith("$2b$"):
+                value = pwd_context.hash(value) # تشفير الباسورد إذا تغير
             setattr(p, key, value)
-
+    
     db.commit()
     db.refresh(p)
-    return p
+    return schemas.PlaceAuthOut.model_validate(p)
 
-@app.delete("/api/places/{place_id}")
-def delete_place(
-    place_id: int,
-    db: Session = Depends(get_db),
-    x_admin_token: Optional[str] = Header(None),
-):
-    p = db.query(Place).options(joinedload(Place.images)).filter(Place.id == place_id).first()
-    if not p:
-        raise HTTPException(status_code=404, detail="غير موجود")
-
-    is_admin = (x_admin_token == ADMIN_SECRET_KEY)
-    is_owner = (x_admin_token == p.owner_password)
-    if not is_admin and not is_owner:
-        raise HTTPException(status_code=401, detail="ممنوع")
-
-    for img in p.images:
-        try:
-            filename = os.path.basename(img.image_url)
-            full_path = os.path.join(PLACE_IMAGES_DIR, filename)
-            if os.path.exists(full_path):
-                os.remove(full_path)
-        except Exception as e:
-            print(f"Error deleting file: {e}")
-
-    db.delete(p)
-    db.commit()
-    return {"status": "deleted"}
-
-
+# --- إدارة الصور (رفع وحذف) ---
 @app.post("/api/places/{place_id}/images")
-async def upload_images(
-    place_id: int,
-    images: List[UploadFile] = File(...),
-    db: Session = Depends(get_db),
-    x_admin_token: Optional[str] = Header(None),
-):
-    p = (
-        db.query(Place)
-        .options(joinedload(Place.images))
-        .filter(Place.id == place_id)
-        .first()
-    )
-    if not p:
-        raise HTTPException(status_code=404, detail="غير موجود")
-
-    is_admin = (x_admin_token == ADMIN_SECRET_KEY)
-    is_owner = (x_admin_token == p.owner_password)
-
-    if not is_admin and not is_owner:
-        raise HTTPException(status_code=401, detail="ممنوع")
-
-    if is_owner and is_expired(p):
-        raise HTTPException(status_code=403, detail="انتهى الاشتراك. لا يمكنك رفع صور حالياً.")
-
-    saved_files = []
+async def upload_images(place_id: int, images: List[UploadFile] = File(...), db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
+    p = db.query(Place).filter(Place.id == place_id).first()
+    if not p or not (x_admin_token == ADMIN_SECRET_KEY or x_admin_token == p.owner_password):
+        raise HTTPException(status_code=401)
+    
+    uploaded = []
     for file in images:
         ext = _validate_extension(file.filename or "")
-        new_name = f"{uuid.uuid4()}.{ext}"
-        path = os.path.join(PLACE_IMAGES_DIR, new_name)
-
-        contents = await file.read()
-        if not contents:
-            continue
-
-        with open(path, "wb") as f:
-            f.write(contents)
-
-        db_img = PlaceImage(place_id=place_id, image_url=f"/images/places/{new_name}")
+        filename = f"{uuid.uuid4()}.{ext}"
+        path = os.path.join(PLACE_IMAGES_DIR, filename)
+        with open(path, "wb") as f: f.write(await file.read())
+        db_img = PlaceImage(place_id=place_id, image_url=f"/images/places/{filename}")
         db.add(db_img)
-        saved_files.append(db_img.image_url)
-
+        uploaded.append(db_img.image_url)
     db.commit()
-    return {"uploaded": saved_files}
+    return {"uploaded": uploaded}
 
 @app.delete("/api/places/images/{image_id}")
-def delete_image(
-    image_id: int,
-    db: Session = Depends(get_db),
-    x_admin_token: Optional[str] = Header(None),
-):
+def delete_image(image_id: int, db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
     img = db.query(PlaceImage).filter(PlaceImage.id == image_id).first()
-    if not img:
-        raise HTTPException(status_code=404, detail="الصورة غير موجودة")
-
-    p = db.query(Place).options(joinedload(Place.images)).filter(Place.id == img.place_id).first()
-    if not p:
-        raise HTTPException(status_code=404, detail="غير موجود")
-
-    is_admin = (x_admin_token == ADMIN_SECRET_KEY)
-    is_owner = (x_admin_token == p.owner_password)
-    if not is_admin and not is_owner:
-        raise HTTPException(status_code=401, detail="ممنوع")
-
-    if is_owner and is_expired(p):
-        raise HTTPException(status_code=403, detail="انتهى الاشتراك. لا يمكنك حذف صور حالياً.")
-
+    if not img: raise HTTPException(status_code=404)
+    p = db.query(Place).filter(Place.id == img.place_id).first()
+    if not (x_admin_token == ADMIN_SECRET_KEY or x_admin_token == p.owner_password):
+        raise HTTPException(status_code=401)
+    
     try:
-        filename = os.path.basename((img.image_url or "").strip("/"))
-        full_path = os.path.join(PLACE_IMAGES_DIR, filename)
-        if filename and os.path.exists(full_path):
-            os.remove(full_path)
-    except Exception:
-        pass
-
+        path = os.path.join(IMAGES_DIR, img.image_url.lstrip("/images/"))
+        if os.path.exists(path): os.remove(path)
+    except: pass
     db.delete(img)
     db.commit()
     return {"status": "deleted"}
 
-from pydantic import BaseModel
-
-class ActivationRequest(BaseModel):
-    months: int
-    amount: float
-
-@app.post("/api/places/{place_id}/activate")
-def activate_subscription(
-    place_id: int,
-    payload: ActivationRequest,
-    db: Session = Depends(get_db),
-    x_admin_token: Optional[str] = Header(None),
-):
-    if x_admin_token != ADMIN_SECRET_KEY:
-        raise HTTPException(status_code=401, detail="غير مصرح لك (أدمن فقط)")
-
-    place = db.query(Place).filter(Place.id == place_id).first()
-    if not place:
-        raise HTTPException(status_code=404, detail="المكان غير موجود")
-
-    now = datetime.utcnow()
-    start_date = place.subscription_end if place.subscription_end and place.subscription_end > now else now
-
-    if not place.subscription_end or place.subscription_end <= now:
-        place.subscription_start = now
-
-    days_to_add = payload.months * 30
-    place.subscription_end = start_date + timedelta(days=days_to_add)
-
-    place.subscription_status = "active"
-    place.is_verified = True
-    place.payment_status = "completed"
-
-    place.payment_total = (place.payment_total or 0.0) + payload.amount
-
-    db.commit()
-    return {
-        "msg": f"تم التفعيل لمدة {payload.months} أشهر",
-        "end_date": place.subscription_end.strftime("%Y-%m-%d"),
-        "total_revenue": place.payment_total,
-    }
-
+# --- المساعد الذكي لرام الله (مصحح وآمن) ---
 class ChatRequest(BaseModel):
     message: str
 
 @app.post("/api/ai-guide")
 async def ramallah_ai_guide(req: ChatRequest, db: Session = Depends(get_db)):
-    if not client:
-        raise HTTPException(status_code=503, detail="خدمة الذكاء الاصطناعي غير متوفرة")
-
-    # جلب أسماء المنشآت وتصنيفاتها ومناطقها ليعرفها الـ AI
+    if not client: return {"reply": "المساعد غير مفعل حالياً."}
+    
     places = db.query(Place).filter(Place.subscription_status == "active").all()
-    context_data = ""
-    for p in places:
-        context_data += f"- اسم المكان: {p.name}, التصنيف: {p.category}, المنطقة: {p.area}, الوصف: {p.description}\n"
-
-    system_instruction = (
-        "أنت 'مساعد رام الله تايم الذكي'. مهمتك مساعدة الزوار في العثور على أفضل الأماكن في مدينة رام الله. "
-        "استخدم البيانات التالية فقط للإجابة على المستخدم: \n" + context_data + 
-        "\nإذا سألك المستخدم عن مكان غير موجود في القائمة، أخبره بلباقة أنك لا تملك معلومات عنه حالياً وتمنى له يوماً سعيداً في رام الله."
-        "\nاجعل أسلوبك ودوداً وصبوراً واقترح عليهم التواصل مع المكان عبر واتساب (الموجود في تطبيقنا)."
+    context = "\n".join([f"- {p.name}: في {p.area}, وصفه: {p.description}" for p in places])
+    
+    instruction = (
+        "أنت 'مساعد رام الله تايم الذكي'. خبير في مدينة رام الله. "
+        "استخدم هذه البيانات حصراً للإجابة: \n" + context + 
+        "\nكن ودوداً، مختصراً، وباللهجة الفلسطينية."
     )
-
     try:
-        response = client.chat.completions.create(
+        res = client.chat.completions.create(
             model="gpt-4o",
-            messages=[
-                {"role": "system", "content": system_instruction},
-                {"role": "user", "content": req.message}
-            ],
-            temperature=0.7
+            messages=[{"role": "system", "content": instruction}, {"role": "user", "content": req.message}]
         )
-        return {"reply": response.choices[0].message.content}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"reply": res.choices[0].message.content}
+    except: return {"reply": "عذراً، واجهت مشكلة في التفكير، حاول ثانية."}
+
+# --- الحذف والتفعيل (للأدمن) ---
+@app.delete("/api/places/{place_id}")
+def delete_place(place_id: int, db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
+    p = db.query(Place).filter(Place.id == place_id).first()
+    if not p or not (x_admin_token == ADMIN_SECRET_KEY or x_admin_token == p.owner_password):
+        raise HTTPException(status_code=401)
+    db.delete(p)
+    db.commit()
+    return {"status": "deleted"}
+
+@app.post("/api/places/{place_id}/activate")
+def activate_subscription(place_id: int, payload: dict, db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
+    if x_admin_token != ADMIN_SECRET_KEY: raise HTTPException(status_code=401)
+    p = db.query(Place).filter(Place.id == place_id).first()
+    now = datetime.utcnow()
+    p.subscription_start = now
+    p.subscription_end = now + timedelta(days=int(payload.get("months", 12)) * 30)
+    p.subscription_status = "active"
+    p.payment_total = (p.payment_total or 0) + float(payload.get("amount", 0))
+    db.commit()
+    return {"status": "activated"}
