@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr # عدنا لاستخدام EmailStr
 
 class PlaceImageOut(BaseModel):
     id: int
@@ -9,10 +9,9 @@ class PlaceImageOut(BaseModel):
     caption: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
-# جعلنا name و category اختيارية مؤقتاً لضمان عدم حدوث خطأ 422 مع البيانات القديمة
 class PlaceBase(BaseModel):
-    name: Optional[str] = "غير مسمى"
-    category: Optional[str] = "عام"
+    name: str # الحقول الأساسية بقيت إجبارية لضمان الجودة
+    category: str
     area: Optional[str] = None
     address: Optional[str] = None
     description: Optional[str] = None
@@ -30,31 +29,32 @@ class PlaceBase(BaseModel):
     is_premium: bool = False
     is_verified: bool = False
 
-# استبدلنا EmailStr بـ str عادية لتجنب أخطاء التحقق المتشددة
+# هذه للإنشاء الجديد (صارمة جداً لضمان جودة البيانات الجديدة)
 class PlaceCreate(PlaceBase):
-    owner_email: Optional[str] = None
-    owner_password: Optional[str] = None
+    owner_email: EmailStr # إجباري وبصيغة صحيحة
+    owner_password: str
     owner_name: Optional[str] = None
     subscription_type: Optional[str] = None
     payment_method: Optional[str] = None
 
-class PlaceOut(PlaceBase):
+# هذه للعرض (مرنة لكي لا تنهار الصفحة بسبب الأماكن القديمة)
+class PlaceOut(BaseModel): 
     id: int
-    created_at: Optional[datetime] = None
-    distance: Optional[float] = None 
+    name: Optional[str] = "بدون اسم" # إذا كان الاسم قديماً وفارغاً، نضع قيمة افتراضية
+    category: Optional[str] = "عام"
+    # بقية الحقول اختيارية لضمان العرض
+    area: Optional[str] = None
+    description: Optional[str] = None
+    phone: Optional[str] = None
     images: List[PlaceImageOut] = []
     subscription_status: str = "pending"
     is_expired: bool = False
-    subscription_end: Optional[datetime] = None
-    payment_total: float = 0.0
+    distance: Optional[float] = None
     model_config = ConfigDict(from_attributes=True)
 
 class PlaceAuthOut(PlaceOut):
     owner_email: Optional[str] = None
     owner_password: Optional[str] = None
-    owner_name: Optional[str] = None
-    subscription_type: Optional[str] = None
-    payment_status: Optional[str] = None
 
 class PlacesResponse(BaseModel):
     items: List[PlaceOut]
