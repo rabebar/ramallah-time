@@ -8,7 +8,7 @@ import math
 from datetime import datetime, timedelta
 from contextlib import asynccontextmanager
 from typing import Optional, List
-
+from passlib.context import CryptContext
 from fastapi import (
     FastAPI,
     Depends,
@@ -67,6 +67,9 @@ app = FastAPI(
     version="3.1.0",
     lifespan=lifespan
 )
+
+# تعريف محرك التشفير يكون خارج أقواس FastAPI
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 app.add_middleware(
     CORSMiddleware,
@@ -255,7 +258,7 @@ def create_place(
         price_range=payload.price_range,
         tags=payload.tags,
         owner_email=payload.owner_email.lower().strip() if payload.owner_email else None,
-        owner_password=payload.owner_password,
+        owner_password=pwd_context.hash(payload.owner_password) if payload.owner_password else None,
         owner_name=payload.owner_name,
         subscription_type=payload.subscription_type,
         payment_method=payload.payment_method,
@@ -380,21 +383,20 @@ def verify_admin(x_admin_token: Optional[str] = Header(None)):
 def owner_login(data: dict, db: Session = Depends(get_db)):
     email = data.get("email", "").strip().lower()
     password = data.get("password", "").strip()
+    
     if not email or not password:
         raise HTTPException(status_code=400, detail="البيانات ناقصة")
 
-    place = (
-        db.query(Place)
-        .filter(Place.owner_email == email, Place.owner_password == password)
-        .first()
-    )
-    if not place:
+    place = db.query(Place).filter(Place.owner_email == email).first()
+
+    # التحقق من وجود الحساب ومطابقة كلمة السر المشفرة
+    if not place or not pwd_context.verify(password, place.owner_password):
         raise HTTPException(status_code=401, detail="معلومات الدخول خاطئة")
 
     return {
         "place_id": place.id,
         "place_name": place.name,
-        "owner_password": place.owner_password, # أضفنا هذا السطر
+        "owner_password": place.owner_password, 
         "subscription_status": get_place_status(place),
         "is_expired": is_expired(place),
     }
@@ -421,7 +423,7 @@ def request_renewal(
 @app.put("/api/places/{place_id}")
 def update_place(
     place_id: int,
-    payload: dict, # تحويل إلى dict لمرونة كاملة في استقبال الخانات
+    payload: dict,
     db: Session = Depends(get_db),
     x_admin_token: Optional[str] = Header(None),
 ):
@@ -430,20 +432,19 @@ def update_place(
         raise HTTPException(status_code=404, detail="المكان غير موجود")
 
     is_admin = (x_admin_token == ADMIN_SECRET_KEY)
+    # التحقق من صاحب المكان (مقارنة التوكن بالهاش المخزن)
     is_owner = (x_admin_token == p.owner_password)
     
     if not is_admin and not is_owner:
         raise HTTPException(status_code=401, detail="غير مصرح لك بالتعديل")
 
-    # تحديث الحقول التي وصلت في الطلب فقط
+    # تحديث الحقول
     for key, value in payload.items():
         if hasattr(p, key):
+            # ❗ إذا تم تعديل كلمة السر، يجب تشفيرها فوراً
+            if key == "owner_password" and value:
+                value = pwd_context.hash(value)
             setattr(p, key, value)
-
-    # تحديث الصلاحيات الخاصة بالأدمن فقط إذا تم إرسالها
-    if is_admin:
-        if "is_premium" in payload: p.is_premium = payload["is_premium"]
-        if "is_verified" in payload: p.is_verified = payload["is_verified"]
 
     db.commit()
     db.refresh(p)

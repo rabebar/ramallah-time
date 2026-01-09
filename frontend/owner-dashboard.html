@@ -1,54 +1,31 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-JHXZ7VEWP7"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-JHXZ7VEWP7');
-</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>لوحة التحكم | Ramallah Time</title>
+  <title>لوحة التحكم الشاملة | Ramallah Time</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css">
-
+  
   <style>
     :root {
-      --primary: #3b82f6;
-      --success: #10b981;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --bg: #050b14;
-      --card: rgba(11, 18, 34, 0.95);
-      --border: rgba(255, 255, 255, 0.1);
+      --primary: #3b82f6; --success: #10b981; --danger: #ef4444;
+      --warning: #f59e0b; --bg: #050b14; --card: rgba(11, 18, 34, 0.95);
+      --border: rgba(255, 255, 255, 0.1); --text-dim: #94a3b8;
     }
 
-    body {
-      background: var(--bg); font-family: 'Cairo', sans-serif;
-      color: #fff; margin: 0; padding: 0;
-    }
-
+    body { background: var(--bg); font-family: 'Cairo', sans-serif; color: #fff; margin: 0; padding: 0; }
     .dashboard-wrapper { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
 
-    /* هيدر الترحيب */
     .welcome-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 24px; padding: 30px; margin-bottom: 25px;
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 20px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 24px;
+      padding: 30px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; gap: 20px;
     }
 
-    /* كارت حالة الاشتراك */
     .sub-status-card {
       background: rgba(59, 130, 246, 0.05); border: 1px solid var(--primary);
-      border-radius: 20px; padding: 20px; margin-bottom: 30px;
-      display: flex; align-items: center; gap: 20px;
+      border-radius: 20px; padding: 20px; margin-bottom: 30px; display: flex; align-items: center; gap: 20px;
     }
     .days-circle {
       width: 70px; height: 70px; border-radius: 50%; border: 4px solid var(--primary);
@@ -56,306 +33,192 @@
       font-weight: 900; background: rgba(59, 130, 246, 0.1);
     }
 
-    /* الأقسام الجانبية */
-    .section-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 24px; padding: 30px; margin-bottom: 25px;
-    }
-    .section-title {
-      font-size: 20px; font-weight: 900; color: var(--primary);
-      margin-bottom: 25px; padding-bottom: 12px;
-      border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px;
-    }
+    .section-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 30px; margin-bottom: 25px; }
+    .section-title { font-size: 20px; font-weight: 900; color: var(--primary); margin-bottom: 25px; padding-bottom: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
 
-    /* الحقول المحدثة */
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
     .form-group { margin-bottom: 15px; }
-    .form-label { display: block; margin-bottom: 8px; font-weight: 800; font-size: 14px; color: #94a3b8; }
+    .stat-label { display: block; margin-bottom: 8px; font-weight: 800; font-size: 14px; color: var(--text-dim); }
     .form-input {
-      width: 100%; height: 55px; background: rgba(255,255,255,0.03);
-      border: 2px solid var(--border); border-radius: 14px; color: #fff;
-      padding: 0 15px; font-family: inherit; font-weight: 700; outline: none;
+      width: 100%; height: 55px; background: rgba(255,255,255,0.03); border: 2px solid var(--border);
+      border-radius: 14px; color: #fff; padding: 0 15px; font-family: inherit; font-weight: 700; outline: none; box-sizing: border-box;
     }
     .form-input:focus { border-color: var(--primary); }
-    textarea.form-input { height: 120px; padding: 15px; }
+    textarea.form-input { height: 120px; padding: 15px; resize: vertical; }
 
-    /* معرض الصور */
     .images-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; margin-top: 20px; }
-    .img-box {
-      width: 100%; height: 130px; border-radius: 15px; overflow: hidden;
-      position: relative; border: 2px solid var(--border);
-    }
+    .img-box { width: 100%; height: 130px; border-radius: 15px; overflow: hidden; position: relative; border: 2px solid var(--border); }
     .img-box img { width: 100%; height: 100%; object-fit: cover; }
-    .del-btn {
-      position: absolute; top: 5px; left: 5px; background: var(--danger);
-      color: #fff; border: none; width: 28px; height: 28px; border-radius: 50%;
-      cursor: pointer; font-size: 12px;
-    }
+    .del-btn { position: absolute; top: 5px; left: 5px; background: var(--danger); color: #fff; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; }
 
-    .btn-main {
-      background: var(--primary); color: #000; border: none;
-      padding: 15px 30px; border-radius: 14px; font-weight: 900;
-      cursor: pointer; display: flex; align-items: center; gap: 10px;
-    }
+    .btn-main { background: var(--primary); color: #000; border: none; padding: 15px 30px; border-radius: 14px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+    .btn-main:hover { transform: translateY(-2px); filter: brightness(1.1); }
     .logout-btn { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); padding: 10px 20px; border-radius: 12px; font-weight: 800; cursor: pointer; }
-
-    /* حالة القفل عند انتهاء الاشتراك */
-    .locked-overlay { position: relative; opacity: 0.6; pointer-events: none; }
+    .locked-overlay { opacity: 0.6; pointer-events: none; filter: grayscale(0.5); }
   </style>
 </head>
 <body>
-
   <div class="dashboard-wrapper">
     
-    <!-- هيدر الترحيب والخروج -->
+    <!-- هيدر الترحيب -->
     <div class="welcome-card">
       <div>
         <h1 id="placeNameDisplay" style="margin:0; font-size:28px; font-weight:900; color:var(--primary);">مرحباً بك</h1>
-        <p style="margin:5px 0 0; color:var(--text-dim); font-weight:700;">لوحة تحكم إدارة منشأتك</p>
+        <p style="margin:5px 0 0; color:var(--text-dim); font-weight:700;">لوحة تحكم إدارة منشأتك - رام الله تايم</p>
       </div>
-      <button onclick="logout()" class="logout-btn">
-        <i class="fa-solid fa-right-from-bracket"></i> تسجيل خروج
-      </button>
+      <button onclick="logout()" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
     </div>
 
-    <!-- كارت حالة الاشتراك الذكي -->
+    <!-- حالة الاشتراك -->
     <div id="subscriptionStatusBox" class="sub-status-card">
-      <div class="days-circle" id="daysCountBox">
-        <span id="daysRemaining">-</span>
-        <small style="font-size:10px;">يوم</small>
-      </div>
+      <div class="days-circle"><span id="daysRemaining">-</span><small>يوم</small></div>
       <div style="flex-grow:1;">
-        <h3 id="statusText" style="margin:0; font-weight:900;">جاري فحص حالة الاشتراك...</h3>
-        <p id="expiryDateText" style="margin:5px 0 0; font-size:13px; color:var(--text-dim); font-weight:700;"></p>
+        <h3 id="statusText" style="margin:0; font-weight:900;">فحص الاشتراك...</h3>
+        <p id="expiryDateText" style="margin:5px 0 0; font-size:13px; color:var(--text-dim);"></p>
       </div>
       <div id="renewActionBox" style="display:none;">
-        <button onclick="requestRenew()" class="btn-main" style="background:var(--warning); font-size:14px; padding:10px 20px;">
-          <i class="fa-solid fa-arrows-rotate"></i> طلب تجديد الآن
-        </button>
+        <button onclick="requestRenew()" class="btn-main" style="background:var(--warning); font-size:13px; padding:10px 15px;"><i class="fa-solid fa-arrows-rotate"></i> طلب تجديد</button>
       </div>
     </div>
 
-    <!-- النموذج الرئيسي (تم تقسيمه لضمان عدم التشتت) -->
     <div id="mainEditorSection">
-      <form id="updatePlaceForm" onsubmit="saveChanges(event)">
+      <form onsubmit="saveChanges(event)">
         
-        <!-- القسم الأول: المعلومات الأساسية -->
+        <!-- المعلومات الأساسية -->
         <div class="section-card">
           <h2 class="section-title"><i class="fa-solid fa-id-card"></i> المعلومات الأساسية</h2>
           <div class="form-grid">
+            <div class="form-group"><label class="stat-label">اسم المكان</label><input type="text" id="in_name" class="form-input" required></div>
             <div class="form-group">
-              <label class="form-label">اسم المكان</label>
-              <input type="text" id="in_name" class="form-input" required>
+                <label class="stat-label">التصنيف</label>
+                <select id="in_category" class="form-input">
+                    <option value="restaurants">مطاعم</option><option value="cafes">كافيهات</option>
+                    <option value="hotels">فنادق وشقق</option><option value="pools">مسابح ومنتجعات</option>
+                    <option value="mens_salon">صالونات رجالي</option><option value="women_salon">صالونات نسائي</option>
+                    <option value="kids">ألعاب أطفال</option><option value="gyms">رياضة وجيم</option>
+                </select>
             </div>
-            <div class="form-group">
-              <label class="form-label">التصنيف</label>
-              <select id="in_category" class="form-input">
-                <option value="restaurants">مطاعم</option>
-                <option value="cafes">كافيهات</option>
-                <option value="hotels">فنادق وشقق</option>
-                <option value="pools">مسابح ومنتجعات</option>
-                <option value="mens_salon">صالونات رجالي</option>
-                <option value="women_salon">صالونات نسائي</option>
-                <option value="kids">ألعاب أطفال</option>
-                <option value="gyms">رياضة وجيم</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">المنطقة (الحي)</label>
-              <input type="text" id="in_area" class="form-input">
-            </div>
-            <div class="form-group">
-              <label class="form-label">العنوان التفصيلي</label>
-              <input type="text" id="in_address" class="form-input">
-            </div>
+            <div class="form-group"><label class="stat-label">المنطقة (الحي)</label><input type="text" id="in_area" class="form-input"></div>
+            <div class="form-group"><label class="stat-label">العنوان التفصيلي</label><input type="text" id="in_address" class="form-input"></div>
           </div>
         </div>
 
-        <!-- القسم الثاني: الموقع الجغرافي الدقيق -->
+        <!-- الموقع الجغرافي -->
         <div class="section-card">
           <h2 class="section-title"><i class="fa-solid fa-map-location-dot"></i> الموقع الجغرافي</h2>
           <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">رابط خرائط جوجل</label>
-              <input type="text" id="in_map_url" class="form-input">
-            </div>
-            <div class="form-group">
-              <label class="form-label">خط العرض (Latitude)</label>
-              <input type="number" step="any" id="in_latitude" class="form-input">
-            </div>
-            <div class="form-group">
-              <label class="form-label">خط الطول (Longitude)</label>
-              <input type="number" step="any" id="in_longitude" class="form-input">
-            </div>
+            <div class="form-group" style="grid-column: span 2;"><label class="stat-label">رابط خرائط جوجل (URL)</label><input type="text" id="in_map_url" class="form-input"></div>
+            <div class="form-group"><label class="stat-label">خط العرض (Latitude)</label><input type="number" step="any" id="in_latitude" class="form-input"></div>
+            <div class="form-group"><label class="stat-label">خط الطول (Longitude)</label><input type="number" step="any" id="in_longitude" class="form-input"></div>
           </div>
+          <button type="button" onclick="getLocationNow()" class="btn-main" style="background:var(--success); margin-top:10px; font-size:13px; height:45px;"><i class="fa-solid fa-location-crosshairs"></i> تحديد موقعي الحالي تلقائياً</button>
         </div>
 
-        <!-- القسم الثالث: التواصل والروابط -->
+        <!-- التواصل والروابط -->
         <div class="section-card">
-          <h2 class="section-title"><i class="fa-solid fa-share-nodes"></i> قنوات التواصل الاجتماعي</h2>
+          <h2 class="section-title"><i class="fa-solid fa-share-nodes"></i> التواصل والشبكات الاجتماعية</h2>
           <div class="form-grid">
-            <div class="form-group"><label class="form-label">رقم الهاتف</label><input type="text" id="in_phone" class="form-input"></div>
-            <div class="form-group"><label class="form-label">واتساب</label><input type="text" id="in_whatsapp" class="form-input"></div>
-            <div class="form-group"><label class="form-label">الموقع الإلكتروني</label><input type="text" id="in_website" class="form-input"></div>
-            <div class="form-group"><label class="form-label">انستجرام</label><input type="text" id="in_instagram" class="form-input"></div>
-            <div class="form-group"><label class="form-label">فيسبوك</label><input type="text" id="in_facebook" class="form-input"></div>
+            <div class="form-group"><label class="stat-label">رقم الهاتف</label><input type="text" id="in_phone" class="form-input"></div>
+            <div class="form-group"><label class="stat-label">رقم واتساب (970)</label><input type="text" id="in_whatsapp" class="form-input"></div>
+            <div class="form-group"><label class="stat-label">الموقع الإلكتروني</label><input type="text" id="in_website" class="form-input"></div>
+            <div class="form-group"><label class="stat-label">رابط انستجرام</label><input type="text" id="in_instagram" class="form-input"></div>
+            <div class="form-group"><label class="stat-label">رابط فيسبوك</label><input type="text" id="in_facebook" class="form-input"></div>
           </div>
         </div>
 
-        <!-- القسم الرابع: تفاصيل العمل والوصف -->
+        <!-- العمل والوصف -->
         <div class="section-card">
-          <h2 class="section-title"><i class="fa-solid fa-clock"></i> ساعات العمل والوصف</h2>
+          <h2 class="section-title"><i class="fa-solid fa-clock"></i> تفاصيل العمل</h2>
           <div class="form-grid">
-            <div class="form-group"><label class="form-label">ساعات العمل</label><input type="text" id="in_open_hours" class="form-input"></div>
+            <div class="form-group"><label class="stat-label">ساعات العمل</label><input type="text" id="in_open_hours" class="form-input"></div>
             <div class="form-group">
-              <label class="form-label">نطاق الأسعار</label>
-              <select id="in_price_range" class="form-input">
-                <option value="$">اقتصادي ($)</option>
-                <option value="$$">متوسط ($$)</option>
-                <option value="$$$">مرتفع ($$$)</option>
-              </select>
+                <label class="stat-label">نطاق الأسعار</label>
+                <select id="in_price_range" class="form-input"><option value="$">$ اقتصادي</option><option value="$$">$$ متوسط</option><option value="$$$">$$$ مرتفع</option></select>
             </div>
+            <div class="form-group" style="grid-column: span 2;"><label class="stat-label">كلمات مفتاحية (Tags)</label><input type="text" id="in_tags" class="form-input"></div>
           </div>
-          <div class="form-group" style="margin-top:15px;">
-            <label class="form-label">الوصف الكامل للمكان</label>
-            <textarea id="in_description" class="form-input"></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">الكلمات المفتاحية (Tags)</label>
-            <input type="text" id="in_tags" class="form-input" placeholder="مثلاً: هادئ، عائلي، تدخين...">
-          </div>
+          <div class="form-group" style="margin-top:15px;"><label class="stat-label">الوصف الكامل</label><textarea id="in_description" class="form-input"></textarea></div>
         </div>
 
-        <button type="submit" id="saveAllBtn" class="btn-main" style="width:100%; height:70px; font-size:20px; margin-bottom:40px;">
-          <i class="fa-solid fa-floppy-disk"></i> حفظ كافة التعديلات
-        </button>
-
+        <button type="submit" id="saveAllBtn" class="btn-main" style="width:100%; height:70px; font-size:20px; margin-bottom:40px;"><i class="fa-solid fa-floppy-disk"></i> حفظ كافة التعديلات</button>
       </form>
     </div>
 
-    <!-- القسم الخامس: إدارة معرض الصور -->
+    <!-- إدارة الصور -->
     <div class="section-card">
-      <h2 class="section-title"><i class="fa-solid fa-images"></i> معرض صور المكان</h2>
-      <div id="imagesContainer" class="images-grid">
-        <!-- الصور ستظهر هنا -->
-      </div>
+      <h2 class="section-title"><i class="fa-solid fa-images"></i> معرض الصور</h2>
+      <div id="imagesContainer" class="images-grid"></div>
       <div style="margin-top:30px; padding-top:20px; border-top:1px solid var(--border);">
-        <label class="form-label">رفع صور إضافية</label>
-        <div style="display:flex; gap:10px;">
-          <input type="file" id="uploadPhotosInput" multiple accept="image/*" class="form-input" style="padding-top:12px; flex-grow:1;">
-          <button onclick="handlePhotoUpload()" id="uploadBtn" class="btn-main"><i class="fa-solid fa-cloud-arrow-up"></i> رفع</button>
-        </div>
+        <label class="stat-label">رفع صور إضافية</label>
+        <div style="display:flex; gap:10px;"><input type="file" id="uploadPhotosInput" multiple accept="image/*" class="form-input" style="padding-top:12px;"><button onclick="handlePhotoUpload()" id="uploadBtn" class="btn-main" style="height:55px;"><i class="fa-solid fa-cloud-arrow-up"></i> رفع</button></div>
       </div>
     </div>
 
-    <!-- منطقة الخطر (حذف الحساب) -->
+    <!-- منطقة الخطر -->
     <div class="section-card" style="border-color:rgba(239, 68, 68, 0.3);">
       <h2 class="section-title" style="color:var(--danger); border-color:rgba(239, 68, 68, 0.1);"><i class="fa-solid fa-triangle-exclamation"></i> منطقة الخطر</h2>
-      <p style="color:var(--text-dim); font-size:14px; font-weight:700;">في حال قمت بحذف المكان، سيتم إزالته نهائياً من دليل رام الله تايم ولن تتمكن من استعادته.</p>
-      <button onclick="confirmDeletePlace()" class="btn-danger" style="margin-top:10px; padding:12px 20px; border-radius:12px; cursor:pointer; font-family:inherit; font-weight:800; border:1px solid var(--danger); background:transparent; color:var(--danger);">
-        <i class="fa-solid fa-trash-can"></i> حذف المكان نهائياً
-      </button>
+      <button onclick="confirmDeletePlace()" class="btn-danger" style="padding:12px 20px; border-radius:12px; cursor:pointer; font-weight:800; border:1px solid var(--danger); background:transparent; color:var(--danger); font-family:inherit;">حذف المكان نهائياً</button>
     </div>
-
   </div>
   <script>
     "use strict";
 
+    // استعادة البيانات من التخزين المحلي
     let placeId = localStorage.getItem('place_id');
-    let ownerPassword = ""; // سيتم جلبه من السيرفر للأمان في العمليات التالية
+    let ownerPassword = localStorage.getItem("owner_password");
 
-    // 1. التحقق من الدخول عند تحميل الصفحة
     window.onload = async function() {
-        if (!placeId) {
+        if (!placeId || !ownerPassword) {
             window.location.href = "/owner-login";
             return;
         }
         await loadFullData();
     };
 
-    // 2. جلب كافة بيانات المكان من السيرفر
+    // 1. جلب كافة بيانات المنشأة (شاملة الخانات الجديدة)
     async function loadFullData() {
         try {
-            // جلب كلمة السر من المتصفح لاستخدامها كمفتاح دخول
-            const savedPass = localStorage.getItem("owner_password");
-            
             const response = await fetch(`/api/places/${placeId}`, {
-                headers: { "x-admin-token": savedPass }
+                headers: { "x-admin-token": ownerPassword }
             });
-
-            if (!response.ok) throw new Error("فشل جلب البيانات");
-
+            if (!response.ok) throw new Error();
             const data = await response.json();
-            ownerPassword = data.owner_password; 
             
             fillFormFields(data);
             handleSubscriptionUI(data);
             displayImages(data.images);
-
         } catch (err) {
-            console.error(err);
-            alert("حدث خطأ أثناء تحميل البيانات، يرجى تسجيل الدخول مجدداً.");
+            alert("انتهت الجلسة أو حدث خطأ، يرجى تسجيل الدخول مجدداً");
             logout();
         }
     }
 
-    // 3. تعبئة الحقول الـ 16 في النموذج
+    // 2. تعبئة الخانات الـ 16 بدقة من قاعدة البيانات
     function fillFormFields(data) {
         document.getElementById('placeNameDisplay').innerText = `مرحباً بك في ${data.name}`;
-        
         const fields = [
             'name', 'category', 'area', 'address', 'description', 
             'phone', 'whatsapp', 'website', 'instagram', 'facebook', 
             'map_url', 'latitude', 'longitude', 'open_hours', 'price_range', 'tags'
         ];
-
-        fields.forEach(field => {
-            const input = document.getElementById(`in_${field}`);
-            if (input) {
-                // نستخدم || "" لضمان عدم ظهور كلمة null في الحقول
-                input.value = data[field] || "";
-            }
+        fields.forEach(f => {
+            const el = document.getElementById(`in_${f}`);
+            if (el) el.value = data[f] || "";
         });
     }
 
-    // 4. منطق حساب الأيام وحالة الاشتراك
-    function handleSubscriptionUI(data) {
-        const statusBox = document.getElementById("subscriptionStatusBox");
-        const daysLabel = document.getElementById("daysRemaining");
-        const statusText = document.getElementById("statusText");
-        const expiryText = document.getElementById("expiryDateText");
-        const renewBox = document.getElementById("renewActionBox");
-
-        if (!data.subscription_end) {
-            statusText.innerText = "اشتراك قيد المراجعة";
-            return;
-        }
-
-        const end = new Date(data.subscription_end);
-        const now = new Date();
-        const diffTime = end - now;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        expiryText.innerText = `تاريخ الانتهاء: ${end.toLocaleDateString('ar-EG')}`;
-
-        if (data.is_expired || diffDays <= 0) {
-            daysLabel.innerText = "0";
-            statusText.innerText = "انتهى اشتراكك! مكانك مخفي الآن عن الزوار.";
-            statusText.style.color = "var(--danger)";
-            statusBox.style.borderColor = "var(--danger)";
-            renewBox.style.display = "block";
-            lockDashboard(); // قفل التعديلات
-        } else {
-            daysLabel.innerText = diffDays;
-            statusText.innerText = "اشتراكك نشط، ومكانك يظهر للجميع.";
-            statusText.style.color = "var(--success)";
-            if (diffDays <= 10) {
-                renewBox.style.display = "block"; // إظهار زر التجديد إذا قارب على الانتهاء
-            }
-        }
+    // 3. تحديد الموقع الجغرافي الحالي (GPS)
+    function getLocationNow() {
+        if (!navigator.geolocation) return alert("متصفحك لا يدعم تحديد الموقع");
+        alert("يرجى السماح للمتصفح بالوصول لموقعك الجغرافي...");
+        navigator.geolocation.getCurrentPosition(pos => {
+            document.getElementById('in_latitude').value = pos.coords.latitude;
+            document.getElementById('in_longitude').value = pos.coords.longitude;
+            alert("تم التقاط الإحداثيات بنجاح! تذكر الضغط على 'حفظ كافة التعديلات' في الأسفل.");
+        }, () => alert("فشل تحديد الموقع، تأكد من تفعيل الـ GPS في جهازك"));
     }
 
-    // 5. حفظ التعديلات الشاملة
+    // 4. حفظ كافة التعديلات (إرسال البيانات للسيرفر)
     async function saveChanges(event) {
         event.preventDefault();
         const btn = document.getElementById("saveAllBtn");
@@ -384,22 +247,17 @@
                 },
                 body: JSON.stringify(payload)
             });
-
-            if (res.ok) {
-                alert("✅ تم حفظ كافة التعديلات بنجاح.");
-            } else {
-                const err = await res.json();
-                throw new Error(err.detail);
-            }
+            if (res.ok) alert("✅ تم تحديث كافة بيانات المنشأة بنجاح");
+            else alert("❌ فشل التحديث، تأكد من صلاحيات الدخول");
         } catch (e) {
-            alert("فشل التحديث: " + e.message);
+            alert("خطأ في الاتصال بالسيرفر");
         } finally {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> حفظ كافة التعديلات`;
         }
     }
 
-    // 6. إدارة الصور (عرض، رفع، حذف)
+    // 5. إدارة الصور (عرض، رفع، حذف)
     function displayImages(images) {
         const container = document.getElementById("imagesContainer");
         container.innerHTML = "";
@@ -410,42 +268,31 @@
         images.forEach(img => {
             const div = document.createElement("div");
             div.className = "img-box";
-            div.innerHTML = `
-                <img src="${img.image_url}">
-                <button class="del-btn" onclick="deleteImage(${img.id})">×</button>
-            `;
+            div.innerHTML = `<img src="${img.image_url}"><button class="del-btn" onclick="deleteImage(${img.id})">×</button>`;
             container.appendChild(div);
         });
     }
 
     async function handlePhotoUpload() {
         const input = document.getElementById("uploadPhotosInput");
-        if (input.files.length === 0) return alert("يرجى اختيار صور للرفع");
-
+        if (input.files.length === 0) return alert("يرجى اختيار صور أولاً");
         const btn = document.getElementById("uploadBtn");
         btn.disabled = true;
-        btn.innerText = "...";
-
         const fd = new FormData();
         for (let f of input.files) fd.append("images", f);
-
         try {
             const res = await fetch(`/api/places/${placeId}/images`, {
                 method: "POST",
                 headers: { "x-admin-token": ownerPassword },
                 body: fd
             });
-            if (res.ok) {
-                alert("تم رفع الصور بنجاح");
-                input.value = "";
-                await loadFullData();
-            }
+            if (res.ok) { alert("✅ تم رفع الصور بنجاح"); await loadFullData(); }
         } catch (e) { alert("فشل الرفع"); }
-        finally { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> رفع`; }
+        finally { btn.disabled = false; }
     }
 
     async function deleteImage(imgId) {
-        if (!confirm("هل تريد حذف هذه الصورة؟")) return;
+        if (!confirm("هل أنت متأكد من حذف هذه الصورة؟")) return;
         const res = await fetch(`/api/places/images/${imgId}`, {
             method: "DELETE",
             headers: { "x-admin-token": ownerPassword }
@@ -453,35 +300,47 @@
         if (res.ok) await loadFullData();
     }
 
-    // 7. وظائف إضافية
-    function lockDashboard() {
-        document.getElementById("mainEditorSection").classList.add("locked-overlay");
-        document.getElementById("saveAllBtn").style.display = "none";
-        document.querySelectorAll(".del-btn").forEach(b => b.style.display = "none");
-        document.getElementById("uploadBtn").disabled = true;
+    // 6. عرض حالة الاشتراك
+    function handleSubscriptionUI(data) {
+        const statusBox = document.getElementById("subscriptionStatusBox");
+        const daysLabel = document.getElementById("daysRemaining");
+        const statusText = document.getElementById("statusText");
+        const expiryText = document.getElementById("expiryDateText");
+        const renewBox = document.getElementById("renewActionBox");
+
+        if (!data.subscription_end) {
+            statusText.innerText = "اشتراكك قيد المراجعة حالياً";
+            return;
+        }
+
+        const end = new Date(data.subscription_end);
+        const diffDays = Math.ceil((end - new Date()) / (1000 * 60 * 60 * 24));
+        expiryText.innerText = `تاريخ الانتهاء: ${end.toLocaleDateString('ar-EG')}`;
+
+        if (data.is_expired || diffDays <= 0) {
+            daysLabel.innerText = "0";
+            statusText.innerText = "انتهى اشتراكك! مكانك لا يظهر للزوار الآن.";
+            statusText.style.color = "var(--danger)";
+            renewBox.style.display = "block";
+        } else {
+            daysLabel.innerText = diffDays;
+            statusText.innerText = "اشتراكك نشط، ومكانك متاح للجميع.";
+            statusText.style.color = "var(--success)";
+        }
     }
 
     function requestRenew() {
-        fetch(`/api/places/${placeId}/request-renew`, { 
-            method: "POST", 
-            headers: { "x-admin-token": ownerPassword } 
-        });
-        alert("تم إرسال طلبك. سيقوم فريق رام الله تايم بالتواصل معك لتجديد الاشتراك.");
+        fetch(`/api/places/${placeId}/request-renew`, { method: "POST", headers: { "x-admin-token": ownerPassword } });
+        alert("تم إرسال طلب التجديد بنجاح، سيتواصل معك فريقنا قريباً.");
     }
 
     async function confirmDeletePlace() {
-        if (!confirm("تحذير نهائي: سيتم حذف كل بياناتك وصورك ولا يمكن التراجع. هل أنت متأكد؟")) return;
-        const res = await fetch(`/api/places/${placeId}`, {
-            method: "DELETE",
-            headers: { "x-admin-token": ownerPassword }
-        });
+        if (!confirm("تحذير نهائي: سيتم حذف المنشأة وكافة الصور نهائياً ولا يمكن التراجع. هل أنت متأكد؟")) return;
+        const res = await fetch(`/api/places/${placeId}`, { method: "DELETE", headers: { "x-admin-token": ownerPassword } });
         if (res.ok) logout();
     }
 
-    function logout() {
-        localStorage.clear();
-        window.location.href = "/owner-login";
-    }
+    function logout() { localStorage.clear(); window.location.href = "/owner-login"; }
   </script>
 </body>
 </html>
