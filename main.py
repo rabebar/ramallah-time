@@ -8,6 +8,7 @@ import math
 from datetime import datetime, timedelta
 from contextlib import asynccontextmanager
 from typing import Optional, List
+from pydantic import BaseModel
 
 from fastapi import (
     FastAPI, Depends, HTTPException, Query, 
