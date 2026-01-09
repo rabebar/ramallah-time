@@ -256,7 +256,7 @@
       `).join('');
     }
 
-    // 4. فتح نافذة التعديل وتعبئة كافة الحقول الـ 15
+    // 4. فتح نافذة التعديل وتعبئة كافة الحقول الـ 15 بدقة
     function openEditModal(id) {
       const p = allPlaces.find(i => i.id === id);
       if(!p) return;
@@ -288,7 +288,7 @@
       document.getElementById("editPlaceModal").style.display = "flex";
     }
 
-    // 5. حفظ التعديلات الشاملة (بيانات + صور جديدة)
+    // 5. حفظ كافة التعديلات (إرسال كل الخانات للسيرفر)
     async function saveEdit() {
       const id = document.getElementById("edit_id").value;
       const payload = {
@@ -308,14 +308,12 @@
         tags: document.getElementById("edit_tags").value
       };
 
-      // تحديث النصوص
       const res = await fetch(`/api/places/${id}`, { 
         method: "PUT", 
         headers: { "Content-Type": "application/json", "x-admin-token": adminToken }, 
         body: JSON.stringify(payload) 
       });
 
-      // رفع الصور الجديدة إن وجدت
       const files = document.getElementById("edit_new_images").files;
       if(files.length > 0) {
         const fd = new FormData();
@@ -327,17 +325,22 @@
         });
       }
 
-      if(res.ok) { alert("✅ تم تحديث كافة البيانات والصور بنجاح."); location.reload(); }
+      if(res.ok) { 
+        alert("✅ تم التحديث بنجاح."); 
+        location.reload(); 
+      }
     }
 
-    // 6. وظائف الحذف والتفعيل والخروج
+    // 6. وظيفة حذف صورة
     async function delImg(id) {
         if(confirm("حذف هذه الصورة نهائياً؟")) {
-            await fetch(`/api/places/images/${id}`, { method: "DELETE", headers: { "x-admin-token": adminToken } });
-            alert("تم الحذف."); location.reload();
+            await fetch(`/api/places/images/${id}`, { 
+                method: "DELETE", 
+                headers: { "x-admin-token": adminToken } 
+            });
+            location.reload();
         }
     }
-
     async function deletePlace(id) {
         if(confirm("هل أنت متأكد من الحذف النهائي للمنشأة وكافة صورها؟")) {
             const res = await fetch(`/api/places/${id}`, { method: "DELETE", headers: { "x-admin-token": adminToken } });

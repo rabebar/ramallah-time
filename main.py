@@ -428,10 +428,10 @@ def request_renewal(
     return {"msg": "تم استلام الطلب، سيتم التواصل معك للتفعيل."}
 
 
-@app.put("/api/places/{place_id}", response_model=schemas.PlaceAuthOut)
+@app.put("/api/places/{place_id}")
 def update_place(
     place_id: int,
-    payload: schemas.PlaceCreate,
+    payload: dict, # تحويل إلى dict لمرونة كاملة في استقبال الخانات
     db: Session = Depends(get_db),
     x_admin_token: Optional[str] = Header(None),
 ):
@@ -443,39 +443,21 @@ def update_place(
     is_owner = (x_admin_token == p.owner_password)
     
     if not is_admin and not is_owner:
-        raise HTTPException(status_code=401, detail="كلمة المرور خاطئة أو غير مصرح لك")
+        raise HTTPException(status_code=401, detail="غير مصرح لك بالتعديل")
 
-    # منع صاحب المحل من التعديل إذا انتهى اشتراكه (الأدمن مستثنى)
-    if is_owner and is_expired(p) and not is_admin:
-        raise HTTPException(status_code=403, detail="انتهى الاشتراك. لا يمكنك التعديل حالياً.")
+    # تحديث الحقول التي وصلت في الطلب فقط
+    for key, value in payload.items():
+        if hasattr(p, key):
+            setattr(p, key, value)
 
-    # تحديث البيانات الأساسية
-    p.name = payload.name
-    p.category = payload.category
-    p.area = payload.area
-    p.address = payload.address
-    p.description = payload.description
-    p.phone = payload.phone
-    p.whatsapp = payload.whatsapp
-    p.website = payload.website
-    p.instagram = payload.instagram
-    p.facebook = payload.facebook
-    p.map_url = payload.map_url
-    p.latitude = payload.latitude
-    p.longitude = payload.longitude
-    p.open_hours = payload.open_hours
-    p.price_range = payload.price_range
-    p.tags = payload.tags
-
+    # تحديث الصلاحيات الخاصة بالأدمن فقط إذا تم إرسالها
     if is_admin:
-        p.is_premium = payload.is_premium
-        p.is_verified = payload.is_verified
+        if "is_premium" in payload: p.is_premium = payload["is_premium"]
+        if "is_verified" in payload: p.is_verified = payload["is_verified"]
 
     db.commit()
     db.refresh(p)
-    
-    # تحويل النتيجة للقالب الجديد لضمان رجوع البيانات كاملة للمالك/الأدمن
-    return schemas.PlaceAuthOut.from_orm(p)
+    return p
 
 @app.delete("/api/places/{place_id}")
 def delete_place(
