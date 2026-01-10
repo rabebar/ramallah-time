@@ -226,23 +226,14 @@
   <script>
     "use strict";
 
-    /**
-     * 1. فحص الجلسة النشطة:
-     * إذا كان المستخدم (صاحب المكان) قد سجل دخوله مسبقاً وما زالت البيانات محفوظة،
-     * نقوم بتوجيهه تلقائياً للوحة التحكم لربح الوقت.
-     */
+    // 1. فحص الجلسة النشطة: توجيه تلقائي إذا كان مسجلاً للدخول
     window.addEventListener('DOMContentLoaded', () => {
-        const savedPlaceId = localStorage.getItem("place_id");
-        if (savedPlaceId) {
-            console.log("تم العثور على جلسة نشطة، جاري التحويل...");
+        if (localStorage.getItem("place_id") && localStorage.getItem("owner_password")) {
             window.location.href = "/owner-dashboard";
         }
     });
 
-    /**
-     * 2. وظيفة التبديل بين الأقسام (صاحب مكان / إدارة):
-     * تقوم بتغيير شكل الأزرار وإظهار النموذج المطلوب مع تأثيرات حركية.
-     */
+    // 2. التبديل بين المالك والأدمن
     function togglePortal(target) {
         const tabOwner = document.getElementById("tabOwner");
         const tabAdmin = document.getElementById("tabAdmin");
@@ -250,7 +241,6 @@
         const adminSection = document.getElementById("adminSection");
         const alertBox = document.getElementById("alertBox");
 
-        // إخفاء التنبيهات عند التبديل
         alertBox.style.display = "none";
 
         if (target === 'owner') {
@@ -266,20 +256,14 @@
         }
     }
 
-    /**
-     * 3. وظيفة عرض الرسائل التنبيهية:
-     */
     function notify(message) {
         const alertBox = document.getElementById("alertBox");
         alertBox.innerText = message;
         alertBox.style.display = "block";
-        // التمرير للأعلى لرؤية الخطأ بوضوح
-        window.scrollTo({ top: 100, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    /**
-     * 4. معالجة نموذج دخول صاحب المكان (Owner):
-     */
+    // 3. معالجة دخول المالك (Owner Login) - تم إصلاح المتغيرات هنا
     document.getElementById("ownerLoginForm").addEventListener("submit", async (event) => {
         event.preventDefault();
         
@@ -287,14 +271,8 @@
         const password = document.getElementById("ownerPassword").value.trim();
         const submitBtn = document.getElementById("ownerSubmit");
 
-        if (!email || !password) {
-            notify("يرجى تعبئة كافة حقول الدخول");
-            return;
-        }
-
-        // تحضير واجهة الزر أثناء التحميل
         submitBtn.disabled = true;
-        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق من الحساب...`;
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...`;
 
         try {
             const response = await fetch("/api/owner-login", {
@@ -306,17 +284,15 @@
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.detail || "معلومات الدخول غير صحيحة");
+                throw new Error(result.detail || "خطأ في الدخول");
             }
 
-            // تخزين بيانات صاحب المكان في المتصفح لاستخدامها في لوحة التحكم
+            // --- الإصلاح الجوهري هنا ---
             localStorage.setItem("place_id", result.place_id);
             localStorage.setItem("place_name", result.place_name);
+            localStorage.setItem("owner_password", result.owner_password); // تم تغيير data لـ result
             localStorage.setItem("subscription_status", result.subscription_status);
-            localStorage.setItem("is_expired", result.is_expired);
-            localStorage.setItem("owner_password", data.owner_password);
 
-            // تحويل المستخدم للوحة التحكم الخاصة بمكانه
             window.location.href = "/owner-dashboard";
 
         } catch (error) {
@@ -326,33 +302,33 @@
         }
     });
 
-    /**
-     * 5. معالجة نموذج دخول الإدارة (Admin):
-     */
-    document.getElementById("adminLoginForm").addEventListener("submit", (event) => {
+    // 4. معالجة دخول الإدارة (Admin Login)
+    document.getElementById("adminLoginForm").addEventListener("submit", async (event) => {
         event.preventDefault();
-        
         const token = document.getElementById("adminToken").value.trim();
         const submitBtn = document.getElementById("adminSubmit");
 
-        if (!token) {
-            notify("يرجى إدخال كود الوصول الأمني للمتابعة");
-            return;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> فحص الكود...`;
+
+        try {
+            const res = await fetch("/api/admin/verify", {
+                headers: { "x-admin-token": token }
+            });
+
+            if (res.ok) {
+                sessionStorage.setItem("admin_token", token);
+                window.location.href = "/static/admin.html";
+            } else {
+                notify("كود الوصول الأمني غير صحيح");
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-unlock-keyhole"></i> تأكيد هوية المدير`;
+            }
+        } catch (err) {
+            notify("خطأ في الاتصال بالسيرفر");
+            submitBtn.disabled = false;
         }
-
-        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> جاري فحص الكود...`;
-
-        /**
-         * ملاحظة: يتم حفظ كود الإدارة في sessionStorage 
-         * لضمان حذفه تلقائياً بمجرد إغلاق المتصفح لزيادة الأمان.
-         */
-        sessionStorage.setItem("admin_token", token);
-        
-        // التوجه للوحة الإدارة المالية والطلبات
-        setTimeout(() => {
-            window.location.href = "/static/admin.html";
-        }, 500);
     });
-  </script>
+</script>
 </body>
 </html>
