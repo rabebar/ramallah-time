@@ -635,7 +635,6 @@
 async function loadFeaturedPlaces() {
     const grid = document.getElementById("featuredGrid");
     try {
-        // جلب آخر 6 أماكن مضافة
         const res = await fetch("/api/places?limit=6");
         const data = await res.json();
         
@@ -645,17 +644,17 @@ async function loadFeaturedPlaces() {
         }
 
         grid.innerHTML = data.items.map(p => {
-            // معالجة رابط الواتساب لتجنب خلل الـ null
             const waNum = p.whatsapp ? p.whatsapp.replace(/\D/g, '').replace(/^0/, '970') : null;
             const waLink = waNum ? `https://wa.me/${waNum}` : "#";
 
+            // إضافة خاصية الضغط للانتقال لصفحة الأماكن مع رقم المكان (id)
             return `
-                <div class="place">
+                <div class="place" onclick="window.location.href='/places?id=${p.id}'" style="cursor:pointer;">
                     <div class="img" style="background-image: url('${p.images?.[0]?.image_url || '/static/placeholder.jpg'}'); background-size: cover; background-position: center;"></div>
                     <div class="body">
                         <p class="name">${p.name} ${p.is_premium ? '⭐' : ''}</p>
                         <p class="meta"><i class="fa-solid fa-location-dot"></i> ${p.area || 'رام الله'} • ${p.category}</p>
-                        <div class="actions">
+                        <div class="actions" onclick="event.stopPropagation()">
                             ${waNum ? `<a href="${waLink}" target="_blank" class="pill whatsapp"><i class="fa-brands fa-whatsapp"></i> واتساب</a>` : ''}
                             <a href="${p.map_url || '#'}" target="_blank" class="pill"><i class="fa-solid fa-map"></i> خريطة</a>
                         </div>
@@ -667,7 +666,6 @@ async function loadFeaturedPlaces() {
         console.error("خطأ في تحميل الأماكن:", e);
     }
 }
-
 // تشغيل الوظيفة عند تحميل الصفحة
 document.addEventListener("DOMContentLoaded", loadFeaturedPlaces);
 </script>

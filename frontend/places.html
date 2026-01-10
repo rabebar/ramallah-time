@@ -526,6 +526,11 @@ cardEl.className = "place-card" + (place.is_premium ? " premium-border" : "");
             </div>`;
           container.appendChild(cardEl);
         });
+        // --- ميزة الفتح التلقائي ---
+        const urlId = urlParams.get("id");
+        if (urlId) {
+            setTimeout(() => openDetails(parseInt(urlId)), 500);
+        }
 
       } catch (err) {
         container.innerHTML = `

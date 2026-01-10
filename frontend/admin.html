@@ -147,6 +147,10 @@
       <input type="hidden" id="edit_id">
       
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
+        <div style="grid-column: span 2; display: flex; align-items: center; gap: 10px; background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 12px; border: 1px solid var(--primary); margin-bottom: 5px;">
+    <input type="checkbox" id="edit_is_premium" style="width: 22px; height: 22px; cursor: pointer;">
+    <label for="edit_is_premium" style="font-weight: 900; color: var(--primary); cursor: pointer; margin-bottom: 0;">🌟 تمييز المنشأة (Premium)</label>
+</div>
         <div><label class="stat-label">اسم المكان:</label><input type="text" id="edit_name" class="modal-input"></div>
         <div><label class="stat-label">التصنيف:</label><input type="text" id="edit_category" class="modal-input"></div>
         <div><label class="stat-label">المنطقة:</label><input type="text" id="edit_area" class="modal-input"></div>
@@ -286,6 +290,7 @@
       `).join('');
 
       document.getElementById("editPlaceModal").style.display = "flex";
+      document.getElementById("edit_is_premium").checked = p.is_premium || false;
     }
 
     // 5. حفظ كافة التعديلات (إرسال كل الخانات للسيرفر)
