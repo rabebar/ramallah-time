@@ -327,3 +327,23 @@ def activate_place(place_id: int, data: dict, db: Session=Depends(get_db), x_adm
 def verify_admin(x_admin_token: str=Header(None)):
     if x_admin_token != ADMIN_SECRET_KEY: raise HTTPException(status_code=401)
     return {"status": "ok"}
+@app.delete("/api/places/{place_id}")
+def delete_place(place_id: int, db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
+    p = db.query(Place).filter(Place.id == place_id).first()
+    if not p:
+        raise HTTPException(status_code=404, detail="المكان غير موجود")
+
+    # التحقق من الصلاحية (أدمن أو صاحب المكان)
+    is_admin = (x_admin_token == ADMIN_SECRET_KEY)
+    is_owner = (x_admin_token and p.owner_password and x_admin_token == p.owner_password)
+
+    if not is_admin and not is_owner:
+        raise HTTPException(status_code=401, detail="غير مخول بالحذف")
+
+    try:
+        db.delete(p)
+        db.commit()
+        return {"status": "deleted"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="خطأ في قاعدة البيانات أثناء الحذف")
