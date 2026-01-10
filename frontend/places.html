@@ -311,6 +311,39 @@
       gap: 25px;
       margin-top: 30px;
     }
+    /* تنسيقات معرض الصور داخل النافذة */
+    .modal-gallery {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 10px 20px;
+      background: #050b14;
+      scrollbar-width: none; /* إخفاء السكرول بار */
+    }
+    .modal-gallery::-webkit-scrollbar { display: none; }
+    
+    .gallery-thumb {
+      width: 80px;
+      height: 60px;
+      border-radius: 10px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: 0.3s;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+    .gallery-thumb.active {
+      border-color: var(--primary-color);
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    
+    /* تمييز إضافي للبريميوم */
+    .premium-border {
+      border: 2px solid #ffd700 !important;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+    }
 
   </style>
 </head>
@@ -426,7 +459,7 @@
 
         items.forEach(place => {
           const cardEl = document.createElement("div");
-          cardEl.className = "place-card";
+cardEl.className = "place-card" + (place.is_premium ? " premium-border" : "");
           cardEl.style.cursor = "pointer";
 
           cardEl.onclick = (e) => {
@@ -540,46 +573,66 @@
       const p = fetchedPlaces.find(item => item.id === id);
       if (!p) return;
 
-      const imgUrl = (p.images && p.images.length > 0) ? p.images[0].image_url : "https://via.placeholder.com/600x400?text=Ramallah+Time";
-      document.getElementById("det_img").src = imgUrl;
+      // 1. تعبئة النصوص الأساسية
       document.getElementById("det_name").innerText = p.name;
       document.getElementById("det_desc").innerText = p.description || "لا يوجد وصف تفصيلي متوفر حالياً لهذا المكان.";
       document.getElementById("det_hours").innerText = p.open_hours || "غير محدد";
       document.getElementById("det_price").innerText = p.price_range || "غير محدد";
       document.getElementById("det_address").innerText = p.address || p.area || "مدينة رام الله";
 
-    const webLink = document.getElementById("det_web_link");
-    if (p.website) {
-        webLink.href = p.website.startsWith('http') ? p.website : 'https://' + p.website;
-        webLink.style.display = "flex";
-    } else {
-        webLink.style.display = "none";
-    }
+      // 2. إدارة معرض الصور (الميزة الجديدة)
+      const mainImg = document.getElementById("det_img");
+      const galleryContainer = document.getElementById("det_gallery");
+      galleryContainer.innerHTML = ""; // تفريغ الصور السابقة
 
-    const instaLink = document.getElementById("det_insta_link");
-    if (p.instagram) {
-        const user = p.instagram.replace('@', '');
-        instaLink.href = `https://instagram.com/${user}`;
-        instaLink.style.display = "flex";
-    } else {
-        instaLink.style.display = "none";
-    }
+      if (p.images && p.images.length > 0) {
+          mainImg.src = p.images[0].image_url; // عرض أول صورة كصورة رئيسية
+          
+          p.images.forEach((img, index) => {
+              const thumb = document.createElement("img");
+              thumb.src = img.image_url;
+              thumb.className = "gallery-thumb" + (index === 0 ? " active" : "");
+              
+              // وظيفة التبديل عند الضغط على الصورة المصغرة
+              thumb.onclick = () => {
+                  mainImg.src = img.image_url;
+                  document.querySelectorAll(".gallery-thumb").forEach(t => t.classList.remove("active"));
+                  thumb.classList.add("active");
+              };
+              galleryContainer.appendChild(thumb);
+          });
+          // إظهار شريط الصور فقط إذا كان هناك أكثر من صورة
+          galleryContainer.style.display = (p.images.length > 1) ? "flex" : "none";
+      } else {
+          mainImg.src = "https://via.placeholder.com/600x400?text=Ramallah+Time";
+          galleryContainer.style.display = "none";
+      }
 
-    const fbLink = document.getElementById("det_fb_link");
-    if (p.facebook) {
-        fbLink.href = p.facebook.startsWith('http') ? p.facebook : 'https://facebook.com/' + p.facebook;
-        fbLink.style.display = "flex";
-    } else {
-        fbLink.style.display = "none";
-    }
+      // 3. إدارة الروابط الاجتماعية
+      const webLink = document.getElementById("det_web_link");
+      if (p.website) {
+          webLink.href = p.website.startsWith('http') ? p.website : 'https://' + p.website;
+          webLink.style.display = "flex";
+      } else { webLink.style.display = "none"; }
+
+      const instaLink = document.getElementById("det_insta_link");
+      if (p.instagram) {
+          const user = p.instagram.replace('@', '');
+          instaLink.href = `https://instagram.com/${user}`;
+          instaLink.style.display = "flex";
+      } else { instaLink.style.display = "none"; }
+
+      const fbLink = document.getElementById("det_fb_link");
+      if (p.facebook) {
+          fbLink.href = p.facebook.startsWith('http') ? p.facebook : 'https://facebook.com/' + p.facebook;
+          fbLink.style.display = "flex";
+      } else { fbLink.style.display = "none"; }
 
       const distEl = document.getElementById("det_dist");
       if (p.distance) {
           distEl.innerHTML = `<i class="fa-solid fa-person-walking"></i> يبعد عنك ${p.distance} كم`;
           distEl.style.display = "block";
-      } else {
-          distEl.style.display = "none";
-      }
+      } else { distEl.style.display = "none"; }
 
       document.getElementById("detailsModal").style.display = "block";
     }
@@ -767,13 +820,20 @@
 
   <div id="detailsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:9999; padding:20px; overflow-y:auto; direction:rtl;">
     <div style="max-width:700px; margin:20px auto; background:#0b1222; border-radius:25px; border:1px solid #3b82f6; overflow:hidden; box-shadow:0 0 50px rgba(0,0,0,0.8);">
-            <img id="det_img" src="" style="width:100%; height:auto; max-height:70vh; object-fit:contain; background:#000; display:block;">
+        
+        <!-- 1. الصورة الكبيرة المعروضة -->
+        <img id="det_img" src="" style="width:100%; height:auto; max-height:60vh; object-fit:contain; background:#000; display:block;">
+        
+        <!-- 2. شريط الصور المصغر (المعرض) -->
+        <div id="det_gallery" class="modal-gallery"></div>
         
         <div style="padding:30px;">
             <h1 id="det_name" style="margin:0 0 10px 0; font-size:32px; font-weight:900; color:#fff;"></h1>
             <div id="det_dist" style="color:#3b82f6; font-weight:900; margin-bottom:20px; font-size:18px;"></div>
             
             <p id="det_desc" style="color:#cbd5e1; font-size:18px; line-height:1.8; margin-bottom:25px;"></p>
+            
+            <!-- اترك بقية الأزرار (واتساب، فيسبوك، انستجرام) كما هي تحت هذا السطر -->
             <div style="color:var(--text-muted); font-weight:700; margin-bottom:20px; display:flex; align-items:center; gap:10px;">
                 <i class="fa-solid fa-map-location-dot" style="color:var(--primary-color); font-size:20px;"></i>
                 <span id="det_address" style="color:#fff; font-size:16px;"></span>
