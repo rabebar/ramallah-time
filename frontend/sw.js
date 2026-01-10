@@ -1,60 +1,52 @@
-﻿const CACHE_NAME = "ramallah-time-v3"; // تغيير النسخة لتحديث المتصفح
+﻿const CACHE_NAME = "ramallah-time-v4"; // تم تغيير النسخة لفرض التحديث
+
+// الملفات التي يتم تخزينها ليعمل الموقع بسرعة (الملفات الثابتة فقط)
 const PRECACHE_URLS = [
   "/",
-  "/places",
-  "/add-place",
   "/static/style.css",
-  "/static/ramallah.js",
-  "/manifest.json"
+  "/static/ramallah.js"
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
   );
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : Promise.resolve())))
-    ).then(() => self.clients.claim())
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) return caches.delete(key);
+        })
+      );
+    })
   );
+  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  const url = new URL(req.url);
+  const url = new URL(event.request.url);
 
-  // --- الإصلاح: تجاهل روابط الـ API والروابط الخارجية ---
-  if (url.pathname.startsWith("/api/") || !url.origin.includes(location.hostname)) {
-    return; // لا تتدخل في هذه الطلبات واتركها للإنترنت العادي
+  // --- الإصلاح الجوهري: أي طلب للـ API لا يتم تخزينه أبداً لضمان ظهور البيانات الجديدة فوراً ---
+  if (url.pathname.startsWith("/api/")) {
+    return; // اترك الطلب يذهب للسيرفر مباشرة دون تدخل من السيرفس وركر
   }
 
-  // Cache-first للملفات الثابتة (CSS, JS)
-  if (url.pathname.startsWith("/static/") || url.pathname === "/manifest.json") {
+  // استراتيجية الملفات الثابتة: الكاش أولاً للسرعة
+  if (PRECACHE_URLS.includes(url.pathname) || url.pathname.startsWith("/static/")) {
     event.respondWith(
-      caches.match(req).then(cached => cached || fetch(req).then(res => {
-        if (!res || res.status !== 200) return res;
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-        return res;
-      }))
+      caches.match(event.request).then((cached) => {
+        return cached || fetch(event.request);
+      })
     );
     return;
   }
 
-  // Network-first للصفحات لضمان تحديث البيانات
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-        return res;
-      }).catch(() => caches.match(req).then(cached => cached || caches.match("/")))
-    );
-    return;
-  }
-
-  event.respondWith(fetch(req).catch(() => caches.match(req)));
+  // استراتيجية الصفحات: الشبكة أولاً، وإذا لا يوجد إنترنت خذ من الكاش
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
+  );
 });
