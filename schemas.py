@@ -49,6 +49,7 @@ class PlaceOut(BaseModel):
     images: List[PlaceImageOut] = []
     subscription_status: str = "pending"
     is_expired: bool = False
+    is_premium: bool = False
     distance: Optional[float] = None
     model_config = ConfigDict(from_attributes=True)
 
