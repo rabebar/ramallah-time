@@ -374,7 +374,7 @@
     }
 
     // دالة الحفظ النهائي الشاملة
-    async function finalSubmit() {
+   async function finalSubmit() {
       const btn = document.getElementById("submitBtn");
       const loader = document.getElementById("globalLoader");
       
@@ -418,7 +418,7 @@
         const result = await response.json();
         if (!response.ok) throw new Error(result.detail || "حدث خطأ أثناء الحفظ");
 
-        // الخطوة 2: رفع الصور (باستخدام كلمة السر كتوكن)
+        // الخطوة 2: رفع الصور (الإصلاح هنا: نستخدم result.owner_password كـ Token)
         const photos = document.getElementById("in_photos").files;
         if (photos.length > 0) {
           document.getElementById("loaderText").innerText = "جاري رفع الصور...";
@@ -428,7 +428,7 @@
           }
           await fetch(`/api/places/${result.id}/images`, {
             method: "POST",
-            headers: { "x-admin-token": ownerPass },
+            headers: { "x-admin-token": result.owner_password }, // استخدام الهاش الذي أعاده السيرفر
             body: imgData
           });
         }

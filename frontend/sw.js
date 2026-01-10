@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = "ramallah-time-v2";
+﻿const CACHE_NAME = "ramallah-time-v3"; // تغيير النسخة لتحديث المتصفح
 const PRECACHE_URLS = [
   "/",
   "/places",
@@ -26,10 +26,16 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Cache-first للملفات الثابتة
+  // --- الإصلاح: تجاهل روابط الـ API والروابط الخارجية ---
+  if (url.pathname.startsWith("/api/") || !url.origin.includes(location.hostname)) {
+    return; // لا تتدخل في هذه الطلبات واتركها للإنترنت العادي
+  }
+
+  // Cache-first للملفات الثابتة (CSS, JS)
   if (url.pathname.startsWith("/static/") || url.pathname === "/manifest.json") {
     event.respondWith(
       caches.match(req).then(cached => cached || fetch(req).then(res => {
+        if (!res || res.status !== 200) return res;
         const copy = res.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
         return res;
@@ -38,7 +44,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Network-first للصفحات
+  // Network-first للصفحات لضمان تحديث البيانات
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).then(res => {
@@ -50,6 +56,5 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Default
   event.respondWith(fetch(req).catch(() => caches.match(req)));
 });
