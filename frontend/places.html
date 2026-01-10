@@ -504,10 +504,10 @@ cardEl.className = "place-card" + (place.is_premium ? " premium-border" : "");
                 </div>` : ''}
 
               <div class="card-actions">
-                ${place.whatsapp ? `
-                  <a href="https://wa.me/${place.whatsapp.replace(/\+/g,'')}" target="_blank" class="action-btn wa-btn">
-                    <i class="fa-brands fa-whatsapp"></i> واتساب
-                  </a>` : ''}
+                ${(place.whatsapp && place.whatsapp.trim() !== "") ? `
+  <a href="https://wa.me/${place.whatsapp.replace(/\+/g,'').replace(/\s/g,'')}" target="_blank" class="action-btn wa-btn">
+    <i class="fa-brands fa-whatsapp"></i> واتساب
+  </a>` : ''}
                 
                 ${place.phone ? `
                   <a href="tel:${place.phone}" target="_blank" class="action-btn phone-btn">

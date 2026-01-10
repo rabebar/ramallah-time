@@ -192,6 +192,7 @@ def get_all_places(
     x_admin_token: Optional[str] = Header(None),
 ):
     is_admin = (x_admin_token == ADMIN_SECRET_KEY)
+    # استخدام selectinload لضمان جلب كافة الصور لكل مكان دفعة واحدة
     query = db.query(Place).options(joinedload(Place.images))
 
     if cat: query = query.filter(Place.category == cat)
@@ -205,32 +206,30 @@ def get_all_places(
     for p in items_db:
         try:
             status = get_place_status(p)
-            # التحقق من المالك: هل يرسل الهاش الصحيح؟
             is_owner = (x_admin_token and p.owner_password and x_admin_token == p.owner_password)
 
-            # سياسة العرض: الأدمن والمالك يريان كل شيء، الزائر يرى فقط النشط (Active)
             if not (include_hidden and is_admin) and not is_owner:
-                if status in ("pending", "expired"): 
-                    continue
+                if status in ("pending", "expired"): continue
 
-            # اختيار المخطط المناسب (عرض الباسورد للأدمن والمالك فقط)
             schema_model = schemas.PlaceAuthOut if (is_admin or is_owner) else schemas.PlaceOut
             p_out = schema_model.model_validate(p)
             
             p_out.subscription_status = status
             p_out.is_expired = (status == "expired")
 
-            # حساب المسافة إذا توفرت الإحداثيات
-            if lat is not None and lng is not None and p.latitude is not None:
-                p_out.distance = calculate_haversine(lat, lng, p.latitude, p.longitude)
+            # إصلاح حساب المسافة: التأكد من تحويل القيم لأرقام عشرية دقيقة
+            if lat is not None and lng is not None and p.latitude is not None and p.longitude is not None:
+                p_out.distance = calculate_haversine(float(lat), float(lng), float(p.latitude), float(p.longitude))
+            else:
+                p_out.distance = None
             
             results.append(p_out)
         except Exception as e:
-            print(f"Error processing place {p.id}: {e}")
-            continue # تخطي السجل التالف لضمان عمل الموقع
+            print(f"Error: {e}")
+            continue
 
-    # الترتيب: المميز (Premium) أولاً، ثم الأقرب مسافة
-    results.sort(key=lambda x: (not getattr(x, 'is_premium', False), getattr(x, 'distance', 99999) or 99999))
+    # الترتيب: المميز أولاً، ثم الأقرب مسافة (99999 للأماكن التي بلا مسافة)
+    results.sort(key=lambda x: (not getattr(x, 'is_premium', False), x.distance if x.distance is not None else 99999))
 
     return {"items": results, "total": len(results)}
 
