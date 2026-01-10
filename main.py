@@ -49,8 +49,12 @@ def calculate_haversine(lat1, lon1, lat2, lon2):
 # --- دورة حياة التطبيق ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("--- نظام رام الله تايم: تم تفعيل كافة الميزات والإصلاحات ---")
-    init_db()
+    # تشغيل تهيئة القاعدة مرة واحدة فقط عند الإقلاع
+    try:
+        init_db()
+        print("--- [OK] Database Initialized ---")
+    except Exception as e:
+        print(f"--- [Error] DB Init: {e} ---")
     yield
 
 app = FastAPI(title="Ramallah Time API", version="4.0.0", lifespan=lifespan)
@@ -100,6 +104,12 @@ def owner_dashboard_page(): return FileResponse("frontend/owner-dashboard.html")
 
 @app.get("/manifest.json")
 def get_manifest(): return FileResponse("frontend/manifest.json")
+
+@app.get("/sw.js")
+def get_sw(): return FileResponse("frontend/sw.js")
+
+@app.get("/favicon.ico")
+def get_favicon(): return {"status": "no-icon"}
 
 # --- دوال المساعدة للحالة ---
 def is_expired(place: Place) -> bool:
