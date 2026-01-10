@@ -262,33 +262,48 @@ def update_place(place_id: int, payload: dict, db: Session = Depends(get_db), x_
     if not p:
         raise HTTPException(status_code=404, detail="المكان غير موجود")
 
+    # --- 1. نظام التحقق المرن (Auth) ---
     is_admin = (x_admin_token == ADMIN_SECRET_KEY)
-    is_owner = (x_admin_token and p.owner_password and x_admin_token == p.owner_password)
+    is_owner_hash = (x_admin_token and p.owner_password and x_admin_token == p.owner_password)
     
-    if not is_admin and not is_owner:
-        raise HTTPException(status_code=401, detail="غير مخول بالتعديل")
+    # محاولة التحقق إذا كانت كلمة سر عادية (نص)
+    is_owner_raw = False
+    if x_admin_token and p.owner_password and not is_admin and not is_owner_hash:
+        try:
+            if pwd_context.verify(x_admin_token, p.owner_password):
+                is_owner_raw = True
+        except: pass
 
-    for key, value in payload.items():
-        if hasattr(p, key) and value is not None:
-            # إصلاح تشفير كلمة المرور:
-            if key == "owner_password" and value:
-                # إذا كانت القيمة المرسلة هي نفس الهاش القديم، لا تفعل شيئاً
-                if value == p.owner_password:
-                    continue
-                # إذا كانت كلمة مرور جديدة (نص عادي)، قم بتشفيرها
-                try:
-                    # نتحقق إذا كانت القيمة المرسلة أصلاً "هاش" (تبدأ بـ $argon2)
-                    pwd_context.identify(str(value))
+    if not (is_admin or is_owner_hash or is_owner_raw):
+        raise HTTPException(status_code=401, detail="كلمة السر غير صحيحة")
+
+    # --- 2. تنظيف البيانات (منع خطأ 500) ---
+    # الحقول التي يمنع تعديلها يدوياً لأنها تسبب انهيار السيرفر
+    forbidden = ["id", "images", "created_at", "subscription_start", "subscription_end"]
+
+    try:
+        for key, value in payload.items():
+            if key in forbidden: continue 
+            
+            if hasattr(p, key):
+                # التعامل مع كلمة المرور بذكاء
+                if key == "owner_password" and value:
+                    if value == p.owner_password: continue
+                    try:
+                        pwd_context.identify(str(value))
+                        setattr(p, key, value)
+                    except:
+                        setattr(p, key, pwd_context.hash(str(value)[:72]))
+                else:
                     setattr(p, key, value)
-                except:
-                    # إذا لم تكن هاش، فهي كلمة مرور جديدة نصية، نقوم بتشفيرها
-                    setattr(p, key, pwd_context.hash(str(value)[:72]))
-            else:
-                setattr(p, key, value)
 
-    db.commit()
-    db.refresh(p)
-    return p
+        db.commit()
+        db.refresh(p)
+        return p
+    except Exception as e:
+        db.rollback()
+        print(f"Update Error: {e}")
+        raise HTTPException(status_code=500, detail="خطأ داخلي أثناء تحديث القاعدة")
 
 # --- [ميزة] المساعد الذكي ---
 class ChatRequest(BaseModel): message: str
