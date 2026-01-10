@@ -141,29 +141,44 @@ async def scan_place_with_ai(image: UploadFile = File(...)):
 
 # --- [إصلاح] إضافة منشأة مع تشفير سليم ---
 @app.post("/api/places", response_model=schemas.PlaceAuthOut)
-def create_place(payload: schemas.PlaceCreate, db: Session = Depends(get_db), x_admin_token: str = Header(None)):
+def create_place(payload: schemas.PlaceCreate, db: Session = Depends(get_db), x_admin_token: Optional[str] = Header(None)):
     is_admin = (x_admin_token == ADMIN_SECRET_KEY)
+    
+    # تحويل الإيميل ليكون دائماً بحروف صغيرة لتجنب مشاكل الدخول
+    email_lower = payload.owner_email.lower()
+    
     if not is_admin:
-        if db.query(Place).filter(Place.owner_email == payload.owner_email.lower()).first():
-            raise HTTPException(status_code=400, detail="البريد مسجل مسبقاً")
+        existing = db.query(Place).filter(Place.owner_email == email_lower).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="هذا البريد مسجل مسبقاً")
 
+    # تشفير كلمة السر بشكل آمن
     hashed_password = pwd_context.hash(payload.owner_password[:72]) if payload.owner_password else None
 
+    # الحقن المصحح: استبعاد الباسورد والإيميل من القاموس لمنع التكرار
+    data = payload.model_dump(exclude={"owner_password", "owner_email"})
+
     new_place = Place(
-        **payload.model_dump(exclude={"owner_password"}),
+        **data,
         owner_password=hashed_password,
-        owner_email=payload.owner_email.lower(),
+        owner_email=email_lower,
         subscription_status="active" if is_admin else "pending",
         created_at=datetime.utcnow()
     )
+
     if is_admin:
         new_place.subscription_start = datetime.utcnow()
         new_place.subscription_end = datetime.utcnow() + timedelta(days=365)
 
-    db.add(new_place)
-    db.commit()
-    db.refresh(new_place)
-    return new_place
+    try:
+        db.add(new_place)
+        db.commit()
+        db.refresh(new_place)
+        return new_place
+    except Exception as e:
+        db.rollback()
+        print(f"Database Error: {e}")
+        raise HTTPException(status_code=500, detail="حدث خطأ أثناء حفظ البيانات في القاعدة")
 
 # --- [إصلاح] جلب كافة الأماكن وحماية الخصوصية ---
 @app.get("/api/places", response_model=schemas.PlacesResponse)
