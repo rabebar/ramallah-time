@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <!-- استدعاء الخطوط العربية لضمان ظهورها في الصورة النهائية -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <!-- استدعاء مكتبة التحويل لصورة داخل الإطار -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            /* جلب القيم من الرابط أو وضع قيم افتراضية مع استخدام | safe للألوان */
+            --bg-color: {{ request.args.get('bg', 'white') | safe }};
+            --text-color: {{ request.args.get('text', '#2c2c2c') | safe }};
+            --price-color: {{ request.args.get('priceColor', '#555555') | safe }};
+            --line-color: {{ request.args.get('line', '#b5935f') | safe }};
+            --img-shadow: {{ request.args.get('shadow', 'rgba(0,0,0,0.15)') | safe }};
+        }
+        
+        body { margin: 0; padding: 0; overflow: hidden; background: transparent; }
+
+        /* حاوية البوست الرئيسية بمقاس إنستغرام المربع */
+        #post-canvas {
+            width: 1080px; 
+            height: 1080px; 
+            background: var(--bg-color); 
+            font-family: 'Cairo', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            position: relative; 
+            overflow: hidden; 
+            text-align: center; 
+            box-sizing: border-box; 
+            padding: 80px;
+        }
+
+        .watermark {
+            position: absolute; 
+            bottom: 40px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            font-size: 20px; 
+            color: rgba(0,0,0,0.15); 
+            letter-spacing: 5px; 
+            text-transform: uppercase; 
+            font-weight: 700;
+        }
+
+        .product-container {
+            width: 90%; 
+            height: 60%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-bottom: 50px;
+        }
+
+        .product-container img {
+            max-width: 100%; 
+            max-height: 100%; 
+            object-fit: contain; 
+            filter: drop-shadow(0 30px 60px var(--img-shadow));
+        }
+
+        .product-title {
+            font-size: 68px; 
+            font-weight: 900; 
+            margin: 0 0 20px 0; 
+            line-height: 1.2; 
+            color: var(--text-color);
+        }
+
+        .divider {
+            width: 150px; 
+            height: 8px; 
+            background-color: var(--line-color); 
+            margin: 0 auto 30px auto; 
+            border-radius: 4px;
+        }
+
+        .product-price {
+            font-size: 56px; 
+            font-weight: 700; 
+            color: var(--price-color); 
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div id="post-canvas">
+    <!-- علامة مائية اختيارية -->
+    <div class="watermark">RAMALLAH TIME</div>
+    
+    <!-- منطقة عرض صورة المنتج المرفوعة -->
+    <div class="product-container">
+        <img src="{{ product_image }}" alt="">
+    </div>
+    
+    <!-- منطقة النصوص: الاسم والسعر -->
+    <div style="width: 100%;">
+        <h1 class="product-title">{{ product_name }}</h1>
+        <div class="divider"></div>
+        <h2 class="product-price">{{ product_price }} شيقل</h2>
+    </div>
+</div>
+
+</body>
+</html>

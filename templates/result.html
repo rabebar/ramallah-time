@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Design Lab | Ramallah Time</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f0f12;
+            --sidebar-bg: #16161d;
+            --card-glass: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-violet: #6c5ce7;
+            --text-main: #ffffff;
+            --text-muted: #a0a0ab;
+            --bg-live: linear-gradient(160deg, #fdfbf7 0%, #e2d9ca 100%);
+            --text-live: #2c2c2c;
+            --price-live: #555;
+            --line-live: #b5935f;
+            --accent-live: #b5935f;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        /* ===== الإصلاح الرئيسي: السماح بالـ scroll ===== */
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            overflow-y: auto; /* كان hidden */
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--card-border);
+            padding: 25px 15px;
+            height: 100vh;
+            position: sticky; /* يبقى ثابتاً عند الـ scroll */
+            top: 0;
+            flex-shrink: 0;
+        }
+        .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 35px; }
+        .logo-box { width: 35px; height: 35px; background: var(--accent-violet); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; flex-shrink: 0; }
+        .nav-links { list-style: none; }
+        .nav-item { padding: 12px 15px; border-radius: 12px; margin-bottom: 8px; color: var(--text-muted); display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 500; font-size: 14px; transition: 0.2s; }
+        .nav-item.active { background: var(--card-glass); color: var(--text-main); border: 1px solid var(--card-border); }
+        .nav-item:hover { color: var(--text-main); }
+
+        /* Main Lab */
+        .lab-viewport {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto; /* scroll هنا */
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 30px;
+            align-items: start; /* مهم جداً لمنع تمدد العمودين */
+        }
+
+        /* Preview */
+        .preview-pane { position: sticky; top: 30px; }
+        .canvas-container {
+            width: 100%; aspect-ratio: 1/1;
+            background: var(--bg-live);
+            border-radius: 24px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+            padding: 40px; transition: 0.4s;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        #live-img { max-width: 75%; max-height: 55%; object-fit: contain; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.15)); margin-bottom: 20px; transition: 0.3s; }
+        #live-title { font-family: 'Cairo'; font-size: 26px; font-weight: 900; color: var(--text-live); margin-bottom: 10px; text-align: center; }
+        #live-divider { width: 70px; height: 5px; background: var(--line-live); border-radius: 3px; margin-bottom: 10px; }
+        #live-price { font-family: 'Cairo'; font-size: 20px; font-weight: 700; color: var(--price-live); }
+        .watermark { position: absolute; bottom: 12px; font-size: 8px; color: rgba(0,0,0,0.1); letter-spacing: 3px; font-weight: 700; }
+
+        /* Layout Styles */
+        .layout-modern #live-title { position: absolute; top: 30px; right: 30px; text-align: right; font-size: 20px; width: 65%; margin: 0; }
+        .layout-modern #live-divider { display: none; }
+        .layout-modern #live-price { position: absolute; bottom: 25px; left: 25px; background: #fff; padding: 10px 22px; border-radius: 50px; font-weight: 900; color: #111; box-shadow: 0 8px 20px rgba(0,0,0,0.12); margin: 0; }
+        .layout-modern #live-img { margin-bottom: 0; }
+
+        .layout-minimal { justify-content: flex-end; padding: 0; }
+        .layout-minimal #live-img { position: absolute; top: 15px; max-height: 65%; margin: 0; }
+        .layout-minimal .text-block { width: 100%; padding: 18px 22px; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: space-between; z-index: 2; }
+        .layout-minimal #live-title { color: #fff; font-size: 16px; margin: 0; }
+        .layout-minimal #live-price { color: #fff; font-size: 16px; margin: 0; }
+        .layout-minimal #live-divider { display: none; }
+
+        .layout-bold { flex-direction: row; padding: 0; }
+        .layout-bold #live-img { position: absolute; left: 0; bottom: 0; max-height: 85%; max-width: 55%; margin: 0; }
+        .layout-bold .text-block { position: absolute; right: 0; top: 0; width: 50%; height: 100%; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 25px; }
+        .layout-bold #live-title { font-size: 20px; text-align: right; margin-bottom: 12px; }
+        .layout-bold #live-divider { margin-bottom: 12px; }
+        .layout-bold #live-price { background: var(--accent-live); color: #fff; padding: 10px 18px; border-radius: 12px; font-size: 16px; margin: 0; }
+
+        /* Controls */
+        .controls-pane { display: flex; flex-direction: column; gap: 15px; }
+        .control-card { background: var(--card-glass); border: 1px solid var(--card-border); padding: 18px; border-radius: 20px; }
+        .section-title { font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .options-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .opt-btn { background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 10px 5px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .opt-btn.active { border-color: var(--accent-violet); background: rgba(108,92,231,0.1); }
+        .opt-icon { font-size: 16px; margin-bottom: 4px; }
+        .opt-name { font-size: 10px; font-weight: 700; color: var(--text-muted); }
+        .active .opt-name { color: #fff; }
+
+        input, textarea {
+            width: 100%; background: rgba(0,0,0,0.2);
+            border: 1px solid var(--card-border);
+            padding: 13px; border-radius: 12px;
+            color: #fff; margin-bottom: 10px;
+            font-size: 14px; outline: none;
+            font-family: 'Cairo';
+        }
+        input::placeholder, textarea::placeholder { color: var(--text-muted); }
+
+        .btn-main { background: #00ff88; color: #000; border: none; padding: 16px; border-radius: 12px; width: 100%; font-weight: 900; cursor: pointer; transition: 0.3s; margin-top: 8px; font-size: 14px; }
+        .btn-main:hover { background: #00e07a; }
+        .btn-main:disabled { background: #555; color: #888; cursor: not-allowed; }
+        .btn-outline { background: transparent; border: 2px solid var(--card-border); color: #fff; padding: 14px; border-radius: 12px; width: 100%; font-weight: 700; cursor: pointer; margin-top: 8px; text-decoration: none; display: block; text-align: center; font-size: 14px; transition: 0.2s; }
+        .btn-outline:hover { border-color: #fff; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo-area">
+            <div class="logo-box">RT</div>
+            <h2 style="font-size: 16px; font-weight: 800;">Ramallah Time</h2>
+        </div>
+        <nav class="nav-links">
+            <a href="/" class="nav-item"><span>📊</span> Dashboard</a>
+            <a href="/admin" class="nav-item"><span>📦</span> My Products</a>
+            <a href="javascript:history.back()" class="nav-item"><span>↩️</span> Go Back</a>
+            <a href="/logout" class="nav-item" style="margin-top: 30px; color: #ff4757;"><span>🚪</span> Logout</a>
+        </nav>
+    </div>
+
+    <div class="lab-viewport">
+
+        <!-- Live Preview -->
+        <div class="preview-pane">
+            <div class="canvas-container" id="post-canvas">
+                <img id="live-img" src="/static/uploads/{{ processed }}" alt="">
+                <div class="text-block" id="text-block" style="display:contents;">
+                    <div id="live-title">Product Name</div>
+                    <div id="live-divider"></div>
+                    <div id="live-price">0.00 ₪</div>
+                </div>
+                <div class="watermark">RAMALLAH TIME AI</div>
+            </div>
+            <button class="btn-main" id="dlBtn" onclick="downloadDesign()">📥 DOWNLOAD INSTAGRAM POST</button>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-pane">
+
+            <div class="control-card">
+                <div class="section-title">🎨 6 Professional Themes</div>
+                <div class="options-grid">
+                    <div class="opt-btn active" onclick="setTheme('gold', this)"><div class="opt-icon">✨</div><div class="opt-name">Royal</div></div>
+                    <div class="opt-btn" onclick="setTheme('black', this)"><div class="opt-icon">🖤</div><div class="opt-name">Night</div></div>
+                    <div class="opt-btn" onclick="setTheme('pastel', this)"><div class="opt-icon">🦋</div><div class="opt-name">Pastel</div></div>
+                    <div class="opt-btn" onclick="setTheme('spring', this)"><div class="opt-icon">🌿</div><div class="opt-name">Fresh</div></div>
+                    <div class="opt-btn" onclick="setTheme('fire', this)"><div class="opt-icon">🔥</div><div class="opt-name">Fire</div></div>
+                    <div class="opt-btn" onclick="setTheme('ocean', this)"><div class="opt-icon">🌊</div><div class="opt-name">Ocean</div></div>
+                </div>
+            </div>
+
+            <div class="control-card">
+                <div class="section-title">📐 4 Layout Styles</div>
+                <div class="options-grid-4">
+                    <div class="opt-btn active" onclick="setLayout('elegant', this)"><div class="opt-icon">🖼️</div><div class="opt-name">Classic</div></div>
+                    <div class="opt-btn" onclick="setLayout('modern', this)"><div class="opt-icon">💎</div><div class="opt-name">Modern</div></div>
+                    <div class="opt-btn" onclick="setLayout('minimal', this)"><div class="opt-icon">🎯</div><div class="opt-name">Minimal</div></div>
+                    <div class="opt-btn" onclick="setLayout('bold', this)"><div class="opt-icon">⚡</div><div class="opt-name">Bold</div></div>
+                </div>
+            </div>
+
+            <div class="control-card">
+                <div class="section-title">✍️ Product Content</div>
+                <input type="text" id="inName" placeholder="Product Name..." oninput="sync()">
+                <input type="text" id="inPrice" placeholder="Price (₪)..." oninput="sync()">
+                <textarea id="inDesc" placeholder="Features, sizes, colors..." oninput="sync()" style="min-height: 80px; resize: vertical;"></textarea>
+
+                <form action="/save_product" method="POST">
+                    <input type="hidden" name="original_image" value="{{ original }}">
+                    <input type="hidden" name="processed_image" value="{{ processed }}">
+                    <input type="hidden" name="name" id="fName">
+                    <input type="hidden" name="price" id="fPrice">
+                    <input type="hidden" name="description" id="fDesc">
+                    <input type="hidden" name="template_style" id="fStyle" value="elegant">
+                    <button type="submit" class="btn-outline">💾 SAVE TO MY ONLINE STORE</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const themes = {
+            gold:   { bg: 'linear-gradient(160deg, #fdfbf7 0%, #e2d9ca 100%)', text: '#2c2c2c', price: '#555',    line: '#b5935f', accent: '#b5935f' },
+            black:  { bg: 'linear-gradient(160deg, #1a1a1a 0%, #434343 100%)', text: '#ffffff', price: '#e0e0e0', line: '#ffffff', accent: '#ffffff' },
+            pastel: { bg: 'linear-gradient(160deg, #fdf2f8 0%, #ebf5fb 100%)', text: '#2c3e50', price: '#7f8c8d', line: '#bdc3c7', accent: '#a29bfe' },
+            spring: { bg: 'linear-gradient(160deg, #f0fff4 0%, #c6f6d5 100%)', text: '#1a3c2a', price: '#276749', line: '#48bb78', accent: '#38a169' },
+            fire:   { bg: 'linear-gradient(160deg, #fff5f5 0%, #fed7d7 100%)', text: '#742a2a', price: '#c53030', line: '#fc8181', accent: '#e53e3e' },
+            ocean:  { bg: 'linear-gradient(160deg, #ebf8ff 0%, #bee3f8 100%)', text: '#1a365d', price: '#2b6cb0', line: '#63b3ed', accent: '#3182ce' }
+        };
+
+        function setTheme(key, el) {
+            const t = themes[key];
+            const r = document.documentElement;
+            r.style.setProperty('--bg-live',    t.bg);
+            r.style.setProperty('--text-live',  t.text);
+            r.style.setProperty('--price-live', t.price);
+            r.style.setProperty('--line-live',  t.line);
+            r.style.setProperty('--accent-live',t.accent);
+            el.closest('.options-grid').querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function setLayout(layout, el) {
+            const canvas    = document.getElementById('post-canvas');
+            const textBlock = document.getElementById('text-block');
+            canvas.className = 'canvas-container layout-' + layout;
+            textBlock.style.display = (layout === 'minimal' || layout === 'bold') ? '' : 'contents';
+            document.getElementById('fStyle').value = layout;
+            el.closest('.options-grid-4').querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function sync() {
+            const name  = document.getElementById('inName').value  || 'Product Name';
+            const price = document.getElementById('inPrice').value || '0.00';
+            document.getElementById('live-title').innerText = name;
+            document.getElementById('live-price').innerText = price + ' ₪';
+            document.getElementById('fName').value  = name;
+            document.getElementById('fPrice').value = price;
+            document.getElementById('fDesc').value  = document.getElementById('inDesc').value;
+        }
+
+        function downloadDesign() {
+            const canvas = document.getElementById('post-canvas');
+            const btn    = document.getElementById('dlBtn');
+            btn.innerText  = '⏳ EXPORTING...';
+            btn.disabled   = true;
+            html2canvas(canvas, { scale: 3, useCORS: true }).then(c => {
+                const link      = document.createElement('a');
+                link.download   = 'RT_Post_' + Date.now() + '.jpg';
+                link.href       = c.toDataURL('image/jpeg', 0.95);
+                link.click();
+                btn.innerText  = '📥 DOWNLOAD INSTAGRAM POST';
+                btn.disabled   = false;
+            });
+        }
+    </script>
+</body>
+</html>

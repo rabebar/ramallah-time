@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: transparent; }
+
+        #post-canvas {
+            width: 1080px;
+            height: 1080px;
+            font-family: 'Cairo', sans-serif;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(160deg, #fafafa 0%, #f0ede8 100%);
+        }
+
+        /* صورة المنتج تملأ معظم المساحة */
+        .product-img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -58%);
+            max-width: 800px;
+            max-height: 750px;
+            object-fit: contain;
+            filter: drop-shadow(0 30px 60px rgba(0,0,0,0.12));
+        }
+
+        /* شريط شفاف في الأسفل */
+        .bottom-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 220px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 70px;
+        }
+
+        .product-title {
+            font-size: 58px;
+            font-weight: 900;
+            color: #ffffff;
+            text-align: right;
+            line-height: 1.2;
+            max-width: 600px;
+        }
+
+        .price-tag {
+            font-size: 52px;
+            font-weight: 900;
+            color: #ffffff;
+            white-space: nowrap;
+            opacity: 0.9;
+        }
+
+        /* خط فاصل رفيع بين الاسم والسعر */
+        .separator {
+            width: 2px;
+            height: 80px;
+            background: rgba(255,255,255,0.3);
+            margin: 0 40px;
+            flex-shrink: 0;
+        }
+
+        /* علامة مائية */
+        .watermark {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: rgba(0,0,0,0.08);
+            letter-spacing: 6px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+<div id="post-canvas">
+    <div class="watermark">RAMALLAH TIME</div>
+    <img class="product-img" src="{{ product_image }}" alt="">
+    <div class="bottom-bar">
+        <div class="product-title">{{ product_name }}</div>
+        <div class="separator"></div>
+        <div class="price-tag">{{ product_price }} ₪</div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,256 @@
+"""
+Ramallah Time - Core Engine (v2.0 - English SaaS Edition)
+Updated: April 2025 - Full PostgreSQL Version
+"""
+
+import os
+import io
+import uuid
+from flask import Flask, render_template, request, redirect, session, url_for, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+from rembg import remove
+from PIL import Image
+from database import get_db_connection
+
+app = Flask(__name__)
+
+# --- SECURITY CONFIGURATION ---
+app.secret_key = os.environ.get('SECRET_KEY', 'rt_secure_dev_key_2025_#99')
+MASTER_PASSWORD = os.environ.get('MASTER_PASSWORD', 'Ruba2025!!')
+
+# --- STORAGE CONFIGURATION ---
+UPLOAD_FOLDER = 'static/uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# -------------------------------------------------------
+# HELPER FUNCTIONS (PostgreSQL Logic)
+# -------------------------------------------------------
+
+def get_user_stats(user_id):
+    """جلب إحصائيات المستخدم باستخدام صيغة PostgreSQL الصحيحة"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT credits FROM users WHERE id = %s", (user_id,))
+    user_data = cursor.fetchone()
+    
+    cursor.execute("SELECT id, slug FROM stores WHERE user_id = %s", (user_id,))
+    store = cursor.fetchone()
+    
+    processed_count = 0
+    if store:
+        # إضافة alias باسم 'count' لضمان قراءة القيمة في PostgreSQL
+        cursor.execute("SELECT COUNT(*) as count FROM products WHERE store_id = %s", (store['id'],))
+        res = cursor.fetchone()
+        processed_count = res['count'] if res else 0
+    
+    cursor.close()
+    conn.close()
+    return {
+        'credits': user_data['credits'] if user_data else 0,
+        'processed': processed_count,
+        'store_slug': store['slug'] if store else None
+    }
+
+# -------------------------------------------------------
+# 1. AUTHENTICATION (PostgreSQL)
+# -------------------------------------------------------
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        phone = request.form.get('phone')
+        password = request.form.get('password')
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, password_hash FROM users WHERE phone = %s", (phone,))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if user and check_password_hash(user['password_hash'], password):
+            session['user_id'] = user['id']
+            return redirect(url_for('index'))
+        else:
+            return "<h1>❌ Invalid phone number or password!</h1>"
+            
+    return render_template('login.html') # تأكد من وجود ملف login.html لاحقاً
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+# -------------------------------------------------------
+# 2. MAIN DASHBOARD (AI Background Removal)
+# -------------------------------------------------------
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+
+    stats = get_user_stats(user_id)
+
+    if request.method == 'POST':
+        if 'image' not in request.files:
+            return redirect(request.url)
+        
+        file = request.files['image']
+        if file.filename == '':
+            return redirect(request.url)
+        
+        if file:
+            if stats['credits'] <= 0:
+                return "<h1>❌ Insufficient Credits!</h1>"
+            
+            unique_id = uuid.uuid4().hex[:8]
+            filename = f"{unique_id}_{file.filename}"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            
+            try:
+                with open(filepath, "rb") as f:
+                    input_data = f.read()
+                
+                output_data = remove(input_data)
+                img_no_bg = Image.open(io.BytesIO(output_data)).convert("RGBA")
+                
+                output_filename = f"processed_{unique_id}.png"
+                output_path = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
+                img_no_bg.save(output_path, "PNG")
+                
+                # خصم الرصيد
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute("UPDATE users SET credits = credits - 1 WHERE id = %s", (user_id,))
+                conn.commit()
+                cursor.close()
+                conn.close()
+                
+                return render_template('result.html', 
+                                       original=filename, 
+                                       processed=output_filename, 
+                                       stats=get_user_stats(user_id))
+                
+            except Exception as e:
+                return f"<h1>System Error: {str(e)}</h1>"
+
+    return render_template('index.html', stats=stats)
+
+# -------------------------------------------------------
+# 3. PRODUCT MANAGEMENT
+# -------------------------------------------------------
+
+@app.route('/save_product', methods=['POST'])
+def save_product():
+    user_id = session.get('user_id')
+    if not user_id: return redirect(url_for('login'))
+
+    name = request.form.get('name', 'New Product')
+    price = request.form.get('price', '0')
+    description = request.form.get('description', '')
+    original_image = request.form.get('original_image')
+    processed_image = request.form.get('processed_image')
+    template_style = request.form.get('template_style', 'elegant')
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, slug FROM stores WHERE user_id = %s", (user_id,))
+    store = cursor.fetchone()
+    
+    if store:
+        cursor.execute(
+            "INSERT INTO products (store_id, name, description, price, original_image_url, processed_image_url, template_style) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (store['id'], name, description, price, original_image, processed_image, template_style)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return redirect(url_for('admin'))
+    
+    cursor.close()
+    conn.close()
+    return "<h1>❌ Error: Store not found!</h1>"
+
+@app.route('/admin')
+def admin():
+    user_id = session.get('user_id')
+    if not user_id: return redirect(url_for('login'))
+    
+    stats = get_user_stats(user_id)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, slug FROM stores WHERE user_id = %s", (user_id,))
+    store = cursor.fetchone()
+    
+    products = []
+    if store:
+        cursor.execute("SELECT * FROM products WHERE store_id = %s ORDER BY id DESC", (store['id'],))
+        products = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    return render_template('admin.html', products=products, stats=stats)
+
+# -------------------------------------------------------
+# 4. PUBLIC STORE
+# -------------------------------------------------------
+
+@app.route('/store/<slug>')
+def view_store(slug):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT stores.*, users.phone 
+        FROM stores 
+        JOIN users ON stores.user_id = users.id 
+        WHERE stores.slug = %s
+    """, (slug,))
+    store = cursor.fetchone()
+    
+    if not store:
+        cursor.close()
+        conn.close()
+        return "<h1>Store Not Found</h1>", 404
+        
+    cursor.execute("SELECT * FROM products WHERE store_id = %s ORDER BY id DESC", (store['id'],))
+    products = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('store.html', store=store, products=products)
+
+# -------------------------------------------------------
+# 5. SUPER ADMIN
+# -------------------------------------------------------
+
+@app.route('/superadmin')
+def super_admin():
+    if not session.get('is_superadmin'): return redirect(url_for('login'))
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT COUNT(*) as count FROM users")
+    total_users = cursor.fetchone()['count']
+    
+    cursor.execute("SELECT COUNT(*) as count FROM products")
+    total_products = cursor.fetchone()['count']
+    
+    cursor.execute("SELECT SUM(credits) as sum_credits FROM users")
+    res_credits = cursor.fetchone()
+    total_credits = res_credits['sum_credits'] if res_credits['sum_credits'] else 0
+    
+    cursor.execute("SELECT users.*, stores.name as store_name FROM users LEFT JOIN stores ON users.id = stores.user_id ORDER BY users.created_at DESC")
+    users = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    return render_template('superadmin.html', stats={'total_users': total_users, 'total_products': total_products, 'total_credits': total_credits}, users=users)
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)

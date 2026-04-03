@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ store.name }} | Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Cairo:wght@600;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: #fafafa; color: #222; }
+        .main-container { max-width: 480px; margin: 0 auto; background-color: #fff; min-height: 100vh; padding: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.02); }
+
+        /* Store Header */
+        .profile-section { text-align: center; margin-bottom: 35px; }
+        .profile-pic { width: 85px; height: 85px; border-radius: 50%; background: #f0f0f0; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; border: 3px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.05); overflow: hidden; }
+        .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
+        .store-name { font-size: 22px; font-weight: 800; margin-bottom: 5px; }
+        .store-bio { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.6; padding: 0 20px; }
+
+        /* Products Grid */
+        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .product-card { border-radius: 18px; overflow: hidden; cursor: pointer; transition: 0.3s; border: 1px solid #F0F0F0; background: #fff; position: relative; }
+        .product-card:active { transform: scale(0.96); }
+        .img-container { width: 100%; aspect-ratio: 1/1; background: #f9f9f9; display: flex; align-items: center; justify-content: center; padding: 12px; }
+        .img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        /* --- ELEGANT --- */
+        .style-elegant .product-info { padding: 10px; text-align: center; }
+        .style-elegant .p-name { font-size: 12px; font-weight: 600; font-family: 'Cairo'; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .style-elegant .p-divider { width: 25px; height: 3px; background: #b5935f; border-radius: 2px; margin: 5px auto; }
+        .style-elegant .p-price { font-size: 14px; font-weight: 800; }
+
+        /* --- MODERN --- */
+        .style-modern .product-info { position: absolute; top: 0; right: 0; left: 0; padding: 10px; background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 100%); }
+        .style-modern .p-name { font-size: 11px; font-weight: 800; color: #fff; font-family: 'Cairo'; }
+        .style-modern .p-price { position: absolute; bottom: 10px; left: 10px; background: #fff; color: #111; font-size: 11px; font-weight: 900; padding: 4px 12px; border-radius: 50px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .style-modern .p-divider { display: none; }
+
+        /* --- MINIMAL --- */
+        .style-minimal .product-info { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; }
+        .style-minimal .p-name { font-size: 11px; font-weight: 700; color: #fff; font-family: 'Cairo'; max-width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .style-minimal .p-price { font-size: 11px; font-weight: 900; color: #fff; }
+        .style-minimal .p-divider { display: none; }
+
+        /* --- BOLD --- */
+        .style-bold { display: flex; flex-direction: row; aspect-ratio: 1/1; }
+        .style-bold .img-container { width: 55%; height: 100%; padding: 8px; aspect-ratio: unset; flex-shrink: 0; }
+        .style-bold .product-info { width: 45%; background: #1a1a1a; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 10px; }
+        .style-bold .p-name { font-size: 10px; font-weight: 800; color: #fff; text-align: right; margin-bottom: 5px; font-family: 'Cairo'; line-height: 1.2; }
+        .style-bold .p-divider { width: 20px; height: 3px; background: #fff; margin-bottom: 6px; }
+        .style-bold .p-price { font-size: 10px; font-weight: 900; color: #1a1a1a; background: #fff; padding: 3px 8px; border-radius: 4px; }
+
+        /* =================== MODAL =================== */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal-content { width: 100%; max-width: 400px; border-radius: 25px; overflow: hidden; position: relative; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-close { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.7); color: #fff; border: 2px solid rgba(255,255,255,0.3); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; z-index: 100; font-size: 15px; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: 0.2s; }
+        .modal-close:hover { background: rgba(0,0,0,0.9); border-color: #fff; }
+
+        /* --- MODAL ELEGANT --- */
+        .modal-elegant { background: #fff; }
+        .modal-elegant .modal-visual { width: 100%; aspect-ratio: 1/1; background: #f9f9f9; display: flex; align-items: center; justify-content: center; padding: 35px; }
+        .modal-elegant .modal-visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .modal-elegant .modal-body { padding: 20px 25px; text-align: center; }
+        .modal-elegant .m-title { font-size: 22px; font-weight: 800; font-family: 'Cairo'; margin-bottom: 6px; color: #111; }
+        .modal-elegant .m-divider { width: 35px; height: 4px; background: #b5935f; border-radius: 2px; margin: 0 auto 10px; }
+        .modal-elegant .m-price { font-size: 18px; font-weight: 700; color: #555; margin-bottom: 12px; }
+        .modal-elegant .m-desc { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 20px; background: #f9f9f9; padding: 12px; border-radius: 10px; text-align: right; }
+        .modal-elegant .m-wa { display: flex; align-items: center; justify-content: center; background: #111; color: #fff; text-decoration: none; padding: 15px; border-radius: 14px; font-weight: 800; font-size: 15px; }
+
+        /* --- MODAL MODERN --- */
+        .modal-modern { background: #f9f9f9; }
+        .modal-modern .modal-visual { width: 100%; aspect-ratio: 1/1; background: #f9f9f9; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; }
+        .modal-modern .modal-visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .modal-modern .m-title { position: absolute; top: 18px; right: 18px; font-size: 15px; font-weight: 900; font-family: 'Cairo'; color: #111; text-align: right; max-width: 60%; background: rgba(255,255,255,0.9); padding: 6px 10px; border-radius: 10px; backdrop-filter: blur(4px); }
+        .modal-modern .m-price { position: absolute; bottom: 18px; left: 18px; background: #111; color: #fff; font-size: 14px; font-weight: 900; padding: 8px 20px; border-radius: 50px; }
+        .modal-modern .m-divider { display: none; }
+        .modal-modern .modal-body { padding: 12px 20px 20px; background: #fff; }
+        .modal-modern .m-desc { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 15px; background: #f9f9f9; padding: 12px; border-radius: 10px; text-align: right; }
+        .modal-modern .m-wa { display: flex; align-items: center; justify-content: center; background: #111; color: #fff; text-decoration: none; padding: 15px; border-radius: 14px; font-weight: 800; font-size: 15px; }
+
+        /* --- MODAL MINIMAL --- */
+        .modal-minimal { background: #111; }
+        .modal-minimal .modal-visual { width: 100%; aspect-ratio: 1/1; background: #1a1a1a; display: flex; align-items: center; justify-content: center; padding: 25px; }
+        .modal-minimal .modal-visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .modal-minimal .modal-body { background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+        .modal-minimal .m-title { font-size: 16px; font-weight: 700; font-family: 'Cairo'; color: #fff; }
+        .modal-minimal .m-divider { display: none; }
+        .modal-minimal .m-price { font-size: 16px; font-weight: 900; color: #fff; white-space: nowrap; }
+        .modal-minimal .m-desc { display: none; }
+        .modal-minimal .modal-footer { padding: 12px 20px 20px; background: #111; }
+        .modal-minimal .m-wa { display: flex; align-items: center; justify-content: center; background: #fff; color: #111; text-decoration: none; padding: 15px; border-radius: 14px; font-weight: 800; font-size: 15px; }
+
+        /* --- MODAL BOLD --- */
+        .modal-bold { display: flex; flex-direction: row; min-height: 260px; background: #fff; }
+        .modal-bold .modal-visual { width: 55%; background: #f9f9f9; display: flex; align-items: center; justify-content: center; padding: 15px; flex-shrink: 0; }
+        .modal-bold .modal-visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .modal-bold .modal-body { width: 45%; background: #1a1a1a; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 20px 15px; }
+        .modal-bold .m-title { font-size: 15px; font-weight: 900; font-family: 'Cairo'; color: #fff; text-align: right; margin-bottom: 10px; line-height: 1.3; }
+        .modal-bold .m-divider { width: 30px; height: 3px; background: #fff; border-radius: 2px; margin-bottom: 10px; }
+        .modal-bold .m-price { background: #fff; color: #111; font-size: 13px; font-weight: 900; padding: 6px 12px; border-radius: 8px; margin-bottom: 12px; }
+        .modal-bold .m-desc { font-size: 11px; color: rgba(255,255,255,0.6); text-align: right; line-height: 1.5; margin-bottom: 12px; }
+        .modal-bold .m-wa { display: flex; align-items: center; justify-content: center; background: #fff; color: #111; text-decoration: none; padding: 10px; border-radius: 10px; font-weight: 800; font-size: 12px; width: 100%; }
+
+        .footer-tag { text-align: center; font-size: 10px; color: #CCC; margin: 60px 0 20px; letter-spacing: 3px; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="profile-section">
+        <div class="profile-pic">
+            {% if store.logo_url %}<img src="{{ store.logo_url }}">{% else %}{{ store.name[0] }}{% endif %}
+        </div>
+        <h1 class="store-name">{{ store.name }}</h1>
+        <p class="store-bio">{{ store.bio or 'Premium Product Selection' }}</p>
+    </div>
+
+    <div class="products-grid">
+        {% for product in products %}
+        <div class="product-card style-{{ product.template_style }}"
+             onclick="openProduct('{{ product.name }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}', '{{ product.description or '' }}', '{{ product.template_style }}')">
+            <div class="img-container">
+                <img src="/static/uploads/{{ product.processed_image_url }}" alt="">
+            </div>
+            <div class="product-info">
+                <div class="p-name">{{ product.name }}</div>
+                <div class="p-divider"></div>
+                <div class="p-price">{{ product.price }} ₪</div>
+            </div>
+        </div>
+        {% else %}
+        <div style="grid-column: 1/-1; text-align: center; color: #999; padding: 60px;">No items live yet.</div>
+        {% endfor %}
+    </div>
+
+    <div class="footer-tag">RAMALLAH TIME SYSTEM</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="productModal" onclick="closeProduct(event)">
+    <div class="modal-content" id="modalContent" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="document.getElementById('productModal').style.display='none'">✕</button>
+
+        <div class="modal-visual" id="modalVisual">
+            <img id="modalImg" src="" alt="">
+            <!-- m-title و m-price سيُنقلان هنا لـ modern -->
+        </div>
+
+        <div class="modal-body" id="modalBody">
+            <div class="m-title"   id="mTitle"></div>
+            <div class="m-divider" id="mDivider"></div>
+            <div class="m-price"   id="mPrice"></div>
+            <div class="m-desc"    id="mDesc"></div>
+            <a href="#" id="mWa" class="m-wa" target="_blank">ORDER VIA WHATSAPP</a>
+        </div>
+
+        <!-- footer منفصل لـ minimal -->
+        <div class="modal-footer" id="modalFooter" style="display:none;">
+            <a href="#" id="mWa2" class="m-wa" target="_blank">ORDER VIA WHATSAPP</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openProduct(name, price, img, desc, style) {
+        const modalContent = document.getElementById('modalContent');
+        const modalVisual  = document.getElementById('modalVisual');
+        const modalBody    = document.getElementById('modalBody');
+        const modalFooter  = document.getElementById('modalFooter');
+        const mTitle       = document.getElementById('mTitle');
+        const mPrice       = document.getElementById('mPrice');
+        const mDivider     = document.getElementById('mDivider');
+        const mDesc        = document.getElementById('mDesc');
+
+        // تطبيق الكلاس
+        modalContent.className = 'modal-content modal-' + style;
+
+        // الصورة
+        document.getElementById('modalImg').src = img;
+
+        // النصوص
+        mTitle.innerText = name;
+        mPrice.innerText = price + ' ₪';
+        mDesc.innerText  = desc;
+        mDesc.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
+
+        // بناء رابط واتساب
+        const waLink = buildWa(name, price, desc);
+        document.getElementById('mWa').href  = waLink;
+        document.getElementById('mWa2').href = waLink;
+
+        // إعادة العناصر لـ body أولاً (reset)
+        modalBody.insertBefore(mTitle,   modalBody.firstChild);
+        modalBody.insertBefore(mDivider, mTitle.nextSibling);
+        modalBody.insertBefore(mPrice,   mDivider.nextSibling);
+
+        if (style === 'modern') {
+            // نقل العنوان والسعر للـ visual
+            modalVisual.appendChild(mTitle);
+            modalVisual.appendChild(mPrice);
+            mDivider.style.display = 'none';
+            modalBody.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
+            modalFooter.style.display = 'none';
+            document.getElementById('mWa').style.display = 'flex';
+
+        } else if (style === 'minimal') {
+            modalBody.style.display  = 'flex';
+            modalFooter.style.display = 'block';
+            document.getElementById('mWa').style.display = 'none';
+            mDivider.style.display = 'none';
+
+        } else if (style === 'bold') {
+            modalBody.style.display   = 'flex';
+            modalFooter.style.display = 'none';
+            document.getElementById('mWa').style.display = 'flex';
+            mDivider.style.display = 'block';
+
+        } else {
+            // elegant
+            modalBody.style.display   = 'block';
+            modalFooter.style.display = 'none';
+            document.getElementById('mWa').style.display = 'flex';
+            mDivider.style.display = 'block';
+        }
+
+        document.getElementById('productModal').style.display = 'flex';
+    }
+
+    function buildWa(name, price, desc) {
+        let phone = "{{ store.phone }}".replace(/\s+/g, '');
+        if (phone.startsWith('0')) { phone = '970' + phone.substring(1); }
+        const msg = `Hello, I'm interested in: ${name}\nPrice: ${price} ILS\n${desc ? 'Notes: ' + desc : ''}`;
+        return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    }
+
+    function closeProduct(event) {
+        document.getElementById('productModal').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
