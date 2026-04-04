@@ -359,7 +359,6 @@
         <p class="store-bio">{{ store.bio }}</p>
         {% endif %}
 
-        <!-- Contact Pills — تظهر فقط إذا كانت البيانات موجودة -->
         <div class="contact-bar">
             {% if store.display_phone %}
             <a href="tel:{{ store.display_phone }}" class="contact-pill">
@@ -417,18 +416,22 @@
 
     <div class="products-grid">
         {% for product in products %}
-        <div class="product-card style-{{ product.template_style|lower }}"
-             onclick="openProduct(`{{ product.name|e }}`, `{{ product.price }}`, `/static/uploads/{{ product.processed_image_url }}`, `{{ product.description|e or '' }}`, `{{ product.template_style|lower }}`)">
+        {# التعديل هنا: استخدام tojson لضمان عدم كسر الكود وتوحيد الثيم #}
+        {% set current_style = (product.template_style|lower if product.template_style else 'modern') %}
+        {% if current_style == 'elegant' %}{% set current_style = 'modern' %}{% endif %}
+
+        <div class="product-card style-{{ current_style }}"
+             onclick='openProduct({{ product.name|tojson|safe }}, {{ product.price|tojson|safe }}, "/static/uploads/{{ product.processed_image_url }}", {{ (product.description or "")|tojson|safe }}, "{{ current_style }}")'>
 
             <div class="img-wrap">
                 <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}">
-                {% if product.template_style == 'modern' %}
+                {% if current_style == 'modern' %}
                 <div class="p-name-overlay">{{ product.name }}</div>
                 <div class="p-price-overlay">{{ product.price }} ₪</div>
                 {% endif %}
             </div>
 
-            {% if product.template_style != 'modern' %}
+            {% if current_style != 'modern' %}
             <div class="card-info">
                 <div class="p-name">{{ product.name }}</div>
                 <div class="p-divider"></div>
@@ -476,40 +479,78 @@
 
 <script>
     function openProduct(name, price, img, desc, style) {
-        // 1. تحديد العناصر
-        const modal = document.getElementById('productModal');
-        const modalBox = document.getElementById('modalBox');
-        
-        // 2. تعبئة البيانات الأساسية
-        document.getElementById('modalImg').src = img;
-        document.getElementById('mTitle').innerText = name;
-        document.getElementById('mPrice').innerText = price + ' ₪';
-        
-        const descEl = document.getElementById('mDesc');
-        if(desc && desc.trim() !== "") {
-            descEl.innerText = desc;
-            descEl.style.display = 'block';
-        } else {
-            descEl.style.display = 'none';
-        }
+        const modalBox  = document.getElementById('modalBox');
+        const modalVisual = document.getElementById('modalVisual');
+        const modalInfo = document.getElementById('modalInfo');
+        const mFooter   = document.getElementById('mFooter');
+        const mTitle    = document.getElementById('mTitle');
+        const mDivider  = document.getElementById('mDivider');
+        const mPrice    = document.getElementById('mPrice');
+        const mDesc     = document.getElementById('mDesc');
 
-        // 3. تطبيق الثيم (Class) لضمان تفعيل الـ CSS الخاص بكل ثيم
+        // تنظيف العناصر القديمة لثيم modern إن وجدت
+        const oldTitleV = document.getElementById('mTitleVisual');
+        const oldPriceV = document.getElementById('mPriceVisual');
+        if (oldTitleV) oldTitleV.remove();
+        if (oldPriceV) oldPriceV.remove();
+
+        // تطبيق الستايل
         modalBox.className = 'modal-box modal-' + style.toLowerCase();
 
-        // 4. تجهيز رابط واتساب
+        // الصورة
+        document.getElementById('modalImg').src = img;
+
+        // النصوص
+        mTitle.innerText = name;
+        mPrice.innerText = price + ' ₪';
+        mDesc.innerText  = desc;
+        mDesc.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
+
+        // رابط واتساب
+        const waLink = buildWa(name, price, desc);
+        document.getElementById('mWa').href = waLink;
+
+        // إدارة الستايلات
+        if (style.toLowerCase() === 'modern') {
+            // إضافة العنوان والسعر للـ visual ديناميكياً
+            const titleV = document.createElement('div');
+            titleV.id = 'mTitleVisual';
+            titleV.className = 'm-title-visual';
+            titleV.innerText = name;
+            modalVisual.appendChild(titleV);
+
+            const priceV = document.createElement('div');
+            priceV.id = 'mPriceVisual';
+            priceV.className = 'm-price-visual';
+            priceV.innerText = price + ' ₪';
+            modalVisual.appendChild(priceV);
+
+            mTitle.style.display   = 'none';
+            mDivider.style.display = 'none';
+            mPrice.style.display   = 'none';
+            modalInfo.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
+        } else {
+            mTitle.style.display   = 'block';
+            mDivider.style.display = 'block';
+            mPrice.style.display   = 'block';
+            modalInfo.style.display = 'block';
+        }
+
+        document.getElementById('productModal').style.display = 'flex';
+    }
+
+    function buildWa(name, price, desc) {
         let phone = "{{ store.whatsapp_phone or store.phone or '' }}".replace(/\s+/g, '');
         if (phone.startsWith('0')) { phone = '970' + phone.substring(1); }
-        const msg = encodeURIComponent("أهلاً، أنا مهتم بمنتج: " + name + "\nالسعر: " + price + " ₪");
-        document.getElementById('mWa').href = "https://wa.me/" + phone + "?text=" + msg;
-
-        // 5. إظهار النافذة
-        modal.style.display = 'flex';
+        const msg = `Hello, I'm interested in: ${name}\nPrice: ${price} ₪\n${desc ? 'Notes: ' + desc : ''}`;
+        return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     }
 
     function closeModal(event) {
-        document.getElementById('productModal').style.display = 'none';
+        if (event.target.id === 'productModal') {
+            document.getElementById('productModal').style.display = 'none';
+        }
     }
-   
 </script>
 
 </body>
