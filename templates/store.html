@@ -417,8 +417,8 @@
 
     <div class="products-grid">
         {% for product in products %}
-        <div class="product-card style-{{ product.template_style }}"
-             onclick="openProduct('{{ product.name }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}', '{{ product.description or '' }}', '{{ product.template_style }}')">
+        <div class="product-card style-{{ product.template_style|lower }}"
+             onclick="openProduct(`{{ product.name|e }}`, `{{ product.price }}`, `/static/uploads/{{ product.processed_image_url }}`, `{{ product.description|e or '' }}`, `{{ product.template_style|lower }}`)">
 
             <div class="img-wrap">
                 <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}">
@@ -476,95 +476,40 @@
 
 <script>
     function openProduct(name, price, img, desc, style) {
-        const modalBox  = document.getElementById('modalBox');
-        const modalVisual = document.getElementById('modalVisual');
-        const modalInfo = document.getElementById('modalInfo');
-        const mFooter   = document.getElementById('mFooter');
-        const mTitle    = document.getElementById('mTitle');
-        const mDivider  = document.getElementById('mDivider');
-        const mPrice    = document.getElementById('mPrice');
-        const mDesc     = document.getElementById('mDesc');
-
-        // تطبيق الستايل
-        modalBox.className = 'modal-box modal-' + style;
-
-        // الصورة
+        // 1. تحديد العناصر
+        const modal = document.getElementById('productModal');
+        const modalBox = document.getElementById('modalBox');
+        
+        // 2. تعبئة البيانات الأساسية
         document.getElementById('modalImg').src = img;
-
-        // إعادة العناصر للـ info أولاً (reset)
-        modalInfo.insertBefore(mTitle,   modalInfo.firstChild);
-        modalInfo.insertBefore(mDivider, mTitle.nextSibling);
-        modalInfo.insertBefore(mPrice,   mDivider.nextSibling);
-
-        // النصوص
-        mTitle.innerText = name;
-        mPrice.innerText = price + ' ₪';
-        mDesc.innerText  = desc;
-        mDesc.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
-
-        // رابط واتساب
-        const waLink = buildWa(name, price, desc);
-        document.getElementById('mWa').href = waLink;
-
-        // إدارة الستايلات
-        if (style === 'modern') {
-            // إضافة العنوان والسعر للـ visual
-            let titleV = document.getElementById('mTitleVisual');
-            let priceV = document.getElementById('mPriceVisual');
-            if (!titleV) {
-                titleV = document.createElement('div');
-                titleV.id = 'mTitleVisual';
-                titleV.className = 'm-title-visual';
-                modalVisual.appendChild(titleV);
-            }
-            if (!priceV) {
-                priceV = document.createElement('div');
-                priceV.id = 'mPriceVisual';
-                priceV.className = 'm-price-visual';
-                modalVisual.appendChild(priceV);
-            }
-            titleV.innerText = name;
-            priceV.innerText = price + ' ₪';
-            titleV.style.display = 'block';
-            priceV.style.display = 'block';
-
-            mTitle.style.display   = 'none';
-            mDivider.style.display = 'none';
-            mPrice.style.display   = 'none';
-            modalInfo.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
-            mFooter.style.padding = '0 24px 24px';
-
+        document.getElementById('mTitle').innerText = name;
+        document.getElementById('mPrice').innerText = price + ' ₪';
+        
+        const descEl = document.getElementById('mDesc');
+        if(desc && desc.trim() !== "") {
+            descEl.innerText = desc;
+            descEl.style.display = 'block';
         } else {
-            // إخفاء visual elements من modern
-            const titleV = document.getElementById('mTitleVisual');
-            const priceV = document.getElementById('mPriceVisual');
-            if (titleV) titleV.style.display = 'none';
-            if (priceV) priceV.style.display = 'none';
-
-            mTitle.style.display   = 'block';
-            mDivider.style.display = 'block';
-            mPrice.style.display   = 'block';
-            modalInfo.style.display = 'block';
+            descEl.style.display = 'none';
         }
 
-        if (style === 'bold') {
-            modalInfo.style.padding = '24px 18px 0';
-            mFooter.style.padding   = '0 18px 20px';
-        }
+        // 3. تطبيق الثيم (Class) لضمان تفعيل الـ CSS الخاص بكل ثيم
+        modalBox.className = 'modal-box modal-' + style.toLowerCase();
 
-        document.getElementById('productModal').style.display = 'flex';
-    }
-
-    function buildWa(name, price, desc) {
+        // 4. تجهيز رابط واتساب
         let phone = "{{ store.whatsapp_phone or store.phone or '' }}".replace(/\s+/g, '');
         if (phone.startsWith('0')) { phone = '970' + phone.substring(1); }
-        const msg = `Hello, I'm interested in: ${name}\nPrice: ${price} ₪\n${desc ? 'Notes: ' + desc : ''}`;
-        return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+        const msg = encodeURIComponent("أهلاً، أنا مهتم بمنتج: " + name + "\nالسعر: " + price + " ₪");
+        document.getElementById('mWa').href = "https://wa.me/" + phone + "?text=" + msg;
+
+        // 5. إظهار النافذة
+        modal.style.display = 'flex';
     }
 
     function closeModal(event) {
         document.getElementById('productModal').style.display = 'none';
     }
+   
 </script>
 
 </body>
