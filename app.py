@@ -342,10 +342,22 @@ def view_store(slug):
 # -------------------------------------------------------
 # 6. SUPER ADMIN
 # -------------------------------------------------------
-
+@app.route('/superadmin/login', methods=['GET', 'POST'])
+def super_admin_login():
+    if request.method == 'POST':
+        if request.form.get('password') == MASTER_PASSWORD:
+            session['is_superadmin'] = True
+            return redirect(url_for('super_admin'))
+        return "<h1>❌ Incorrect Master Password!</h1>"
+    return """
+    <div style='text-align:center; margin-top:100px; font-family:sans-serif;'>
+        <h2>🔒 System Admin Access</h2>
+        <form method='POST'><input type='password' name='password' required style='padding:10px;'><br><br><button type='submit'>Unlock</button></form>
+    </div>
+    """
 @app.route('/superadmin')
 def super_admin():
-    if not session.get('is_superadmin'): return redirect(url_for('login'))
+    if not session.get('is_superadmin'): return redirect(url_for('super_admin_login'))
     conn = get_db_connection()
     cursor = conn.cursor()
     
