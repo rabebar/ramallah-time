@@ -105,9 +105,10 @@
                     <tr>
                         <th>Merchant Phone</th>
                         <th>Store Name</th>
+                        <th>Status</th> <!-- عمود جديد -->
                         <th>Credits Left</th>
                         <th>Joined On</th>
-                        <th>Action</th>
+                        <th>Actions</th> <!-- عمود العمليات المطور -->
                     </tr>
                 </thead>
                 <tbody>
@@ -121,19 +122,36 @@
                             <span style="color:#444; font-size:11px;">No Store Yet</span>
                             {% endif %}
                         </td>
-                        <td><span class="credit-count">{{ user.credits }}</span> Images</td>
-                        <td><span class="join-date">{{ user.created_at[:10] }}</span></td>
                         <td>
-                            <form action="/superadmin/add_credits" method="POST" class="refill-form">
-                                <input type="hidden" name="user_id" value="{{ user.id }}">
-                                <input type="number" name="amount" value="10" class="refill-input" required>
-                                <button type="submit" class="btn-refill">REFILL</button>
-                            </form>
+                            <!-- عرض الحالة بلون مختلف -->
+                            {% if user.status == 'active' %}
+                            <span style="color: #00ff88; font-weight: bold; font-size: 11px;">● ACTIVE</span>
+                            {% else %}
+                            <span style="color: #ff9f43; font-weight: bold; font-size: 11px;">● PENDING</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="credit-count">{{ user.credits }}</span> Images</td>
+                        <td><span class="join-date">{{ user.created_at }}</span></td>
+                        <td>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                {% if user.status == 'pending' %}
+                                    <!-- أزرار القبول والرفض للطلبات الجديدة -->
+                                    <a href="/superadmin/approve/{{ user.id }}" style="background: #00ff88; color: #000; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 11px; font-weight: 800;">APPROVE</a>
+                                    <a href="/superadmin/reject/{{ user.id }}" style="background: #ff4757; color: #fff; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 11px; font-weight: 800;" onclick="return confirm('Reject and Delete this user?')">REJECT</a>
+                                {% else %}
+                                    <!-- نموذج شحن الرصيد للتجار المفعلين فقط -->
+                                    <form action="/superadmin/add_credits" method="POST" class="refill-form">
+                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        <input type="number" name="amount" value="10" class="refill-input" required>
+                                        <button type="submit" class="btn-refill">REFILL</button>
+                                    </form>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" style="text-align:center; padding:40px; color:#555;">No merchants registered in the system yet.</td>
+                        <td colspan="6" style="text-align:center; padding:40px; color:#555;">No merchants registered in the system yet.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

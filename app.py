@@ -53,6 +53,44 @@ def get_user_stats(user_id):
     }
 
 # -------------------------------------------------------
+# 0. REGISTRATION (New Merchants)
+# -------------------------------------------------------
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        phone = request.form.get('phone')
+        password = request.form.get('password')
+        store_name = request.form.get('store_name')
+        # تحويل اسم المتجر لـ slug (رابط) بسيط
+        slug = store_name.lower().replace(" ", "-")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        try:
+            # 1. إنشاء المستخدم بحالة pending (انتظار) ورصيد 10 صور
+            cursor.execute(
+                "INSERT INTO users (phone, password_hash, status, credits) VALUES (%s, %s, %s, %s) RETURNING id",
+                (phone, generate_password_hash(password), 'pending', 10)
+            )
+            user_id = cursor.fetchone()['id']
+            
+            # 2. إنشاء المتجر الأولي المرتبط بالمستخدم
+            cursor.execute(
+                "INSERT INTO stores (user_id, name, slug) VALUES (%s, %s, %s)",
+                (user_id, store_name, slug)
+            )
+            conn.commit()
+            return "<h1>✅ Request Sent!</h1><p>Your account is pending approval by admin.</p><a href='/login'>Back to Login</a>"
+        except Exception as e:
+            conn.rollback()
+            return f"<h1>❌ Error</h1><p>Phone number or store name might already exist.</p>"
+        finally:
+            cursor.close()
+            conn.close()
+    return render_template('register.html')
+
+# -------------------------------------------------------
 # 1. AUTHENTICATION
 # -------------------------------------------------------
 
@@ -64,12 +102,17 @@ def login():
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT id, password_hash FROM users WHERE phone = %s", (phone,))
+        # التعديل هنا: جلب حقل الحالة (status) من قاعدة البيانات
+        cursor.execute("SELECT id, password_hash, status FROM users WHERE phone = %s", (phone,))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
 
         if user and check_password_hash(user['password_hash'], password):
+            # التعديل هنا: منع التاجر من الدخول إذا لم تكن حالته active
+            if user['status'] != 'active':
+                return "<h1>⏳ Account Pending</h1><p>Your account is not yet active. Please wait for admin approval.</p><a href='/login'>Try Again</a>"
+            
             session['user_id'] = user['id']
             return redirect(url_for('index'))
         else:
@@ -326,7 +369,29 @@ def super_admin():
         'total_products': total_products,
         'total_credits': total_credits
     }, users=users)
+@app.route('/superadmin/approve/<int:user_id>')
+def approve_user(user_id):
+    if not session.get('is_superadmin'): return redirect(url_for('login'))
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # تحديث حالة المستخدم إلى active لتمكينه من الدخول
+    cursor.execute("UPDATE users SET status = 'active' WHERE id = %s", (user_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for('super_admin'))
 
+@app.route('/superadmin/reject/<int:user_id>')
+def reject_user(user_id):
+    if not session.get('is_superadmin'): return redirect(url_for('login'))
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # حذف المستخدم تماماً في حال رفض الطلب
+    cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for('super_admin'))
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)

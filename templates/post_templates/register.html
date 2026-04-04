@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merchant Registration | Ramallah Time AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #0f0f12; color: #fff; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-card { text-align: center; background: #16161d; padding: 40px; border-radius: 24px; width: 380px; border: 1px solid rgba(255,255,255,0.08); }
+        .logo-box { width: 50px; height: 50px; background: #6c5ce7; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; margin: 0 auto 20px; }
+        h2 { letter-spacing: 1px; margin-bottom: 5px; }
+        p { color: #888; font-size: 13px; margin-bottom: 30px; }
+        input { padding: 14px; width: 100%; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; margin-bottom: 15px; box-sizing: border-box; outline: none; font-size: 14px; }
+        input:focus { border-color: #6c5ce7; }
+        button { padding: 14px; width: 100%; background: #6c5ce7; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: #5b4cc4; transform: translateY(-2px); }
+        .footer-link { margin-top: 20px; font-size: 13px; color: #666; }
+        .footer-link a { color: #6c5ce7; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo-box">RT</div>
+        <h2>Start Your Store</h2>
+        <p>Join Ramallah Time AI platform today</p>
+        <form method="POST">
+            <input type="text" name="store_name" placeholder="Store Name (e.g. My Boutique)" required>
+            <input type="text" name="phone" placeholder="Phone Number" required>
+            <input type="password" name="password" placeholder="Choose Password" required>
+            <button type="submit">Send Join Request</button>
+        </form>
+        <div class="footer-link">
+            Already have an account? <a href="/login">Sign In</a>
+        </div>
+    </div>
+</body>
+</html>
