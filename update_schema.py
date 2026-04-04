@@ -4,10 +4,10 @@ def update_schema():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    print("🚀 Starting schema update for stores table...")
+    print("🚀 Starting schema update...")
     
     try:
-        # إضافة جميع حقول التواصل والمعلومات
+        # --- جدول stores: حقول التواصل الاجتماعي ---
         cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS display_phone TEXT;")
         cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS whatsapp_phone TEXT;")
         cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS instagram_handle TEXT;")
@@ -15,6 +15,12 @@ def update_schema():
         cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS facebook_handle TEXT;")
         cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS address TEXT;")
         cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS website TEXT;")
+
+        # --- جدول users: حقل الحالة ---
+        cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending';")
+
+        # تفعيل المستخدمين الموجودين مسبقاً تلقائياً
+        cursor.execute("UPDATE users SET status = 'active' WHERE status = 'pending';")
 
         conn.commit()
         print("✅ Schema updated successfully!")
@@ -25,6 +31,8 @@ def update_schema():
         print("   + facebook_handle")
         print("   + address")
         print("   + website")
+        print("   + status (users table)")
+        print("   + Existing users set to 'active'")
 
     except Exception as e:
         conn.rollback()
