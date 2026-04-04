@@ -29,7 +29,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # -------------------------------------------------------
 
 def get_user_stats(user_id):
-    """جلب إحصائيات المستخدم باستخدام صيغة PostgreSQL الصحيحة"""
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -41,7 +40,6 @@ def get_user_stats(user_id):
     
     processed_count = 0
     if store:
-        # إضافة alias باسم 'count' لضمان قراءة القيمة في PostgreSQL
         cursor.execute("SELECT COUNT(*) as count FROM products WHERE store_id = %s", (store['id'],))
         res = cursor.fetchone()
         processed_count = res['count'] if res else 0
@@ -55,7 +53,7 @@ def get_user_stats(user_id):
     }
 
 # -------------------------------------------------------
-# 1. AUTHENTICATION (PostgreSQL)
+# 1. AUTHENTICATION
 # -------------------------------------------------------
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -77,7 +75,7 @@ def login():
         else:
             return "<h1>❌ Invalid phone number or password!</h1>"
             
-    return render_template('login.html') # تأكد من وجود ملف login.html لاحقاً
+    return render_template('login.html')
 
 @app.route('/logout')
 def logout():
@@ -124,7 +122,6 @@ def index():
                 output_path = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
                 img_no_bg.save(output_path, "PNG")
                 
-                # خصم الرصيد
                 conn = get_db_connection()
                 cursor = conn.cursor()
                 cursor.execute("UPDATE users SET credits = credits - 1 WHERE id = %s", (user_id,))
@@ -132,9 +129,9 @@ def index():
                 cursor.close()
                 conn.close()
                 
-                return render_template('result.html', 
-                                       original=filename, 
-                                       processed=output_filename, 
+                return render_template('result.html',
+                                       original=filename,
+                                       processed=output_filename,
                                        stats=get_user_stats(user_id))
                 
             except Exception as e:
@@ -185,20 +182,95 @@ def admin():
     stats = get_user_stats(user_id)
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, slug FROM stores WHERE user_id = %s", (user_id,))
+
+    # جلب بيانات المتجر كاملة لصفحة الإعدادات
+    cursor.execute("SELECT * FROM stores WHERE user_id = %s", (user_id,))
     store = cursor.fetchone()
     
     products = []
     if store:
         cursor.execute("SELECT * FROM products WHERE store_id = %s ORDER BY id DESC", (store['id'],))
         products = cursor.fetchall()
-    
+
+    # edit mode
+    edit_product = None
+    edit_id = request.args.get('edit')
+    if edit_id and store:
+        cursor.execute("SELECT * FROM products WHERE id = %s AND store_id = %s", (edit_id, store['id']))
+        edit_product = cursor.fetchone()
+
     cursor.close()
     conn.close()
-    return render_template('admin.html', products=products, stats=stats)
+    return render_template('admin.html', products=products, stats=stats, store=store, edit_product=edit_product)
+
+@app.route('/edit_product/<int:id>', methods=['POST'])
+def edit_product_route(id):
+    if not session.get('user_id'): return redirect(url_for('login'))
+    name = request.form.get('name')
+    price = request.form.get('price')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE products SET name = %s, price = %s WHERE id = %s", (name, price, id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for('admin'))
+
+@app.route('/delete_product/<int:id>')
+def delete_product_route(id):
+    if not session.get('user_id'): return redirect(url_for('login'))
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM products WHERE id = %s", (id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for('admin'))
 
 # -------------------------------------------------------
-# 4. PUBLIC STORE
+# 4. UPDATE STORE SETTINGS (الجديد)
+# -------------------------------------------------------
+
+@app.route('/update_store', methods=['POST'])
+def update_store():
+    user_id = session.get('user_id')
+    if not user_id: return redirect(url_for('login'))
+
+    name             = request.form.get('name', '').strip()
+    bio              = request.form.get('bio', '').strip()
+    display_phone    = request.form.get('display_phone', '').strip()
+    whatsapp_phone   = request.form.get('whatsapp_phone', '').strip()
+    instagram_handle = request.form.get('instagram_handle', '').strip()
+    tiktok_handle    = request.form.get('tiktok_handle', '').strip()
+    facebook_handle  = request.form.get('facebook_handle', '').strip()
+    address          = request.form.get('address', '').strip()
+    website          = request.form.get('website', '').strip()
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE stores SET
+            name             = %s,
+            bio              = %s,
+            display_phone    = %s,
+            whatsapp_phone   = %s,
+            instagram_handle = %s,
+            tiktok_handle    = %s,
+            facebook_handle  = %s,
+            address          = %s,
+            website          = %s
+        WHERE user_id = %s
+    """, (name, bio, display_phone, whatsapp_phone,
+          instagram_handle, tiktok_handle, facebook_handle,
+          address, website, user_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for('admin') + '?saved=1')
+
+# -------------------------------------------------------
+# 5. PUBLIC STORE
 # -------------------------------------------------------
 
 @app.route('/store/<slug>')
@@ -225,7 +297,7 @@ def view_store(slug):
     return render_template('store.html', store=store, products=products)
 
 # -------------------------------------------------------
-# 5. SUPER ADMIN
+# 6. SUPER ADMIN
 # -------------------------------------------------------
 
 @app.route('/superadmin')
@@ -249,7 +321,11 @@ def super_admin():
     
     cursor.close()
     conn.close()
-    return render_template('superadmin.html', stats={'total_users': total_users, 'total_products': total_products, 'total_credits': total_credits}, users=users)
+    return render_template('superadmin.html', stats={
+        'total_users': total_users,
+        'total_products': total_products,
+        'total_credits': total_credits
+    }, users=users)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

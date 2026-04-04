@@ -3,181 +3,498 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ store.name }} | Store</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Cairo:wght@600;800&display=swap" rel="stylesheet">
+    <title>{{ store.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background-color: #fafafa; color: #222; }
-        .main-container { max-width: 480px; margin: 0 auto; background-color: #fff; min-height: 100vh; padding: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.02); }
+        :root {
+            --cream: #FAF8F5;
+            --ink: #0D0D0D;
+            --gold: #B8974A;
+            --gold-light: #D4AF6E;
+            --muted: #8A8680;
+            --border: #E8E4DE;
+            --card-bg: #FFFFFF;
+        }
 
-        /* Store Header */
-        .profile-section { text-align: center; margin-bottom: 35px; }
-        .profile-pic { width: 85px; height: 85px; border-radius: 50%; background: #f0f0f0; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; border: 3px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.05); overflow: hidden; }
-        .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
-        .store-name { font-size: 22px; font-weight: 800; margin-bottom: 5px; }
-        .store-bio { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.6; padding: 0 20px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            min-height: 100vh;
+        }
 
-        /* Products Grid */
-        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .product-card { border-radius: 18px; overflow: hidden; cursor: pointer; transition: 0.3s; border: 1px solid #F0F0F0; background: #fff; position: relative; }
-        .product-card:active { transform: scale(0.96); }
-        .img-container { width: 100%; aspect-ratio: 1/1; background: #f9f9f9; display: flex; align-items: center; justify-content: center; padding: 12px; }
-        .img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        /* ===== HEADER ===== */
+        .store-header {
+            background: var(--ink);
+            padding: 60px 30px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
 
-        /* --- ELEGANT --- */
-        .style-elegant .product-info { padding: 10px; text-align: center; }
-        .style-elegant .p-name { font-size: 12px; font-weight: 600; font-family: 'Cairo'; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .style-elegant .p-divider { width: 25px; height: 3px; background: #b5935f; border-radius: 2px; margin: 5px auto; }
-        .style-elegant .p-price { font-size: 14px; font-weight: 800; }
+        .store-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(184,151,74,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 50%, rgba(184,151,74,0.06) 0%, transparent 60%);
+        }
 
-        /* --- MODERN --- */
-        .style-modern .product-info { position: absolute; top: 0; right: 0; left: 0; padding: 10px; background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 100%); }
-        .style-modern .p-name { font-size: 11px; font-weight: 800; color: #fff; font-family: 'Cairo'; }
-        .style-modern .p-price { position: absolute; bottom: 10px; left: 10px; background: #fff; color: #111; font-size: 11px; font-weight: 900; padding: 4px 12px; border-radius: 50px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .style-modern .p-divider { display: none; }
+        .header-inner { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
 
-        /* --- MINIMAL --- */
-        .style-minimal .product-info { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; }
-        .style-minimal .p-name { font-size: 11px; font-weight: 700; color: #fff; font-family: 'Cairo'; max-width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .style-minimal .p-price { font-size: 11px; font-weight: 900; color: #fff; }
-        .style-minimal .p-divider { display: none; }
+        /* Logo / Avatar */
+        .store-avatar {
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            border: 2px solid var(--gold);
+            margin: 0 auto 24px;
+            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(184,151,74,0.1);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 36px; font-weight: 300;
+            color: var(--gold);
+        }
+        .store-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* --- BOLD --- */
-        .style-bold { display: flex; flex-direction: row; aspect-ratio: 1/1; }
-        .style-bold .img-container { width: 55%; height: 100%; padding: 8px; aspect-ratio: unset; flex-shrink: 0; }
-        .style-bold .product-info { width: 45%; background: #1a1a1a; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 10px; }
-        .style-bold .p-name { font-size: 10px; font-weight: 800; color: #fff; text-align: right; margin-bottom: 5px; font-family: 'Cairo'; line-height: 1.2; }
-        .style-bold .p-divider { width: 20px; height: 3px; background: #fff; margin-bottom: 6px; }
-        .style-bold .p-price { font-size: 10px; font-weight: 900; color: #1a1a1a; background: #fff; padding: 3px 8px; border-radius: 4px; }
+        /* Gold line decorator */
+        .gold-line {
+            display: flex; align-items: center; gap: 12px;
+            justify-content: center; margin-bottom: 16px;
+        }
+        .gold-line::before, .gold-line::after {
+            content: ''; flex: 1; max-width: 60px;
+            height: 1px; background: var(--gold); opacity: 0.5;
+        }
+        .gold-line span {
+            font-size: 10px; letter-spacing: 4px;
+            color: var(--gold); text-transform: uppercase;
+            font-weight: 500;
+        }
 
-        /* =================== MODAL =================== */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal-content { width: 100%; max-width: 400px; border-radius: 25px; overflow: hidden; position: relative; animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .modal-close { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.7); color: #fff; border: 2px solid rgba(255,255,255,0.3); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; z-index: 100; font-size: 15px; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: 0.2s; }
-        .modal-close:hover { background: rgba(0,0,0,0.9); border-color: #fff; }
+        .store-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 42px; font-weight: 300;
+            color: #FFFFFF; letter-spacing: 3px;
+            margin-bottom: 14px; line-height: 1.1;
+        }
 
-        /* --- MODAL ELEGANT --- */
-        .modal-elegant { background: #fff; }
-        .modal-elegant .modal-visual { width: 100%; aspect-ratio: 1/1; background: #f9f9f9; display: flex; align-items: center; justify-content: center; padding: 35px; }
-        .modal-elegant .modal-visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .modal-elegant .modal-body { padding: 20px 25px; text-align: center; }
-        .modal-elegant .m-title { font-size: 22px; font-weight: 800; font-family: 'Cairo'; margin-bottom: 6px; color: #111; }
-        .modal-elegant .m-divider { width: 35px; height: 4px; background: #b5935f; border-radius: 2px; margin: 0 auto 10px; }
-        .modal-elegant .m-price { font-size: 18px; font-weight: 700; color: #555; margin-bottom: 12px; }
-        .modal-elegant .m-desc { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 20px; background: #f9f9f9; padding: 12px; border-radius: 10px; text-align: right; }
-        .modal-elegant .m-wa { display: flex; align-items: center; justify-content: center; background: #111; color: #fff; text-decoration: none; padding: 15px; border-radius: 14px; font-weight: 800; font-size: 15px; }
+        .store-bio {
+            font-size: 12px; color: rgba(255,255,255,0.45);
+            letter-spacing: 1.5px; line-height: 1.8;
+            font-weight: 300; margin-bottom: 28px;
+        }
 
-        /* --- MODAL MODERN --- */
-        .modal-modern { background: #f9f9f9; }
-        .modal-modern .modal-visual { width: 100%; aspect-ratio: 1/1; background: #f9f9f9; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; }
-        .modal-modern .modal-visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .modal-modern .m-title { position: absolute; top: 18px; right: 18px; font-size: 15px; font-weight: 900; font-family: 'Cairo'; color: #111; text-align: right; max-width: 60%; background: rgba(255,255,255,0.9); padding: 6px 10px; border-radius: 10px; backdrop-filter: blur(4px); }
-        .modal-modern .m-price { position: absolute; bottom: 18px; left: 18px; background: #111; color: #fff; font-size: 14px; font-weight: 900; padding: 8px 20px; border-radius: 50px; }
-        .modal-modern .m-divider { display: none; }
-        .modal-modern .modal-body { padding: 12px 20px 20px; background: #fff; }
-        .modal-modern .m-desc { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 15px; background: #f9f9f9; padding: 12px; border-radius: 10px; text-align: right; }
-        .modal-modern .m-wa { display: flex; align-items: center; justify-content: center; background: #111; color: #fff; text-decoration: none; padding: 15px; border-radius: 14px; font-weight: 800; font-size: 15px; }
+        /* Contact Bar */
+        .contact-bar {
+            display: flex; flex-wrap: wrap;
+            justify-content: center; gap: 8px;
+            margin-bottom: 10px;
+        }
 
-        /* --- MODAL MINIMAL --- */
-        .modal-minimal { background: #111; }
-        .modal-minimal .modal-visual { width: 100%; aspect-ratio: 1/1; background: #1a1a1a; display: flex; align-items: center; justify-content: center; padding: 25px; }
-        .modal-minimal .modal-visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .modal-minimal .modal-body { background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
-        .modal-minimal .m-title { font-size: 16px; font-weight: 700; font-family: 'Cairo'; color: #fff; }
-        .modal-minimal .m-divider { display: none; }
-        .modal-minimal .m-price { font-size: 16px; font-weight: 900; color: #fff; white-space: nowrap; }
-        .modal-minimal .m-desc { display: none; }
-        .modal-minimal .modal-footer { padding: 12px 20px 20px; background: #111; }
-        .modal-minimal .m-wa { display: flex; align-items: center; justify-content: center; background: #fff; color: #111; text-decoration: none; padding: 15px; border-radius: 14px; font-weight: 800; font-size: 15px; }
+        .contact-pill {
+            display: flex; align-items: center; gap: 7px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(184,151,74,0.3);
+            padding: 7px 14px; border-radius: 50px;
+            text-decoration: none; transition: 0.3s;
+            color: rgba(255,255,255,0.7);
+            font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+        }
+        .contact-pill:hover {
+            background: rgba(184,151,74,0.15);
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+        .contact-pill .icon { font-size: 13px; }
 
-        /* --- MODAL BOLD --- */
-        .modal-bold { display: flex; flex-direction: row; min-height: 260px; background: #fff; }
-        .modal-bold .modal-visual { width: 55%; background: #f9f9f9; display: flex; align-items: center; justify-content: center; padding: 15px; flex-shrink: 0; }
-        .modal-bold .modal-visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .modal-bold .modal-body { width: 45%; background: #1a1a1a; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 20px 15px; }
-        .modal-bold .m-title { font-size: 15px; font-weight: 900; font-family: 'Cairo'; color: #fff; text-align: right; margin-bottom: 10px; line-height: 1.3; }
-        .modal-bold .m-divider { width: 30px; height: 3px; background: #fff; border-radius: 2px; margin-bottom: 10px; }
-        .modal-bold .m-price { background: #fff; color: #111; font-size: 13px; font-weight: 900; padding: 6px 12px; border-radius: 8px; margin-bottom: 12px; }
-        .modal-bold .m-desc { font-size: 11px; color: rgba(255,255,255,0.6); text-align: right; line-height: 1.5; margin-bottom: 12px; }
-        .modal-bold .m-wa { display: flex; align-items: center; justify-content: center; background: #fff; color: #111; text-decoration: none; padding: 10px; border-radius: 10px; font-weight: 800; font-size: 12px; width: 100%; }
+        /* ===== COLLECTION SECTION ===== */
+        .collection-section { padding: 50px 20px 80px; max-width: 520px; margin: 0 auto; }
 
-        .footer-tag { text-align: center; font-size: 10px; color: #CCC; margin: 60px 0 20px; letter-spacing: 3px; font-weight: 700; }
+        .section-header { text-align: center; margin-bottom: 35px; }
+        .section-label {
+            font-size: 10px; letter-spacing: 5px; text-transform: uppercase;
+            color: var(--gold); font-weight: 500; margin-bottom: 10px;
+            display: block;
+        }
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 30px; font-weight: 300;
+            color: var(--ink); letter-spacing: 1px;
+        }
+        .section-divider {
+            width: 40px; height: 1px;
+            background: var(--gold); margin: 14px auto 0;
+        }
+
+        /* ===== PRODUCT GRID ===== */
+        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.08); border-color: var(--gold); }
+
+        .img-wrap {
+            width: 100%; aspect-ratio: 1/1;
+            background: #F7F5F2;
+            display: flex; align-items: center; justify-content: center;
+            padding: 15px; overflow: hidden; position: relative;
+        }
+        .img-wrap img {
+            max-width: 100%; max-height: 100%;
+            object-fit: contain; transition: transform 0.5s ease;
+        }
+        .product-card:hover .img-wrap img { transform: scale(1.04); }
+
+        /* Style overlays */
+        .style-modern .img-wrap::after {
+            content: ''; position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 50%; background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, transparent 100%);
+        }
+        .style-modern .p-name-overlay {
+            position: absolute; top: 10px; right: 10px;
+            font-size: 10px; font-weight: 600; color: #fff;
+            font-family: 'Montserrat'; letter-spacing: 1px;
+            z-index: 2; text-align: right; max-width: 70%;
+        }
+        .style-modern .p-price-overlay {
+            position: absolute; bottom: 10px; left: 10px;
+            background: #fff; color: var(--ink);
+            font-size: 10px; font-weight: 700;
+            padding: 4px 10px; border-radius: 50px;
+            z-index: 2;
+        }
+
+        .style-minimal .img-wrap { background: #111; }
+        .style-minimal .card-info { background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); }
+        .style-minimal .p-name { color: #fff; }
+        .style-minimal .p-price { color: rgba(255,255,255,0.8); }
+
+        .style-bold { flex-direction: row; display: flex; aspect-ratio: 1/1; }
+        .style-bold .img-wrap { width: 55%; aspect-ratio: unset; height: 100%; flex-shrink: 0; }
+        .style-bold .card-info { background: var(--ink); flex: 1; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 12px; }
+        .style-bold .p-name { color: #fff; text-align: right; }
+        .style-bold .p-divider { background: var(--gold); }
+        .style-bold .p-price { color: var(--ink); background: #fff; padding: 3px 8px; border-radius: 4px; display: inline-block; }
+
+        /* Card Info */
+        .card-info { padding: 14px 12px; }
+        .p-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 15px; font-weight: 400;
+            color: var(--ink); margin-bottom: 6px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            letter-spacing: 0.5px;
+        }
+        .p-divider { width: 20px; height: 1px; background: var(--gold); margin-bottom: 6px; }
+        .p-price {
+            font-size: 12px; font-weight: 600;
+            color: var(--muted); letter-spacing: 1px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            grid-column: 1/-1; text-align: center;
+            padding: 80px 20px; color: var(--muted);
+        }
+        .empty-state p { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(13,13,13,0.92);
+            backdrop-filter: blur(12px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 1000; padding: 20px;
+        }
+
+        .modal-box {
+            width: 100%; max-width: 420px;
+            background: var(--cream);
+            border-radius: 4px; overflow: hidden;
+            position: relative;
+            animation: modalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 90vh; overflow-y: auto;
+        }
+        @keyframes modalIn {
+            from { transform: translateY(30px) scale(0.97); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute; top: 14px; left: 14px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(13,13,13,0.6); color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 14px; cursor: pointer; z-index: 10;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.2s; font-weight: 600;
+        }
+        .modal-close:hover { background: rgba(13,13,13,0.9); }
+
+        /* Modal Visual */
+        .modal-visual {
+            width: 100%; aspect-ratio: 1/1;
+            background: #F7F5F2;
+            display: flex; align-items: center; justify-content: center;
+            padding: 30px; position: relative;
+        }
+        .modal-visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        /* Modal Modern visual overrides */
+        .modal-modern .modal-visual { background: #F2F0ED; }
+        .modal-modern .m-title-visual {
+            position: absolute; top: 16px; right: 16px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px; font-weight: 400; color: var(--ink);
+            text-align: right; max-width: 60%;
+            background: rgba(250,248,245,0.92); padding: 8px 12px;
+            border-radius: 3px; backdrop-filter: blur(4px);
+            letter-spacing: 0.5px;
+        }
+        .modal-modern .m-price-visual {
+            position: absolute; bottom: 16px; left: 16px;
+            background: var(--ink); color: #fff;
+            font-size: 12px; font-weight: 600; letter-spacing: 2px;
+            padding: 8px 18px; border-radius: 50px;
+        }
+
+        /* Modal Minimal overrides */
+        .modal-minimal { background: var(--ink); }
+        .modal-minimal .modal-visual { background: #1a1a1a; }
+        .modal-minimal .modal-info { background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); }
+        .modal-minimal .m-title { color: #fff; }
+        .modal-minimal .m-price { color: rgba(255,255,255,0.7); }
+        .modal-minimal .m-desc { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); }
+        .modal-minimal .m-footer { background: var(--ink); }
+
+        /* Modal Bold overrides */
+        .modal-bold { display: flex; flex-direction: row; min-height: 280px; }
+        .modal-bold .modal-visual { width: 52%; aspect-ratio: unset; height: auto; flex-shrink: 0; background: #F2F0ED; }
+        .modal-bold .modal-info { background: var(--ink); flex: 1; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 24px 18px; }
+        .modal-bold .m-title { color: #fff; text-align: right; font-family: 'Cormorant Garamond', serif; font-size: 20px; }
+        .modal-bold .m-divider { background: var(--gold); }
+        .modal-bold .m-price { color: var(--ink); background: #fff; padding: 5px 12px; border-radius: 3px; display: inline-block; }
+        .modal-bold .m-desc { color: rgba(255,255,255,0.5); text-align: right; font-size: 11px; background: transparent; padding: 0; }
+        .modal-bold .m-footer { background: var(--ink); padding: 0 18px 20px; }
+        .modal-bold .m-wa { background: var(--gold); color: var(--ink); }
+
+        /* Modal Info */
+        .modal-info { padding: 22px 24px 0; }
+        .m-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 24px; font-weight: 400;
+            color: var(--ink); margin-bottom: 10px;
+            letter-spacing: 0.5px; line-height: 1.2;
+        }
+        .m-divider { width: 30px; height: 1px; background: var(--gold); margin-bottom: 10px; }
+        .m-price {
+            font-size: 14px; font-weight: 600;
+            color: var(--muted); letter-spacing: 2px;
+            margin-bottom: 14px;
+        }
+        .m-desc {
+            font-size: 12px; color: var(--muted);
+            line-height: 1.8; margin-bottom: 20px;
+            background: rgba(0,0,0,0.03); padding: 12px;
+            border-radius: 3px; border-left: 2px solid var(--gold);
+            font-family: 'Cairo', sans-serif;
+        }
+
+        /* Footer / WhatsApp */
+        .m-footer { padding: 0 24px 24px; }
+        .m-wa {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            background: var(--ink); color: #fff;
+            text-decoration: none; padding: 15px;
+            border-radius: 3px; font-weight: 600;
+            font-size: 12px; letter-spacing: 2px;
+            text-transform: uppercase; transition: 0.3s;
+        }
+        .m-wa:hover { background: var(--gold); color: var(--ink); }
+
+        /* ===== FOOTER ===== */
+        .store-footer {
+            text-align: center; padding: 30px 20px;
+            border-top: 1px solid var(--border);
+        }
+        .footer-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 11px; letter-spacing: 4px;
+            color: var(--muted); text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
 
-<div class="main-container">
-    <div class="profile-section">
-        <div class="profile-pic">
-            {% if store.logo_url %}<img src="{{ store.logo_url }}">{% else %}{{ store.name[0] }}{% endif %}
+<!-- Store Header -->
+<div class="store-header">
+    <div class="header-inner">
+
+        <div class="store-avatar">
+            {% if store.logo_url %}
+            <img src="{{ store.logo_url }}" alt="{{ store.name }}">
+            {% else %}
+            {{ store.name[0] }}
+            {% endif %}
         </div>
+
+        <div class="gold-line"><span>Collection</span></div>
+
         <h1 class="store-name">{{ store.name }}</h1>
-        <p class="store-bio">{{ store.bio or 'Premium Product Selection' }}</p>
+
+        {% if store.bio %}
+        <p class="store-bio">{{ store.bio }}</p>
+        {% endif %}
+
+        <!-- Contact Pills — تظهر فقط إذا كانت البيانات موجودة -->
+        <div class="contact-bar">
+            {% if store.display_phone %}
+            <a href="tel:{{ store.display_phone }}" class="contact-pill">
+                <span class="icon">📞</span> {{ store.display_phone }}
+            </a>
+            {% endif %}
+
+            {% if store.whatsapp_phone %}
+            <a href="https://wa.me/{{ store.whatsapp_phone }}" class="contact-pill" target="_blank">
+                <span class="icon">💬</span> WhatsApp
+            </a>
+            {% endif %}
+
+            {% if store.instagram_handle %}
+            <a href="https://instagram.com/{{ store.instagram_handle }}" class="contact-pill" target="_blank">
+                <span class="icon">📸</span> @{{ store.instagram_handle }}
+            </a>
+            {% endif %}
+
+            {% if store.tiktok_handle %}
+            <a href="https://tiktok.com/@{{ store.tiktok_handle }}" class="contact-pill" target="_blank">
+                <span class="icon">🎵</span> @{{ store.tiktok_handle }}
+            </a>
+            {% endif %}
+
+            {% if store.facebook_handle %}
+            <a href="https://facebook.com/{{ store.facebook_handle }}" class="contact-pill" target="_blank">
+                <span class="icon">👥</span> {{ store.facebook_handle }}
+            </a>
+            {% endif %}
+
+            {% if store.address %}
+            <a href="https://maps.google.com/?q={{ store.address }}" class="contact-pill" target="_blank">
+                <span class="icon">📍</span> {{ store.address }}
+            </a>
+            {% endif %}
+
+            {% if store.website %}
+            <a href="{{ store.website }}" class="contact-pill" target="_blank">
+                <span class="icon">🌐</span> Website
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<!-- Collection -->
+<div class="collection-section">
+    <div class="section-header">
+        <span class="section-label">Our Selection</span>
+        <h2 class="section-title">Latest Collection</h2>
+        <div class="section-divider"></div>
     </div>
 
     <div class="products-grid">
         {% for product in products %}
         <div class="product-card style-{{ product.template_style }}"
              onclick="openProduct('{{ product.name }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}', '{{ product.description or '' }}', '{{ product.template_style }}')">
-            <div class="img-container">
-                <img src="/static/uploads/{{ product.processed_image_url }}" alt="">
+
+            <div class="img-wrap">
+                <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}">
+                {% if product.template_style == 'modern' %}
+                <div class="p-name-overlay">{{ product.name }}</div>
+                <div class="p-price-overlay">{{ product.price }} ₪</div>
+                {% endif %}
             </div>
-            <div class="product-info">
+
+            {% if product.template_style != 'modern' %}
+            <div class="card-info">
                 <div class="p-name">{{ product.name }}</div>
                 <div class="p-divider"></div>
                 <div class="p-price">{{ product.price }} ₪</div>
             </div>
+            {% endif %}
+
         </div>
         {% else %}
-        <div style="grid-column: 1/-1; text-align: center; color: #999; padding: 60px;">No items live yet.</div>
+        <div class="empty-state">
+            <p>No pieces available yet.</p>
+        </div>
         {% endfor %}
     </div>
+</div>
 
-    <div class="footer-tag">RAMALLAH TIME SYSTEM</div>
+<!-- Footer -->
+<div class="store-footer">
+    <p class="footer-brand">Powered by Ramallah Time</p>
 </div>
 
 <!-- Modal -->
-<div class="modal-overlay" id="productModal" onclick="closeProduct(event)">
-    <div class="modal-content" id="modalContent" onclick="event.stopPropagation()">
+<div class="modal-overlay" id="productModal" onclick="closeModal(event)">
+    <div class="modal-box" id="modalBox" onclick="event.stopPropagation()">
         <button class="modal-close" onclick="document.getElementById('productModal').style.display='none'">✕</button>
 
         <div class="modal-visual" id="modalVisual">
             <img id="modalImg" src="" alt="">
-            <!-- m-title و m-price سيُنقلان هنا لـ modern -->
         </div>
 
-        <div class="modal-body" id="modalBody">
+        <div class="modal-info" id="modalInfo">
             <div class="m-title"   id="mTitle"></div>
             <div class="m-divider" id="mDivider"></div>
             <div class="m-price"   id="mPrice"></div>
             <div class="m-desc"    id="mDesc"></div>
-            <a href="#" id="mWa" class="m-wa" target="_blank">ORDER VIA WHATSAPP</a>
         </div>
 
-        <!-- footer منفصل لـ minimal -->
-        <div class="modal-footer" id="modalFooter" style="display:none;">
-            <a href="#" id="mWa2" class="m-wa" target="_blank">ORDER VIA WHATSAPP</a>
+        <div class="m-footer" id="mFooter">
+            <a href="#" id="mWa" class="m-wa" target="_blank">
+                Order via WhatsApp
+            </a>
         </div>
     </div>
 </div>
 
 <script>
     function openProduct(name, price, img, desc, style) {
-        const modalContent = document.getElementById('modalContent');
-        const modalVisual  = document.getElementById('modalVisual');
-        const modalBody    = document.getElementById('modalBody');
-        const modalFooter  = document.getElementById('modalFooter');
-        const mTitle       = document.getElementById('mTitle');
-        const mPrice       = document.getElementById('mPrice');
-        const mDivider     = document.getElementById('mDivider');
-        const mDesc        = document.getElementById('mDesc');
+        const modalBox  = document.getElementById('modalBox');
+        const modalVisual = document.getElementById('modalVisual');
+        const modalInfo = document.getElementById('modalInfo');
+        const mFooter   = document.getElementById('mFooter');
+        const mTitle    = document.getElementById('mTitle');
+        const mDivider  = document.getElementById('mDivider');
+        const mPrice    = document.getElementById('mPrice');
+        const mDesc     = document.getElementById('mDesc');
 
-        // تطبيق الكلاس
-        modalContent.className = 'modal-content modal-' + style;
+        // تطبيق الستايل
+        modalBox.className = 'modal-box modal-' + style;
 
         // الصورة
         document.getElementById('modalImg').src = img;
+
+        // إعادة العناصر للـ info أولاً (reset)
+        modalInfo.insertBefore(mTitle,   modalInfo.firstChild);
+        modalInfo.insertBefore(mDivider, mTitle.nextSibling);
+        modalInfo.insertBefore(mPrice,   mDivider.nextSibling);
 
         // النصوص
         mTitle.innerText = name;
@@ -185,56 +502,67 @@
         mDesc.innerText  = desc;
         mDesc.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
 
-        // بناء رابط واتساب
+        // رابط واتساب
         const waLink = buildWa(name, price, desc);
-        document.getElementById('mWa').href  = waLink;
-        document.getElementById('mWa2').href = waLink;
+        document.getElementById('mWa').href = waLink;
 
-        // إعادة العناصر لـ body أولاً (reset)
-        modalBody.insertBefore(mTitle,   modalBody.firstChild);
-        modalBody.insertBefore(mDivider, mTitle.nextSibling);
-        modalBody.insertBefore(mPrice,   mDivider.nextSibling);
-
+        // إدارة الستايلات
         if (style === 'modern') {
-            // نقل العنوان والسعر للـ visual
-            modalVisual.appendChild(mTitle);
-            modalVisual.appendChild(mPrice);
-            mDivider.style.display = 'none';
-            modalBody.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
-            modalFooter.style.display = 'none';
-            document.getElementById('mWa').style.display = 'flex';
+            // إضافة العنوان والسعر للـ visual
+            let titleV = document.getElementById('mTitleVisual');
+            let priceV = document.getElementById('mPriceVisual');
+            if (!titleV) {
+                titleV = document.createElement('div');
+                titleV.id = 'mTitleVisual';
+                titleV.className = 'm-title-visual';
+                modalVisual.appendChild(titleV);
+            }
+            if (!priceV) {
+                priceV = document.createElement('div');
+                priceV.id = 'mPriceVisual';
+                priceV.className = 'm-price-visual';
+                modalVisual.appendChild(priceV);
+            }
+            titleV.innerText = name;
+            priceV.innerText = price + ' ₪';
+            titleV.style.display = 'block';
+            priceV.style.display = 'block';
 
-        } else if (style === 'minimal') {
-            modalBody.style.display  = 'flex';
-            modalFooter.style.display = 'block';
-            document.getElementById('mWa').style.display = 'none';
+            mTitle.style.display   = 'none';
             mDivider.style.display = 'none';
-
-        } else if (style === 'bold') {
-            modalBody.style.display   = 'flex';
-            modalFooter.style.display = 'none';
-            document.getElementById('mWa').style.display = 'flex';
-            mDivider.style.display = 'block';
+            mPrice.style.display   = 'none';
+            modalInfo.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
+            mFooter.style.padding = '0 24px 24px';
 
         } else {
-            // elegant
-            modalBody.style.display   = 'block';
-            modalFooter.style.display = 'none';
-            document.getElementById('mWa').style.display = 'flex';
+            // إخفاء visual elements من modern
+            const titleV = document.getElementById('mTitleVisual');
+            const priceV = document.getElementById('mPriceVisual');
+            if (titleV) titleV.style.display = 'none';
+            if (priceV) priceV.style.display = 'none';
+
+            mTitle.style.display   = 'block';
             mDivider.style.display = 'block';
+            mPrice.style.display   = 'block';
+            modalInfo.style.display = 'block';
+        }
+
+        if (style === 'bold') {
+            modalInfo.style.padding = '24px 18px 0';
+            mFooter.style.padding   = '0 18px 20px';
         }
 
         document.getElementById('productModal').style.display = 'flex';
     }
 
     function buildWa(name, price, desc) {
-        let phone = "{{ store.phone }}".replace(/\s+/g, '');
+        let phone = "{{ store.whatsapp_phone or store.phone or '' }}".replace(/\s+/g, '');
         if (phone.startsWith('0')) { phone = '970' + phone.substring(1); }
-        const msg = `Hello, I'm interested in: ${name}\nPrice: ${price} ILS\n${desc ? 'Notes: ' + desc : ''}`;
+        const msg = `Hello, I'm interested in: ${name}\nPrice: ${price} ₪\n${desc ? 'Notes: ' + desc : ''}`;
         return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     }
 
-    function closeProduct(event) {
+    function closeModal(event) {
         document.getElementById('productModal').style.display = 'none';
     }
 </script>
