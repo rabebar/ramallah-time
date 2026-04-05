@@ -1,6 +1,11 @@
 """
-Ramallah Time - Core Engine (v2.0 - English SaaS Edition)
+Ramallah Time - Core Engine (v2.6 - Synchronized & Secure Edition)
 Updated: April 2025 - Full PostgreSQL Version
+Changes: 
+- Fixed Credit Leak (Deduct on Save).
+- Added Price Validation (Type Mismatch Fix).
+- Extended Edit Product (Theme & Description Sync).
+- Superadmin Data Consistency.
 """
 
 import os
@@ -115,7 +120,7 @@ def logout():
     return redirect(url_for('login'))
 
 # -------------------------------------------------------
-# 2. MAIN DASHBOARD
+# 2. MAIN DASHBOARD (Processing Only - No Deduction)
 # -------------------------------------------------------
 
 @app.route('/', methods=['GET', 'POST'])
@@ -133,8 +138,9 @@ def index():
         if file.filename == '':
             return redirect(request.url)
         if file:
-            if stats['credits'] <= 0:
-                return "<h1>❌ Insufficient Credits!</h1>"
+            # ✅ تم إزالة شرط الرصيد من هنا، لن يتم المنع الآن، ولكن سيتم المنع عند الحفظ
+            # هذا يسمح للتاجر بتجربة التصميم، ولكن لن يحفظ إلا إذا كان لديه رصيد
+            
             unique_id = uuid.uuid4().hex[:8]
             filename = f"{unique_id}_{file.filename}"
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -147,12 +153,9 @@ def index():
                 output_filename = f"processed_{unique_id}.png"
                 output_path = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
                 img_no_bg.save(output_path, "PNG")
-                conn = get_db_connection()
-                cursor = conn.cursor()
-                cursor.execute("UPDATE users SET credits = credits - 1 WHERE id = %s", (user_id,))
-                conn.commit()
-                cursor.close()
-                conn.close()
+                
+                # ⚠️ لا يتم خصم الرصيد هنا! تم نقله لمرحلة الحفظ.
+                
                 return render_template('result.html',
                                        original=filename,
                                        processed=output_filename,
@@ -163,7 +166,7 @@ def index():
     return render_template('index.html', stats=stats)
 
 # -------------------------------------------------------
-# 3. PRODUCT MANAGEMENT
+# 3. PRODUCT MANAGEMENT (Save & Deduct Logic)
 # -------------------------------------------------------
 
 @app.route('/save_product', methods=['POST'])
@@ -171,27 +174,55 @@ def save_product():
     user_id = session.get('user_id')
     if not user_id: return redirect(url_for('login'))
 
+    # 1. التحقق من الرصيد أولاً
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT credits FROM users WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+    
+    if not user or user['credits'] <= 0:
+        cursor.close()
+        conn.close()
+        return "<h1>❌ Insufficient Credits!</h1><p>You cannot save products without credits.</p><a href='/'>Back</a>"
+
+    # 2. التحقق من صحة البيانات (Validation)
     name           = request.form.get('name', 'New Product')
-    price          = request.form.get('price', '0')
+    price_str      = request.form.get('price', '0')
     description    = request.form.get('description', '')
     original_image = request.form.get('original_image')
     processed_image= request.form.get('processed_image')
     template_style = request.form.get('template_style', 'elegant')
-    theme          = request.form.get('theme', 'gold')  # ✅ الجديد
+    theme          = request.form.get('theme', 'gold')
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    # معالجة السعر: تحويله لرقم، وإذا فشل نضع القيمة 0
+    try:
+        price = float(price_str)
+    except ValueError:
+        price = 0.0
+
+    # 3. الحفظ في قاعدة البيانات
     cursor.execute("SELECT id, slug FROM stores WHERE user_id = %s", (user_id,))
     store = cursor.fetchone()
 
     if store:
-        cursor.execute(
-            "INSERT INTO products (store_id, name, description, price, original_image_url, processed_image_url, template_style, theme) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-            (store['id'], name, description, price, original_image, processed_image, template_style, theme)
-        )
-        conn.commit()
-        cursor.close()
-        conn.close()
+        try:
+            cursor.execute(
+                "INSERT INTO products (store_id, name, description, price, original_image_url, processed_image_url, template_style, theme) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                (store['id'], name, description, price, original_image, processed_image, template_style, theme)
+            )
+            
+            # 4. خصم الرصيد (فقط بعد نجاح الحفظ)
+            cursor.execute("UPDATE users SET credits = credits - 1 WHERE id = %s", (user_id,))
+            
+            conn.commit() # حفظ التغييرات النهائية (المنتج + خصم الرصيد)
+            
+        except Exception as e:
+            conn.rollback()
+            return f"<h1>Database Error: {str(e)}</h1>"
+        finally:
+            cursor.close()
+            conn.close()
+            
         return redirect(url_for('admin'))
 
     cursor.close()
@@ -223,11 +254,29 @@ def admin():
 @app.route('/edit_product/<int:id>', methods=['POST'])
 def edit_product_route(id):
     if not session.get('user_id'): return redirect(url_for('login'))
-    name = request.form.get('name')
-    price = request.form.get('price')
+    
+    name        = request.form.get('name')
+    price_str   = request.form.get('price')
+    description = request.form.get('description')
+    theme       = request.form.get('theme')
+    
+    # معالجة السعر لمنع الانهيار
+    try:
+        price = float(price_str)
+    except ValueError:
+        price = 0.0
+
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("UPDATE products SET name = %s, price = %s WHERE id = %s", (name, price, id))
+    # تحديث شامل للبيانات
+    cursor.execute("""
+        UPDATE products SET 
+            name = %s, 
+            price = %s, 
+            description = %s, 
+            theme = %s 
+        WHERE id = %s
+    """, (name, price, description, theme, id))
     conn.commit()
     cursor.close()
     conn.close()
@@ -333,6 +382,7 @@ def super_admin():
     if not session.get('is_superadmin'): return redirect(url_for('super_admin_login'))
     conn = get_db_connection()
     cursor = conn.cursor()
+    # قراءة حية للبيانات لضمان تحديث الرصيد
     cursor.execute("SELECT COUNT(*) as count FROM users")
     total_users = cursor.fetchone()['count']
     cursor.execute("SELECT COUNT(*) as count FROM products")
@@ -340,6 +390,8 @@ def super_admin():
     cursor.execute("SELECT SUM(credits) as sum_credits FROM users")
     res_credits = cursor.fetchone()
     total_credits = res_credits['sum_credits'] if res_credits['sum_credits'] else 0
+    
+    # جلب المستخدمين مع بيانات متجرهم
     cursor.execute("SELECT users.*, stores.name as store_name FROM users LEFT JOIN stores ON users.id = stores.user_id ORDER BY users.created_at DESC")
     users = cursor.fetchall()
     cursor.close()
