@@ -1,413 +1,448 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ store.name }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>{{ store.name }} | RT Studio</title>
+    
+    <!-- الخطوط المعتمدة في الميثاق: Cormorant Garamond للمظهر الفاخر، Cairo للعناوين العربية -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Cairo:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <style>
+        /* المتغيرات الأساسية للمتجر الفاخر */
         :root {
-            --cream: #FAF8F5;
-            --ink: #0D0D0D;
-            --gold: #B8974A;
-            --gold-light: #D4AF6E;
-            --muted: #8A8680;
-            --border: #E8E4DE;
-            --card-bg: #FFFFFF;
+            --lux-black: #0D0D0D;
+            --lux-gold: #B8974A;
+            --lux-cream: #FAF8F5;
+            --lux-border: rgba(184, 151, 74, 0.2);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            font-family: 'Montserrat', sans-serif;
-            background: var(--cream);
-            color: var(--ink);
+            font-family: 'Inter', 'Cairo', sans-serif;
+            background: #fcfcfc;
+            color: #1a1a1a;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* ===== THEME DEFINITIONS (الألوان ديناميكية) ===== */
-        .theme-gold { --theme-bg: #FAF8F5; --theme-text: #2c2c2c; --theme-price: #555; --theme-line: #b5935f; --theme-accent: #b5935f; --theme-card-bg: #FFF; }
-        .theme-black { --theme-bg: #1a1a1a; --theme-text: #ffffff; --theme-price: #e0e0e0; --theme-line: #ffffff; --theme-accent: #ffffff; --theme-card-bg: #222; }
-        .theme-pastel { --theme-bg: #fdf2f8; --theme-text: #2c3e50; --theme-price: #7f8c8d; --theme-line: #a29bfe; --theme-accent: #a29bfe; --theme-card-bg: #FFF; }
-        .theme-spring { --theme-bg: #f0fff4; --theme-text: #1a3c2a; --theme-price: #276749; --theme-line: #48bb78; --theme-accent: #38a169; --theme-card-bg: #FFF; }
-        .theme-fire { --theme-bg: #fff5f5; --theme-text: #742a2a; --theme-price: #c53030; --theme-line: #fc8181; --theme-accent: #e53e3e; --theme-card-bg: #FFF; }
-        .theme-ocean { --theme-bg: #ebf8ff; --theme-text: #1a365d; --theme-price: #2b6cb0; --theme-line: #63b3ed; --theme-accent: #3182ce; --theme-card-bg: #FFF; }
+        /* ===== القوة اللونية الجديدة والمشبعة (Vibrant Themes) ===== */
+        /* ثيم ذهبي قوي */
+        .theme-gold { 
+            --card-bg: linear-gradient(135deg, #d4af37, #8e6d2e); 
+            --card-text: #ffffff; 
+            --card-line: #fef3c7; 
+        }
+        /* ثيم أسود ملكي */
+        .theme-black { 
+            --card-bg: linear-gradient(135deg, #1a1a1a, #000000); 
+            --card-text: #ffffff; 
+            --card-line: #ffffff; 
+        }
+        /* ثيم باستيل مشبع */
+        .theme-pastel { 
+            --card-bg: linear-gradient(135deg, #7c3aed, #4c1d95); 
+            --card-text: #ffffff; 
+            --card-line: #ede9fe; 
+        }
+        /* ثيم ربيعي عميق */
+        .theme-spring { 
+            --card-bg: linear-gradient(135deg, #059669, #064e3b); 
+            --card-text: #ffffff; 
+            --card-line: #d1fae5; 
+        }
+        /* ثيم ناري قوي (أحمر ناري مشبع) */
+        .theme-fire { 
+            --card-bg: linear-gradient(135deg, #e11d48, #9f1239); 
+            --card-text: #ffffff; 
+            --card-line: #ffe4e6; 
+        }
+        /* ثيم بحري عميق */
+        .theme-ocean { 
+            --card-bg: linear-gradient(135deg, #0284c7, #075985); 
+            --card-text: #ffffff; 
+            --card-line: #e0f2fe; 
+        }
 
-        /* ===== HEADER ===== */
+        /* ===== الهيدر الفاخر (Luxury Header) ===== */
         .store-header {
-            background: var(--ink);
-            padding: 60px 30px 50px;
+            background: var(--lux-black);
+            padding: 100px 20px 80px;
             text-align: center;
+            color: #fff;
             position: relative;
             overflow: hidden;
         }
 
+        /* تأثيرات إضاءة خلفية الهيدر */
         .store-header::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: 
-                radial-gradient(ellipse at 20% 50%, rgba(184,151,74,0.08) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 50%, rgba(184,151,74,0.06) 0%, transparent 60%);
+            content: ''; 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at center, rgba(184, 151, 74, 0.15) 0%, transparent 70%);
+            z-index: 1;
         }
 
-        .header-inner { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+        .header-content { position: relative; z-index: 2; max-width: 800px; margin: 0 auto; }
 
-        .store-avatar {
-            width: 90px; height: 90px;
-            border-radius: 50%;
-            border: 2px solid var(--gold);
-            margin: 0 auto 24px;
-            overflow: hidden;
+        .store-logo-init {
+            width: 85px; height: 85px; 
+            border-radius: 50%; 
+            border: 2px solid var(--lux-gold);
+            margin: 0 auto 30px; 
             display: flex; align-items: center; justify-content: center;
-            background: rgba(184,151,74,0.1);
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 36px; font-weight: 300;
-            color: var(--gold);
-        }
-        .store-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-        .gold-line { display: flex; align-items: center; gap: 12px; justify-content: center; margin-bottom: 16px; }
-        .gold-line::before, .gold-line::after { content: ''; flex: 1; max-width: 60px; height: 1px; background: var(--gold); opacity: 0.5; }
-        .gold-line span { font-size: 10px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; font-weight: 500; }
-
-        .store-name { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 300; color: #FFFFFF; letter-spacing: 3px; margin-bottom: 14px; line-height: 1.1; }
-        .store-bio { font-size: 12px; color: rgba(255,255,255,0.45); letter-spacing: 1.5px; line-height: 1.8; font-weight: 300; margin-bottom: 28px; }
-
-        .contact-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 10px; }
-        .contact-pill {
-            display: flex; align-items: center; gap: 7px;
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(184,151,74,0.3);
-            padding: 7px 14px; border-radius: 50px; text-decoration: none; transition: 0.3s;
-            color: rgba(255,255,255,0.7); font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
-        }
-        .contact-pill:hover { background: rgba(184,151,74,0.15); border-color: var(--gold); color: var(--gold); }
-        .contact-pill .icon { font-size: 13px; }
-
-        /* ===== COLLECTION SECTION ===== */
-        .collection-section { padding: 50px 20px 80px; max-width: 520px; margin: 0 auto; }
-
-        .section-header { text-align: center; margin-bottom: 35px; }
-        .section-label { font-size: 10px; letter-spacing: 5px; text-transform: uppercase; color: var(--gold); font-weight: 500; margin-bottom: 10px; display: block; }
-        .section-title { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 300; color: var(--ink); letter-spacing: 1px; }
-        .section-divider { width: 40px; height: 1px; background: var(--gold); margin: 14px auto 0; }
-
-        /* ===== PRODUCT GRID ===== */
-        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-
-        .product-card {
-            background: var(--theme-card-bg);
-            border: 1px solid var(--border);
-            border-radius: 4px;
+            font-family: 'Cormorant Garamond', serif; 
+            font-size: 36px; 
+            color: var(--lux-gold);
+            background: rgba(184, 151, 74, 0.05);
             overflow: hidden;
-            cursor: pointer;
-            transition: all 0.4s ease;
-            position: relative;
+            box-shadow: 0 0 20px rgba(184, 151, 74, 0.2);
         }
-        .product-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.08); border-color: var(--theme-accent); }
+        .store-logo-init img { width: 100%; height: 100%; object-fit: cover; }
 
-        .img-wrap {
-            width: 100%; aspect-ratio: 1/1;
-            background: var(--theme-bg); /* لون الخلفية من الثيم */
-            display: flex; align-items: center; justify-content: center;
-            padding: 15px; overflow: hidden; position: relative;
-        }
-        .img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.5s ease; }
-        .product-card:hover .img-wrap img { transform: scale(1.04); }
-
-        /* Style overlays */
-        .style-modern .img-wrap::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%; background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, transparent 100%); }
-        .style-modern .p-name-overlay { position: absolute; top: 10px; right: 10px; font-size: 10px; font-weight: 600; color: #fff; font-family: 'Montserrat'; letter-spacing: 1px; z-index: 2; text-align: right; max-width: 70%; }
-        .style-modern .p-price-overlay { position: absolute; bottom: 10px; left: 10px; background: #fff; color: var(--ink); font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 50px; z-index: 2; }
-
-        .style-minimal .img-wrap { background: #111; }
-        .style-minimal .card-info { background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); }
-        .style-minimal .p-name { color: #fff; }
-        .style-minimal .p-price { color: rgba(255,255,255,0.8); }
-
-        .style-bold { flex-direction: row; display: flex; aspect-ratio: 1/1; }
-        .style-bold .img-wrap { width: 55%; aspect-ratio: unset; height: 100%; flex-shrink: 0; }
-        .style-bold .card-info { background: var(--ink); flex: 1; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 12px; }
-        .style-bold .p-name { color: #fff; text-align: right; }
-        .style-bold .p-divider { background: var(--gold); }
-        .style-bold .p-price { color: var(--ink); background: #fff; padding: 3px 8px; border-radius: 4px; display: inline-block; }
-
-        /* Card Info - استخدام ألوان الثيم */
-        .card-info { padding: 14px 12px; }
-        .p-name { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-weight: 400; color: var(--theme-text); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
-        .p-divider { width: 20px; height: 1px; background: var(--theme-line); margin-bottom: 6px; }
-        .p-price { font-size: 12px; font-weight: 600; color: var(--theme-price); letter-spacing: 1px; }
-
-        /* Empty state */
-        .empty-state { grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--muted); }
-        .empty-state p { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; }
-
-        /* ===== MODAL ===== */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,13,13,0.92); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-
-        .modal-box {
-            width: 100%; max-width: 420px;
-            background: var(--cream); border-radius: 4px; overflow: hidden;
-            position: relative;
-            animation: modalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            max-height: 90vh; overflow-y: auto;
-        }
-        @keyframes modalIn { from { transform: translateY(30px) scale(0.97); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-
-        .modal-close { position: absolute; top: 14px; left: 14px; width: 32px; height: 32px; border-radius: 50%; background: rgba(13,13,13,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.2); font-size: 14px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-weight: 600; }
-        .modal-close:hover { background: rgba(13,13,13,0.9); }
-
-        /* Modal Visual */
-        .modal-visual { width: 100%; aspect-ratio: 1/1; background: #F7F5F2; display: flex; align-items: center; justify-content: center; padding: 30px; position: relative; }
-        .modal-visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
-
-        /* Modal Theme Styles */
-        .modal-box.theme-gold .modal-visual { background: #FAF8F5; }
-        .modal-box.theme-fire .modal-visual { background: #fff5f5; }
-        .modal-box.theme-ocean .modal-visual { background: #ebf8ff; }
-        .modal-box.theme-black .modal-visual { background: #1a1a1a; }
-        .modal-box.theme-spring .modal-visual { background: #f0fff4; }
-        .modal-box.theme-pastel .modal-visual { background: #fdf2f8; }
-
-        /* Modern Modal Specifics (العناصر التي تظهر فوق الصورة) */
-        .modal-modern .m-title-visual {
-            position: absolute; top: 16px; right: 16px;
-            font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 400;
-            text-align: right; max-width: 60%;
-            background: rgba(250,248,245,0.92); padding: 8px 12px;
-            border-radius: 3px; backdrop-filter: blur(4px); letter-spacing: 0.5px;
-        }
-        .modal-modern .m-price-visual {
-            position: absolute; bottom: 16px; left: 16px;
-            background: var(--ink); color: #fff;
-            font-size: 12px; font-weight: 600; letter-spacing: 2px;
-            padding: 8px 18px; border-radius: 50px;
+        .store-name { 
+            font-family: 'Cormorant Garamond', serif; 
+            font-size: 56px; 
+            font-weight: 300; 
+            letter-spacing: 4px; 
+            margin-bottom: 20px; 
+            line-height: 1.1;
         }
         
-        /* Minimal & Bold Modal Overrides */
-        .modal-minimal { background: var(--ink); }
-        .modal-minimal .modal-visual { background: #1a1a1a; }
-        .modal-minimal .modal-info { background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); }
-        .modal-minimal .m-title { color: #fff; }
-        .modal-minimal .m-price { color: rgba(255,255,255,0.7); }
-        .modal-minimal .m-desc { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); }
-        .modal-minimal .m-footer { background: var(--ink); }
+        .store-bio { 
+            font-size: 15px; 
+            font-family: 'Cairo'; 
+            color: #b0b0b0; 
+            margin-bottom: 40px; 
+            line-height: 1.8; 
+            max-width: 550px; 
+            margin-left: auto; 
+            margin-right: auto;
+            font-weight: 400;
+        }
 
-        .modal-bold { display: flex; flex-direction: row; min-height: 280px; }
-        .modal-bold .modal-visual { width: 52%; aspect-ratio: unset; height: auto; flex-shrink: 0; background: #F2F0ED; }
-        .modal-bold .modal-info { background: var(--ink); flex: 1; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 24px 18px; }
-        .modal-bold .m-title { color: #fff; text-align: right; font-family: 'Cormorant Garamond', serif; font-size: 20px; }
-        .modal-bold .m-divider { background: var(--gold); }
-        .modal-bold .m-price { color: var(--ink); background: #fff; padding: 5px 12px; border-radius: 3px; display: inline-block; }
-        .modal-bold .m-desc { color: rgba(255,255,255,0.5); text-align: right; font-size: 11px; background: transparent; padding: 0; }
-        .modal-bold .m-footer { background: var(--ink); padding: 0 18px 20px; }
-        .modal-bold .m-wa { background: var(--gold); color: var(--ink); }
+        /* شريط التواصل الاجتماعي (10 حقول) */
+        .social-bar { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 12px; 
+        }
+        .social-link {
+            text-decoration: none; 
+            color: #fff; 
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--lux-border); 
+            padding: 10px 22px; 
+            border-radius: 50px;
+            font-size: 12px; 
+            font-family: 'Cairo'; 
+            font-weight: 700;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .social-link:hover { 
+            background: var(--lux-gold); 
+            color: #000; 
+            border-color: var(--lux-gold); 
+            transform: translateY(-3px);
+        }
 
-        .m-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; color: var(--ink); margin-bottom: 10px; letter-spacing: 0.5px; line-height: 1.2; }
-        .m-divider { width: 30px; height: 1px; background: var(--gold); margin-bottom: 10px; }
-        .m-price { font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 2px; margin-bottom: 14px; }
-        .m-desc { font-size: 12px; color: var(--muted); line-height: 1.8; margin-bottom: 20px; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 3px; border-left: 2px solid var(--gold); font-family: 'Cairo', sans-serif; }
+        /* ===== شبكة المنتجات (Product Grid) ===== */
+        .collection-wrapper { 
+            max-width: 1240px; 
+            margin: -50px auto 100px; 
+            padding: 0 25px; 
+            position: relative; 
+            z-index: 3; 
+        }
+        
+        .products-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 35px; 
+        }
 
-        .m-footer { padding: 0 24px 24px; }
-        .m-wa { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--ink); color: #fff; text-decoration: none; padding: 15px; border-radius: 3px; font-weight: 600; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; transition: 0.3s; }
-        .m-wa:hover { background: var(--gold); color: var(--ink); }
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.12);
+            transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            cursor: pointer;
+            position: relative;
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+            color: var(--card-text);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .product-card:hover { 
+            transform: translateY(-12px); 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.25); 
+        }
 
-        /* ===== FOOTER ===== */
-        .store-footer { text-align: center; padding: 30px 20px; border-top: 1px solid var(--border); }
-        .footer-brand { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--muted); text-transform: uppercase; }
+        .image-wrap { 
+            width: 100%; aspect-ratio: 1/1; 
+            padding: 35px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            position: relative;
+        }
+        .image-wrap img { 
+            max-width: 95%; max-height: 95%; 
+            object-fit: contain; 
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.35));
+            transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .product-card:hover .image-wrap img { transform: scale(1.08); }
+
+        /* ===== الأنماط الأربعة للتخطيط (Detailed Layouts) ===== */
+        
+        /* 1. Elegant (النمط الكلاسيكي الفاخر) */
+        .style-elegant { text-align: center; }
+        .style-elegant .p-info { padding: 0 25px 35px; }
+        .style-elegant .p-name { font-family: 'Cairo'; font-size: 24px; font-weight: 900; margin-bottom: 12px; letter-spacing: 0.5px; }
+        .style-elegant .divider { width: 60px; height: 4px; background: var(--card-line); margin: 0 auto 18px; border-radius: 2px; }
+        .style-elegant .p-price { font-size: 20px; font-weight: 700; opacity: 0.95; font-family: 'Inter'; }
+
+        /* 2. Modern (النمط العصري مع تراكب النصوص) */
+        .style-modern .p-name { 
+            position: absolute; top: 30px; right: 30px; 
+            font-family: 'Cairo'; font-weight: 900; 
+            font-size: 20px; text-align: right; 
+            width: 75%; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3); 
+            z-index: 5;
+        }
+        .style-modern .p-price { 
+            position: absolute; bottom: 30px; left: 30px; 
+            background: #ffffff; color: #111; 
+            padding: 8px 22px; border-radius: 50px; 
+            font-weight: 900; font-size: 15px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25); 
+            z-index: 5;
+        }
+
+        /* 3. Minimal (نمط الشريط الزجاجي السفلي) */
+        .style-minimal .glass-footer { 
+            margin-top: auto; 
+            background: rgba(255,255,255,0.18); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            padding: 22px 25px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-top: 1px solid rgba(255,255,255,0.25);
+        }
+        .style-minimal .p-name { font-family: 'Cairo'; font-size: 16px; font-weight: 800; }
+        .style-minimal .p-price { font-weight: 900; font-size: 16px; font-family: 'Inter'; }
+
+        /* 4. Bold (النمط الجريء المقسم) */
+        .style-bold { flex-direction: row !important; }
+        .style-bold .image-wrap { width: 62%; padding: 20px; margin-right: -12%; z-index: 2; }
+        .style-bold .info-panel { 
+            flex-grow: 1; 
+            background: rgba(0,0,0,0.3); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            padding: 30px 20px; 
+            text-align: right; 
+            z-index: 3; 
+            backdrop-filter: blur(5px);
+        }
+        .style-bold .p-name { font-family: 'Cairo'; font-size: 20px; font-weight: 900; margin-bottom: 12px; line-height: 1.3; }
+        .style-bold .p-price { 
+            background: #ffffff; color: #000; 
+            padding: 6px 14px; border-radius: 6px; 
+            font-weight: 900; font-size: 15px; 
+            width: fit-content; margin-right: auto; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* ===== النافذة المنبثقة الاحترافية (Product Modal) ===== */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.96); display: none; align-items: center; justify-content: center; 
+            z-index: 10000; padding: 25px; backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+        .modal-card { 
+            background: #ffffff; width: 100%; max-width: 480px; 
+            border-radius: 35px; overflow: hidden; 
+            animation: modalZoom 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+        }
+        @keyframes modalZoom { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .modal-img-area { 
+            width: 100%; aspect-ratio: 1/1; 
+            background: #f8f9fa; display: flex; 
+            align-items: center; justify-content: center; 
+            padding: 50px; 
+            position: relative;
+        }
+        .modal-img-area img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.1)); }
+        
+        .modal-body-content { padding: 40px; text-align: center; }
+        .m-title-text { font-family: 'Cairo'; font-size: 28px; font-weight: 900; color: #111; margin-bottom: 12px; }
+        .m-price-text { font-size: 24px; font-weight: 800; color: var(--lux-gold); margin-bottom: 30px; font-family: 'Inter'; }
+        
+        .whatsapp-order-btn { 
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            background: #25D366; color: #fff; text-decoration: none; 
+            padding: 20px; border-radius: 18px; font-weight: 800; 
+            font-family: 'Cairo'; font-size: 17px; transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2);
+        }
+        .whatsapp-order-btn:hover { transform: scale(1.03); background: #1eb954; box-shadow: 0 15px 30px rgba(37, 211, 102, 0.3); }
+
+        .close-modal-btn {
+            position: absolute; top: 20px; left: 20px;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(0,0,0,0.5); color: #fff;
+            border: none; cursor: pointer; font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 11;
+        }
+
+        .footer-branding { text-align: center; padding: 60px; color: #b0b0b0; font-size: 12px; letter-spacing: 3px; font-weight: 600; text-transform: uppercase; }
+
+        @media (max-width: 768px) {
+            .store-name { font-size: 38px; }
+            .products-grid { grid-template-columns: 1fr; gap: 25px; }
+            .style-bold { flex-direction: column !important; }
+            .style-bold .image-wrap { width: 100%; margin-right: 0; padding: 40px; }
+            .style-bold .info-panel { text-align: center; align-items: center; }
+            .style-bold .p-price { margin-right: auto; margin-left: auto; }
+        }
     </style>
 </head>
 <body>
 
-<!-- Store Header -->
-<div class="store-header">
-    <div class="header-inner">
-        <div class="store-avatar">
+<header class="store-header">
+    <div class="header-content">
+        <div class="store-logo-init">
             {% if store.logo_url %}
-            <img src="{{ store.logo_url }}" alt="{{ store.name }}">
+                <img src="{{ store.logo_url }}" alt="{{ store.name }}">
             {% else %}
-            {{ store.name[0] }}
+                {{ store.name[0]|upper }}
             {% endif %}
         </div>
-        <div class="gold-line"><span>Collection</span></div>
         <h1 class="store-name">{{ store.name }}</h1>
         {% if store.bio %}
-        <p class="store-bio">{{ store.bio }}</p>
+            <p class="store-bio">{{ store.bio }}</p>
         {% endif %}
-        <div class="contact-bar">
-            {% if store.display_phone %}
-            <a href="tel:{{ store.display_phone }}" class="contact-pill"><span class="icon">📞</span> {{ store.display_phone }}</a>
-            {% endif %}
+
+        <!-- شريط التواصل الاجتماعي والعناوين -->
+        <div class="social-bar">
             {% if store.whatsapp_phone %}
-            <a href="https://wa.me/{{ store.whatsapp_phone }}" class="contact-pill" target="_blank"><span class="icon">💬</span> WhatsApp</a>
+                <a href="https://wa.me/{{ store.whatsapp_phone }}" class="social-link" target="_blank">واتساب 💬</a>
             {% endif %}
             {% if store.instagram_handle %}
-            <a href="https://instagram.com/{{ store.instagram_handle }}" class="contact-pill" target="_blank"><span class="icon">📸</span> @{{ store.instagram_handle }}</a>
+                <a href="https://instagram.com/{{ store.instagram_handle }}" class="social-link" target="_blank">إنستجرام 📸</a>
             {% endif %}
-             {% if store.tiktok_handle %}
-            <a href="https://tiktok.com/@{{ store.tiktok_handle }}" class="contact-pill" target="_blank"><span class="icon">🎵</span> @{{ store.tiktok_handle }}</a>
+            {% if store.tiktok_handle %}
+                <a href="https://tiktok.com/@{{ store.tiktok_handle }}" class="social-link" target="_blank">تيك توك 🎵</a>
             {% endif %}
             {% if store.facebook_handle %}
-            <a href="https://facebook.com/{{ store.facebook_handle }}" class="contact-pill" target="_blank"><span class="icon">👥</span> {{ store.facebook_handle }}</a>
-            {% endif %}
-            {% if store.address %}
-            <a href="https://maps.google.com/?q={{ store.address }}" class="contact-pill" target="_blank"><span class="icon">📍</span> {{ store.address }}</a>
+                <a href="{{ store.facebook_handle }}" class="social-link" target="_blank">فيسبوك 👥</a>
             {% endif %}
             {% if store.website %}
-            <a href="{{ store.website }}" class="contact-pill" target="_blank"><span class="icon">🌐</span> Website</a>
+                <a href="{{ store.website }}" class="social-link" target="_blank">الموقع 🌐</a>
+            {% endif %}
+            {% if store.address %}
+                <a href="https://maps.google.com/?q={{ store.address }}" class="social-link" target="_blank">📍 {{ store.address }}</a>
             {% endif %}
         </div>
     </div>
-</div>
+</header>
 
-<!-- Collection -->
-<div class="collection-section">
-    <div class="section-header">
-        <span class="section-label">Our Selection</span>
-        <h2 class="section-title">Latest Collection</h2>
-        <div class="section-divider"></div>
-    </div>
-
+<main class="collection-wrapper">
     <div class="products-grid">
         {% for product in products %}
-        
-        {# 1. تحديد الستايل (Layout) #}
-        {% set current_style = (product.template_style|lower if product.template_style else 'modern') %}
-        {% if current_style == 'elegant' %}{% set current_style = 'modern' %}{% endif %}
-
-        {# 2. تحديد الثيم (Colors) - الافتراضي هو gold #}
-        {% set current_theme = (product.theme|lower if product.theme else 'gold') %}
-
-        <div class="product-card style-{{ current_style }} theme-{{ current_theme }}"
-             onclick='openProduct({{ product.name|tojson|safe }}, {{ product.price|tojson|safe }}, "/static/uploads/{{ product.processed_image_url }}", {{ (product.description or "")|tojson|safe }}, "{{ current_style }}", "{{ current_theme }}")'>
-
-            <div class="img-wrap">
+        <div class="product-card theme-{{ product.theme }} style-{{ product.template_style }}" 
+             onclick="openProductModal('{{ product.name }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}')">
+            
+            <div class="image-wrap">
                 <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}">
-                {% if current_style == 'modern' %}
-                <div class="p-name-overlay">{{ product.name }}</div>
-                <div class="p-price-overlay">{{ product.price }} ₪</div>
-                {% endif %}
             </div>
 
-            {% if current_style != 'modern' %}
-            <div class="card-info">
+            <!-- تطبيق الستايل المختار بدقة تامة -->
+            {% if product.template_style == 'elegant' %}
+                <div class="p-info">
+                    <div class="p-name">{{ product.name }}</div>
+                    <div class="divider"></div>
+                    <div class="p-price">{{ product.price }} ₪</div>
+                </div>
+            {% elif product.template_style == 'modern' %}
                 <div class="p-name">{{ product.name }}</div>
-                <div class="p-divider"></div>
                 <div class="p-price">{{ product.price }} ₪</div>
-            </div>
+            {% elif product.template_style == 'minimal' %}
+                <div class="glass-footer">
+                    <div class="p-name">{{ product.name }}</div>
+                    <div class="p-price">{{ product.price }} ₪</div>
+                </div>
+            {% elif product.template_style == 'bold' %}
+                <div class="info-panel">
+                    <div class="p-name">{{ product.name }}</div>
+                    <div class="p-price">{{ product.price }} ₪</div>
+                </div>
             {% endif %}
-
         </div>
         {% else %}
-        <div class="empty-state">
-            <p>No pieces available yet.</p>
+        <div style="grid-column: 1/-1; text-align: center; padding: 120px; color: #9ca3af; font-family: 'Cairo';">
+            <p style="font-size: 18px;">لا توجد قطع معروضة في المجموعة حالياً.</p>
         </div>
         {% endfor %}
     </div>
-</div>
+</main>
 
-<!-- Footer -->
-<div class="store-footer">
-    <p class="footer-brand">Powered by Ramallah Time</p>
-</div>
+<footer class="footer-branding">
+    DESIGNED BY RT STUDIO | RAMALLAH TIME AI &copy; 2025
+</footer>
 
-<!-- Modal -->
-<div class="modal-overlay" id="productModal" onclick="closeModal(event)">
-    <div class="modal-box" id="modalBox" onclick="event.stopPropagation()">
-        <button class="modal-close" onclick="document.getElementById('productModal').style.display='none'">✕</button>
-
-        <div class="modal-visual" id="modalVisual">
-            <img id="modalImg" src="" alt="">
+<!-- النافذة المنبثقة (Product Modal) -->
+<div id="pModal" class="modal-overlay" onclick="closeProductModal()">
+    <div class="modal-card" onclick="event.stopPropagation()">
+        <button class="close-modal-btn" onclick="closeProductModal()">✕</button>
+        <div class="modal-img-area">
+            <img id="mImgView" src="" alt="Product Image">
         </div>
-
-        <div class="modal-info" id="modalInfo">
-            <div class="m-title"   id="mTitle"></div>
-            <div class="m-divider" id="mDivider"></div>
-            <div class="m-price"   id="mPrice"></div>
-            <div class="m-desc"    id="mDesc"></div>
-        </div>
-
-        <div class="m-footer" id="mFooter">
-            <a href="#" id="mWa" class="m-wa" target="_blank">Order via WhatsApp</a>
+        <div class="modal-body-content">
+            <h2 id="mTitleText" class="m-title-text"></h2>
+            <div id="mPriceText" class="m-price-text"></div>
+            <a id="mWaLink" href="" class="whatsapp-order-btn" target="_blank">
+                <span>طلب القطعة عبر واتساب</span>
+                <span style="font-size: 22px;">💬</span>
+            </a>
         </div>
     </div>
 </div>
 
 <script>
-    function openProduct(name, price, img, desc, style, theme) {
-        const modalBox  = document.getElementById('modalBox');
-        const modalVisual = document.getElementById('modalVisual');
-        const modalInfo = document.getElementById('modalInfo');
-        const mTitle    = document.getElementById('mTitle');
-        const mDivider  = document.getElementById('mDivider');
-        const mPrice    = document.getElementById('mPrice');
-        const mDesc     = document.getElementById('mDesc');
-
-        // 1. تنظيف العناصر القديمة لثيم modern إن وجدت
-        const oldTitleV = document.getElementById('mTitleVisual');
-        const oldPriceV = document.getElementById('mPriceVisual');
-        if (oldTitleV) oldTitleV.remove();
-        if (oldPriceV) oldPriceV.remove();
-
-        // 2. تطبيق الكلاسات (Theme + Style)
-        // نحدد كلاس الثيم وكلاس الستايل معاً
-        modalBox.className = 'modal-box theme-' + theme + ' modal-' + style;
-
-        // 3. الصورة
-        document.getElementById('modalImg').src = img;
-
-        // 4. النصوص الأساسية
-        mTitle.innerText = name;
-        mPrice.innerText = price + ' ₪';
-        mDesc.innerText  = desc;
-        mDesc.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
-
-        // 5. رابط واتساب
-        const waLink = buildWa(name, price, desc);
-        document.getElementById('mWa').href = waLink;
-
-        // 6. إدارة الستايلات الخاصة (Modern)
-        if (style === 'modern') {
-            // في الستايل مودرن، ننشئ العنوان والسعر فوق الصورة ديناميكياً
-            const titleV = document.createElement('div');
-            titleV.id = 'mTitleVisual';
-            titleV.className = 'm-title-visual';
-            titleV.innerText = name;
-            modalVisual.appendChild(titleV);
-
-            const priceV = document.createElement('div');
-            priceV.id = 'mPriceVisual';
-            priceV.className = 'm-price-visual';
-            priceV.innerText = price + ' ₪';
-            modalVisual.appendChild(priceV);
-
-            // وإخفاء العناصر الأسفل
-            mTitle.style.display   = 'none';
-            mDivider.style.display = 'none';
-            mPrice.style.display   = 'none';
-            modalInfo.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
-        } else {
-            // للستايلات الأخرى، نظهر العناصر بشكل طبيعي
-            mTitle.style.display   = 'block';
-            mDivider.style.display = 'block';
-            mPrice.style.display   = 'block';
-            modalInfo.style.display = 'block';
-        }
-
-        document.getElementById('productModal').style.display = 'flex';
+    function openProductModal(name, price, img) {
+        document.getElementById('mTitleText').innerText = name;
+        document.getElementById('mPriceText').innerText = price + ' ₪';
+        document.getElementById('mImgView').src = img;
+        
+        // بناء رسالة الواتساب التلقائية بدقة
+        let storePhone = "{{ store.whatsapp_phone or store.display_phone }}";
+        // تنظيف الرقم من أي مسافات
+        storePhone = storePhone.replace(/\s+/g, '');
+        
+        let message = encodeURIComponent("مرحباً " + "{{ store.name }}" + "، أود الاستفسار عن: " + name + " (السعر: " + price + " ₪). هل هو متوفر؟");
+        document.getElementById('mWaLink').href = "https://wa.me/" + storePhone + "?text=" + message;
+        
+        document.getElementById('pModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // منع التمرير عند فتح المودال
     }
 
-    function buildWa(name, price, desc) {
-        let phone = "{{ store.whatsapp_phone or store.phone or '' }}".replace(/\s+/g, '');
-        if (phone.startsWith('0')) { phone = '970' + phone.substring(1); }
-        const msg = `Hello, I'm interested in: ${name}\nPrice: ${price} ₪\n${desc ? 'Notes: ' + desc : ''}`;
-        return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-    }
-
-    function closeModal(event) {
-        if (event.target.id === 'productModal') {
-            document.getElementById('productModal').style.display = 'none';
-        }
+    function closeProductModal() {
+        document.getElementById('pModal').style.display = 'none';
+        document.body.style.overflow = 'auto'; // إعادة التمرير
     }
 </script>
 

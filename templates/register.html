@@ -1,37 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merchant Registration | Ramallah Time AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <title>إنشاء حساب تاجر | RT Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { background: #0f0f12; color: #fff; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .login-card { text-align: center; background: #16161d; padding: 40px; border-radius: 24px; width: 380px; border: 1px solid rgba(255,255,255,0.08); }
-        .logo-box { width: 50px; height: 50px; background: #6c5ce7; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; margin: 0 auto 20px; }
-        h2 { letter-spacing: 1px; margin-bottom: 5px; }
-        p { color: #888; font-size: 13px; margin-bottom: 30px; }
-        input { padding: 14px; width: 100%; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; margin-bottom: 15px; box-sizing: border-box; outline: none; font-size: 14px; }
-        input:focus { border-color: #6c5ce7; }
-        button { padding: 14px; width: 100%; background: #6c5ce7; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 10px; }
-        button:hover { background: #5b4cc4; transform: translateY(-2px); }
-        .footer-link { margin-top: 20px; font-size: 13px; color: #666; }
-        .footer-link a { color: #6c5ce7; text-decoration: none; }
+        /* نظام التصميم الفاتح (Canva/Notion Style) */
+        :root {
+            --bg: #f3f5f7;
+            --card: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --accent: #4f46e5;
+            --border: #e5e7eb;
+        }
+
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            font-family: 'Inter', 'Cairo', sans-serif; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px;
+        }
+
+        .register-card { 
+            text-align: center; 
+            background: var(--card); 
+            padding: 40px; 
+            border-radius: 24px; 
+            width: 100%;
+            max-width: 400px; 
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo-box { 
+            width: 54px; height: 54px; 
+            background: var(--accent); 
+            border-radius: 14px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: 900; font-size: 24px; color: #fff; 
+            margin: 0 auto 25px; 
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+
+        h2 { font-family: 'Cairo'; font-weight: 900; margin-bottom: 8px; font-size: 24px; color: #111; }
+        p { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; font-family: 'Cairo'; }
+
+        .form-group { text-align: right; margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #374151; font-family: 'Cairo'; }
+
+        input { 
+            padding: 14px; width: 100%; border-radius: 12px; 
+            border: 1px solid var(--border); 
+            background: #fafafa; color: var(--text-main); 
+            box-sizing: border-box; outline: none; 
+            font-size: 15px; transition: 0.2s;
+            font-family: 'Inter', 'Cairo';
+        }
+        input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.05); }
+
+        button { 
+            padding: 16px; width: 100%; 
+            background: var(--accent); color: white; 
+            border: none; border-radius: 12px; 
+            cursor: pointer; font-weight: bold; font-size: 16px; 
+            transition: 0.3s; margin-top: 15px; 
+            font-family: 'Cairo';
+        }
+        button:hover { background: #4338ca; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
+
+        .pending-notice {
+            background: #fffbeb; border: 1px solid #fef3c7; color: #92400e;
+            padding: 12px; border-radius: 10px; font-size: 12px; margin-top: 20px;
+            font-family: 'Cairo'; line-height: 1.5;
+        }
+
+        .footer-link { margin-top: 25px; font-size: 14px; color: var(--text-muted); font-family: 'Cairo'; }
+        .footer-link a { color: var(--accent); text-decoration: none; font-weight: 700; }
     </style>
 </head>
 <body>
-    <div class="login-card">
+    <div class="register-card">
         <div class="logo-box">RT</div>
-        <h2>Start Your Store</h2>
-        <p>Join Ramallah Time AI platform today</p>
+        <h2>ابدأ متجرك الآن</h2>
+        <p>انضم إلى منصة RT Studio لتصميم صور منتجاتك باحترافية</p>
+        
         <form method="POST">
-            <input type="text" name="store_name" placeholder="Store Name (e.g. My Boutique)" required>
-            <input type="text" name="phone" placeholder="Phone Number" required>
-            <input type="password" name="password" placeholder="Choose Password" required>
-            <button type="submit">Send Join Request</button>
+            <div class="form-group">
+                <label>اسم المتجر</label>
+                <input type="text" name="store_name" placeholder="مثال: بوتيك الأناقة" required>
+            </div>
+
+            <div class="form-group">
+                <label>رقم الجوال</label>
+                <input type="text" name="phone" placeholder="059xxxxxxx" required>
+            </div>
+
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" name="password" placeholder="اختر كلمة مرور قوية" required>
+            </div>
+
+            <button type="submit">إرسال طلب الانضمام</button>
         </form>
+
+        <div class="pending-notice">
+            ⚠️ ملاحظة: سيتم مراجعة طلبك وتفعيل حسابك من قبل الإدارة خلال 24 ساعة.
+        </div>
+
         <div class="footer-link">
-            Already have an account? <a href="/login">Sign In</a>
+            لديك حساب بالفعل؟ <a href="/login">تسجيل الدخول</a>
         </div>
     </div>
 </body>

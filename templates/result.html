@@ -1,318 +1,251 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Design Lab | Ramallah Time</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        :root {
-            --bg-app: #f3f5f7;
-            --bg-sidebar: #ffffff;
-            --card-bg: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
-            --accent: #4f46e5;
-            --success: #10b981;
-        }
+{% extends "base.html" %}
+{% block title %}معمل التصميم - RT Studio{% endblock %}
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background-color: var(--bg-app); 
-            color: var(--text-main); 
-            display: flex; 
-            min-height: 100vh; 
-            overflow-x: hidden;
-            overscroll-behavior: none;
-        }
+{% block content %}
+<!-- مكتبة تحويل التصميم لصورة (للتحميل) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-        /* === Desktop Sidebar === */
-        .sidebar {
-            width: 320px; 
-            background: var(--bg-sidebar); 
-            border-right: 1px solid var(--border);
-            padding: 30px; 
-            height: 100vh; 
-            position: sticky; top: 0;
-            flex-shrink: 0;
-            display: flex; flex-direction: column;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            overflow-y: auto;
-        }
+<style>
+    /* نظام تقسيم الصفحة: المعاينة يسار (مثبتة) والتحكم يمين */
+    .editor-container {
+        display: grid;
+        grid-template-columns: 1fr 420px;
+        gap: 40px;
+        align-items: start;
+    }
 
-        .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; }
-        .logo-box { width: 40px; height: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; font-size: 20px; }
-        
-        .main-title { font-size: 22px; font-weight: 800; color: var(--text-main); margin-bottom: 5px; }
-        .sub-title { font-size: 13px; color: var(--text-muted); margin-bottom: 30px; }
+    /* منطقة المعاينة المثبتة (Sticky Preview) لتبقى أمام التاجر */
+    .preview-sticky-wrap {
+        position: sticky;
+        top: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 10;
+    }
 
-        /* === Main Preview Area === */
-        .lab-viewport {
-            flex-grow: 1;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow-y: auto;
-        }
+    .canvas-frame {
+        width: 100%;
+        max-width: 500px;
+        aspect-ratio: 1/1;
+        background: #ffffff;
+        border-radius: 28px;
+        padding: 15px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        border: 1px solid #e5e7eb;
+    }
 
-        .preview-card {
-            width: 100%;
-            max-width: 500px;
-            background: #fff;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    /* لوحة التحكم الجانبية */
+    .controls-panel {
+        background: #ffffff;
+        padding: 35px;
+        border-radius: 24px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
 
-        .canvas-container {
-            width: 100%; aspect-ratio: 1/1;
-            background: linear-gradient(160deg, #fdfbf7 0%, #e2d9ca 100%);
-            border-radius: 12px;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            position: relative; overflow: hidden;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-            transition: all 0.3s ease;
-        }
+    .control-section { margin-bottom: 30px; }
+    .section-title { display: block; font-size: 15px; font-weight: 800; color: #111827; margin-bottom: 15px; font-family: 'Cairo'; border-right: 4px solid var(--accent); padding-right: 10px; }
+    
+    .options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .option-btn { 
+        background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px 5px; 
+        border-radius: 14px; text-align: center; cursor: pointer; transition: 0.2s;
+    }
+    .option-btn:hover { border-color: var(--accent); background: #f5f3ff; }
+    .option-btn.active { border-color: var(--accent); background: #eff6ff; box-shadow: 0 0 0 2px var(--accent); }
+    .opt-emoji { font-size: 22px; display: block; margin-bottom: 5px; }
+    .opt-txt { font-size: 12px; font-weight: 700; color: #1f2937; font-family: 'Cairo'; }
 
-        #live-img { 
-            max-width: 70%; max-height: 60%; object-fit: contain; 
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1)); 
-            margin-bottom: 15px; 
-            transition: all 0.3s ease;
-        }
-        #live-title { font-family: 'Cairo'; font-size: 24px; font-weight: 900; color: #2c2c2c; margin-bottom: 8px; text-align: center; transition: all 0.3s ease; }
-        #live-divider { width: 60px; height: 4px; background: #b5935f; border-radius: 2px; margin-bottom: 8px; transition: all 0.3s ease; }
-        #live-price { font-family: 'Cairo'; font-size: 18px; font-weight: 700; color: #555; transition: all 0.3s ease; }
-        .watermark { position: absolute; bottom: 10px; font-size: 8px; color: rgba(0,0,0,0.1); letter-spacing: 2px; font-weight: 700; }
+    /* منطقة الرسم (البوست) */
+    .post-main-canvas {
+        width: 100%; height: 100%;
+        border-radius: 14px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        color: #ffffff; /* النصوص بيضاء لتناسب الألوان القوية */
+    }
 
-        /* === Layout Styles Preview Logic === */
-        /* 1. Modern */
-        .layout-modern { background: #F2F0ED; }
-        .layout-modern #live-img { margin-bottom: 0; }
-        .layout-modern #live-title { position: absolute; top: 20px; right: 20px; font-size: 18px; text-align: right; }
-        .layout-modern #live-divider { display: none; }
-        .layout-modern #live-price { position: absolute; bottom: 20px; left: 20px; background: #fff; padding: 8px 15px; border-radius: 20px; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    #prod-img { 
+        max-width: 80%; max-height: 70%; object-fit: contain; z-index: 2; 
+        filter: drop-shadow(0 15px 30px rgba(0,0,0,0.3)); 
+        transition: 0.5s; 
+    }
+    #prod-title { font-family: 'Cairo'; font-weight: 900; z-index: 3; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    #prod-price { font-family: 'Cairo'; font-weight: 700; z-index: 3; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-        /* 2. Minimal */
-        .layout-minimal { background: #111; justify-content: flex-end; }
-        .layout-minimal #live-img { position: absolute; top: 20px; max-width: 80%; max-height: 60%; margin: 0; opacity: 0.8; }
-        .layout-minimal #live-title { position: absolute; bottom: 40px; right: 20px; color: #fff; font-size: 18px; text-align: right; }
-        .layout-minimal #live-divider { display: none; }
-        .layout-minimal #live-price { position: absolute; bottom: 40px; left: 20px; color: #fff; font-size: 14px; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 4px; }
+    /* 6 ثيمات قوية جداً ومشبعة (Vibrant) */
+    .theme-gold   { background: linear-gradient(135deg, #d4af37, #8e6d2e); --line-color: #fef3c7; }
+    .theme-black  { background: linear-gradient(135deg, #1a1a1a, #000000); --line-color: #ffffff; }
+    .theme-pastel { background: linear-gradient(135deg, #7c3aed, #4c1d95); --line-color: #ede9fe; }
+    .theme-spring { background: linear-gradient(135deg, #059669, #064e3b); --line-color: #d1fae5; }
+    .theme-fire   { background: linear-gradient(135deg, #e11d48, #9f1239); --line-color: #ffe4e6; } /* أحمر ناري قوي */
+    .theme-ocean  { background: linear-gradient(135deg, #0284c7, #075985); --line-color: #e0f2fe; }
 
-        /* 3. Bold */
-        .layout-bold { background: #f7f3ee; flex-direction: row; padding: 0; }
-        .layout-bold #live-img { position: absolute; left: 0; bottom: 0; width: 55%; height: 100%; max-width: none; max-height: none; object-fit: cover; margin: 0; }
-        .layout-bold #live-title { position: absolute; right: 20px; top: 40%; color: #fff; font-size: 18px; text-align: right; transform: translateY(-50%); background: #000; padding: 10px; }
-        .layout-bold #live-divider { position: absolute; right: 20px; top: 60%; background: #fff; transform: translateY(-50%); }
-        .layout-bold #live-price { position: absolute; right: 20px; bottom: 40px; background: #fff; color: #000; padding: 8px 15px; border-radius: 4px; font-size: 14px; }
-        /* خلفية سوداء للجهة اليمنى في Bold */
-        .layout-bold::after { content: ''; position: absolute; right: 0; top: 0; width: 50%; height: 100%; background: #000; z-index: 0; }
+    .post-main-canvas .divider { background: var(--line-color); width: 60px; height: 4px; margin: 12px 0; border-radius: 2px; }
 
-        /* === Controls === */
-        .control-group { margin-bottom: 25px; }
-        .group-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; display: block; }
-        
-        .options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .opt-btn { background: #f9fafb; border: 1px solid var(--border); padding: 12px 5px; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .opt-btn:hover { border-color: var(--accent); background: #f3f4f6; }
-        .opt-btn.active { border-color: var(--accent); background: rgba(79, 70, 229, 0.1); box-shadow: 0 0 0 1px var(--accent); }
-        .opt-icon { font-size: 18px; margin-bottom: 4px; display: block; }
-        .opt-name { font-size: 10px; font-weight: 600; color: var(--text-main); }
+    /* الستايلات الأربعة للتخطيط */
+    .style-elegant #prod-title { font-size: 26px; margin-top: 15px; }
+    .style-elegant #prod-price { font-size: 20px; }
 
-        input, textarea {
-            width: 100%; background: #f9fafb;
-            border: 1px solid var(--border);
-            padding: 12px; border-radius: 10px;
-            color: var(--text-main); margin-bottom: 10px;
-            font-size: 14px; outline: none;
-            font-family: 'Cairo';
-            transition: 0.2s;
-        }
-        input:focus, textarea:focus { border-color: var(--accent); background: #fff; }
-        
-        .btn-main { background: var(--text-main); color: #fff; border: none; padding: 14px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 14px; }
-        .btn-main:hover { opacity: 0.9; }
-        .btn-outline { background: transparent; border: 2px solid var(--text-main); color: var(--text-main); padding: 12px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; margin-top: 8px; font-size: 14px; }
+    .style-modern #prod-title { position: absolute; top: 25px; right: 25px; font-size: 20px; text-align: right; width: 65%; }
+    .style-modern #prod-price { position: absolute; bottom: 25px; left: 25px; background: #ffffff; color: #111; padding: 6px 18px; border-radius: 50px; font-weight: 900; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .style-modern .divider { display: none; }
 
-        /* === Mobile Responsive === */
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { 
-                position: fixed; bottom: 0; left: 0; right: 0;
-                width: 100%; height: auto; max-height: 70vh; 
-                border-right: none; border-top: 1px solid var(--border);
-                border-radius: 20px 20px 0 0; 
-                padding: 20px;
-                z-index: 100;
-                overflow-y: auto;
-                display: none; 
-            }
-            .sidebar.active { display: block; }
-            
-            .lab-viewport { padding: 20px; padding-bottom: 100px; }
-            
-            .mobile-toggle {
-                position: fixed; bottom: 20px; right: 20px;
-                width: 60px; height: 60px; border-radius: 50%;
-                background: var(--accent); color: #fff;
-                border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                font-size: 24px; cursor: pointer; z-index: 101;
-                display: flex; align-items: center; justify-content: center;
-            }
-        }
-    </style>
-</head>
-<body>
+    .style-minimal { justify-content: flex-end; }
+    .style-minimal #prod-img { position: absolute; top: 12%; max-height: 60%; }
+    .style-minimal .bottom-bar { background: rgba(255,255,255,0.15); backdrop-filter: blur(15px); width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.2); }
+    .style-minimal .divider { display: none; }
 
-    <div class="sidebar" id="controlsPanel">
-        <div class="logo-area">
-            <div class="logo-box">RT</div>
-            <div>
-                <div class="main-title">Design Lab</div>
-                <div class="sub-title">Customize your product</div>
+    .style-bold { flex-direction: row; justify-content: flex-start; }
+    .style-bold #prod-img { width: 65%; max-height: 100%; object-fit: cover; margin-right: -12%; z-index: 2; }
+    .style-bold .side-info { background: rgba(0,0,0,0.25); height: 100%; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 25px; z-index: 3; text-align: right; backdrop-filter: blur(5px); }
+    .style-bold #prod-price { background: #fff; color: #000; padding: 5px 12px; margin-top: 15px; border-radius: 4px; width: fit-content; margin-right: auto; }
+
+    input.data-input { width: 100%; padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px; font-family: 'Cairo'; margin-bottom: 12px; outline: none; font-size: 15px; }
+    input.data-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+    
+    .btn-action-save { background: #1f2937; color: white; border: none; padding: 18px; border-radius: 14px; width: 100%; font-weight: 800; cursor: pointer; font-family: 'Cairo'; font-size: 16px; margin-top: 10px; transition: 0.3s; }
+    .btn-action-save:hover { background: #000; transform: translateY(-2px); }
+    
+    .btn-action-dl { background: transparent; color: #1f2937; border: 2px solid #1f2937; padding: 15px; border-radius: 14px; width: 100%; font-weight: 800; cursor: pointer; font-family: 'Cairo'; font-size: 14px; margin-top: 12px; }
+
+    @media (max-width: 900px) {
+        .editor-container { grid-template-columns: 1fr; }
+        .preview-sticky-wrap { position: sticky; top: 10px; z-index: 100; }
+        .canvas-frame { max-width: 340px; }
+    }
+</style>
+
+<div class="editor-container">
+    <!-- المعاينة المثبتة على اليسار -->
+    <div class="preview-sticky-wrap">
+        <div class="canvas-frame">
+            <div id="capture-area" class="post-main-canvas theme-gold style-elegant">
+                <img id="prod-img" src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Product">
+                
+                <div id="dynamic-content-wrap" style="width: 100%; display: contents;">
+                    <!-- المحتوى الافتراضي (Elegant) -->
+                    <div id="prod-title">اسم المنتج</div>
+                    <div class="divider"></div>
+                    <div id="prod-price">0.00 ₪</div>
+                </div>
+
+                <div style="position: absolute; bottom: 10px; font-size: 9px; opacity: 0.4; letter-spacing: 3px; font-weight: 800;">RT STUDIO</div>
             </div>
         </div>
+        <p style="margin-top: 15px; color: #6b7280; font-size: 14px; font-family: 'Cairo'; font-weight: 600;">✨ معاينة التصميم الحية</p>
+    </div>
 
-        <!-- Controls Content -->
-        <div class="control-group">
-            <span class="group-label">🎨 Theme</span>
-            <div class="options-grid">
-                <div class="opt-btn active" onclick="setTheme('gold', this)"><span class="opt-icon">✨</span><span class="opt-name">Royal</span></div>
-                <div class="opt-btn" onclick="setTheme('black', this)"><span class="opt-icon">🖤</span><span class="opt-name">Night</span></div>
-                <div class="opt-btn" onclick="setTheme('fire', this)"><span class="opt-icon">🔥</span><span class="opt-name">Fire</span></div>
-                <div class="opt-btn" onclick="setTheme('ocean', this)"><span class="opt-icon">🌊</span><span class="opt-name">Ocean</span></div>
-                <div class="opt-btn" onclick="setTheme('pastel', this)"><span class="opt-icon">🦋</span><span class="opt-name">Pastel</span></div>
-                <div class="opt-btn" onclick="setTheme('spring', this)"><span class="opt-icon">🌿</span><span class="opt-name">Fresh</span></div>
+    <!-- لوحة التحكم على اليمين -->
+    <div class="controls-panel">
+        <form action="/save_product" method="POST" id="mainSaveForm">
+            <input type="hidden" name="image_url" value="{{ filename }}">
+            <input type="hidden" name="template_style" id="hiddenStyle" value="elegant">
+            <input type="hidden" name="theme" id="hiddenTheme" value="gold">
+
+            <div class="control-section">
+                <span class="section-title">📝 بيانات المنتج</span>
+                <input type="text" name="name" id="inputName" placeholder="أدخل اسم المنتج هنا..." class="data-input" oninput="liveSync()" required>
+                <input type="number" name="price" id="inputPrice" placeholder="السعر (₪)..." class="data-input" oninput="liveSync()" required>
             </div>
-        </div>
 
-        <!-- ✅ تعديل: 4 خيارات للستايل -->
-        <div class="control-group">
-            <span class="group-label">📐 Layout Style</span>
-            <div class="options-grid" style="grid-template-columns: repeat(2, 1fr);">
-                <div class="opt-btn active" onclick="setLayout('elegant', this)"><span class="opt-icon">🖼️</span><span class="opt-name">Classic</span></div>
-                <div class="opt-btn" onclick="setLayout('modern', this)"><span class="opt-icon">💎</span><span class="opt-name">Modern</span></div>
-                <div class="opt-btn" onclick="setLayout('minimal', this)"><span class="opt-icon">🎯</span><span class="opt-name">Minimal</span></div>
-                <div class="opt-btn" onclick="setLayout('bold', this)"><span class="opt-icon">⚡</span><span class="opt-name">Bold</span></div>
+            <div class="control-section">
+                <span class="section-title">🎨 اختيار الثيم (ألوان قوية)</span>
+                <div class="options-grid">
+                    <div class="option-btn active" onclick="applyTheme('gold', this)"><span class="opt-emoji">✨</span><span class="opt-txt">ذهبي ملكي</span></div>
+                    <div class="option-btn" onclick="applyTheme('black', this)"><span class="opt-emoji">🌑</span><span class="opt-txt">أسود فخم</span></div>
+                    <div class="option-btn" onclick="applyTheme('pastel', this)"><span class="opt-emoji">🌸</span><span class="opt-txt">بنفسجي قوية</span></div>
+                    <div class="option-btn" onclick="applyTheme('spring', this)"><span class="opt-emoji">🌿</span><span class="opt-txt">أخضر ربيعي</span></div>
+                    <div class="option-btn" onclick="applyTheme('fire', this)"><span class="opt-emoji">🔥</span><span class="opt-txt">أحمر ناري</span></div>
+                    <div class="option-btn" onclick="applyTheme('ocean', this)"><span class="opt-emoji">🌊</span><span class="opt-txt">أزرق بحري</span></div>
+                </div>
             </div>
-        </div>
 
-        <div class="control-group">
-            <span class="group-label">✍️ Details</span>
-            <input type="text" id="inName" placeholder="Product Name..." oninput="sync()">
-            <input type="text" id="inPrice" placeholder="Price (₪)..." oninput="sync()">
-            <textarea id="inDesc" placeholder="Description..." oninput="sync()" style="min-height: 60px;"></textarea>
-        </div>
+            <div class="control-section">
+                <span class="section-title">📐 نمط التصميم</span>
+                <div class="options-grid">
+                    <div class="option-btn active" onclick="applyStyle('elegant', this)"><span class="opt-emoji">📏</span><span class="opt-txt">كلاسيك</span></div>
+                    <div class="option-btn" onclick="applyStyle('modern', this)"><span class="opt-emoji">💎</span><span class="opt-txt">عصري</span></div>
+                    <div class="option-btn" onclick="applyStyle('minimal', this)"><span class="opt-emoji">🧊</span><span class="opt-txt">بسيط</span></div>
+                </div>
+                <div class="option-btn" onclick="applyStyle('bold', this)" style="margin-top:12px; width:100%"><span class="opt-emoji">⚡</span><span class="opt-txt">نمط جريء (Bold)</span></div>
+            </div>
 
-        <form action="/save_product" method="POST">
-            <input type="hidden" name="original_image" value="{{ original }}">
-            <input type="hidden" name="processed_image" value="{{ processed }}">
-            <input type="hidden" name="name" id="fName">
-            <input type="hidden" name="price" id="fPrice">
-            <input type="hidden" name="description" id="fDesc">
-            <input type="hidden" name="template_style" id="fStyle" value="elegant">
-            <input type="hidden" name="theme" id="fTheme" value="gold">
-            
-            <button type="submit" class="btn-outline" style="margin-top:0;">💾 Save to Store</button>
+            <button type="submit" class="btn-action-save">💾 حفظ ونشر للمتجر</button>
         </form>
-        <button class="btn-main" onclick="downloadDesign()">📥 Download Image</button>
+        <button class="btn-action-dl" onclick="triggerDownload()">📥 تحميل الصورة للجهاز</button>
     </div>
+</div>
 
-    <!-- Main Viewport -->
-    <div class="lab-viewport">
-        <div class="preview-card">
-            <div class="canvas-container" id="post-canvas">
-                <img id="live-img" src="/static/uploads/{{ processed }}" alt="">
-                <div id="live-title">Product Name</div>
-                <div id="live-divider"></div>
-                <div id="live-price">0.00 ₪</div>
-                <div class="watermark">RAMALLAH TIME</div>
-            </div>
-        </div>
-    </div>
+<script>
+    function liveSync() {
+        const nameVal = document.getElementById('inputName').value || 'اسم المنتج';
+        const priceVal = (document.getElementById('inputPrice').value || '0.00') + ' ₪';
+        
+        // تحديث النصوص في كل الأماكن المحتملة داخل المعاينة
+        document.querySelectorAll('#prod-title').forEach(el => el.innerText = nameVal);
+        document.querySelectorAll('#prod-price').forEach(el => el.innerText = priceVal);
+    }
 
-    <!-- Mobile Toggle Button -->
-    <button class="mobile-toggle" onclick="toggleControls()" style="display:none;">⚙️</button>
+    function applyTheme(themeName, element) {
+        const canvas = document.getElementById('capture-area');
+        // إزالة كافة الثيمات السابقة
+        canvas.classList.remove('theme-gold', 'theme-black', 'theme-pastel', 'theme-spring', 'theme-fire', 'theme-ocean');
+        canvas.classList.add('theme-' + themeName);
+        document.getElementById('hiddenTheme').value = themeName;
+        
+        // تحديث نشاط الأزرار
+        element.closest('.options-grid').querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+        element.classList.add('active');
+    }
 
-    <script>
-        function toggleControls() {
-            document.getElementById('controlsPanel').classList.toggle('active');
+    function applyStyle(styleName, element) {
+        const canvas = document.getElementById('capture-area');
+        const wrap = document.getElementById('dynamic-content-wrap');
+        const name = document.getElementById('inputName').value || 'اسم المنتج';
+        const price = (document.getElementById('inputPrice').value || '0.00') + ' ₪';
+
+        // تغيير كلاس الستايل
+        canvas.classList.remove('style-elegant', 'style-modern', 'style-minimal', 'style-bold');
+        canvas.classList.add('style-' + styleName);
+        document.getElementById('hiddenStyle').value = styleName;
+
+        // إعادة بناء الهيكل الداخلي حسب الستايل المختار (لضمان الدقة الكاملة)
+        if (styleName === 'elegant') {
+            wrap.innerHTML = `<div id="prod-title">${name}</div><div class="divider"></div><div id="prod-price">${price}</div>`;
+        } else if (styleName === 'modern') {
+            wrap.innerHTML = `<div id="prod-title">${name}</div><div id="prod-price">${price}</div>`;
+        } else if (styleName === 'minimal') {
+            wrap.innerHTML = `<div class="bottom-bar"><div id="prod-title">${name}</div><div id="prod-price">${price}</div></div>`;
+        } else if (styleName === 'bold') {
+            wrap.innerHTML = `<div class="side-info"><div id="prod-title">${name}</div><div class="divider"></div><div id="prod-price">${price}</div></div>`;
         }
 
-        if(window.innerWidth <= 768) {
-            document.querySelector('.mobile-toggle').style.display = 'flex';
-            document.getElementById('controlsPanel').classList.remove('active');
-        }
+        // تحديث نشاط الأزرار
+        document.querySelectorAll('.option-btn').forEach(b => {
+            if(b.onclick && b.onclick.toString().includes('applyStyle')) b.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
 
-        const themes = {
-            gold:   { bg: 'linear-gradient(160deg, #fdfbf7 0%, #e2d9ca 100%)', text: '#2c2c2c', price: '#555', line: '#b5935f' },
-            black:  { bg: 'linear-gradient(160deg, #1a1a1a 0%, #434343 100%)', text: '#ffffff', price: '#e0e0e0', line: '#ffffff' },
-            fire:   { bg: 'linear-gradient(160deg, #fff5f5 0%, #fed7d7 100%)', text: '#742a2a', price: '#c53030', line: '#fc8181' },
-            ocean:  { bg: 'linear-gradient(160deg, #ebf8ff 0%, #bee3f8 100%)', text: '#1a365d', price: '#2b6cb0', line: '#63b3ed' },
-            pastel: { bg: 'linear-gradient(160deg, #fdf2f8 0%, #ebf5fb 100%)', text: '#2c3e50', price: '#7f8c8d', line: '#bdc3c7' },
-            spring: { bg: 'linear-gradient(160deg, #f0fff4 0%, #c6f6d5 100%)', text: '#1a3c2a', price: '#276749', line: '#48bb78' }
-        };
-
-        function setTheme(key, el) {
-            const t = themes[key];
-            const canvas = document.getElementById('post-canvas');
-            // نطبق الألوان على العناصر الداخلية فقط، لا نغير الـ Layout Class
-            canvas.style.background = t.bg;
-            document.getElementById('live-title').style.color = t.text;
-            document.getElementById('live-price').style.color = t.price;
-            document.getElementById('live-divider').style.background = t.line;
-            
-            document.getElementById('fTheme').value = key;
-            updateActive(el);
-        }
-
-        function setLayout(layout, el) {
-            const canvas = document.getElementById('post-canvas');
-            // نحذف كلاسات الـ Layout القديمة ونضيف الجديدة
-            canvas.className = 'canvas-container layout-' + layout;
-            // نعيد تطبيق ألوان الثيم الحالي لأن تغيير الكلاس قد يعيد تعريف بعض الألوان
-            // (هذا حل بسيط لضمان التناسق)
-            
-            document.getElementById('fStyle').value = layout;
-            updateActive(el);
-        }
-
-        function updateActive(el) {
-            el.closest('.options-grid').querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-        }
-
-        function sync() {
-            const name = document.getElementById('inName').value || 'Product Name';
-            const price = document.getElementById('inPrice').value || '0.00';
-            document.getElementById('live-title').innerText = name;
-            document.getElementById('live-price').innerText = price + ' ₪';
-            document.getElementById('fName').value = name;
-            document.getElementById('fPrice').value = price;
-            document.getElementById('fDesc').value = document.getElementById('inDesc').value;
-        }
-
-        function downloadDesign() {
-            const canvas = document.getElementById('post-canvas');
-            html2canvas(canvas, { scale: 3, useCORS: true }).then(c => {
-                const link = document.createElement('a');
-                link.download = 'RT_Design_' + Date.now() + '.jpg';
-                link.href = c.toDataURL('image/jpeg', 0.9);
-                link.click();
-            });
-        }
-    </script>
-</body>
-</html>
+    function triggerDownload() {
+        const target = document.getElementById('capture-area');
+        html2canvas(target, { 
+            scale: 3, 
+            useCORS: true,
+            backgroundColor: null 
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'RT-Studio-Design-' + Date.now() + '.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+        });
+    }
+</script>
+{% endblock %}

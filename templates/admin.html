@@ -1,90 +1,143 @@
 {% extends "base.html" %}
-{% block title %}Manage Products{% endblock %}
+{% block title %}إدارة المتجر - RT Studio{% endblock %}
 {% block nav_products %}active{% endblock %}
 {% block mob_products %}active{% endblock %}
 
 {% block content %}
 <style>
-    /* أنماط خاصة بصفحة الأدمن فقط */
-    .tab-btn { background: #f3f4f6; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-right: 5px; }
-    .tab-btn.active { background: #000; color: #fff; }
-    
-    .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
-    .btn-add { background: #000; color: #fff; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 700; }
+    /* ألوان الثيمات الجديدة القوية والمشبعة */
+    :root {
+        --theme-gold: linear-gradient(135deg, #d4af37, #8e6d2e);
+        --theme-black: linear-gradient(135deg, #1a1a1a, #000000);
+        --theme-fire: linear-gradient(135deg, #e11d48, #9f1239);
+        --theme-ocean: linear-gradient(135deg, #0284c7, #075985);
+        --theme-spring: linear-gradient(135deg, #059669, #064e3b);
+        --theme-pastel: linear-gradient(135deg, #7c3aed, #4c1d95);
+    }
 
-    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-    .product-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: 0.2s; }
-    .product-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .product-card img { width: 100%; height: 200px; object-fit: contain; background: #f9fafb; }
+    .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+    .tab-btn { background: #fff; border: 1px solid #e5e7eb; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 700; font-family: 'Cairo'; transition: 0.2s; }
+    .tab-btn.active { background: #1f2937; color: #fff; border-color: #1f2937; }
+
+    /* منطقة التعديل - معاينة حية + تحكم */
+    .edit-container {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 30px;
+        background: #fff;
+        padding: 30px;
+        border-radius: 24px;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    /* المعاينة الحية في صفحة التعديل */
+    .edit-preview-box {
+        width: 100%;
+        aspect-ratio: 1/1;
+        border-radius: 15px;
+        overflow: hidden;
+        position: sticky;
+        top: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .edit-preview-box img { max-width: 80%; max-height: 70%; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2)); }
+    .edit-preview-box .p-title { font-family: 'Cairo'; font-weight: 900; margin-top: 10px; font-size: 18px; }
+    .edit-preview-box .p-price { font-family: 'Cairo'; font-weight: 700; opacity: 0.9; }
+
+    /* شبكة المنتجات */
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .product-card { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #e5e7eb; transition: 0.3s; }
+    .product-card img { width: 100%; height: 200px; object-fit: contain; background: #f9fafb; padding: 15px; }
     .p-info { padding: 15px; }
-    .p-name { font-weight: 700; margin-bottom: 5px; }
+    .p-name { font-weight: 700; font-family: 'Cairo'; margin-bottom: 5px; }
     .p-price { color: #10b981; font-weight: 800; margin-bottom: 15px; }
+    
     .actions { display: flex; gap: 8px; }
-    .btn-action { flex: 1; padding: 8px; border-radius: 8px; text-align: center; text-decoration: none; font-size: 12px; font-weight: 700; }
-    .btn-edit { background: #f3f4f6; color: #111; }
+    .btn-action { flex: 1; padding: 10px; border-radius: 8px; text-align: center; text-decoration: none; font-size: 13px; font-weight: 700; font-family: 'Cairo'; border: none; cursor: pointer; }
+    .btn-edit { background: #f3f4f6; color: #1f2937; }
     .btn-del { background: #fef2f2; color: #ef4444; }
 
-    .edit-box { background: #fff; padding: 25px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-    .edit-input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 10px; font-family: 'Inter'; font-size: 14px; }
-    .btn-save { background: #10b981; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; }
-    
-    .settings-box { background: #fff; padding: 25px; border-radius: 16px; margin-bottom: 20px; }
-    .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    @media (max-width: 768px) { .input-grid { grid-template-columns: 1fr; } }
-    
+    /* فورم التعديل */
+    .edit-form-side { display: flex; flex-direction: column; gap: 15px; }
+    .form-label { font-family: 'Cairo'; font-weight: 700; font-size: 14px; color: #374151; display: block; margin-bottom: 5px; }
+    .input-field { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 10px; font-family: 'Cairo'; font-size: 14px; outline: none; }
+    .input-field:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+
+    .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .theme-opt { 
+        padding: 10px; border-radius: 10px; border: 2px solid #e5e7eb; cursor: pointer; text-align: center; font-size: 11px; font-weight: 700; font-family: 'Cairo'; 
+        transition: 0.2s;
+    }
+    .theme-opt.active { border-color: #4f46e5; background: #f5f3ff; }
+
+    @media (max-width: 900px) {
+        .edit-container { grid-template-columns: 1fr; }
+        .edit-preview-box { max-width: 300px; margin: 0 auto; }
+    }
+
     .content-section { display: none; }
     .content-section.active { display: block; }
 </style>
 
-<!-- Header & Tabs -->
 <div class="header-flex">
-    <div style="display:flex; align-items:center; gap:10px;">
-        <h1 style="font-size: 24px; font-weight: 800;">Inventory</h1>
-        <button class="tab-btn active" onclick="showTab('products')">Products</button>
-        <button class="tab-btn" onclick="showTab('settings')">Settings</button>
+    <div style="display:flex; align-items:center; gap:15px;">
+        <h1 style="font-size: 24px; font-weight: 900; font-family: 'Cairo';">المخزون</h1>
+        <button class="tab-btn active" onclick="showTab('products', this)">المنتجات</button>
+        <button class="tab-btn" onclick="showTab('settings', this)">إعدادات المتجر</button>
     </div>
-    <a href="/" class="btn-add">+ Add New</a>
+    <a href="/" style="background:#4f46e5; color:#fff; padding:12px 20px; border-radius:10px; text-decoration:none; font-family:'Cairo'; font-weight:700;">+ إضافة منتج</a>
 </div>
 
-<!-- Section 1: Products -->
+<!-- تبويب المنتجات -->
 <div id="tab-products" class="content-section active">
+    
     {% if edit_product %}
-    <div class="edit-box">
-        <h3 style="margin-bottom: 20px;">✏️ Editing: {{ edit_product.name }}</h3>
-        <form action="/edit_product/{{ edit_product.id }}" method="POST">
-            <label>Product Name</label>
-            <input type="text" name="name" value="{{ edit_product.name }}" class="edit-input" required>
+    <!-- منطقة التعديل مع المعاينة الحية -->
+    <div class="edit-container">
+        <div id="livePreview" class="edit-preview-box" style="background: var(--theme-{{ edit_product.theme }});">
+            <img id="prevImg" src="/static/uploads/{{ edit_product.processed_image_url }}">
+            <div id="prevName" class="p-title">{{ edit_product.name }}</div>
+            <div id="prevPrice" class="p-price">{{ edit_product.price }} ₪</div>
+        </div>
+
+        <form action="/edit_product/{{ edit_product.id }}" method="POST" class="edit-form-side">
+            <h3 style="font-family:'Cairo'; margin-bottom:10px;">✏️ تعديل بيانات المنتج</h3>
             
-            <label>Price (₪)</label>
-            <input type="number" step="0.01" name="price" value="{{ edit_product.price }}" class="edit-input" required>
-
-            <label>Description</label>
-            <textarea name="description" rows="2" class="edit-input">{{ edit_product.description or '' }}</textarea>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="display:grid; grid-template-columns: 1fr 120px; gap:15px;">
                 <div>
-                    <label>Layout Style</label>
-                    <select name="template_style" class="edit-input">
-                        <option value="elegant" {% if edit_product.template_style == 'elegant' %}selected{% endif %}>Classic</option>
-                        <option value="modern" {% if edit_product.template_style == 'modern' %}selected{% endif %}>Modern</option>
-                        <option value="minimal" {% if edit_product.template_style == 'minimal' %}selected{% endif %}>Minimal</option>
-                        <option value="bold" {% if edit_product.template_style == 'bold' %}selected{% endif %}>Bold</option>
-                    </select>
+                    <label class="form-label">اسم المنتج</label>
+                    <input type="text" name="name" id="inName" value="{{ edit_product.name }}" class="input-field" oninput="syncEdit()" required>
                 </div>
                 <div>
-                    <label>Theme Color</label>
-                    <select name="theme" class="edit-input">
-                        <option value="gold" {% if edit_product.theme == 'gold' %}selected{% endif %}>Royal Gold</option>
-                        <option value="black" {% if edit_product.theme == 'black' %}selected{% endif %}>Night Black</option>
-                        <option value="fire" {% if edit_product.theme == 'fire' %}selected{% endif %}>Fire</option>
-                        <option value="ocean" {% if edit_product.theme == 'ocean' %}selected{% endif %}>Ocean</option>
-                    </select>
+                    <label class="form-label">السعر (₪)</label>
+                    <input type="number" step="0.01" name="price" id="inPrice" value="{{ edit_product.price }}" class="input-field" oninput="syncEdit()" required>
                 </div>
             </div>
 
-            <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <button type="submit" class="btn-save">Update Product</button>
-                <a href="/admin" style="color: #666; text-decoration: none; padding-top: 10px;">Cancel</a>
+            <label class="form-label">وصف المنتج</label>
+            <textarea name="description" rows="2" class="input-field">{{ edit_product.description or '' }}</textarea>
+
+            <label class="form-label">اختر الثيم (قوي)</label>
+            <div class="theme-grid">
+                {% for t in ['gold', 'black', 'pastel', 'spring', 'fire', 'ocean'] %}
+                <div class="theme-opt {% if edit_product.theme == t %}active{% endif %}" onclick="updateEditTheme('{{ t }}', this)">
+                    {{ 'ذهبي' if t=='gold' else 'أسود' if t=='black' else 'باستيل' if t=='pastel' else 'ربيعي' if t=='spring' else 'ناري' if t=='fire' else 'بحري' }}
+                </div>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="theme" id="editTheme" value="{{ edit_product.theme }}">
+            <input type="hidden" name="template_style" value="{{ edit_product.template_style }}">
+
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button type="submit" class="btn-action" style="background:#1f2937; color:#fff;">حفظ التغييرات</button>
+                <a href="/admin" class="btn-action btn-edit">إلغاء</a>
             </div>
         </form>
     </div>
@@ -93,67 +146,79 @@
     <div class="products-grid">
         {% for product in products %}
         <div class="product-card">
-            <img src="/static/uploads/{{ product.processed_image_url }}" alt="">
+            <img src="/static/uploads/{{ product.processed_image_url }}">
             <div class="p-info">
                 <div class="p-name">{{ product.name }}</div>
                 <div class="p-price">{{ product.price }} ₪</div>
                 <div class="actions">
-                    <a href="/admin?edit={{ product.id }}" class="btn-action btn-edit">Edit</a>
-                    <a href="/delete_product/{{ product.id }}" class="btn-action btn-del" onclick="return confirm('Are you sure?')">Delete</a>
+                    <a href="/admin?edit={{ product.id }}" class="btn-action btn-edit">تعديل</a>
+                    <a href="/delete_product/{{ product.id }}" class="btn-action btn-del" onclick="return confirm('هل أنت متأكد؟')">حذف</a>
                 </div>
             </div>
         </div>
         {% else %}
-        <div style="text-align: center; padding: 40px; color: #888;">
-            <p>No products found.</p>
+        <div style="grid-column: 1/-1; text-align: center; padding: 80px; color: #9ca3af; font-family: 'Cairo';">
+            لا يوجد منتجات حالياً.
         </div>
         {% endfor %}
     </div>
 </div>
 
-<!-- Section 2: Settings -->
+<!-- تبويب الإعدادات (تم تعريبها بالكامل) -->
 <div id="tab-settings" class="content-section">
-    <form action="/update_store" method="POST">
-        <div class="settings-box">
-            <h3 style="margin-bottom: 5px;">🏪 Basic Information</h3>
-            <p style="font-size: 12px; color: #888; margin-bottom: 15px;">Store name and bio.</p>
-            
-            <label>Store Name</label>
-            <input type="text" name="name" value="{{ store.name }}" class="edit-input">
-            
-            <label>Store Bio</label>
-            <textarea name="bio" rows="2" class="edit-input">{{ store.bio or '' }}</textarea>
-        </div>
-
-        <div class="settings-box">
-            <h3 style="margin-bottom: 5px;">📞 Contact Information</h3>
-            <div class="input-grid">
-                <div>
-                    <label>WhatsApp</label>
-                    <input type="text" name="whatsapp_phone" value="{{ store.whatsapp_phone or '' }}" class="edit-input" placeholder="970592...">
-                </div>
-                <div>
-                    <label>Phone</label>
-                    <input type="text" name="display_phone" value="{{ store.display_phone or '' }}" class="edit-input" placeholder="0592...">
-                </div>
+    <form action="/update_store" method="POST" style="max-width: 800px; background:#fff; padding:30px; border-radius:20px; border:1px solid #e5e7eb;">
+        <h3 style="font-family:'Cairo'; margin-bottom:20px;">🏪 إعدادات المتجر</h3>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+            <div>
+                <label class="form-label">اسم المتجر</label>
+                <input type="text" name="name" value="{{ store.name }}" class="input-field">
+            </div>
+            <div>
+                <label class="form-label">رابط المتجر (Slug)</label>
+                <input type="text" name="slug" value="{{ store.slug }}" class="input-field">
             </div>
         </div>
 
-        <button type="submit" class="btn-save" style="width: 100%;">💾 Save Settings</button>
+        <label class="form-label">وصف المتجر (Bio)</label>
+        <textarea name="bio" rows="2" class="input-field">{{ store.bio or '' }}</textarea>
+
+        <h3 style="font-family:'Cairo'; margin:20px 0 10px;">🔗 حسابات التواصل</h3>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+            <input type="text" name="whatsapp_phone" value="{{ store.whatsapp_phone or '' }}" placeholder="واتساب" class="input-field">
+            <input type="text" name="display_phone" value="{{ store.display_phone or '' }}" placeholder="رقم الهاتف" class="input-field">
+            <input type="text" name="instagram_handle" value="{{ store.instagram_handle or '' }}" placeholder="انستجرام" class="input-field">
+            <input type="text" name="tiktok_handle" value="{{ store.tiktok_handle or '' }}" placeholder="تيك توك" class="input-field">
+            <input type="text" name="facebook_handle" value="{{ store.facebook_handle or '' }}" placeholder="رابط فيسبوك" class="input-field">
+            <input type="text" name="website" value="{{ store.website or '' }}" placeholder="الموقع الإلكتروني" class="input-field">
+        </div>
+        
+        <label class="form-label" style="margin-top:15px;">العنوان الجغرافي</label>
+        <input type="text" name="address" value="{{ store.address or '' }}" placeholder="مثال: رام الله - شارع الإرسال" class="input-field">
+
+        <button type="submit" class="btn-action" style="background:#4f46e5; color:#fff; width:100%; margin-top:20px; font-size:16px;">💾 حفظ الإعدادات</button>
     </form>
 </div>
 
 <script>
-    function showTab(tabName) {
-        // Hide all sections
-        document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
-        // Deactivate all buttons
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        
-        // Show selected section
-        document.getElementById('tab-' + tabName).classList.add('active');
-        // Activate button
-        event.target.classList.add('active');
+    function showTab(name, btn) {
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // مزامنة التعديل الحي
+    function syncEdit() {
+        document.getElementById('prevName').innerText = document.getElementById('inName').value;
+        document.getElementById('prevPrice').innerText = document.getElementById('inPrice').value + ' ₪';
+    }
+
+    function updateEditTheme(theme, el) {
+        document.getElementById('livePreview').style.background = 'var(--theme-' + theme + ')';
+        document.getElementById('editTheme').value = theme;
+        document.querySelectorAll('.theme-opt').forEach(opt => opt.classList.remove('active'));
+        el.classList.add('active');
     }
 </script>
 {% endblock %}

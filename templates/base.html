@@ -1,101 +1,105 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#4f46e5">
     <link rel="manifest" href="/static/manifest.json">
-    <title>RT Studio | {% block title %}Dashboard{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <title>RT Studio | {% block title %}{% endblock %}</title>
+    
+    <!-- الخطوط: Cairo للعربية و Inter للإنجليزية -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-dark: #f3f5f7;
+            --bg: #f3f5f7;
             --sidebar-bg: #ffffff;
             --card-bg: #ffffff;
             --text-main: #1f2937;
             --text-muted: #6b7280;
             --accent: #4f46e5;
             --border: #e5e7eb;
+            --sidebar-w: 260px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
 
-        /* --- Desktop Sidebar --- */
+        /* --- Sidebar (يمين للشاشات الكبيرة) --- */
         .sidebar {
-            width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border);
-            position: fixed; top: 0; left: 0; height: 100vh;
+            width: var(--sidebar-w); background: var(--sidebar-bg); border-left: 1px solid var(--border);
+            position: fixed; top: 0; right: 0; height: 100vh;
             display: flex; flex-direction: column; padding: 30px 20px;
             z-index: 100;
         }
         .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
         .logo-box { width: 40px; height: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; font-size: 20px; }
+        
         .nav-links { list-style: none; flex-grow: 1; }
-        .nav-item { padding: 14px 18px; border-radius: 12px; margin-bottom: 8px; color: var(--text-muted); display: flex; align-items: center; gap: 15px; text-decoration: none; font-weight: 500; transition: 0.2s; }
-        .nav-item.active { background: rgba(79, 70, 229, 0.1); color: var(--accent); font-weight: 700; }
-        .nav-item:hover { background: #f3f4f6; }
+        .nav-item { padding: 14px 18px; border-radius: 12px; margin-bottom: 8px; color: var(--text-muted); display: flex; align-items: center; gap: 15px; text-decoration: none; font-weight: 700; transition: 0.2s; font-size: 14px; }
+        .nav-item.active { background: #f5f3ff; color: var(--accent); }
+        .nav-item:hover:not(.active) { background: #f9fafb; color: var(--text-main); }
 
-        /* --- Main Content Area --- */
-        .main-content { margin-left: 260px; padding: 40px; min-height: 100vh; }
+        /* --- المحتوى الرئيسي --- */
+        .main-content { margin-right: var(--sidebar-w); padding: 40px; min-height: 100vh; }
 
-        /* --- Mobile Bottom Nav (Fixed & Glassmorphism) --- */
+        /* --- الموبايل (نظام التطبيق السفلي) --- */
         .mobile-nav {
             display: none; position: fixed; bottom: 0; left: 0; right: 0;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-top: 1px solid var(--border);
             justify-content: space-around; padding: 10px 0 25px 0; z-index: 1000;
         }
-        .mob-item { text-decoration: none; color: #9ca3af; text-align: center; font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .mob-item span { font-size: 22px; }
-        .mob-item.active { color: var(--accent); font-weight: 700; }
+        .mob-item { text-decoration: none; color: #9ca3af; text-align: center; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 700; }
+        .mob-item span { font-size: 24px; }
+        .mob-item.active { color: var(--accent); }
 
-        /* --- Responsive Magic --- */
         @media (max-width: 768px) {
             .sidebar { display: none; }
             .mobile-nav { display: flex; }
-            .main-content { margin-left: 0; padding: 20px; padding-bottom: 100px; }
+            .main-content { margin-right: 0; padding: 20px; padding-bottom: 100px; }
         }
         
-        /* PWA Install Banner */
+        /* بانر التثبيت - تصميم فاتح وأنيق */
         .install-banner {
-            position: fixed; bottom: 80px; left: 10px; right: 10px;
-            background: #000; color: #fff; padding: 15px; border-radius: 12px;
+            position: fixed; bottom: 90px; left: 20px; right: 20px;
+            background: #ffffff; color: #111; padding: 15px 20px; border-radius: 16px;
             display: none; align-items: center; justify-content: space-between;
-            z-index: 1001; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            z-index: 1001; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+            animation: slideUp 0.5s ease;
         }
-        .install-btn { background: #fff; color: #000; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 700; cursor: pointer; }
-        .close-btn { background: transparent; border: none; color: #fff; margin-right: 10px; cursor: pointer; }
+        @keyframes slideUp { from { transform: translateY(100px); } to { transform: translateY(0); } }
+        
+        .install-btn { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; font-family: 'Cairo'; }
+        .close-banner { font-size: 20px; color: #9ca3af; background: none; border: none; cursor: pointer; margin-left: 15px; }
     </style>
 </head>
 <body>
 
-    <!-- Desktop Sidebar -->
+    <!-- Sidebar Desktop -->
     <div class="sidebar">
         <div class="logo-area">
             <div class="logo-box">RT</div>
-            <h2 style="font-size: 18px; font-weight: 800;">RT Studio</h2>
+            <h2 style="font-size: 20px; font-weight: 900; font-family: 'Cairo'; color: #111;">RT Studio</h2>
         </div>
         <nav class="nav-links">
-            <a href="/" class="nav-item {% block nav_dashboard %}{% endblock %}"><span>📊</span> Dashboard</a>
-            <a href="/admin" class="nav-item {% block nav_products %}{% endblock %}"><span>📦</span> My Products</a>
-            {% if stats.store_slug %}
-            <a href="/store/{{ stats.store_slug }}" class="nav-item" target="_blank"><span>🌐</span> View Store</a>
+            <a href="/" class="nav-item {% block nav_dashboard %}{% endblock %}"><span>📊</span> الرئيسية</a>
+            <a href="/admin" class="nav-item {% block nav_products %}{% endblock %}"><span>📦</span> منتجاتي</a>
+            {% if store_slug %}
+            <a href="/store/{{ store_slug }}" class="nav-item" target="_blank"><span>🌐</span> عرض المتجر</a>
             {% endif %}
-            <a href="/logout" class="nav-item" style="margin-top: auto; color: #ef4444;"><span>🚪</span> Logout</a>
+            <a href="/logout" class="nav-item" style="margin-top: auto; color: #ef4444;"><span>🚪</span> خروج</a>
         </nav>
     </div>
 
-    <!-- Mobile Bottom Nav -->
+    <!-- Mobile Nav -->
     <nav class="mobile-nav">
-        <a href="/" class="mob-item {% block mob_dashboard %}{% endblock %}"><span>🏠</span> Home</a>
-        <a href="/admin" class="mob-item {% block mob_products %}{% endblock %}"><span>📦</span> Products</a>
-        {% if stats.store_slug %}
-        <a href="/store/{{ stats.store_slug }}" class="mob-item" target="_blank"><span>🌐</span> Store</a>
-        {% else %}
-        <a href="/admin" class="mob-item {% block mob_settings %}{% endblock %}"><span>⚙️</span> Settings</a>
-        {% endif %}
-        <a href="/logout" class="mob-item"><span>🚪</span></a>
+        <a href="/" class="mob-item {% block mob_dashboard %}{% endblock %}"><span>🏠</span> الرئيسية</a>
+        <a href="/admin" class="mob-item {% block mob_products %}{% endblock %}"><span>📦</span> المنتجات</a>
+        <a href="/admin" class="mob-item {% block mob_settings %}{% endblock %}"><span>⚙️</span> الإعدادات</a>
+        <a href="/logout" class="mob-item"><span>🚪</span> خروج</a>
     </nav>
 
     <!-- Main Content -->
@@ -103,31 +107,56 @@
         {% block content %}{% endblock %}
     </div>
 
-    <!-- Install Banner -->
-    <div id="installBanner" class="install-banner">
+    <!-- PWA Install Banner -->
+    <div id="pwaBanner" class="install-banner">
         <div style="display:flex; align-items:center;">
-            <button class="close-btn" onclick="this.parentElement.parentElement.style.display='none'">✕</button>
-            <span>📥 Install RT Studio</span>
+            <span id="pwaMessage">ثبّت RT Studio للوصول السريع!</span>
         </div>
-        <button id="installBtn" class="install-btn">Install</button>
+        <div style="display:flex; align-items:center;">
+            <button id="pwaBtn" class="install-btn">تثبيت الآن</button>
+            <button class="close-banner" onclick="document.getElementById('pwaBanner').style.display='none'">✕</button>
+        </div>
     </div>
 
     <script>
         let deferredPrompt;
-        window.addEventListener('load', () => {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js').then(() => console.log('SW Registered'));
-            }
-        });
+        const pwaBanner = document.getElementById('pwaBanner');
+        const pwaBtn = document.getElementById('pwaBtn');
+        const pwaMessage = document.getElementById('pwaMessage');
+
+        // 1. تسجيل الـ Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW Registered'));
+            });
+        }
+
+        // 2. معالجة التثبيت على أندرويد/كروم
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            document.getElementById('installBanner').style.display = 'flex';
+            pwaBanner.style.display = 'flex';
         });
-        document.getElementById('installBtn').addEventListener('click', () => {
-            document.getElementById('installBanner').style.display = 'none';
-            if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
+
+        pwaBtn.addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    pwaBanner.style.display = 'none';
+                    deferredPrompt = null;
+                });
+            }
         });
+
+        // 3. معالجة التثبيت على آيفون (سفاري)
+        const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+        if (isIos && !isStandalone) {
+            pwaMessage.innerText = "للتثبيت: اضغط 'مشاركة' ثم 'إضافة للشاشة الرئيسية' 📲";
+            pwaBtn.style.display = 'none'; // لا يمكن برمجته في آيفون
+            pwaBanner.style.display = 'flex';
+        }
     </script>
 </body>
 </html>

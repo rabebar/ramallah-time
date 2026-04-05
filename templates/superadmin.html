@@ -1,62 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Admin | Ramallah Time System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <title>الإدارة العليا | RT Studio System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f0f12;
-            --sidebar-bg: #16161d;
-            --card-glass: rgba(255, 255, 255, 0.03);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --accent-violet: #6c5ce7;
-            --text-main: #ffffff;
-            --text-muted: #a0a0ab;
-            --success: #00ff88;
+            --bg-app: #f3f5f7;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --accent: #4f46e5;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; min-height: 100vh; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Cairo', sans-serif; }
+        body { background-color: var(--bg-app); color: var(--text-main); display: flex; min-height: 100vh; }
 
         /* Sidebar */
-        .sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--card-border); padding: 30px 20px; height: 100vh; flex-shrink: 0; }
+        .sidebar { width: 280px; background: var(--sidebar-bg); border-left: 1px solid var(--border); padding: 30px 20px; height: 100vh; position: sticky; top: 0; flex-shrink: 0; }
         .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
-        .logo-box { width: 35px; height: 35px; background: #fff; color: #000; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; }
-        .nav-links { list-style: none; }
-        .nav-item { padding: 14px 18px; border-radius: 12px; margin-bottom: 8px; color: var(--text-muted); display: flex; align-items: center; gap: 15px; text-decoration: none; font-weight: 500; }
-        .nav-item.active { background: var(--card-glass); color: var(--text-main); border: 1px solid var(--card-border); }
+        .logo-box { width: 40px; height: 40px; background: var(--accent); color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; }
+        .nav-item { padding: 14px 18px; border-radius: 12px; margin-bottom: 8px; color: var(--text-muted); display: flex; align-items: center; gap: 15px; text-decoration: none; font-weight: 700; transition: 0.2s; font-size: 14px; }
+        .nav-item.active { background: #f5f3ff; color: var(--accent); }
+        .nav-item:hover:not(.active) { background: #f9fafb; color: var(--text-main); }
 
         /* Main Viewport */
-        .main-viewport { flex-grow: 1; padding: 40px; overflow-y: auto; height: 100vh; }
+        .main-viewport { flex-grow: 1; padding: 40px; overflow-y: auto; }
         .header-area { margin-bottom: 40px; }
-        .header-area h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; }
+        .header-area h1 { font-size: 28px; font-weight: 900; color: #111; font-family: 'Cairo'; }
 
         /* Stats Grid */
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
-        .stat-card { background: var(--card-glass); border: 1px solid var(--card-border); padding: 25px; border-radius: 20px; text-align: center; }
-        .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-        .stat-value { font-size: 32px; font-weight: 900; color: var(--accent-violet); }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--border); padding: 25px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 10px; font-family: 'Cairo'; }
+        .stat-value { font-size: 32px; font-weight: 900; color: var(--text-main); font-family: 'Inter'; }
 
         /* Table Styles */
-        .table-container { background: var(--card-glass); border: 1px solid var(--card-border); border-radius: 24px; padding: 25px; }
-        .table-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { padding: 15px; color: var(--text-muted); font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--card-border); }
-        td { padding: 18px 15px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 14px; }
+        .table-container { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .table-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; font-family: 'Cairo'; }
+        table { width: 100%; border-collapse: collapse; text-align: right; }
+        th { padding: 15px; color: var(--text-muted); font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--border); font-family: 'Cairo'; }
+        td { padding: 18px 15px; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
 
-        .badge-store { background: rgba(108, 92, 231, 0.1); color: var(--accent-violet); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
-        .credit-count { font-weight: 800; color: var(--success); }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; font-family: 'Cairo'; }
+        .badge-active { background: #ecfdf5; color: var(--success); }
+        .badge-pending { background: #fffbeb; color: var(--warning); }
+        .badge-store { background: #f3f4f6; color: #4b5563; font-size: 12px; }
 
-        /* Refill Form */
-        .refill-form { display: flex; gap: 8px; align-items: center; }
-        .refill-input { width: 60px; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); padding: 8px; border-radius: 8px; color: #fff; text-align: center; font-size: 13px; }
-        .btn-refill { background: var(--text-main); color: #000; border: none; padding: 8px 15px; border-radius: 8px; font-weight: 800; font-size: 11px; cursor: pointer; transition: 0.2s; }
-        .btn-refill:hover { background: var(--accent-violet); color: #fff; }
+        /* Actions */
+        .btn-group { display: flex; gap: 8px; }
+        .btn-sm { padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; text-decoration: none; font-family: 'Cairo'; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-approve { background: var(--success); color: #fff; }
+        .btn-reject { background: #fee2e2; color: var(--danger); }
+        .btn-refill { background: var(--accent); color: #fff; }
 
-        .user-phone { font-weight: 700; color: #fff; }
-        .join-date { font-size: 12px; color: var(--text-muted); }
+        .refill-input { width: 60px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; text-align: center; font-weight: 700; margin-left: 5px; }
+
+        @media (max-width: 1024px) {
+            .sidebar { width: 80px; padding: 20px 10px; }
+            .sidebar h2, .sidebar span:last-child { display: none; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -65,85 +75,82 @@
     <div class="sidebar">
         <div class="logo-area">
             <div class="logo-box">RT</div>
-            <h2 style="font-size: 18px; font-weight: 800;">System Admin</h2>
+            <h2 style="font-size: 18px; font-weight: 900; font-family: 'Cairo'; color: #111;">المدير العام</h2>
         </div>
-        <nav class="nav-links">
-            <a href="/superadmin" class="nav-item active"><span>📊</span> Overview</a>
-            <a href="/" class="nav-item"><span>🏠</span> View Website</a>
-            <a href="/logout" class="nav-item" style="margin-top: 50px; color: #ff4757;"><span>🚪</span> Logout</a>
+        <nav>
+            <a href="/superadmin" class="nav-item active"><span>📊</span> <span>الإحصائيات</span></a>
+            <a href="/" class="nav-item"><span>🏠</span> <span>عرض الموقع</span></a>
+            <a href="/logout" class="nav-item" style="margin-top: 50px; color: var(--danger);"><span>🚪</span> <span>تسجيل الخروج</span></a>
         </nav>
     </div>
 
     <!-- Main View -->
     <div class="main-viewport">
         <div class="header-area">
-            <h1>System Intelligence</h1>
-            <p style="color: var(--text-muted); font-size: 14px; margin-top: 5px;">Real-time performance of Ramallah Time Platform</p>
+            <h1>لوحة تحكم النظام</h1>
+            <p style="color: var(--text-muted); font-size: 14px; margin-top: 5px; font-family: 'Cairo';">مراقبة أداء منصة RT Studio وإدارة التجار</p>
         </div>
 
         <!-- Global Stats -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-label">Total Merchants</div>
+                <div class="stat-label">إجمالي التجار</div>
                 <div class="stat-value">{{ stats.total_users }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Total Products</div>
+                <div class="stat-label">إجمالي المنتجات</div>
                 <div class="stat-value">{{ stats.total_products }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">System Credits</div>
+                <div class="stat-label">رصيد النظام الكلي</div>
                 <div class="stat-value">{{ stats.total_credits }}</div>
             </div>
         </div>
 
         <!-- Merchants Table -->
         <div class="table-container">
-            <div class="table-title">Manage Registered Merchants</div>
+            <div class="table-title">إدارة طلبات وحسابات التجار</div>
             <table>
                 <thead>
                     <tr>
-                        <th>Merchant Phone</th>
-                        <th>Store Name</th>
-                        <th>Status</th> <!-- عمود جديد -->
-                        <th>Credits Left</th>
-                        <th>Joined On</th>
-                        <th>Actions</th> <!-- عمود العمليات المطور -->
+                        <th>هاتف التاجر</th>
+                        <th>اسم المتجر</th>
+                        <th>الحالة</th>
+                        <th>الرصيد</th>
+                        <th>تاريخ الانضمام</th>
+                        <th>الإجراءات</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for user in users %}
                     <tr>
-                        <td><span class="user-phone">{{ user.phone }}</span></td>
+                        <td style="font-weight: 700; font-family: 'Inter';">{{ user.phone }}</td>
                         <td>
                             {% if user.store_name %}
-                            <span class="badge-store">{{ user.store_name }}</span>
+                            <span class="badge badge-store">{{ user.store_name }}</span>
                             {% else %}
-                            <span style="color:#444; font-size:11px;">No Store Yet</span>
+                            <span style="color:#ccc; font-size:11px;">لا يوجد متجر</span>
                             {% endif %}
                         </td>
                         <td>
-                            <!-- عرض الحالة بلون مختلف -->
                             {% if user.status == 'active' %}
-                            <span style="color: #00ff88; font-weight: bold; font-size: 11px;">● ACTIVE</span>
+                            <span class="badge badge-active">● نشط</span>
                             {% else %}
-                            <span style="color: #ff9f43; font-weight: bold; font-size: 11px;">● PENDING</span>
+                            <span class="badge badge-pending">● معلق</span>
                             {% endif %}
                         </td>
-                        <td><span class="credit-count">{{ user.credits }}</span> Images</td>
-                        <td><span class="join-date">{{ user.created_at }}</span></td>
+                        <td style="font-weight: 800; color: var(--accent);">{{ user.credits }} صورة</td>
+                        <td style="font-size: 12px; color: var(--text-muted);">{{ user.created_at }}</td>
                         <td>
-                            <div style="display: flex; gap: 10px; align-items: center;">
+                            <div class="btn-group">
                                 {% if user.status == 'pending' %}
-                                    <!-- أزرار القبول والرفض للطلبات الجديدة -->
-                                    <a href="/superadmin/approve/{{ user.id }}" style="background: #00ff88; color: #000; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 11px; font-weight: 800;">APPROVE</a>
-                                    <a href="/superadmin/reject/{{ user.id }}" style="background: #ff4757; color: #fff; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 11px; font-weight: 800;" onclick="return confirm('Reject and Delete this user?')">REJECT</a>
+                                    <a href="/superadmin/approve/{{ user.id }}" class="btn-sm btn-approve">تفعيل الحساب</a>
+                                    <a href="/superadmin/reject/{{ user.id }}" class="btn-sm btn-reject" onclick="return confirm('هل أنت متأكد من رفض وحذف هذا الطلب؟')">رفض</a>
                                 {% else %}
-                                    <!-- نموذج شحن الرصيد للتجار المفعلين فقط -->
-                                    <form action="/superadmin/add_credits" method="POST" class="refill-form">
+                                    <form action="/superadmin/add_credits" method="POST" style="display:flex; align-items:center;">
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
                                         <input type="number" name="amount" value="10" class="refill-input" required>
-                                        <button type="submit" class="btn-refill">REFILL</button>
+                                        <button type="submit" class="btn-sm btn-refill">شحن رصيد</button>
                                     </form>
                                 {% endif %}
                             </div>
@@ -151,7 +158,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" style="text-align:center; padding:40px; color:#555;">No merchants registered in the system yet.</td>
+                        <td colspan="6" style="text-align:center; padding:60px; color:#9ca3af; font-family: 'Cairo';">لا يوجد تجار مسجلين في النظام حالياً.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

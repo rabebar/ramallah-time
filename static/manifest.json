@@ -1,7 +1,7 @@
 {
-    "name": "RT Studio - Merchant Platform",
+    "name": "RT Studio - منصة التجار",
     "short_name": "RT Studio",
-    "description": "AI Background Removal & Smart Store Builder",
+    "description": "إزالة خلفية الصور بالذكاء الاصطناعي وبناء المتجر الذكي",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
@@ -11,12 +11,14 @@
         {
             "src": "/static/uploads/rt_logo_192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         },
         {
             "src": "/static/uploads/rt_logo_512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         }
     ]
 }
