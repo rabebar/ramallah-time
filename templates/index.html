@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#4f46e5">
     <link rel="manifest" href="/static/manifest.json">
     <title>RT Studio | AI Dashboard</title>
@@ -13,20 +13,21 @@
             --sidebar-bg: #16161d;
             --card-glass: rgba(255, 255, 255, 0.03);
             --card-border: rgba(255, 255, 255, 0.08);
-            --accent-violet: #4f46e5; /* Updated to match branding */
+            --accent-violet: #4f46e5;
             --accent-glow: rgba(79, 70, 229, 0.4);
             --text-main: #ffffff;
             --text-muted: #a0a0ab;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; min-height: 100vh; overflow-y: auto; }
+        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        /* Sidebar Layout */
+        /* --- DESKTOP SIDEBAR --- */
         .sidebar {
             width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--card-border);
             display: flex; flex-direction: column; padding: 30px 20px; height: 100vh; flex-shrink: 0;
             position: sticky; top: 0;
+            transition: transform 0.3s ease;
         }
         .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
         .logo-box { 
@@ -41,10 +42,10 @@
         .nav-item.active { background: var(--card-glass); color: var(--text-main); border: 1px solid var(--card-border); }
         .nav-item:hover { color: var(--text-main); background: rgba(255,255,255,0.02); }
 
-        /* Main Viewport */
+        /* --- MAIN CONTENT --- */
         .main-viewport { flex-grow: 1; padding: 40px; overflow-y: auto; height: 100vh; }
 
-        /* Top Stats Cards */
+        /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 40px; }
         .stat-card {
             background: var(--card-glass); border: 1px solid var(--card-border);
@@ -54,18 +55,17 @@
         .stat-value { font-size: 24px; font-weight: 800; }
 
         /* Tool Section */
-        .tool-header { max-width: 800px; margin: 0 auto 30px auto; }
+        .tool-header { max-width: 800px; margin: 0 auto 30px auto; text-align: center; }
         .tool-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
         .tool-header p { color: var(--text-muted); font-size: 15px; }
 
         /* Upload Box */
         .upload-section {
             background: var(--card-glass); border: 2px dashed var(--card-border);
-            border-radius: 24px; padding: 60px; text-align: center; transition: 0.3s; cursor: pointer;
+            border-radius: 24px; padding: 60px 20px; text-align: center; transition: 0.3s; cursor: pointer;
             position: relative; max-width: 800px; margin: 0 auto;
         }
         .upload-section:hover { border-color: var(--accent-violet); background: rgba(79, 70, 229, 0.03); }
-        
         .upload-icon { font-size: 50px; color: var(--accent-violet); margin-bottom: 20px; }
         .upload-section h3 { font-size: 20px; margin-bottom: 10px; }
         .upload-section p { color: var(--text-muted); font-size: 14px; margin-bottom: 25px; }
@@ -73,26 +73,23 @@
         .btn-upload {
             background: var(--accent-violet); color: white; padding: 14px 35px; border-radius: 12px;
             border: none; font-weight: 700; font-size: 16px; cursor: pointer;
-            box-shadow: 0 10px 25px var(--accent-glow); transition: 0.3s;
+            box-shadow: 0 10px 25px var(--accent-glow); transition: 0.3s; display: inline-block;
         }
         .btn-upload:hover { transform: translateY(-2px); box-shadow: 0 15px 35px var(--accent-glow); }
 
         #fileInput { display: none; }
         
-        #submitArea { max-width: 800px; margin: 0 auto; }
-
-        /* Footer Credits */
-        .footer-info { margin-top: 50px; text-align: center; border-top: 1px solid var(--card-border); padding-top: 20px; }
-        .footer-info a { color: var(--accent-violet); text-decoration: none; font-size: 13px; font-weight: 600; }
-
-        /* Install Banner Style */
+        .footer-info { margin-top: 50px; text-align: center; border-top: 1px solid var(--card-border); padding-top: 20px; padding-bottom: 100px; }
+        
+        /* --- INSTALL BANNER --- */
         .install-banner {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: #ffffff; color: #000;
             padding: 15px 20px; display: none; 
             align-items: center; justify-content: space-between;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
-            z-index: 9999; border-radius: 15px 15px 0 0;
+            z-index: 10000; /* فوق كل شيء */
+            border-radius: 15px 15px 0 0;
             font-weight: 600;
         }
         .install-btn {
@@ -102,6 +99,43 @@
             margin-left: 15px;
         }
         .close-btn { background: transparent; border: none; font-size: 20px; cursor: pointer; margin-right: 10px; opacity: 0.5; }
+
+        /* --- MOBILE BOTTOM NAV (Hidden on Desktop) --- */
+        .mobile-nav {
+            display: none; /* مخفي على الكمبيوتر */
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #16161d; border-top: 1px solid #333;
+            justify-content: space-around; padding: 10px 0;
+            z-index: 9999;
+        }
+        .mob-item { text-decoration: none; color: #666; text-align: center; font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .mob-item span { font-size: 20px; }
+        .mob-item.active { color: #fff; }
+
+        /* --- MOBILE RESPONSIVE MAGIC --- */
+        @media (max-width: 768px) {
+            /* 1. إخفاء القائمة الجانبية */
+            .sidebar { display: none; }
+            
+            /* 2. إظهار شريط التنقل السفلي */
+            .mobile-nav { display: flex; }
+
+            /* 3. تعديل المحتوى */
+            .main-viewport { padding: 20px; padding-bottom: 120px; } /* مساحة للشريط السفلي */
+            
+            /* 4. تعديل الشبكة لتكون عمودين */
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+            .stat-card { padding: 15px; }
+            .stat-value { font-size: 18px; }
+            
+            /* 5. تكبير العناوين والأزرار */
+            .tool-header h1 { font-size: 24px; }
+            .upload-section { padding: 40px 20px; }
+            .btn-upload { width: 100%; padding: 16px; font-size: 18px; }
+            
+            /* 6. تعديل البانر ليتناسب مع الشريط السفلي */
+            .install-banner { bottom: 70px; margin: 0 10px; border-radius: 12px; width: calc(100% - 20px); }
+        }
     </style>
 </head>
 <body>
@@ -115,7 +149,7 @@
         <button id="installBtn" class="install-btn">تثبيت</button>
     </div>
 
-    <!-- Sidebar -->
+    <!-- Desktop Sidebar -->
     <div class="sidebar">
         <div class="logo-area">
             <div class="logo-box">RT</div>
@@ -131,7 +165,17 @@
         </nav>
     </div>
 
-    <!-- Content -->
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-nav">
+        <a href="/" class="mob-item active"><span>📊</span> Home</a>
+        <a href="/admin" class="mob-item"><span>📦</span> Products</a>
+        {% if stats.store_slug %}
+        <a href="/store/{{ stats.store_slug }}" class="mob-item" target="_blank"><span>🌐</span> Store</a>
+        {% endif %}
+        <a href="/logout" class="mob-item" style="color:#ff4757;"><span>🚪</span> Exit</a>
+    </nav>
+
+    <!-- Main Content -->
     <div class="main-viewport">
         
         <!-- Top Stats -->
@@ -141,15 +185,15 @@
                 <div class="stat-value" style="color: #00ff88;">{{ stats.credits }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Images Processed</div>
+                <div class="stat-label">Processed</div>
                 <div class="stat-value">{{ stats.processed }}</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Active Plan</div>
-                <div class="stat-value" style="font-size: 18px; color: #6c5ce7;">Professional</div>
+                <div class="stat-value" style="font-size: 18px; color: #6c5ce7;">Pro</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Success Rate</div>
+                <div class="stat-label">Rate</div>
                 <div class="stat-value">99.8%</div>
             </div>
         </div>
@@ -157,37 +201,37 @@
         <!-- Tool Header -->
         <div class="tool-header">
             <h1>AI Background Removal</h1>
-            <p>Upload your product image and let our AI create a professional transparent PNG instantly.</p>
+            <p>Upload your product image to create a professional transparent PNG.</p>
         </div>
 
         <!-- Upload Tool -->
         <form action="/" method="POST" enctype="multipart/form-data" id="uploadForm">
             <div class="upload-section" id="dropZone" onclick="document.getElementById('fileInput').click()">
                 <div class="upload-icon">📸</div>
-                <h3 id="mainText">Drag & Drop Your Image Here</h3>
-                <p id="subText">or click to browse from your device</p>
+                <h3 id="mainText">Click to Upload Image</h3>
+                <p id="subText">or drag and drop here</p>
                 <input type="file" id="fileInput" name="image" accept="image/*" required onchange="handleFileSelect(this)">
                 <button type="button" class="btn-upload">Select Image</button>
             </div>
-            <div id="submitArea" style="text-align: center; margin-top: 30px; display: none;">
+            <div id="submitArea" style="text-align: center; margin-top: 30px; display: none; max-width: 800px; margin: 30px auto 0;">
                 <button type="submit" class="btn-upload" id="processBtn" style="background: #00ff88; color: #000;">✨ Start AI Processing</button>
             </div>
         </form>
 
         <div class="footer-info">
-            <p style="color: #666; font-size: 12px; margin-bottom: 10px;">Powered by RT Studio AI Engine v3.0</p>
+            <p style="color: #666; font-size: 12px;">Powered by RT Studio AI Engine v3.0</p>
         </div>
     </div>
 
     <script>
-        // 1. Existing Logic (File Upload)
+        // 1. File Upload Logic
         function handleFileSelect(input) {
             const mainText = document.getElementById('mainText');
             const subText = document.getElementById('subText');
             const submitArea = document.getElementById('submitArea');
             
             if (input.files && input.files[0]) {
-                mainText.innerText = "File Selected!";
+                mainText.innerText = "Image Selected!";
                 mainText.style.color = "#00ff88";
                 subText.innerText = input.files[0].name;
                 submitArea.style.display = "block";
@@ -196,30 +240,26 @@
 
         document.getElementById('uploadForm').onsubmit = function() {
             const btn = document.getElementById('processBtn');
-            btn.innerText = "⏳ Removing Background...";
+            btn.innerText = "⏳ Processing...";
             btn.disabled = true;
         };
 
-        // 2. PWA Install Logic (The Smart Magic)
+        // 2. PWA Install Logic
         let deferredPrompt;
 
         window.addEventListener('load', () => {
-            // Register Service Worker
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js')
                     .then(() => console.log('✅ RT Studio Worker Registered'));
             }
         });
 
-        // Catch the install prompt event
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            // Show the banner automatically
             document.getElementById('installBanner').style.display = 'flex';
         });
 
-        // Handle the install button click
         document.getElementById('installBtn').addEventListener('click', () => {
             document.getElementById('installBanner').style.display = 'none';
             if (deferredPrompt) {
