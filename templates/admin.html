@@ -158,12 +158,22 @@
                     <input type="text" name="price" value="{{ edit_product.price }}" required>
 
                     <!-- ✅ الجديد: حقل الوصف -->
-                    <label>Description</label>
+                                        <label>Description</label>
                     <textarea name="description" rows="2">{{ edit_product.description or '' }}</textarea>
 
-                    <!-- ✅ الجديد: حقل الثيم -->
+                    <!-- ✅ الجديد: اختيار الستايل -->
+                    <label>Layout Style</label>
+                    <select name="template_style">
+                        <option value="elegant" {% if edit_product.template_style == 'elegant' %}selected{% endif %}>🖼️ Classic (Default)</option>
+                        <option value="modern" {% if edit_product.template_style == 'modern' %}selected{% endif %}>💎 Modern</option>
+                        <option value="minimal" {% if edit_product.template_style == 'minimal' %}selected{% endif %}>🎯 Minimal</option>
+                        <option value="bold" {% if edit_product.template_style == 'bold' %}selected{% endif %}>⚡ Bold</option>
+                    </select>
+
+                    <!-- ✅ اختيار الثيم -->
                     <label>Theme Color</label>
                     <select name="theme">
+                        <!-- ... (خيارات الثيم كما هي) ... -->
                         <option value="gold" {% if edit_product.theme == 'gold' %}selected{% endif %}>✨ Royal Gold</option>
                         <option value="black" {% if edit_product.theme == 'black' %}selected{% endif %}>🖤 Night Black</option>
                         <option value="pastel" {% if edit_product.theme == 'pastel' %}selected{% endif %}>🦋 Pastel</option>

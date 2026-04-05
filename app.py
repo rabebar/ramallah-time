@@ -252,10 +252,11 @@ def admin():
 def edit_product_route(id):
     if not session.get('user_id'): return redirect(url_for('login'))
     
-    name        = request.form.get('name')
-    price_str   = request.form.get('price')
-    description = request.form.get('description')
-    theme       = request.form.get('theme') # استقبال الثيم
+    name            = request.form.get('name')
+    price_str       = request.form.get('price')
+    description     = request.form.get('description')
+    theme           = request.form.get('theme')
+    template_style  = request.form.get('template_style') # ✅ السطر الجديد
     
     # معالجة السعر
     try:
@@ -265,15 +266,16 @@ def edit_product_route(id):
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    # تحديث شامل يشمل الوصف والثيم
+    # ✅ تحديث شامل يشمل الستايل
     cursor.execute("""
         UPDATE products SET 
             name = %s, 
             price = %s, 
             description = %s, 
-            theme = %s 
+            theme = %s,
+            template_style = %s
         WHERE id = %s
-    """, (name, price, description, theme, id))
+    """, (name, price, description, theme, template_style, id))
     conn.commit()
     cursor.close()
     conn.close()
