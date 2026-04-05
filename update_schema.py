@@ -22,6 +22,9 @@ def update_schema():
         # تفعيل المستخدمين الموجودين مسبقاً تلقائياً
         cursor.execute("UPDATE users SET status = 'active' WHERE status = 'pending';")
 
+        # --- جدول products: حقل الثيم ---
+        cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'gold';")
+
         conn.commit()
         print("✅ Schema updated successfully!")
         print("   + display_phone")
@@ -32,6 +35,7 @@ def update_schema():
         print("   + address")
         print("   + website")
         print("   + status (users table)")
+        print("   + theme (products table)")
         print("   + Existing users set to 'active'")
 
     except Exception as e:

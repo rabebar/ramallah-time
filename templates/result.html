@@ -24,23 +24,21 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
-        /* ===== الإصلاح الرئيسي: السماح بالـ scroll ===== */
         body {
             background-color: var(--bg-dark);
             color: var(--text-main);
             display: flex;
             min-height: 100vh;
-            overflow-y: auto; /* كان hidden */
+            overflow-y: auto;
         }
 
-        /* Sidebar */
         .sidebar {
             width: 220px;
             background: var(--sidebar-bg);
             border-right: 1px solid var(--card-border);
             padding: 25px 15px;
             height: 100vh;
-            position: sticky; /* يبقى ثابتاً عند الـ scroll */
+            position: sticky;
             top: 0;
             flex-shrink: 0;
         }
@@ -51,18 +49,16 @@
         .nav-item.active { background: var(--card-glass); color: var(--text-main); border: 1px solid var(--card-border); }
         .nav-item:hover { color: var(--text-main); }
 
-        /* Main Lab */
         .lab-viewport {
             flex-grow: 1;
             padding: 30px;
-            overflow-y: auto; /* scroll هنا */
+            overflow-y: auto;
             display: grid;
             grid-template-columns: 1.1fr 1fr;
             gap: 30px;
-            align-items: start; /* مهم جداً لمنع تمدد العمودين */
+            align-items: start;
         }
 
-        /* Preview */
         .preview-pane { position: sticky; top: 30px; }
         .canvas-container {
             width: 100%; aspect-ratio: 1/1;
@@ -81,7 +77,6 @@
         #live-price { font-family: 'Cairo'; font-size: 20px; font-weight: 700; color: var(--price-live); }
         .watermark { position: absolute; bottom: 12px; font-size: 8px; color: rgba(0,0,0,0.1); letter-spacing: 3px; font-weight: 700; }
 
-        /* Layout Styles */
         .layout-modern #live-title { position: absolute; top: 30px; right: 30px; text-align: right; font-size: 20px; width: 65%; margin: 0; }
         .layout-modern #live-divider { display: none; }
         .layout-modern #live-price { position: absolute; bottom: 25px; left: 25px; background: #fff; padding: 10px 22px; border-radius: 50px; font-weight: 900; color: #111; box-shadow: 0 8px 20px rgba(0,0,0,0.12); margin: 0; }
@@ -101,7 +96,6 @@
         .layout-bold #live-divider { margin-bottom: 12px; }
         .layout-bold #live-price { background: var(--accent-live); color: #fff; padding: 10px 18px; border-radius: 12px; font-size: 16px; margin: 0; }
 
-        /* Controls */
         .controls-pane { display: flex; flex-direction: column; gap: 15px; }
         .control-card { background: var(--card-glass); border: 1px solid var(--card-border); padding: 18px; border-radius: 20px; }
         .section-title { font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px; }
@@ -200,6 +194,8 @@
                     <input type="hidden" name="price" id="fPrice">
                     <input type="hidden" name="description" id="fDesc">
                     <input type="hidden" name="template_style" id="fStyle" value="elegant">
+                    <!-- ✅ الجديد: حفظ الثيم المختار -->
+                    <input type="hidden" name="theme" id="fTheme" value="gold">
                     <button type="submit" class="btn-outline">💾 SAVE TO MY ONLINE STORE</button>
                 </form>
             </div>
@@ -220,11 +216,13 @@
         function setTheme(key, el) {
             const t = themes[key];
             const r = document.documentElement;
-            r.style.setProperty('--bg-live',    t.bg);
-            r.style.setProperty('--text-live',  t.text);
-            r.style.setProperty('--price-live', t.price);
-            r.style.setProperty('--line-live',  t.line);
-            r.style.setProperty('--accent-live',t.accent);
+            r.style.setProperty('--bg-live',     t.bg);
+            r.style.setProperty('--text-live',   t.text);
+            r.style.setProperty('--price-live',  t.price);
+            r.style.setProperty('--line-live',   t.line);
+            r.style.setProperty('--accent-live', t.accent);
+            // ✅ الجديد: تحديث الثيم المحفوظ في الفورم
+            document.getElementById('fTheme').value = key;
             el.closest('.options-grid').querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
         }
