@@ -25,6 +25,14 @@
             min-height: 100vh;
         }
 
+        /* ===== THEME DEFINITIONS (الألوان ديناميكية) ===== */
+        .theme-gold { --theme-bg: #FAF8F5; --theme-text: #2c2c2c; --theme-price: #555; --theme-line: #b5935f; --theme-accent: #b5935f; --theme-card-bg: #FFF; }
+        .theme-black { --theme-bg: #1a1a1a; --theme-text: #ffffff; --theme-price: #e0e0e0; --theme-line: #ffffff; --theme-accent: #ffffff; --theme-card-bg: #222; }
+        .theme-pastel { --theme-bg: #fdf2f8; --theme-text: #2c3e50; --theme-price: #7f8c8d; --theme-line: #a29bfe; --theme-accent: #a29bfe; --theme-card-bg: #FFF; }
+        .theme-spring { --theme-bg: #f0fff4; --theme-text: #1a3c2a; --theme-price: #276749; --theme-line: #48bb78; --theme-accent: #38a169; --theme-card-bg: #FFF; }
+        .theme-fire { --theme-bg: #fff5f5; --theme-text: #742a2a; --theme-price: #c53030; --theme-line: #fc8181; --theme-accent: #e53e3e; --theme-card-bg: #FFF; }
+        .theme-ocean { --theme-bg: #ebf8ff; --theme-text: #1a365d; --theme-price: #2b6cb0; --theme-line: #63b3ed; --theme-accent: #3182ce; --theme-card-bg: #FFF; }
+
         /* ===== HEADER ===== */
         .store-header {
             background: var(--ink);
@@ -45,7 +53,6 @@
 
         .header-inner { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
 
-        /* Logo / Avatar */
         .store-avatar {
             width: 90px; height: 90px;
             border-radius: 50%;
@@ -60,81 +67,36 @@
         }
         .store-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Gold line decorator */
-        .gold-line {
-            display: flex; align-items: center; gap: 12px;
-            justify-content: center; margin-bottom: 16px;
-        }
-        .gold-line::before, .gold-line::after {
-            content: ''; flex: 1; max-width: 60px;
-            height: 1px; background: var(--gold); opacity: 0.5;
-        }
-        .gold-line span {
-            font-size: 10px; letter-spacing: 4px;
-            color: var(--gold); text-transform: uppercase;
-            font-weight: 500;
-        }
+        .gold-line { display: flex; align-items: center; gap: 12px; justify-content: center; margin-bottom: 16px; }
+        .gold-line::before, .gold-line::after { content: ''; flex: 1; max-width: 60px; height: 1px; background: var(--gold); opacity: 0.5; }
+        .gold-line span { font-size: 10px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; font-weight: 500; }
 
-        .store-name {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 42px; font-weight: 300;
-            color: #FFFFFF; letter-spacing: 3px;
-            margin-bottom: 14px; line-height: 1.1;
-        }
+        .store-name { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 300; color: #FFFFFF; letter-spacing: 3px; margin-bottom: 14px; line-height: 1.1; }
+        .store-bio { font-size: 12px; color: rgba(255,255,255,0.45); letter-spacing: 1.5px; line-height: 1.8; font-weight: 300; margin-bottom: 28px; }
 
-        .store-bio {
-            font-size: 12px; color: rgba(255,255,255,0.45);
-            letter-spacing: 1.5px; line-height: 1.8;
-            font-weight: 300; margin-bottom: 28px;
-        }
-
-        /* Contact Bar */
-        .contact-bar {
-            display: flex; flex-wrap: wrap;
-            justify-content: center; gap: 8px;
-            margin-bottom: 10px;
-        }
-
+        .contact-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 10px; }
         .contact-pill {
             display: flex; align-items: center; gap: 7px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(184,151,74,0.3);
-            padding: 7px 14px; border-radius: 50px;
-            text-decoration: none; transition: 0.3s;
-            color: rgba(255,255,255,0.7);
-            font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(184,151,74,0.3);
+            padding: 7px 14px; border-radius: 50px; text-decoration: none; transition: 0.3s;
+            color: rgba(255,255,255,0.7); font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
         }
-        .contact-pill:hover {
-            background: rgba(184,151,74,0.15);
-            border-color: var(--gold);
-            color: var(--gold);
-        }
+        .contact-pill:hover { background: rgba(184,151,74,0.15); border-color: var(--gold); color: var(--gold); }
         .contact-pill .icon { font-size: 13px; }
 
         /* ===== COLLECTION SECTION ===== */
         .collection-section { padding: 50px 20px 80px; max-width: 520px; margin: 0 auto; }
 
         .section-header { text-align: center; margin-bottom: 35px; }
-        .section-label {
-            font-size: 10px; letter-spacing: 5px; text-transform: uppercase;
-            color: var(--gold); font-weight: 500; margin-bottom: 10px;
-            display: block;
-        }
-        .section-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 30px; font-weight: 300;
-            color: var(--ink); letter-spacing: 1px;
-        }
-        .section-divider {
-            width: 40px; height: 1px;
-            background: var(--gold); margin: 14px auto 0;
-        }
+        .section-label { font-size: 10px; letter-spacing: 5px; text-transform: uppercase; color: var(--gold); font-weight: 500; margin-bottom: 10px; display: block; }
+        .section-title { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 300; color: var(--ink); letter-spacing: 1px; }
+        .section-divider { width: 40px; height: 1px; background: var(--gold); margin: 14px auto 0; }
 
         /* ===== PRODUCT GRID ===== */
         .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 
         .product-card {
-            background: var(--card-bg);
+            background: var(--theme-card-bg);
             border: 1px solid var(--border);
             border-radius: 4px;
             overflow: hidden;
@@ -142,39 +104,21 @@
             transition: all 0.4s ease;
             position: relative;
         }
-        .product-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.08); border-color: var(--gold); }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.08); border-color: var(--theme-accent); }
 
         .img-wrap {
             width: 100%; aspect-ratio: 1/1;
-            background: #F7F5F2;
+            background: var(--theme-bg); /* لون الخلفية من الثيم */
             display: flex; align-items: center; justify-content: center;
             padding: 15px; overflow: hidden; position: relative;
         }
-        .img-wrap img {
-            max-width: 100%; max-height: 100%;
-            object-fit: contain; transition: transform 0.5s ease;
-        }
+        .img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.5s ease; }
         .product-card:hover .img-wrap img { transform: scale(1.04); }
 
         /* Style overlays */
-        .style-modern .img-wrap::after {
-            content: ''; position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 50%; background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, transparent 100%);
-        }
-        .style-modern .p-name-overlay {
-            position: absolute; top: 10px; right: 10px;
-            font-size: 10px; font-weight: 600; color: #fff;
-            font-family: 'Montserrat'; letter-spacing: 1px;
-            z-index: 2; text-align: right; max-width: 70%;
-        }
-        .style-modern .p-price-overlay {
-            position: absolute; bottom: 10px; left: 10px;
-            background: #fff; color: var(--ink);
-            font-size: 10px; font-weight: 700;
-            padding: 4px 10px; border-radius: 50px;
-            z-index: 2;
-        }
+        .style-modern .img-wrap::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%; background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, transparent 100%); }
+        .style-modern .p-name-overlay { position: absolute; top: 10px; right: 10px; font-size: 10px; font-weight: 600; color: #fff; font-family: 'Montserrat'; letter-spacing: 1px; z-index: 2; text-align: right; max-width: 70%; }
+        .style-modern .p-price-overlay { position: absolute; bottom: 10px; left: 10px; background: #fff; color: var(--ink); font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 50px; z-index: 2; }
 
         .style-minimal .img-wrap { background: #111; }
         .style-minimal .card-info { background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); }
@@ -188,81 +132,50 @@
         .style-bold .p-divider { background: var(--gold); }
         .style-bold .p-price { color: var(--ink); background: #fff; padding: 3px 8px; border-radius: 4px; display: inline-block; }
 
-        /* Card Info */
+        /* Card Info - استخدام ألوان الثيم */
         .card-info { padding: 14px 12px; }
-        .p-name {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 15px; font-weight: 400;
-            color: var(--ink); margin-bottom: 6px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            letter-spacing: 0.5px;
-        }
-        .p-divider { width: 20px; height: 1px; background: var(--gold); margin-bottom: 6px; }
-        .p-price {
-            font-size: 12px; font-weight: 600;
-            color: var(--muted); letter-spacing: 1px;
-        }
+        .p-name { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-weight: 400; color: var(--theme-text); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
+        .p-divider { width: 20px; height: 1px; background: var(--theme-line); margin-bottom: 6px; }
+        .p-price { font-size: 12px; font-weight: 600; color: var(--theme-price); letter-spacing: 1px; }
 
         /* Empty state */
-        .empty-state {
-            grid-column: 1/-1; text-align: center;
-            padding: 80px 20px; color: var(--muted);
-        }
+        .empty-state { grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--muted); }
         .empty-state p { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; }
 
         /* ===== MODAL ===== */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(13,13,13,0.92);
-            backdrop-filter: blur(12px);
-            display: none; align-items: center; justify-content: center;
-            z-index: 1000; padding: 20px;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,13,13,0.92); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
 
         .modal-box {
             width: 100%; max-width: 420px;
-            background: var(--cream);
-            border-radius: 4px; overflow: hidden;
+            background: var(--cream); border-radius: 4px; overflow: hidden;
             position: relative;
             animation: modalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
             max-height: 90vh; overflow-y: auto;
         }
-        @keyframes modalIn {
-            from { transform: translateY(30px) scale(0.97); opacity: 0; }
-            to { transform: translateY(0) scale(1); opacity: 1; }
-        }
+        @keyframes modalIn { from { transform: translateY(30px) scale(0.97); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
 
-        .modal-close {
-            position: absolute; top: 14px; left: 14px;
-            width: 32px; height: 32px; border-radius: 50%;
-            background: rgba(13,13,13,0.6); color: #fff;
-            border: 1px solid rgba(255,255,255,0.2);
-            font-size: 14px; cursor: pointer; z-index: 10;
-            display: flex; align-items: center; justify-content: center;
-            transition: 0.2s; font-weight: 600;
-        }
+        .modal-close { position: absolute; top: 14px; left: 14px; width: 32px; height: 32px; border-radius: 50%; background: rgba(13,13,13,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.2); font-size: 14px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-weight: 600; }
         .modal-close:hover { background: rgba(13,13,13,0.9); }
 
         /* Modal Visual */
-        .modal-visual {
-            width: 100%; aspect-ratio: 1/1;
-            background: #F7F5F2;
-            display: flex; align-items: center; justify-content: center;
-            padding: 30px; position: relative;
-        }
+        .modal-visual { width: 100%; aspect-ratio: 1/1; background: #F7F5F2; display: flex; align-items: center; justify-content: center; padding: 30px; position: relative; }
         .modal-visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* Modal Modern visual overrides */
-        .modal-modern .modal-visual { background: #F2F0ED; }
+        /* Modal Theme Styles */
+        .modal-box.theme-gold .modal-visual { background: #FAF8F5; }
+        .modal-box.theme-fire .modal-visual { background: #fff5f5; }
+        .modal-box.theme-ocean .modal-visual { background: #ebf8ff; }
+        .modal-box.theme-black .modal-visual { background: #1a1a1a; }
+        .modal-box.theme-spring .modal-visual { background: #f0fff4; }
+        .modal-box.theme-pastel .modal-visual { background: #fdf2f8; }
+
+        /* Modern Modal Specifics (العناصر التي تظهر فوق الصورة) */
         .modal-modern .m-title-visual {
             position: absolute; top: 16px; right: 16px;
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 16px; font-weight: 400; color: var(--ink);
+            font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 400;
             text-align: right; max-width: 60%;
             background: rgba(250,248,245,0.92); padding: 8px 12px;
-            border-radius: 3px; backdrop-filter: blur(4px);
-            letter-spacing: 0.5px;
+            border-radius: 3px; backdrop-filter: blur(4px); letter-spacing: 0.5px;
         }
         .modal-modern .m-price-visual {
             position: absolute; bottom: 16px; left: 16px;
@@ -270,8 +183,8 @@
             font-size: 12px; font-weight: 600; letter-spacing: 2px;
             padding: 8px 18px; border-radius: 50px;
         }
-
-        /* Modal Minimal overrides */
+        
+        /* Minimal & Bold Modal Overrides */
         .modal-minimal { background: var(--ink); }
         .modal-minimal .modal-visual { background: #1a1a1a; }
         .modal-minimal .modal-info { background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); }
@@ -280,7 +193,6 @@
         .modal-minimal .m-desc { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); }
         .modal-minimal .m-footer { background: var(--ink); }
 
-        /* Modal Bold overrides */
         .modal-bold { display: flex; flex-direction: row; min-height: 280px; }
         .modal-bold .modal-visual { width: 52%; aspect-ratio: unset; height: auto; flex-shrink: 0; background: #F2F0ED; }
         .modal-bold .modal-info { background: var(--ink); flex: 1; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; padding: 24px 18px; }
@@ -291,50 +203,18 @@
         .modal-bold .m-footer { background: var(--ink); padding: 0 18px 20px; }
         .modal-bold .m-wa { background: var(--gold); color: var(--ink); }
 
-        /* Modal Info */
-        .modal-info { padding: 22px 24px 0; }
-        .m-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 24px; font-weight: 400;
-            color: var(--ink); margin-bottom: 10px;
-            letter-spacing: 0.5px; line-height: 1.2;
-        }
+        .m-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; color: var(--ink); margin-bottom: 10px; letter-spacing: 0.5px; line-height: 1.2; }
         .m-divider { width: 30px; height: 1px; background: var(--gold); margin-bottom: 10px; }
-        .m-price {
-            font-size: 14px; font-weight: 600;
-            color: var(--muted); letter-spacing: 2px;
-            margin-bottom: 14px;
-        }
-        .m-desc {
-            font-size: 12px; color: var(--muted);
-            line-height: 1.8; margin-bottom: 20px;
-            background: rgba(0,0,0,0.03); padding: 12px;
-            border-radius: 3px; border-left: 2px solid var(--gold);
-            font-family: 'Cairo', sans-serif;
-        }
+        .m-price { font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 2px; margin-bottom: 14px; }
+        .m-desc { font-size: 12px; color: var(--muted); line-height: 1.8; margin-bottom: 20px; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 3px; border-left: 2px solid var(--gold); font-family: 'Cairo', sans-serif; }
 
-        /* Footer / WhatsApp */
         .m-footer { padding: 0 24px 24px; }
-        .m-wa {
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            background: var(--ink); color: #fff;
-            text-decoration: none; padding: 15px;
-            border-radius: 3px; font-weight: 600;
-            font-size: 12px; letter-spacing: 2px;
-            text-transform: uppercase; transition: 0.3s;
-        }
+        .m-wa { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--ink); color: #fff; text-decoration: none; padding: 15px; border-radius: 3px; font-weight: 600; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; transition: 0.3s; }
         .m-wa:hover { background: var(--gold); color: var(--ink); }
 
         /* ===== FOOTER ===== */
-        .store-footer {
-            text-align: center; padding: 30px 20px;
-            border-top: 1px solid var(--border);
-        }
-        .footer-brand {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 11px; letter-spacing: 4px;
-            color: var(--muted); text-transform: uppercase;
-        }
+        .store-footer { text-align: center; padding: 30px 20px; border-top: 1px solid var(--border); }
+        .footer-brand { font-family: 'Cormorant Garamond', serif; font-size: 11px; letter-spacing: 4px; color: var(--muted); text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -342,7 +222,6 @@
 <!-- Store Header -->
 <div class="store-header">
     <div class="header-inner">
-
         <div class="store-avatar">
             {% if store.logo_url %}
             <img src="{{ store.logo_url }}" alt="{{ store.name }}">
@@ -350,59 +229,34 @@
             {{ store.name[0] }}
             {% endif %}
         </div>
-
         <div class="gold-line"><span>Collection</span></div>
-
         <h1 class="store-name">{{ store.name }}</h1>
-
         {% if store.bio %}
         <p class="store-bio">{{ store.bio }}</p>
         {% endif %}
-
         <div class="contact-bar">
             {% if store.display_phone %}
-            <a href="tel:{{ store.display_phone }}" class="contact-pill">
-                <span class="icon">📞</span> {{ store.display_phone }}
-            </a>
+            <a href="tel:{{ store.display_phone }}" class="contact-pill"><span class="icon">📞</span> {{ store.display_phone }}</a>
             {% endif %}
-
             {% if store.whatsapp_phone %}
-            <a href="https://wa.me/{{ store.whatsapp_phone }}" class="contact-pill" target="_blank">
-                <span class="icon">💬</span> WhatsApp
-            </a>
+            <a href="https://wa.me/{{ store.whatsapp_phone }}" class="contact-pill" target="_blank"><span class="icon">💬</span> WhatsApp</a>
             {% endif %}
-
             {% if store.instagram_handle %}
-            <a href="https://instagram.com/{{ store.instagram_handle }}" class="contact-pill" target="_blank">
-                <span class="icon">📸</span> @{{ store.instagram_handle }}
-            </a>
+            <a href="https://instagram.com/{{ store.instagram_handle }}" class="contact-pill" target="_blank"><span class="icon">📸</span> @{{ store.instagram_handle }}</a>
             {% endif %}
-
-            {% if store.tiktok_handle %}
-            <a href="https://tiktok.com/@{{ store.tiktok_handle }}" class="contact-pill" target="_blank">
-                <span class="icon">🎵</span> @{{ store.tiktok_handle }}
-            </a>
+             {% if store.tiktok_handle %}
+            <a href="https://tiktok.com/@{{ store.tiktok_handle }}" class="contact-pill" target="_blank"><span class="icon">🎵</span> @{{ store.tiktok_handle }}</a>
             {% endif %}
-
             {% if store.facebook_handle %}
-            <a href="https://facebook.com/{{ store.facebook_handle }}" class="contact-pill" target="_blank">
-                <span class="icon">👥</span> {{ store.facebook_handle }}
-            </a>
+            <a href="https://facebook.com/{{ store.facebook_handle }}" class="contact-pill" target="_blank"><span class="icon">👥</span> {{ store.facebook_handle }}</a>
             {% endif %}
-
             {% if store.address %}
-            <a href="https://maps.google.com/?q={{ store.address }}" class="contact-pill" target="_blank">
-                <span class="icon">📍</span> {{ store.address }}
-            </a>
+            <a href="https://maps.google.com/?q={{ store.address }}" class="contact-pill" target="_blank"><span class="icon">📍</span> {{ store.address }}</a>
             {% endif %}
-
             {% if store.website %}
-            <a href="{{ store.website }}" class="contact-pill" target="_blank">
-                <span class="icon">🌐</span> Website
-            </a>
+            <a href="{{ store.website }}" class="contact-pill" target="_blank"><span class="icon">🌐</span> Website</a>
             {% endif %}
         </div>
-
     </div>
 </div>
 
@@ -416,12 +270,16 @@
 
     <div class="products-grid">
         {% for product in products %}
-        {# التعديل هنا: استخدام tojson لضمان عدم كسر الكود وتوحيد الثيم #}
+        
+        {# 1. تحديد الستايل (Layout) #}
         {% set current_style = (product.template_style|lower if product.template_style else 'modern') %}
         {% if current_style == 'elegant' %}{% set current_style = 'modern' %}{% endif %}
 
-        <div class="product-card style-{{ current_style }}"
-             onclick='openProduct({{ product.name|tojson|safe }}, {{ product.price|tojson|safe }}, "/static/uploads/{{ product.processed_image_url }}", {{ (product.description or "")|tojson|safe }}, "{{ current_style }}")'>
+        {# 2. تحديد الثيم (Colors) - الافتراضي هو gold #}
+        {% set current_theme = (product.theme|lower if product.theme else 'gold') %}
+
+        <div class="product-card style-{{ current_style }} theme-{{ current_theme }}"
+             onclick='openProduct({{ product.name|tojson|safe }}, {{ product.price|tojson|safe }}, "/static/uploads/{{ product.processed_image_url }}", {{ (product.description or "")|tojson|safe }}, "{{ current_style }}", "{{ current_theme }}")'>
 
             <div class="img-wrap">
                 <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}">
@@ -470,49 +328,47 @@
         </div>
 
         <div class="m-footer" id="mFooter">
-            <a href="#" id="mWa" class="m-wa" target="_blank">
-                Order via WhatsApp
-            </a>
+            <a href="#" id="mWa" class="m-wa" target="_blank">Order via WhatsApp</a>
         </div>
     </div>
 </div>
 
 <script>
-    function openProduct(name, price, img, desc, style) {
+    function openProduct(name, price, img, desc, style, theme) {
         const modalBox  = document.getElementById('modalBox');
         const modalVisual = document.getElementById('modalVisual');
         const modalInfo = document.getElementById('modalInfo');
-        const mFooter   = document.getElementById('mFooter');
         const mTitle    = document.getElementById('mTitle');
         const mDivider  = document.getElementById('mDivider');
         const mPrice    = document.getElementById('mPrice');
         const mDesc     = document.getElementById('mDesc');
 
-        // تنظيف العناصر القديمة لثيم modern إن وجدت
+        // 1. تنظيف العناصر القديمة لثيم modern إن وجدت
         const oldTitleV = document.getElementById('mTitleVisual');
         const oldPriceV = document.getElementById('mPriceVisual');
         if (oldTitleV) oldTitleV.remove();
         if (oldPriceV) oldPriceV.remove();
 
-        // تطبيق الستايل
-        modalBox.className = 'modal-box modal-' + style.toLowerCase();
+        // 2. تطبيق الكلاسات (Theme + Style)
+        // نحدد كلاس الثيم وكلاس الستايل معاً
+        modalBox.className = 'modal-box theme-' + theme + ' modal-' + style;
 
-        // الصورة
+        // 3. الصورة
         document.getElementById('modalImg').src = img;
 
-        // النصوص
+        // 4. النصوص الأساسية
         mTitle.innerText = name;
         mPrice.innerText = price + ' ₪';
         mDesc.innerText  = desc;
         mDesc.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
 
-        // رابط واتساب
+        // 5. رابط واتساب
         const waLink = buildWa(name, price, desc);
         document.getElementById('mWa').href = waLink;
 
-        // إدارة الستايلات
-        if (style.toLowerCase() === 'modern') {
-            // إضافة العنوان والسعر للـ visual ديناميكياً
+        // 6. إدارة الستايلات الخاصة (Modern)
+        if (style === 'modern') {
+            // في الستايل مودرن، ننشئ العنوان والسعر فوق الصورة ديناميكياً
             const titleV = document.createElement('div');
             titleV.id = 'mTitleVisual';
             titleV.className = 'm-title-visual';
@@ -525,11 +381,13 @@
             priceV.innerText = price + ' ₪';
             modalVisual.appendChild(priceV);
 
+            // وإخفاء العناصر الأسفل
             mTitle.style.display   = 'none';
             mDivider.style.display = 'none';
             mPrice.style.display   = 'none';
             modalInfo.style.display = (desc && desc.trim() !== '') ? 'block' : 'none';
         } else {
+            // للستايلات الأخرى، نظهر العناصر بشكل طبيعي
             mTitle.style.display   = 'block';
             mDivider.style.display = 'block';
             mPrice.style.display   = 'block';
