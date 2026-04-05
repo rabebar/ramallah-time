@@ -442,7 +442,9 @@ def reject_user(user_id):
     cursor.close()
     conn.close()
     return redirect(url_for('super_admin'))
-
+@app.route('/sw.js')
+def sw():
+    return app.send_static_file('sw.js')
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
