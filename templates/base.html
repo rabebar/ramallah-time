@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="manifest" href="/static/manifest.json">
+    <title>RT Studio | {% block title %}Dashboard{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #f3f5f7; /* تحولنا للوضع الفاتح لراحة العين كتطبيقات احترافية */
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --accent: #4f46e5;
+            --border: #e5e7eb;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+
+        /* --- Desktop Sidebar --- */
+        .sidebar {
+            width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border);
+            position: fixed; top: 0; left: 0; height: 100vh;
+            display: flex; flex-direction: column; padding: 30px 20px;
+            z-index: 100;
+        }
+        .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+        .logo-box { width: 40px; height: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; font-size: 20px; }
+        .nav-links { list-style: none; flex-grow: 1; }
+        .nav-item { padding: 14px 18px; border-radius: 12px; margin-bottom: 8px; color: var(--text-muted); display: flex; align-items: center; gap: 15px; text-decoration: none; font-weight: 500; transition: 0.2s; }
+        .nav-item.active { background: rgba(79, 70, 229, 0.1); color: var(--accent); font-weight: 700; }
+        .nav-item:hover { background: #f3f4f6; }
+
+        /* --- Main Content Area --- */
+        .main-content { margin-left: 260px; padding: 40px; min-height: 100vh; }
+
+        /* --- Mobile Bottom Nav --- */
+        .mobile-nav {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            background: #ffffff; border-top: 1px solid var(--border);
+            justify-content: space-around; padding: 10px 0 25px 0; z-index: 1000;
+        }
+        .mob-item { text-decoration: none; color: #9ca3af; text-align: center; font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .mob-item span { font-size: 22px; }
+        .mob-item.active { color: var(--accent); font-weight: 700; }
+
+        /* --- Responsive Magic --- */
+        @media (max-width: 768px) {
+            .sidebar { display: none; } /* إخفاء القائمة الجانبية */
+            .mobile-nav { display: flex; } /* إظهار الشريط السفلي */
+            .main-content { margin-left: 0; padding: 20px; padding-bottom: 100px; } /* تعديل الحواف */
+        }
+        
+        /* PWA Install Banner */
+        .install-banner {
+            position: fixed; bottom: 80px; left: 10px; right: 10px;
+            background: #000; color: #fff; padding: 15px; border-radius: 12px;
+            display: none; align-items: center; justify-content: space-between;
+            z-index: 1001; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .install-btn { background: #fff; color: #000; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 700; cursor: pointer; }
+        .close-btn { background: transparent; border: none; color: #fff; margin-right: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <!-- Desktop Sidebar -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <div class="logo-box">RT</div>
+            <h2 style="font-size: 18px; font-weight: 800;">RT Studio</h2>
+        </div>
+        <nav class="nav-links">
+            <a href="/" class="nav-item {% block nav_dashboard %}{% endblock %}"><span>📊</span> Dashboard</a>
+            <a href="/admin" class="nav-item {% block nav_products %}{% endblock %}"><span>📦</span> My Products</a>
+            <a href="/admin" class="nav-item {% block nav_settings %}{% endblock %}"><span>⚙️</span> Settings</a>
+            {% if stats.store_slug %}
+            <a href="/store/{{ stats.store_slug }}" class="nav-item" target="_blank"><span>🌐</span> View Store</a>
+            {% endif %}
+            <a href="/logout" class="nav-item" style="margin-top: auto; color: #ef4444;"><span>🚪</span> Logout</a>
+        </nav>
+    </div>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-nav">
+        <a href="/" class="mob-item {% block mob_dashboard %}{% endblock %}"><span>🏠</span> Home</a>
+        <a href="/admin" class="mob-item {% block mob_products %}{% endblock %}"><span>📦</span> Products</a>
+        <a href="/admin" class="mob-item {% block mob_settings %}{% endblock %}"><span>⚙️</span> Settings</a>
+        <a href="/logout" class="mob-item"><span>🚪</span></a>
+    </nav>
+
+    <!-- Main Content Injected Here -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- PWA Install Logic -->
+    <div id="installBanner" class="install-banner">
+        <div style="display:flex; align-items:center;">
+            <button class="close-btn" onclick="this.parentElement.parentElement.style.display='none'">✕</button>
+            <span>📥 Install RT Studio App</span>
+        </div>
+        <button id="installBtn" class="install-btn">Install</button>
+    </div>
+
+    <script>
+        let deferredPrompt;
+        window.addEventListener('load', () => {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').then(() => console.log('SW Registered'));
+            }
+        });
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBanner').style.display = 'flex';
+        });
+        document.getElementById('installBtn').addEventListener('click', () => {
+            document.getElementById('installBanner').style.display = 'none';
+            if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
+        });
+    </script>
+</body>
+</html>
