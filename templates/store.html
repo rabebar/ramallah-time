@@ -4,314 +4,609 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="{{ store.name }}">
     <link rel="manifest" href="/static/manifest.json">
-    <title>{{ store.name }} | Official Store</title>
-    
-    <!-- Fonts: Playfair Display for Luxury Titles, Inter for UI -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link rel="apple-touch-icon" href="/static/uploads/rt_logo_192.png">
+    <title>{{ store.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Reset & Variables */
         :root {
-            --bg-page: #ffffff;
-            --text-main: #000000;
-            --text-muted: #666666;
-            --border: #eeeeee;
+            --white: #FFFFFF;
+            --off-white: #FAFAFA;
+            --black: #0A0A0A;
+            --gray-100: #F5F5F5;
+            --gray-200: #E8E8E8;
+            --gray-400: #AAAAAA;
+            --gray-600: #666666;
+            --gold: #B8974A;
         }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-page); color: var(--text-main); }
+        html { scroll-behavior: smooth; }
 
-        /* --- Luxury Header (Sticky on Mobile) --- */
-        .luxury-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border);
-            background: #fff;
-            position: sticky;
-            top: 0;
-            z-index: 999;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        body {
+            font-family: 'Jost', sans-serif;
+            background: var(--white);
+            color: var(--black);
+            -webkit-font-smoothing: antialiased;
         }
-        .header-logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 20px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            color: #000;
-            text-decoration: none;
-        }
-        .header-icons a { margin-left: 15px; color: #000; text-decoration: none; font-size: 12px; font-weight: 500; }
-        .header-icons a svg { display: none; } /* Simple text links for now */
 
-        /* --- Hero Section --- */
-        .hero-section {
-            text-align: center;
-            padding: 60px 20px 40px;
-            border-bottom: 1px solid var(--border);
+        /* ===== HEADER ===== */
+        .site-header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--gray-200);
+            padding: 0 40px;
+            height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .store-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px; font-weight: 500;
+            letter-spacing: 2px; color: var(--black);
+            text-transform: uppercase;
+        }
+
+        .header-right {
+            display: flex; align-items: center; gap: 20px;
+        }
+
+        .header-link {
+            font-size: 11px; font-weight: 500;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--gray-600); text-decoration: none;
+            transition: color 0.2s;
+        }
+        .header-link:hover { color: var(--black); }
+
+        /* ===== HERO ===== */
+        .hero {
+            padding: 80px 40px 60px;
+            border-bottom: 1px solid var(--gray-200);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: end;
+        }
+
+        .hero-left .hero-label {
+            font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+            color: var(--gray-400); margin-bottom: 20px; display: block;
         }
         .hero-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 36px;
-            font-weight: 400;
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(42px, 6vw, 72px);
+            font-weight: 300; line-height: 1.05;
+            letter-spacing: -1px;
+        }
+        .hero-title em { font-style: italic; color: var(--gray-600); }
+
+        .hero-right {
+            text-align: right; padding-bottom: 8px;
         }
         .hero-subtitle {
-            color: var(--text-muted);
-            font-size: 14px;
-            font-weight: 300;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            font-size: 13px; color: var(--gray-400);
+            font-weight: 300; letter-spacing: 1px;
+            line-height: 1.8; max-width: 280px;
+            margin-left: auto;
         }
 
-        /* --- Product Grid (Minimalist) --- */
-        .collection-wrapper { max-width: 1400px; margin: 0 auto; padding: 40px 24px 100px; }
+        /* Contact pills in hero */
+        .hero-contact {
+            display: flex; flex-wrap: wrap; gap: 8px;
+            justify-content: flex-end; margin-top: 20px;
+        }
+        .contact-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            border: 1px solid var(--gray-200); padding: 6px 14px;
+            font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+            color: var(--gray-600); text-decoration: none;
+            transition: all 0.2s;
+        }
+        .contact-pill:hover { border-color: var(--black); color: var(--black); }
+
+        /* ===== COLLECTION ===== */
+        .collection { padding: 60px 40px 120px; }
+
+        .collection-header {
+            display: flex; align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 50px;
+            border-bottom: 1px solid var(--gray-200);
+            padding-bottom: 20px;
+        }
+        .collection-title {
+            font-size: 11px; font-weight: 500;
+            letter-spacing: 3px; text-transform: uppercase;
+            color: var(--gray-400);
+        }
+        .collection-count {
+            font-size: 11px; color: var(--gray-400);
+            letter-spacing: 1px;
+        }
+
+        /* Product Grid */
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 50px 30px;
         }
 
         .product-card {
             cursor: pointer;
-            transition: transform 0.3s ease;
+            animation: fadeUp 0.6s ease both;
         }
-        .product-card:hover { transform: translateY(-5px); }
+        .product-card:nth-child(2) { animation-delay: 0.1s; }
+        .product-card:nth-child(3) { animation-delay: 0.2s; }
+        .product-card:nth-child(4) { animation-delay: 0.3s; }
 
-        /* The Image Container */
-        .card-image-wrap {
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-image {
             width: 100%; aspect-ratio: 1/1;
-            background: #f8f8f8; /* Light gray background for contrast */
-            margin-bottom: 15px;
-            overflow: hidden;
-            position: relative;
+            background: var(--gray-100);
+            overflow: hidden; position: relative;
+            margin-bottom: 18px;
         }
-        .card-image-wrap img {
+        .card-image img {
             width: 100%; height: 100%;
-            object-fit: cover; /* Cover looks better for gallery style */
-            transition: opacity 0.3s;
+            object-fit: contain; padding: 20px;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-        .product-card:hover img { opacity: 0.9; }
+        .product-card:hover .card-image img { transform: scale(1.04); }
 
-        /* Product Details */
-        .card-info { text-align: left; }
-        .card-brand {
-            font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
+        /* Hover CTA */
+        .card-cta {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: rgba(10,10,10,0.85);
+            color: #fff; text-align: center;
+            padding: 14px; font-size: 11px;
+            letter-spacing: 2px; text-transform: uppercase;
+            font-weight: 500;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .product-card:hover .card-cta { transform: translateY(0); }
+
+        .card-info {}
+        .card-number {
+            font-size: 10px; color: var(--gray-400);
+            letter-spacing: 2px; margin-bottom: 6px;
         }
         .card-name {
-            font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500;
-            color: #000; margin-bottom: 8px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 19px; font-weight: 400;
+            letter-spacing: 0.3px; margin-bottom: 6px;
+            color: var(--black);
         }
         .card-price {
-            font-size: 14px; color: #000; font-weight: 400;
+            font-size: 13px; color: var(--gray-600);
+            font-weight: 300; letter-spacing: 1px;
         }
 
-        /* --- Modal (Product View) --- */
+        /* Empty state */
+        .empty-state {
+            grid-column: 1/-1; text-align: center;
+            padding: 100px 20px;
+        }
+        .empty-state h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px; font-weight: 300;
+            margin-bottom: 12px; color: var(--gray-400);
+        }
+        .empty-state p { font-size: 13px; color: var(--gray-400); }
+
+        /* ===== FOOTER ===== */
+        .site-footer {
+            background: var(--black); color: rgba(255,255,255,0.4);
+            padding: 50px 40px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .footer-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px; font-weight: 300;
+            letter-spacing: 3px; text-transform: uppercase;
+            color: rgba(255,255,255,0.8);
+        }
+        .footer-copy { font-size: 11px; letter-spacing: 1px; }
+
+        /* ===== MODAL ===== */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.98);
+            position: fixed; inset: 0;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(20px);
             display: none; align-items: center; justify-content: center;
-            z-index: 10000; padding: 20px;
+            z-index: 9999; padding: 20px;
+            animation: fadeIn 0.2s ease;
         }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         .modal-card {
-            background: #fff; width: 100%; max-width: 450px;
-            border-radius: 0; overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
-            position: relative; border: 1px solid #eee;
+            background: var(--white); width: 100%; max-width: 440px;
+            border: 1px solid var(--gray-200);
+            position: relative;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
-        /* Canvas Area inside Modal (Reuse Theme Logic) */
-        .modal-canvas-area {
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute; top: 16px; right: 16px;
+            width: 36px; height: 36px;
+            background: var(--gray-100); border: none;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 10; transition: background 0.2s;
+        }
+        .modal-close:hover { background: var(--gray-200); }
+
+        /* Modal canvas — themed like the product */
+        .modal-canvas {
             width: 100%; aspect-ratio: 1/1;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             position: relative; overflow: hidden;
-            transition: background 0.4s ease; color: #fff;
+            transition: background 0.3s ease;
         }
-        .modal-canvas-area img { max-width: 80%; max-height: 70%; object-fit: contain; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.3)); }
-        .modal-canvas-area .m-prod-name { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 700; margin-top: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .modal-canvas-area .m-prod-price { font-size: 18px; font-weight: 600; opacity: 0.9; }
-        .modal-canvas-area .divider { width: 40px; height: 3px; background: #fff; margin: 12px 0; border-radius: 2px; opacity: 0.8; }
 
-        /* Styles in Modal */
-        .modal-canvas-area.style-modern .m-prod-name { position: absolute; top: 24px; right: 24px; font-size: 20px; text-align: right; width: 70%; }
-        .modal-canvas-area.style-modern .m-prod-price { position: absolute; bottom: 24px; left: 24px; background: #fff; color: #111; padding: 8px 20px; border-radius: 50px; font-weight: 700; }
-        .modal-canvas-area.style-modern img { max-width: 70%; }
-        .modal-canvas-area.style-minimal { justify-content: flex-end; }
-        .modal-canvas-area.style-minimal img { position: absolute; top: 15%; max-height: 60%; }
-        .modal-canvas-area.style-minimal .glass-footer { position: absolute; bottom: 0; width: 100%; background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); padding: 20px 30px; display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.2); }
-        .modal-canvas-area.style-bold { flex-direction: row; justify-content: flex-start; }
-        .modal-canvas-area.style-bold img { width: 65%; max-height: 100%; object-fit: cover; margin-right: -15%; z-index: 2; }
-        .modal-canvas-area.style-bold .side-info { background: rgba(0,0,0,0.25); height: 100%; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 30px; text-align: right; backdrop-filter: blur(5px); }
+        /* Theme backgrounds */
+        .theme-gold   { background: linear-gradient(135deg, #fdfbf7, #e2d9ca); }
+        .theme-black  { background: linear-gradient(135deg, #1a1a1a, #434343); }
+        .theme-pastel { background: linear-gradient(135deg, #fdf2f8, #ebf5fb); }
+        .theme-spring { background: linear-gradient(135deg, #f0fff4, #c6f6d5); }
+        .theme-fire   { background: linear-gradient(135deg, #fff5f5, #fed7d7); }
+        .theme-ocean  { background: linear-gradient(135deg, #ebf8ff, #bee3f8); }
 
-        .modal-actions { padding: 30px; text-align: center; }
-        .whatsapp-btn {
-            display: block; width: 100%; padding: 18px;
-            background: #000; color: #fff; text-decoration: none;
-            font-size: 14px; font-weight: 600; letter-spacing: 1px;
+        .modal-canvas img {
+            max-width: 78%; max-height: 68%;
+            object-fit: contain; z-index: 2;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.15));
+        }
+
+        /* Elegant */
+        .modal-canvas.style-elegant { flex-direction: column; }
+        .modal-canvas.style-elegant .m-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; margin-top: 18px; letter-spacing: 1px; }
+        .modal-canvas.style-elegant .m-line { width: 40px; height: 2px; margin: 10px 0; }
+        .modal-canvas.style-elegant .m-price { font-size: 14px; font-weight: 400; letter-spacing: 2px; }
+
+        /* Modern */
+        .modal-canvas.style-modern .m-name { position: absolute; top: 20px; right: 20px; font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; text-align: right; max-width: 60%; background: rgba(255,255,255,0.88); padding: 8px 12px; letter-spacing: 0.5px; }
+        .modal-canvas.style-modern .m-line { display: none; }
+        .modal-canvas.style-modern .m-price { position: absolute; bottom: 20px; left: 20px; background: #000; color: #fff; font-size: 12px; font-weight: 500; letter-spacing: 2px; padding: 8px 18px; }
+
+        /* Minimal */
+        .modal-canvas.style-minimal { background: #111 !important; justify-content: flex-end; }
+        .modal-canvas.style-minimal img { position: absolute; top: 10%; max-height: 62%; opacity: 0.9; }
+        .modal-canvas.style-minimal .glass-bar { position: absolute; bottom: 0; width: 100%; background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1); padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-canvas.style-minimal .m-name { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; color: #fff; letter-spacing: 1px; }
+        .modal-canvas.style-minimal .m-line { display: none; }
+        .modal-canvas.style-minimal .m-price { font-size: 14px; color: rgba(255,255,255,0.7); font-weight: 300; letter-spacing: 1px; }
+
+        /* Bold */
+        .modal-canvas.style-bold { flex-direction: row; }
+        .modal-canvas.style-bold img { width: 58%; max-height: 100%; object-fit: contain; z-index: 2; margin-right: -8%; }
+        .modal-canvas.style-bold .side-panel { background: #0a0a0a; height: 100%; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 24px 20px; text-align: right; z-index: 3; }
+        .modal-canvas.style-bold .m-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: #fff; letter-spacing: 1px; margin-bottom: 12px; }
+        .modal-canvas.style-bold .m-line { width: 30px; height: 1px; background: rgba(255,255,255,0.3); margin: 0 0 12px auto; }
+        .modal-canvas.style-bold .m-price { background: #fff; color: #000; font-size: 12px; font-weight: 600; padding: 6px 12px; letter-spacing: 1px; display: inline-block; }
+
+        /* Modal Bottom */
+        .modal-bottom { padding: 24px 28px; }
+        .modal-desc {
+            font-size: 12px; color: var(--gray-600);
+            line-height: 1.8; margin-bottom: 20px;
+            font-family: 'Jost'; border-left: 2px solid var(--gray-200);
+            padding-left: 12px;
+        }
+        .wa-btn {
+            display: block; width: 100%; padding: 16px;
+            background: var(--black); color: #fff;
+            text-align: center; text-decoration: none;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
             transition: background 0.2s;
         }
-        .whatsapp-btn:hover { background: #333; }
-        
-        .close-modal-btn {
-            position: absolute; top: 15px; left: 15px;
-            width: 36px; height: 36px; border-radius: 50%;
-            background: #fff; border: 1px solid #eee;
-            display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 11;
-        }
+        .wa-btn:hover { background: #333; }
 
-        /* PWA Banner */
+        /* ===== PWA INSTALL ===== */
+        /* Android */
         .install-banner {
-            position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 360px; margin: 0 auto;
-            background: #000; color: #fff; padding: 16px 20px; border-radius: 2px;
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px); max-width: 400px;
+            background: var(--black); color: #fff;
+            padding: 16px 20px; z-index: 9998;
             display: none; align-items: center; justify-content: space-between;
-            z-index: 1001; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
-        .install-btn { background: #fff; color: #000; border: none; padding: 8px 16px; font-weight: 600; cursor: pointer; font-size: 12px; }
-        
-        /* Responsive */
+        .install-banner-text { font-size: 13px; font-weight: 400; }
+        .install-banner-text span { display: block; font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px; letter-spacing: 1px; }
+        .install-banner-btns { display: flex; gap: 10px; }
+        .btn-install { background: #fff; color: #000; border: none; padding: 8px 16px; font-size: 11px; font-weight: 600; letter-spacing: 1px; cursor: pointer; }
+        .btn-dismiss { background: transparent; color: rgba(255,255,255,0.5); border: none; font-size: 18px; cursor: pointer; }
+
+        /* iOS Instructions */
+        .ios-banner {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px); max-width: 400px;
+            background: var(--black); color: #fff;
+            padding: 20px; z-index: 9998;
+            display: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .ios-banner p { font-size: 12px; line-height: 1.7; color: rgba(255,255,255,0.8); }
+        .ios-banner strong { color: #fff; }
+        .ios-close { float: right; background: none; border: none; color: rgba(255,255,255,0.5); font-size: 18px; cursor: pointer; margin-left: 10px; }
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .hero-title { font-size: 28px; }
-            .products-grid { gap: 20px; }
+            .site-header { padding: 0 20px; }
+            .hero { grid-template-columns: 1fr; padding: 50px 20px 40px; gap: 20px; }
+            .hero-right { text-align: left; }
+            .hero-contact { justify-content: flex-start; }
+            .hero-subtitle { margin-left: 0; }
+            .collection { padding: 40px 20px 80px; }
+            .products-grid { gap: 30px 16px; grid-template-columns: repeat(2, 1fr); }
+            .card-name { font-size: 16px; }
+            .site-footer { flex-direction: column; gap: 12px; text-align: center; padding: 40px 20px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Mobile Top Header -->
-    <header class="luxury-header">
-        <a href="/" class="header-logo">{{ store.name }}</a>
-        <div class="header-icons">
-            <a href="https://wa.me/{{ store.whatsapp_phone }}">CONTACT</a>
-        </div>
-    </header>
-
-    <main class="hero-section">
-        <h1 class="hero-title">NEW ARRIVALS</h1>
-        <p class="hero-subtitle">Exclusive Collection</p>
-    </main>
-
-    <div class="collection-wrapper">
-        <div class="products-grid">
-            {% for product in products %}
-            <div class="product-card" 
-                 onclick="openProductModal('{{ product.name }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}', '{{ product.theme or 'gold' }}', '{{ product.template_style or 'elegant' }}')">
-                
-                <div class="card-image-wrap">
-                    <!-- We show the processed image directly -->
-                    <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}">
-                </div>
-
-                <div class="card-info">
-                    <div class="card-brand">RT STUDIO</div>
-                    <h3 class="card-name">{{ product.name }}</h3>
-                    <div class="card-price">₪{{ product.price }}</div>
-                </div>
-            </div>
-            {% else %}
-            <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: #999;">
-                <h3 style="font-family:'Playfair Display'; margin-bottom:10px;">No Products Yet</h3>
-                <p style="font-size: 14px;">Check back soon for new arrivals.</p>
-            </div>
-            {% endfor %}
-        </div>
+<!-- Header -->
+<header class="site-header">
+    <div class="header-left">
+        <span class="store-logo">{{ store.name }}</span>
     </div>
+    <div class="header-right">
+        {% if store.whatsapp_phone %}
+        <a href="https://wa.me/{{ store.whatsapp_phone }}" class="header-link" target="_blank">Contact</a>
+        {% endif %}
+        {% if store.instagram_handle %}
+        <a href="https://instagram.com/{{ store.instagram_handle }}" class="header-link" target="_blank">Instagram</a>
+        {% endif %}
+        <button id="headerInstallBtn" class="header-link" style="background:none; border:none; cursor:pointer; display:none;">
+            ↓ Install App
+        </button>
+    </div>
+</header>
 
-    <!-- Modal -->
-    <div id="pModal" class="modal-overlay" onclick="closeProductModal()">
-        <div class="modal-card" onclick="event.stopPropagation()">
-            <button class="close-modal-btn" onclick="closeProductModal()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-            
-            <div id="modalCanvas" class="modal-canvas-area theme-gold style-elegant">
-                <img id="mImgView" src="" alt="Product Image">
-                <div id="mContentWrap"></div>
-            </div>
-
-            <div class="modal-actions">
-                <a id="mWaLink" href="" class="whatsapp-btn" target="_blank">
-                    ORDER VIA WHATSAPP
-                </a>
-            </div>
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-left">
+        <span class="hero-label">{{ store.bio or 'Official Collection' }}</span>
+        <h1 class="hero-title">New<br><em>Arrivals</em></h1>
+    </div>
+    <div class="hero-right">
+        <p class="hero-subtitle">Discover the latest additions to our collection</p>
+        <div class="hero-contact">
+            {% if store.display_phone %}
+            <a href="tel:{{ store.display_phone }}" class="contact-pill">📞 {{ store.display_phone }}</a>
+            {% endif %}
+            {% if store.whatsapp_phone %}
+            <a href="https://wa.me/{{ store.whatsapp_phone }}" class="contact-pill" target="_blank">💬 WhatsApp</a>
+            {% endif %}
+            {% if store.tiktok_handle %}
+            <a href="https://tiktok.com/@{{ store.tiktok_handle }}" class="contact-pill" target="_blank">🎵 TikTok</a>
+            {% endif %}
+            {% if store.facebook_handle %}
+            <a href="https://facebook.com/{{ store.facebook_handle }}" class="contact-pill" target="_blank">👥 Facebook</a>
+            {% endif %}
+            {% if store.address %}
+            <a href="https://maps.google.com/?q={{ store.address }}" class="contact-pill" target="_blank">📍 {{ store.address }}</a>
+            {% endif %}
+            {% if store.website %}
+            <a href="{{ store.website }}" class="contact-pill" target="_blank">🌐 Website</a>
+            {% endif %}
         </div>
     </div>
+</section>
 
-    <!-- PWA Logic -->
-    <div id="pwaBanner" class="install-banner">
-        <div style="font-size:13px;">Install RT Studio App</div>
-        <button id="pwaBtn" class="install-btn">Install</button>
+<!-- Collection -->
+<section class="collection">
+    <div class="collection-header">
+        <span class="collection-title">All Products</span>
+        <span class="collection-count">{{ products|length }} pieces</span>
     </div>
 
-    <!-- Themes CSS (Included here for Modal) -->
-    <style>
-        .theme-gold { background: linear-gradient(135deg, #F2994A, #F2C94C); }
-        .theme-black { background: linear-gradient(135deg, #0F2027, #203A43); }
-        .theme-pastel { background: linear-gradient(135deg, #667EEA, #764BA2); }
-        .theme-spring { background: linear-gradient(135deg, #11998E, #38EF7D); }
-        .theme-fire { background: linear-gradient(135deg, #FF512F, #DD2476); }
-        .theme-ocean { background: linear-gradient(135deg, #2193B0, #6DD5ED); }
-    </style>
+    <div class="products-grid">
+        {% for product in products %}
+        {% set current_theme = (product.theme|lower if product.theme else 'gold') %}
+        {% set current_style = (product.template_style|lower if product.template_style else 'elegant') %}
 
-    <script>
-        // --- Product Modal Logic ---
-        function openProductModal(name, price, img, theme, style) {
-            const canvas = document.getElementById('modalCanvas');
-            const contentWrap = document.getElementById('mContentWrap');
-            const storePhone = "{{ store.whatsapp_phone or store.display_phone }}".replace(/\s+/g, '');
-            
-            document.getElementById('mImgView').src = img;
+        <div class="product-card"
+             onclick='openModal({{ product.name|tojson|safe }}, {{ product.price|tojson|safe }}, "/static/uploads/{{ product.processed_image_url }}", {{ (product.description or "")|tojson|safe }}, "{{ current_theme }}", "{{ current_style }}")'>
+            <div class="card-image">
+                <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" loading="lazy">
+                <div class="card-cta">View Details</div>
+            </div>
+            <div class="card-info">
+                <div class="card-number">{{ '%02d' % loop.index }}</div>
+                <h3 class="card-name">{{ product.name }}</h3>
+                <div class="card-price">₪ {{ product.price }}</div>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No pieces yet</h3>
+            <p>Check back soon for new arrivals.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
 
-            // Reset and Apply Classes
-            canvas.className = 'modal-canvas-area';
-            canvas.classList.add('theme-' + theme);
-            canvas.classList.add('style-' + style);
+<!-- Footer -->
+<footer class="site-footer">
+    <span class="footer-brand">{{ store.name }}</span>
+    <span class="footer-copy">Powered by RT Studio</span>
+</footer>
 
-            // Build Layout
-            if (style === 'elegant') {
-                contentWrap.innerHTML = `<div class="m-prod-name">${name}</div><div class="divider"></div><div class="m-prod-price">₪${price}</div>`;
-            } else if (style === 'modern') {
-                contentWrap.innerHTML = `<div class="m-prod-name">${name}</div><div class="m-prod-price">₪${price}</div>`;
-            } else if (style === 'minimal') {
-                contentWrap.innerHTML = `<div class="glass-footer"><div class="m-prod-name">${name}</div><div class="m-prod-price">₪${price}</div></div>`;
-            } else if (style === 'bold') {
-                contentWrap.innerHTML = `<div class="side-info"><div class="m-prod-name">${name}</div><div class="divider"></div><div class="m-prod-price">₪${price}</div></div>`;
-            }
+<!-- Modal -->
+<div id="productModal" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeModal()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M1 1L13 13M13 1L1 13" stroke="#000" stroke-width="1.5"/>
+            </svg>
+        </button>
 
-            // WhatsApp
-            let message = encodeURIComponent("Hi, I'm interested in: " + name + " (Price: ₪" + price + ").");
-            document.getElementById('mWaLink').href = "https://wa.me/" + storePhone + "?text=" + message;
-            
-            document.getElementById('pModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
+        <div id="modalCanvas" class="modal-canvas theme-gold style-elegant">
+            <img id="mImg" src="" alt="">
+            <div id="mContent"></div>
+        </div>
+
+        <div class="modal-bottom">
+            <div id="mDesc" class="modal-desc" style="display:none;"></div>
+            <a id="mWa" href="#" class="wa-btn" target="_blank">Order via WhatsApp</a>
+        </div>
+    </div>
+</div>
+
+<!-- PWA: Android Banner -->
+<div id="androidBanner" class="install-banner">
+    <div class="install-banner-text">
+        Install RT Studio
+        <span>Add to your home screen</span>
+    </div>
+    <div class="install-banner-btns">
+        <button class="btn-dismiss" onclick="document.getElementById('androidBanner').style.display='none'">✕</button>
+        <button id="androidInstallBtn" class="btn-install">Install</button>
+    </div>
+</div>
+
+<!-- PWA: iOS Banner -->
+<div id="iosBanner" class="ios-banner">
+    <button class="ios-close" onclick="document.getElementById('iosBanner').style.display='none'">✕</button>
+    <p>
+        To install this app on iPhone:<br>
+        Tap <strong>Share ↑</strong> in Safari, then tap<br>
+        <strong>"Add to Home Screen"</strong>
+    </p>
+</div>
+
+<!-- Line colors per theme -->
+<style>
+    .theme-gold   { --line-color: #b5935f; --text-color: #2c2c2c; }
+    .theme-black  { --line-color: #ffffff; --text-color: #ffffff; }
+    .theme-pastel { --line-color: #a29bfe; --text-color: #2c3e50; }
+    .theme-spring { --line-color: #48bb78; --text-color: #1a3c2a; }
+    .theme-fire   { --line-color: #fc8181; --text-color: #742a2a; }
+    .theme-ocean  { --line-color: #63b3ed; --text-color: #1a365d; }
+</style>
+
+<script>
+    // ===== MODAL =====
+    function openModal(name, price, img, desc, theme, style) {
+        const canvas  = document.getElementById('modalCanvas');
+        const content = document.getElementById('mContent');
+        const mDesc   = document.getElementById('mDesc');
+
+        document.getElementById('mImg').src = img;
+        canvas.className = 'modal-canvas theme-' + theme + ' style-' + style;
+
+        // Build content per style
+        if (style === 'elegant') {
+            content.innerHTML = `
+                <div class="m-name" style="color:var(--text-color)">${name}</div>
+                <div class="m-line" style="background:var(--line-color)"></div>
+                <div class="m-price" style="color:var(--text-color)">${price} ₪</div>`;
+        } else if (style === 'modern') {
+            content.innerHTML = `
+                <div class="m-name">${name}</div>
+                <div class="m-price">${price} ₪</div>`;
+        } else if (style === 'minimal') {
+            content.innerHTML = `
+                <div class="glass-bar">
+                    <div class="m-name">${name}</div>
+                    <div class="m-price">${price} ₪</div>
+                </div>`;
+        } else if (style === 'bold') {
+            content.innerHTML = `
+                <div class="side-panel">
+                    <div class="m-name">${name}</div>
+                    <div class="m-line"></div>
+                    <div class="m-price">${price} ₪</div>
+                </div>`;
         }
 
-        function closeProductModal() {
-            document.getElementById('pModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+        // Description
+        if (desc && desc.trim()) {
+            mDesc.innerText = desc;
+            mDesc.style.display = 'block';
+        } else {
+            mDesc.style.display = 'none';
         }
 
-        // --- PWA Logic ---
-        let deferredPrompt;
-        const pwaBanner = document.getElementById('pwaBanner');
-        const pwaBtn = document.getElementById('pwaBtn');
+        // WhatsApp
+        let phone = "{{ store.whatsapp_phone or store.display_phone or '' }}".replace(/\s+/g, '');
+        if (phone.startsWith('0')) phone = '970' + phone.substring(1);
+        const msg = encodeURIComponent(`Hello, I'm interested in: ${name} — Price: ₪${price}${desc ? '\nNotes: ' + desc : ''}`);
+        document.getElementById('mWa').href = `https://wa.me/${phone}?text=${msg}`;
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            pwaBanner.style.display = 'flex';
-        });
+        document.getElementById('productModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
 
-        pwaBtn.addEventListener('click', () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => {
-                    pwaBanner.style.display = 'none';
-                    deferredPrompt = null;
-                });
-            }
-        });
-    </script>
+    function closeModal(e) {
+        if (!e || e.target.id === 'productModal' || e.target.closest('.modal-close')) {
+            document.getElementById('productModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    // ===== PWA =====
+    let deferredPrompt = null;
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+    const isInStandaloneMode = window.navigator.standalone === true;
+
+    // Android
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('androidBanner').style.display = 'flex';
+        document.getElementById('headerInstallBtn').style.display = 'inline-block';
+    });
+
+    document.getElementById('androidInstallBtn').addEventListener('click', () => {
+        document.getElementById('androidBanner').style.display = 'none';
+        if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
+    });
+
+    document.getElementById('headerInstallBtn').addEventListener('click', () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt(); deferredPrompt = null;
+        } else if (isIOS && !isInStandaloneMode) {
+            document.getElementById('iosBanner').style.display = 'block';
+        }
+    });
+
+    // iOS — show after 3 seconds if not installed
+    if (isIOS && !isInStandaloneMode) {
+        document.getElementById('headerInstallBtn').style.display = 'inline-block';
+        setTimeout(() => {
+            document.getElementById('iosBanner').style.display = 'block';
+        }, 3000);
+    }
+
+    // Hide install prompt after app installed
+    window.addEventListener('appinstalled', () => {
+        document.getElementById('androidBanner').style.display = 'none';
+        document.getElementById('headerInstallBtn').style.display = 'none';
+    });
+</script>
 </body>
 </html>
