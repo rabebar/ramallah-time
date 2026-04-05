@@ -2,428 +2,316 @@
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="/static/manifest.json">
     <title>{{ store.name }} | Official Store</title>
     
-    <!-- Fonts: Inter for Global Professional UI -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Fonts: Playfair Display for Luxury Titles, Inter for UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* Variables: Light Luxury Theme */
+        /* Reset & Variables */
         :root {
-            --bg-page: #f3f5f7;
-            --bg-card: #ffffff;
-            --text-main: #111827;
-            --text-muted: #6b7280;
-            --border-light: #e5e7eb;
-            --accent: #4f46e5;
+            --bg-page: #ffffff;
+            --text-main: #000000;
+            --text-muted: #666666;
+            --border: #eeeeee;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-page);
-            color: var(--text-main);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-page); color: var(--text-main); }
 
-                /* ===== Modern Vibrant Themes (2025 Gradients) ===== */
-        .theme-gold { 
-            --card-bg: linear-gradient(135deg, #F2994A, #F2C94C); 
-            --card-text: #ffffff; 
-            --card-line: #ffffff; 
+        /* --- Luxury Header (Sticky on Mobile) --- */
+        .luxury-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            background: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .theme-black { 
-            --card-bg: linear-gradient(135deg, #0F2027, #203A43); 
-            --card-text: #ffffff; 
-            --card-line: #ffffff; 
+        .header-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #000;
+            text-decoration: none;
         }
-        .theme-pastel { 
-            --card-bg: linear-gradient(135deg, #667EEA, #764BA2); 
-            --card-text: #ffffff; 
-            --card-line: #ffffff; 
-        }
-        .theme-spring { 
-            --card-bg: linear-gradient(135deg, #11998E, #38EF7D); 
-            --card-text: #ffffff; 
-            --card-line: #ffffff; 
-        }
-        .theme-fire { 
-            --card-bg: linear-gradient(135deg, #FF512F, #DD2476); 
-            --card-text: #ffffff; 
-            --card-line: #ffffff; 
-        }
-        .theme-ocean { 
-            --card-bg: linear-gradient(135deg, #2193B0, #6DD5ED); 
-            --card-text: #ffffff; 
-            --card-line: #ffffff; 
-        }
+        .header-icons a { margin-left: 15px; color: #000; text-decoration: none; font-size: 12px; font-weight: 500; }
+        .header-icons a svg { display: none; } /* Simple text links for now */
 
-        /* ===== Minimalist Luxury Header ===== */
-        .store-header {
-            background: var(--bg-card);
-            padding: 100px 20px 80px;
+        /* --- Hero Section --- */
+        .hero-section {
             text-align: center;
-            border-bottom: 1px solid var(--border-light);
+            padding: 60px 20px 40px;
+            border-bottom: 1px solid var(--border);
         }
-
-        .header-content { max-width: 800px; margin: 0 auto; }
-
-        .store-logo-init {
-            width: 90px; height: 90px; 
-            border-radius: 50%; 
-            background: #f3f5f7;
-            margin: 0 auto 35px; 
-            display: flex; align-items: center; justify-content: center;
-            font-size: 32px; font-weight: 700; color: var(--text-main);
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .store-logo-init img { width: 100%; height: 100%; object-fit: cover; }
-
-        .store-name { 
-            font-size: 48px; font-weight: 700; letter-spacing: -1px; 
-            margin-bottom: 16px; line-height: 1.1; color: #000;
-        }
-        .store-name span { font-weight: 300; opacity: 0.8; } /* Decorative touch */
-        
-        .store-bio { 
-            font-size: 16px; color: var(--text-muted); 
-            margin-bottom: 40px; line-height: 1.6; 
-            max-width: 500px; margin-left: auto; margin-right: auto;
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
             font-weight: 400;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+        .hero-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
-        /* Social Bar: Clean Outlined Buttons */
-        .social-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
-        .social-link {
-            text-decoration: none; color: var(--text-main); 
-            background: transparent;
-            border: 1px solid var(--border-light); 
-            padding: 10px 20px; border-radius: 50px;
-            font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;
-            transition: all 0.2s;
-        }
-        .social-link:hover { 
-            background: var(--text-main); color: #fff; 
-            border-color: var(--text-main); transform: translateY(-2px);
-        }
-        .social-link svg { width: 16px; height: 16px; }
-
-        /* ===== Product Grid (Spacious & Floating) ===== */
-        .collection-wrapper { 
-            max-width: 1300px; margin: -40px auto 80px; padding: 0 24px; 
-            position: relative; z-index: 3; 
-        }
-        
-        .products-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); 
-            gap: 32px; 
+        /* --- Product Grid (Minimalist) --- */
+        .collection-wrapper { max-width: 1400px; margin: 0 auto; padding: 40px 24px 100px; }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 40px;
         }
 
         .product-card {
-            background: var(--card-bg);
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             cursor: pointer;
-            position: relative;
-            min-height: 450px;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid rgba(0,0,0,0.03);
+            transition: transform 0.3s ease;
         }
-        .product-card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1); 
-        }
+        .product-card:hover { transform: translateY(-5px); }
 
-        /* Product Inner Styles (The colorful part) */
-        .p-display-area {
-            background: var(--card-bg);
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            color: var(--card-text);
+        /* The Image Container */
+        .card-image-wrap {
+            width: 100%; aspect-ratio: 1/1;
+            background: #f8f8f8; /* Light gray background for contrast */
+            margin-bottom: 15px;
+            overflow: hidden;
             position: relative;
         }
+        .card-image-wrap img {
+            width: 100%; height: 100%;
+            object-fit: cover; /* Cover looks better for gallery style */
+            transition: opacity 0.3s;
+        }
+        .product-card:hover img { opacity: 0.9; }
+
+        /* Product Details */
+        .card-info { text-align: left; }
+        .card-brand {
+            font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
+        }
+        .card-name {
+            font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500;
+            color: #000; margin-bottom: 8px;
+        }
+        .card-price {
+            font-size: 14px; color: #000; font-weight: 400;
+        }
+
+        /* --- Modal (Product View) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            display: none; align-items: center; justify-content: center;
+            z-index: 10000; padding: 20px;
+        }
+        .modal-card {
+            background: #fff; width: 100%; max-width: 450px;
+            border-radius: 0; overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            position: relative; border: 1px solid #eee;
+        }
         
-        .image-wrap { 
-            width: 100%; aspect-ratio: 1/1; 
-            padding: 40px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            position: relative;
+        /* Canvas Area inside Modal (Reuse Theme Logic) */
+        .modal-canvas-area {
+            width: 100%; aspect-ratio: 1/1;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+            transition: background 0.4s ease; color: #fff;
         }
-        .image-wrap img { 
-            max-width: 90%; max-height: 90%; 
-            object-fit: contain; 
-            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.3));
-            transition: 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .product-card:hover .image-wrap img { transform: scale(1.05) rotate(1deg); }
+        .modal-canvas-area img { max-width: 80%; max-height: 70%; object-fit: contain; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.3)); }
+        .modal-canvas-area .m-prod-name { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 700; margin-top: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .modal-canvas-area .m-prod-price { font-size: 18px; font-weight: 600; opacity: 0.9; }
+        .modal-canvas-area .divider { width: 40px; height: 3px; background: #fff; margin: 12px 0; border-radius: 2px; opacity: 0.8; }
 
-        /* Layout Variations */
-        /* 1. Elegant */
-        .style-elegant { text-align: center; }
-        .style-elegant .p-info { padding: 0 30px 40px; }
-        .style-elegant .p-name { font-size: 24px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.5px; }
-        .style-elegant .divider { width: 40px; height: 3px; background: var(--card-line); margin: 0 auto 15px; border-radius: 2px; opacity: 0.8; }
-        .style-elegant .p-price { font-size: 18px; font-weight: 600; opacity: 0.9; }
+        /* Styles in Modal */
+        .modal-canvas-area.style-modern .m-prod-name { position: absolute; top: 24px; right: 24px; font-size: 20px; text-align: right; width: 70%; }
+        .modal-canvas-area.style-modern .m-prod-price { position: absolute; bottom: 24px; left: 24px; background: #fff; color: #111; padding: 8px 20px; border-radius: 50px; font-weight: 700; }
+        .modal-canvas-area.style-modern img { max-width: 70%; }
+        .modal-canvas-area.style-minimal { justify-content: flex-end; }
+        .modal-canvas-area.style-minimal img { position: absolute; top: 15%; max-height: 60%; }
+        .modal-canvas-area.style-minimal .glass-footer { position: absolute; bottom: 0; width: 100%; background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); padding: 20px 30px; display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.2); }
+        .modal-canvas-area.style-bold { flex-direction: row; justify-content: flex-start; }
+        .modal-canvas-area.style-bold img { width: 65%; max-height: 100%; object-fit: cover; margin-right: -15%; z-index: 2; }
+        .modal-canvas-area.style-bold .side-info { background: rgba(0,0,0,0.25); height: 100%; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 30px; text-align: right; backdrop-filter: blur(5px); }
 
-        /* 2. Modern */
-        .style-modern .p-name { 
-            position: absolute; top: 30px; right: 30px; 
-            font-weight: 700; font-size: 20px; text-align: right; 
-            width: 70%; text-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 5;
+        .modal-actions { padding: 30px; text-align: center; }
+        .whatsapp-btn {
+            display: block; width: 100%; padding: 18px;
+            background: #000; color: #fff; text-decoration: none;
+            font-size: 14px; font-weight: 600; letter-spacing: 1px;
+            transition: background 0.2s;
         }
-        .style-modern .p-price { 
-            position: absolute; bottom: 30px; left: 30px; 
-            background: #ffffff; color: #111; 
-            padding: 8px 20px; border-radius: 50px; 
-            font-weight: 700; font-size: 14px; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2); z-index: 5;
-        }
-
-        /* 3. Minimal */
-        .style-minimal .glass-footer { 
-            margin-top: auto; 
-            background: rgba(255,255,255,0.15); 
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            padding: 20px 30px; 
-            display: flex; justify-content: space-between; align-items: center; 
-            border-top: 1px solid rgba(255,255,255,0.2);
-        }
-        .style-minimal .p-name { font-size: 16px; font-weight: 700; }
-        .style-minimal .p-price { font-weight: 700; font-size: 16px; }
-
-        /* 4. Bold */
-        .style-bold .p-display-area { flex-direction: row !important; }
-        .style-bold .image-wrap { width: 65%; padding: 20px; margin-right: -15%; z-index: 2; }
-        .style-bold .info-panel { 
-            flex-grow: 1; background: rgba(0,0,0,0.25); 
-            display: flex; flex-direction: column; justify-content: center; 
-            padding: 30px; text-align: right; z-index: 3; backdrop-filter: blur(5px);
-        }
-        .style-bold .p-name { font-size: 20px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }
-        .style-bold .p-price { 
-            background: #fff; color: #000; padding: 6px 14px; border-radius: 6px; 
-            font-weight: 700; font-size: 14px; width: fit-content; margin-left: auto; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-
-        /* ===== Modal (Light & Crisp) ===== */
-        .modal-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(255, 255, 255, 0.98); /* Bright overlay */
-            display: none; align-items: center; justify-content: center; 
-            z-index: 10000; padding: 20px; backdrop-filter: blur(10px);
-        }
-        .modal-card { 
-            background: var(--bg-card); width: 100%; max-width: 450px; 
-            border-radius: 24px; overflow: hidden; 
-            animation: modalSlideUp 0.3s ease-out; 
-            box-shadow: 0 30px 60px rgba(0,0,0,0.1);
-            border: 1px solid var(--border-light);
-        }
-        @keyframes modalSlideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .whatsapp-btn:hover { background: #333; }
         
-        .modal-img-area { 
-            width: 100%; aspect-ratio: 1/1; 
-            background: #f8f9fa; display: flex; 
-            align-items: center; justify-content: center; 
-            padding: 40px; position: relative;
-        }
-        .modal-img-area img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.08)); }
-        
-        .modal-body-content { padding: 32px; text-align: center; }
-        .m-title-text { font-size: 24px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
-        .m-price-text { font-size: 20px; font-weight: 600; color: var(--text-muted); margin-bottom: 24px; }
-        
-        .whatsapp-order-btn { 
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            background: #25D366; color: #fff; text-decoration: none; 
-            padding: 16px; border-radius: 12px; font-weight: 600; font-size: 15px; transition: 0.2s;
-        }
-        .whatsapp-order-btn:hover { background: #1da851; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2); }
-        .whatsapp-order-btn svg { width: 20px; height: 20px; }
-
         .close-modal-btn {
             position: absolute; top: 15px; left: 15px;
             width: 36px; height: 36px; border-radius: 50%;
-            background: #fff; color: #111;
-            border: 1px solid var(--border-light); cursor: pointer; 
-            display: flex; align-items: center; justify-content: center;
-            z-index: 11; transition: 0.2s;
+            background: #fff; border: 1px solid #eee;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 11;
         }
-        .close-modal-btn:hover { background: #f3f5f7; }
 
-        .footer-branding { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 12px; letter-spacing: 2px; font-weight: 500; text-transform: uppercase; }
-
+        /* PWA Banner */
+        .install-banner {
+            position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 360px; margin: 0 auto;
+            background: #000; color: #fff; padding: 16px 20px; border-radius: 2px;
+            display: none; align-items: center; justify-content: space-between;
+            z-index: 1001; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .install-btn { background: #fff; color: #000; border: none; padding: 8px 16px; font-weight: 600; cursor: pointer; font-size: 12px; }
+        
+        /* Responsive */
         @media (max-width: 768px) {
-            .store-name { font-size: 32px; }
-            .products-grid { grid-template-columns: 1fr; gap: 20px; }
-            .style-bold .p-display-area { flex-direction: column !important; }
-            .style-bold .image-wrap { width: 100%; margin-right: 0; padding: 40px; }
-            .style-bold .info-panel { text-align: center; align-items: center; padding: 20px; }
-            .style-bold .p-price { margin-left: auto; margin-right: auto; }
+            .hero-title { font-size: 28px; }
+            .products-grid { gap: 20px; }
         }
     </style>
 </head>
 <body>
 
-<header class="store-header">
-    <div class="header-content">
-        <div class="store-logo-init">
-            {% if store.logo_url %}
-                <img src="{{ store.logo_url }}" alt="{{ store.name }}">
-            {% else %}
-                {{ store.name[0]|upper }}
-            {% endif %}
+    <!-- Mobile Top Header -->
+    <header class="luxury-header">
+        <a href="/" class="header-logo">{{ store.name }}</a>
+        <div class="header-icons">
+            <a href="https://wa.me/{{ store.whatsapp_phone }}">CONTACT</a>
         </div>
-        <h1 class="store-name">{{ store.name }}</h1>
-        {% if store.bio %}
-            <p class="store-bio">{{ store.bio }}</p>
-        {% endif %}
+    </header>
 
-        <!-- Social Links: SVG Only -->
-        <div class="social-bar">
-            {% if store.whatsapp_phone %}
-                <a href="https://wa.me/{{ store.whatsapp_phone }}" class="social-link" target="_blank">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    WhatsApp
-                </a>
-            {% endif %}
-            {% if store.instagram_handle %}
-                <a href="https://instagram.com/{{ store.instagram_handle }}" class="social-link" target="_blank">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-                    Instagram
-                </a>
-            {% endif %}
-            {% if store.tiktok_handle %}
-                <a href="https://tiktok.com/@{{ store.tiktok_handle }}" class="social-link" target="_blank">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
-                    TikTok
-                </a>
-            {% endif %}
-            {% if store.facebook_handle %}
-                <a href="{{ store.facebook_handle }}" class="social-link" target="_blank">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    Facebook
-                </a>
-            {% endif %}
-            {% if store.website %}
-                <a href="{{ store.website }}" class="social-link" target="_blank">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    Website
-                </a>
-            {% endif %}
-            {% if store.address %}
-                <a href="https://maps.google.com/?q={{ store.address }}" class="social-link" target="_blank">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                    Location
-                </a>
-            {% endif %}
-        </div>
-    </div>
-</header>
+    <main class="hero-section">
+        <h1 class="hero-title">NEW ARRIVALS</h1>
+        <p class="hero-subtitle">Exclusive Collection</p>
+    </main>
 
-<main class="collection-wrapper">
-    <div class="products-grid">
-        {% for product in products %}
-        <div class="product-card" 
-             onclick="openProductModal('{{ product.name }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}')">
-            
-            <!-- Product Display Area (Themed) -->
-            <div class="p-display-area theme-{{ product.theme }} style-{{ product.template_style }}">
-                <div class="image-wrap">
+    <div class="collection-wrapper">
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card" 
+                 onclick="openProductModal('{{ product.name }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}', '{{ product.theme or 'gold' }}', '{{ product.template_style or 'elegant' }}')">
+                
+                <div class="card-image-wrap">
+                    <!-- We show the processed image directly -->
                     <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}">
                 </div>
 
-                {% if product.template_style == 'elegant' %}
-                    <div class="p-info">
-                        <div class="p-name">{{ product.name }}</div>
-                        <div class="divider"></div>
-                        <div class="p-price">IL{{ product.price }}</div>
-                    </div>
-                {% elif product.template_style == 'modern' %}
-                    <div class="p-name">{{ product.name }}</div>
-                    <div class="p-price">${{ product.price }}</div>
-                {% elif product.template_style == 'minimal' %}
-                    <div class="glass-footer">
-                        <div class="p-name">{{ product.name }}</div>
-                        <div class="p-price">₪{{ product.price }}</div>
-                    </div>
-                {% elif product.template_style == 'bold' %}
-                    <div class="info-panel">
-                        <div class="p-name">{{ product.name }}</div>
-                        <div class="p-price">₪{{ product.price }}</div>
-                    </div>
-                {% endif %}
+                <div class="card-info">
+                    <div class="card-brand">RT STUDIO</div>
+                    <h3 class="card-name">{{ product.name }}</h3>
+                    <div class="card-price">₪{{ product.price }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: #999;">
+                <h3 style="font-family:'Playfair Display'; margin-bottom:10px;">No Products Yet</h3>
+                <p style="font-size: 14px;">Check back soon for new arrivals.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="pModal" class="modal-overlay" onclick="closeProductModal()">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <button class="close-modal-btn" onclick="closeProductModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            
+            <div id="modalCanvas" class="modal-canvas-area theme-gold style-elegant">
+                <img id="mImgView" src="" alt="Product Image">
+                <div id="mContentWrap"></div>
+            </div>
+
+            <div class="modal-actions">
+                <a id="mWaLink" href="" class="whatsapp-btn" target="_blank">
+                    ORDER VIA WHATSAPP
+                </a>
             </div>
         </div>
-        {% else %}
-        <div style="grid-column: 1/-1; text-align: center; padding: 120px 20px; color: var(--text-muted);">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 20px; opacity:0.3;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <p style="font-size: 18px; font-weight: 500;">No products available yet.</p>
-            <p style="font-size: 14px; margin-top:8px;">Check back soon for new arrivals.</p>
-        </div>
-        {% endfor %}
     </div>
-</main>
 
-<footer class="footer-branding">
-    Powered by RT Studio &copy; 2025
-</footer>
-
-<!-- Product Modal -->
-<div id="pModal" class="modal-overlay" onclick="closeProductModal()">
-    <div class="modal-card" onclick="event.stopPropagation()">
-        <button class="close-modal-btn" onclick="closeProductModal()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-        <div class="modal-img-area">
-            <img id="mImgView" src="" alt="Product Image">
-        </div>
-        <div class="modal-body-content">
-            <h2 id="mTitleText" class="m-title-text"></h2>
-            <div id="mPriceText" class="m-price-text"></div>
-            <a id="mWaLink" href="" class="whatsapp-order-btn" target="_blank">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                Order via WhatsApp
-            </a>
-        </div>
+    <!-- PWA Logic -->
+    <div id="pwaBanner" class="install-banner">
+        <div style="font-size:13px;">Install RT Studio App</div>
+        <button id="pwaBtn" class="install-btn">Install</button>
     </div>
-</div>
 
-<script>
-    function openProductModal(name, price, img) {
-        document.getElementById('mTitleText').innerText = name;
-        document.getElementById('mPriceText').innerText = '$' + price;
-        document.getElementById('mImgView').src = img;
-        
-        // WhatsApp Link Construction
-        let storePhone = "{{ store.whatsapp_phone or store.display_phone }}";
-        storePhone = storePhone.replace(/\s+/g, '');
-        
-        // Professional English Message
-        let message = encodeURIComponent("Hi " + "{{ store.name }}" + ", I'm interested in: " + name + " (Price: ₪" + price + "). Is this available?");
-        document.getElementById('mWaLink').href = "https://wa.me/" + storePhone + "?text=" + message;
-        
-        document.getElementById('pModal').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
+    <!-- Themes CSS (Included here for Modal) -->
+    <style>
+        .theme-gold { background: linear-gradient(135deg, #F2994A, #F2C94C); }
+        .theme-black { background: linear-gradient(135deg, #0F2027, #203A43); }
+        .theme-pastel { background: linear-gradient(135deg, #667EEA, #764BA2); }
+        .theme-spring { background: linear-gradient(135deg, #11998E, #38EF7D); }
+        .theme-fire { background: linear-gradient(135deg, #FF512F, #DD2476); }
+        .theme-ocean { background: linear-gradient(135deg, #2193B0, #6DD5ED); }
+    </style>
 
-    function closeProductModal() {
-        document.getElementById('pModal').style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
-</script>
+    <script>
+        // --- Product Modal Logic ---
+        function openProductModal(name, price, img, theme, style) {
+            const canvas = document.getElementById('modalCanvas');
+            const contentWrap = document.getElementById('mContentWrap');
+            const storePhone = "{{ store.whatsapp_phone or store.display_phone }}".replace(/\s+/g, '');
+            
+            document.getElementById('mImgView').src = img;
 
+            // Reset and Apply Classes
+            canvas.className = 'modal-canvas-area';
+            canvas.classList.add('theme-' + theme);
+            canvas.classList.add('style-' + style);
+
+            // Build Layout
+            if (style === 'elegant') {
+                contentWrap.innerHTML = `<div class="m-prod-name">${name}</div><div class="divider"></div><div class="m-prod-price">₪${price}</div>`;
+            } else if (style === 'modern') {
+                contentWrap.innerHTML = `<div class="m-prod-name">${name}</div><div class="m-prod-price">₪${price}</div>`;
+            } else if (style === 'minimal') {
+                contentWrap.innerHTML = `<div class="glass-footer"><div class="m-prod-name">${name}</div><div class="m-prod-price">₪${price}</div></div>`;
+            } else if (style === 'bold') {
+                contentWrap.innerHTML = `<div class="side-info"><div class="m-prod-name">${name}</div><div class="divider"></div><div class="m-prod-price">₪${price}</div></div>`;
+            }
+
+            // WhatsApp
+            let message = encodeURIComponent("Hi, I'm interested in: " + name + " (Price: ₪" + price + ").");
+            document.getElementById('mWaLink').href = "https://wa.me/" + storePhone + "?text=" + message;
+            
+            document.getElementById('pModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProductModal() {
+            document.getElementById('pModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // --- PWA Logic ---
+        let deferredPrompt;
+        const pwaBanner = document.getElementById('pwaBanner');
+        const pwaBtn = document.getElementById('pwaBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            pwaBanner.style.display = 'flex';
+        });
+
+        pwaBtn.addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    pwaBanner.style.display = 'none';
+                    deferredPrompt = null;
+                });
+            }
+        });
+    </script>
 </body>
 </html>
