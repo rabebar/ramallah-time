@@ -349,7 +349,7 @@
                     <div class="p-info">
                         <div class="p-name">{{ product.name }}</div>
                         <div class="divider"></div>
-                        <div class="p-price">${{ product.price }}</div>
+                        <div class="p-price">IL{{ product.price }}</div>
                     </div>
                 {% elif product.template_style == 'modern' %}
                     <div class="p-name">{{ product.name }}</div>
@@ -357,12 +357,12 @@
                 {% elif product.template_style == 'minimal' %}
                     <div class="glass-footer">
                         <div class="p-name">{{ product.name }}</div>
-                        <div class="p-price">${{ product.price }}</div>
+                        <div class="p-price">₪{{ product.price }}</div>
                     </div>
                 {% elif product.template_style == 'bold' %}
                     <div class="info-panel">
                         <div class="p-name">{{ product.name }}</div>
-                        <div class="p-price">${{ product.price }}</div>
+                        <div class="p-price">₪{{ product.price }}</div>
                     </div>
                 {% endif %}
             </div>
@@ -412,7 +412,7 @@
         storePhone = storePhone.replace(/\s+/g, '');
         
         // Professional English Message
-        let message = encodeURIComponent("Hi " + "{{ store.name }}" + ", I'm interested in: " + name + " (Price: $" + price + "). Is this available?");
+        let message = encodeURIComponent("Hi " + "{{ store.name }}" + ", I'm interested in: " + name + " (Price: ₪" + price + "). Is this available?");
         document.getElementById('mWaLink').href = "https://wa.me/" + storePhone + "?text=" + message;
         
         document.getElementById('pModal').style.display = 'flex';

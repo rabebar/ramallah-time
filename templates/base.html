@@ -13,12 +13,12 @@
     <style>
         :root {
             --bg: #f3f5f7;
-            --sidebar-bg: rgba(255, 255, 255, 0.7); /* Glassmorphism effect */
+            --sidebar-bg: rgba(255, 255, 255, 0.7);
             --card-bg: #ffffff;
             --text-main: #111827;
             --text-muted: #6b7280;
-            --accent: #4f46e5; /* Indigo-600 */
-            --accent-light: #e0e7ff; /* Indigo-100 */
+            --accent: #4f46e5;
+            --accent-light: #e0e7ff;
             --border: #e5e7eb;
             --sidebar-w: 260px;
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
@@ -33,7 +33,7 @@
         .sidebar {
             width: var(--sidebar-w); 
             background: var(--sidebar-bg);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); /* Frosted Glass */
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border-right: 1px solid rgba(0,0,0,0.05);
             position: fixed; top: 0; left: 0; height: 100vh;
             display: flex; flex-direction: column; padding: 24px 16px;
@@ -62,31 +62,33 @@
         /* --- Main Content --- */
         .main-content { margin-left: var(--sidebar-w); padding: 40px; min-height: 100vh; }
 
-        /* --- Mobile Nav (Bottom Sheet) --- */
-        .mobile-nav {
-            display: none; position: fixed; bottom: 0; left: 0; right: 0;
-            background: rgba(255, 255, 255, 0.90);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(0,0,0,0.05);
-            justify-content: space-around; padding: 8px 0 24px 0; z-index: 1000;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
-        }
-        .mob-item { 
-            text-decoration: none; color: #9ca3af; text-align: center; 
-            font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; 
-            font-weight: 600; padding: 8px 12px; border-radius: 8px;
-            transition: all 0.2s;
-        }
+        /* --- Mobile Header (Hidden on Desktop) --- */
+        .mobile-header { display: none; }
+
+        /* --- Mobile Nav (Hidden on Desktop) --- */
+        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); justify-content: space-around; padding: 8px 0 24px 0; z-index: 1000; box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
+        
+        .mob-item { text-decoration: none; color: #9ca3af; text-align: center; font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 600; padding: 8px 12px; border-radius: 8px; transition: all 0.2s; }
         .mob-item svg { width: 24px; height: 24px; stroke-width: 1.75; }
         .mob-item.active { color: var(--accent); background: var(--accent-light); }
 
+        /* --- Responsive --- */
         @media (max-width: 768px) {
             .sidebar { display: none; }
+            
+            /* Show Mobile Header */
+            .mobile-header {
+                display: flex; justify-content: space-between; align-items: center;
+                padding: 16px 20px; background: #fff; border-bottom: 1px solid var(--border);
+                position: sticky; top: 0; z-index: 999;
+            }
+            .mobile-header .logo-area { margin-bottom: 0; padding: 0; }
+            
             .mobile-nav { display: flex; }
             .main-content { margin-left: 0; padding: 24px 16px; padding-bottom: 100px; }
         }
         
-        /* PWA Install Banner - Clean Floating Card */
+        /* PWA Install Banner */
         .install-banner {
             position: fixed; bottom: 100px; left: 20px; right: 20px; max-width: 360px; margin: 0 auto;
             background: #ffffff; padding: 16px 20px; border-radius: 16px;
@@ -105,7 +107,15 @@
 </head>
 <body>
 
-    <!-- Sidebar Desktop (Left Aligned) -->
+    <!-- Mobile Top Header -->
+    <div class="mobile-header">
+        <div class="logo-area">
+            <div class="logo-box">RT</div>
+            <h2 class="logo-text">RT Studio</h2>
+        </div>
+    </div>
+
+    <!-- Sidebar Desktop -->
     <div class="sidebar">
         <div class="logo-area">
             <div class="logo-box">RT</div>
@@ -120,7 +130,6 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
                 My Products
             </a>
-            <!-- Fixed Link: Always Visible -->
             <a href="/store/{{ store_slug if store_slug else 'preview' }}" class="nav-item" target="_blank">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 View Store
@@ -135,7 +144,7 @@
         </nav>
     </div>
 
-    <!-- Mobile Nav (Refined) -->
+    <!-- Mobile Nav -->
     <nav class="mobile-nav">
         <a href="/" class="mob-item {% block mob_dashboard %}{% endblock %}">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -160,7 +169,7 @@
         {% block content %}{% endblock %}
     </div>
 
-    <!-- PWA Install Banner (Professional English) -->
+    <!-- PWA Install Banner -->
     <div id="pwaBanner" class="install-banner">
         <div>
             <span class="install-text">Install RT Studio for quick access</span>
