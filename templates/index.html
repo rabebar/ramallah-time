@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="theme-color" content="#4f46e5">
+    <meta name="theme-color" content="#4f46e5">
     <link rel="manifest" href="/static/manifest.json">
-    <title>Ramallah Time | AI Dashboard</title>
+    <title>RT Studio | AI Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,8 +13,8 @@
             --sidebar-bg: #16161d;
             --card-glass: rgba(255, 255, 255, 0.03);
             --card-border: rgba(255, 255, 255, 0.08);
-            --accent-violet: #6c5ce7;
-            --accent-glow: rgba(108, 92, 231, 0.4);
+            --accent-violet: #4f46e5; /* Updated to match branding */
+            --accent-glow: rgba(79, 70, 229, 0.4);
             --text-main: #ffffff;
             --text-muted: #a0a0ab;
         }
@@ -53,21 +53,18 @@
         .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
         .stat-value { font-size: 24px; font-weight: 800; }
 
-        /* Tool Section — متطابق مع عرض المربع */
-        .tool-header {
-            max-width: 800px;
-            margin: 0 auto 30px auto;
-        }
+        /* Tool Section */
+        .tool-header { max-width: 800px; margin: 0 auto 30px auto; }
         .tool-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
         .tool-header p { color: var(--text-muted); font-size: 15px; }
 
-        /* Upload Box (Glassmorphism) */
+        /* Upload Box */
         .upload-section {
             background: var(--card-glass); border: 2px dashed var(--card-border);
             border-radius: 24px; padding: 60px; text-align: center; transition: 0.3s; cursor: pointer;
             position: relative; max-width: 800px; margin: 0 auto;
         }
-        .upload-section:hover { border-color: var(--accent-violet); background: rgba(108, 92, 231, 0.03); }
+        .upload-section:hover { border-color: var(--accent-violet); background: rgba(79, 70, 229, 0.03); }
         
         .upload-icon { font-size: 50px; color: var(--accent-violet); margin-bottom: 20px; }
         .upload-section h3 { font-size: 20px; margin-bottom: 10px; }
@@ -82,21 +79,47 @@
 
         #fileInput { display: none; }
         
-        /* Submit button area */
         #submitArea { max-width: 800px; margin: 0 auto; }
 
         /* Footer Credits */
         .footer-info { margin-top: 50px; text-align: center; border-top: 1px solid var(--card-border); padding-top: 20px; }
         .footer-info a { color: var(--accent-violet); text-decoration: none; font-size: 13px; font-weight: 600; }
+
+        /* Install Banner Style */
+        .install-banner {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #ffffff; color: #000;
+            padding: 15px 20px; display: none; 
+            align-items: center; justify-content: space-between;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+            z-index: 9999; border-radius: 15px 15px 0 0;
+            font-weight: 600;
+        }
+        .install-btn {
+            background: #4f46e5; color: #fff;
+            padding: 10px 20px; border-radius: 8px;
+            border: none; font-weight: 700; cursor: pointer;
+            margin-left: 15px;
+        }
+        .close-btn { background: transparent; border: none; font-size: 20px; cursor: pointer; margin-right: 10px; opacity: 0.5; }
     </style>
 </head>
 <body>
+
+    <!-- Smart Install Banner -->
+    <div id="installBanner" class="install-banner">
+        <div style="display:flex; align-items:center;">
+            <button class="close-btn" onclick="this.parentElement.parentElement.style.display='none'">✕</button>
+            <span>📥 حمّل تطبيق RT Studio</span>
+        </div>
+        <button id="installBtn" class="install-btn">تثبيت</button>
+    </div>
 
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo-area">
             <div class="logo-box">RT</div>
-            <h2 style="font-size: 18px; font-weight: 800;">Ramallah Time</h2>
+            <h2 style="font-size: 18px; font-weight: 800;">RT Studio</h2>
         </div>
         <nav class="nav-links">
             <a href="/" class="nav-item active"><span>📊</span> Dashboard</a>
@@ -152,11 +175,12 @@
         </form>
 
         <div class="footer-info">
-            <p style="color: #666; font-size: 12px; margin-bottom: 10px;">Powered by Ramallah Time AI Engine v2.0</p>
+            <p style="color: #666; font-size: 12px; margin-bottom: 10px;">Powered by RT Studio AI Engine v3.0</p>
         </div>
     </div>
 
     <script>
+        // 1. Existing Logic (File Upload)
         function handleFileSelect(input) {
             const mainText = document.getElementById('mainText');
             const subText = document.getElementById('subText');
@@ -175,15 +199,39 @@
             btn.innerText = "⏳ Removing Background...";
             btn.disabled = true;
         };
-    </script>
-    <script>
-      if ('serviceWorker' in navigator) {
+
+        // 2. PWA Install Logic (The Smart Magic)
+        let deferredPrompt;
+
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(() => console.log('✅ RT Studio Worker Registered'))
-            .catch(err => console.log('SW Error:', err));
+            // Register Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(() => console.log('✅ RT Studio Worker Registered'));
+            }
         });
-      }
+
+        // Catch the install prompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Show the banner automatically
+            document.getElementById('installBanner').style.display = 'flex';
+        });
+
+        // Handle the install button click
+        document.getElementById('installBtn').addEventListener('click', () => {
+            document.getElementById('installBanner').style.display = 'none';
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        });
     </script>
 </body>
 </html>
