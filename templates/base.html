@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,99 +7,152 @@
     <link rel="manifest" href="/static/manifest.json">
     <title>RT Studio | {% block title %}{% endblock %}</title>
     
-    <!-- الخطوط: Cairo للعربية و Inter للإنجليزية -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Fonts: Inter for Global Professional UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --bg: #f3f5f7;
-            --sidebar-bg: #ffffff;
+            --sidebar-bg: rgba(255, 255, 255, 0.7); /* Glassmorphism effect */
             --card-bg: #ffffff;
-            --text-main: #1f2937;
+            --text-main: #111827;
             --text-muted: #6b7280;
-            --accent: #4f46e5;
+            --accent: #4f46e5; /* Indigo-600 */
+            --accent-light: #e0e7ff; /* Indigo-100 */
             --border: #e5e7eb;
             --sidebar-w: 260px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
 
-        /* --- Sidebar (يمين للشاشات الكبيرة) --- */
+        /* --- Sidebar (Left Side - Linear Style) --- */
         .sidebar {
-            width: var(--sidebar-w); background: var(--sidebar-bg); border-left: 1px solid var(--border);
-            position: fixed; top: 0; right: 0; height: 100vh;
-            display: flex; flex-direction: column; padding: 30px 20px;
+            width: var(--sidebar-w); 
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); /* Frosted Glass */
+            border-right: 1px solid rgba(0,0,0,0.05);
+            position: fixed; top: 0; left: 0; height: 100vh;
+            display: flex; flex-direction: column; padding: 24px 16px;
             z-index: 100;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
         }
-        .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
-        .logo-box { width: 40px; height: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; font-size: 20px; }
         
-        .nav-links { list-style: none; flex-grow: 1; }
-        .nav-item { padding: 14px 18px; border-radius: 12px; margin-bottom: 8px; color: var(--text-muted); display: flex; align-items: center; gap: 15px; text-decoration: none; font-weight: 700; transition: 0.2s; font-size: 14px; }
-        .nav-item.active { background: #f5f3ff; color: var(--accent); }
-        .nav-item:hover:not(.active) { background: #f9fafb; color: var(--text-main); }
+        .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; padding-left: 8px; }
+        .logo-box { width: 32px; height: 32px; background: linear-gradient(135deg, #4f46e5, #7c3aed); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-size: 14px; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3); }
+        .logo-text { font-size: 18px; font-weight: 700; color: #111; letter-spacing: -0.5px; }
 
-        /* --- المحتوى الرئيسي --- */
-        .main-content { margin-right: var(--sidebar-w); padding: 40px; min-height: 100vh; }
+        .nav-links { list-style: none; flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+        .nav-item { 
+            padding: 10px 12px; border-radius: 8px; color: var(--text-muted); 
+            display: flex; align-items: center; gap: 12px; text-decoration: none; 
+            font-weight: 500; transition: all 0.2s; font-size: 14px; 
+        }
+        .nav-item svg { width: 20px; height: 20px; stroke-width: 1.75; }
+        
+        .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+        .nav-item:hover:not(.active) { background: rgba(0,0,0,0.03); color: var(--text-main); }
+        
+        .nav-divider { height: 1px; background: var(--border); margin: 16px 0; opacity: 0.5; }
 
-        /* --- الموبايل (نظام التطبيق السفلي) --- */
+        /* --- Main Content --- */
+        .main-content { margin-left: var(--sidebar-w); padding: 40px; min-height: 100vh; }
+
+        /* --- Mobile Nav (Bottom Sheet) --- */
         .mobile-nav {
             display: none; position: fixed; bottom: 0; left: 0; right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid var(--border);
-            justify-content: space-around; padding: 10px 0 25px 0; z-index: 1000;
+            background: rgba(255, 255, 255, 0.90);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            justify-content: space-around; padding: 8px 0 24px 0; z-index: 1000;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
         }
-        .mob-item { text-decoration: none; color: #9ca3af; text-align: center; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 700; }
-        .mob-item span { font-size: 24px; }
-        .mob-item.active { color: var(--accent); }
+        .mob-item { 
+            text-decoration: none; color: #9ca3af; text-align: center; 
+            font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; 
+            font-weight: 600; padding: 8px 12px; border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .mob-item svg { width: 24px; height: 24px; stroke-width: 1.75; }
+        .mob-item.active { color: var(--accent); background: var(--accent-light); }
 
         @media (max-width: 768px) {
             .sidebar { display: none; }
             .mobile-nav { display: flex; }
-            .main-content { margin-right: 0; padding: 20px; padding-bottom: 100px; }
+            .main-content { margin-left: 0; padding: 24px 16px; padding-bottom: 100px; }
         }
         
-        /* بانر التثبيت - تصميم فاتح وأنيق */
+        /* PWA Install Banner - Clean Floating Card */
         .install-banner {
-            position: fixed; bottom: 90px; left: 20px; right: 20px;
-            background: #ffffff; color: #111; padding: 15px 20px; border-radius: 16px;
+            position: fixed; bottom: 100px; left: 20px; right: 20px; max-width: 360px; margin: 0 auto;
+            background: #ffffff; padding: 16px 20px; border-radius: 16px;
             display: none; align-items: center; justify-content: space-between;
-            z-index: 1001; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid var(--border);
-            animation: slideUp 0.5s ease;
+            z-index: 1001; box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+            border: 1px solid rgba(0,0,0,0.05);
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        @keyframes slideUp { from { transform: translateY(100px); } to { transform: translateY(0); } }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        .install-btn { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; font-family: 'Cairo'; }
-        .close-banner { font-size: 20px; color: #9ca3af; background: none; border: none; cursor: pointer; margin-left: 15px; }
+        .install-btn { background: #111; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: transform 0.2s; }
+        .install-btn:active { transform: scale(0.96); }
+        .close-banner { font-size: 18px; color: #d1d5db; background: none; border: none; cursor: pointer; margin-left: 12px; line-height: 1; }
+        .install-text { font-size: 13px; font-weight: 500; color: #374151; }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar Desktop -->
+    <!-- Sidebar Desktop (Left Aligned) -->
     <div class="sidebar">
         <div class="logo-area">
             <div class="logo-box">RT</div>
-            <h2 style="font-size: 20px; font-weight: 900; font-family: 'Cairo'; color: #111;">RT Studio</h2>
+            <h2 class="logo-text">RT Studio</h2>
         </div>
         <nav class="nav-links">
-            <a href="/" class="nav-item {% block nav_dashboard %}{% endblock %}"><span>📊</span> الرئيسية</a>
-            <a href="/admin" class="nav-item {% block nav_products %}{% endblock %}"><span>📦</span> منتجاتي</a>
-            {% if store_slug %}
-            <a href="/store/{{ store_slug }}" class="nav-item" target="_blank"><span>🌐</span> عرض المتجر</a>
-            {% endif %}
-            <a href="/logout" class="nav-item" style="margin-top: auto; color: #ef4444;"><span>🚪</span> خروج</a>
+            <a href="/" class="nav-item {% block nav_dashboard %}{% endblock %}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                Dashboard
+            </a>
+            <a href="/admin" class="nav-item {% block nav_products %}{% endblock %}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                My Products
+            </a>
+            <!-- Fixed Link: Always Visible -->
+            <a href="/store/{{ store_slug if store_slug else 'preview' }}" class="nav-item" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                View Store
+            </a>
+            
+            <div class="nav-divider"></div>
+
+            <a href="/logout" class="nav-item" style="margin-top: auto; color: #6b7280;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+            </a>
         </nav>
     </div>
 
-    <!-- Mobile Nav -->
+    <!-- Mobile Nav (Refined) -->
     <nav class="mobile-nav">
-        <a href="/" class="mob-item {% block mob_dashboard %}{% endblock %}"><span>🏠</span> الرئيسية</a>
-        <a href="/admin" class="mob-item {% block mob_products %}{% endblock %}"><span>📦</span> المنتجات</a>
-        <a href="/admin" class="mob-item {% block mob_settings %}{% endblock %}"><span>⚙️</span> الإعدادات</a>
-        <a href="/logout" class="mob-item"><span>🚪</span> خروج</a>
+        <a href="/" class="mob-item {% block mob_dashboard %}{% endblock %}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Home
+        </a>
+        <a href="/admin" class="mob-item {% block mob_products %}{% endblock %}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            Products
+        </a>
+        <a href="/admin" class="mob-item {% block mob_settings %}{% endblock %}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+        </a>
+        <a href="/logout" class="mob-item">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+        </a>
     </nav>
 
     <!-- Main Content -->
@@ -107,13 +160,13 @@
         {% block content %}{% endblock %}
     </div>
 
-    <!-- PWA Install Banner -->
+    <!-- PWA Install Banner (Professional English) -->
     <div id="pwaBanner" class="install-banner">
-        <div style="display:flex; align-items:center;">
-            <span id="pwaMessage">ثبّت RT Studio للوصول السريع!</span>
+        <div>
+            <span class="install-text">Install RT Studio for quick access</span>
         </div>
         <div style="display:flex; align-items:center;">
-            <button id="pwaBtn" class="install-btn">تثبيت الآن</button>
+            <button id="pwaBtn" class="install-btn">Install</button>
             <button class="close-banner" onclick="document.getElementById('pwaBanner').style.display='none'">✕</button>
         </div>
     </div>
@@ -122,16 +175,16 @@
         let deferredPrompt;
         const pwaBanner = document.getElementById('pwaBanner');
         const pwaBtn = document.getElementById('pwaBtn');
-        const pwaMessage = document.getElementById('pwaMessage');
+        const pwaMessage = document.querySelector('.install-text');
 
-        // 1. تسجيل الـ Service Worker
+        // 1. Register Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW Registered'));
             });
         }
 
-        // 2. معالجة التثبيت على أندرويد/كروم
+        // 2. Android/Chrome Install Logic
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -148,13 +201,13 @@
             }
         });
 
-        // 3. معالجة التثبيت على آيفون (سفاري)
+        // 3. iOS Safari Specific Logic
         const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
         if (isIos && !isStandalone) {
-            pwaMessage.innerText = "للتثبيت: اضغط 'مشاركة' ثم 'إضافة للشاشة الرئيسية' 📲";
-            pwaBtn.style.display = 'none'; // لا يمكن برمجته في آيفون
+            pwaMessage.innerText = "To install: tap 'Share' then 'Add to Home Screen'";
+            pwaBtn.style.display = 'none'; 
             pwaBanner.style.display = 'flex';
         }
     </script>

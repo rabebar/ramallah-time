@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}إدارة المتجر - RT Studio{% endblock %}
+{% block title %}Inventory - RT Studio{% endblock %}
 {% block nav_products %}active{% endblock %}
 {% block mob_products %}active{% endblock %}
 
 {% block content %}
 <style>
-    /* ألوان الثيمات الجديدة القوية والمشبعة */
+    /* Theme Variables for Preview */
     :root {
         --theme-gold: linear-gradient(135deg, #d4af37, #8e6d2e);
         --theme-black: linear-gradient(135deg, #1a1a1a, #000000);
@@ -15,71 +15,120 @@
         --theme-pastel: linear-gradient(135deg, #7c3aed, #4c1d95);
     }
 
-    .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
-    .tab-btn { background: #fff; border: 1px solid #e5e7eb; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 700; font-family: 'Cairo'; transition: 0.2s; }
-    .tab-btn.active { background: #1f2937; color: #fff; border-color: #1f2937; }
+    /* Header & Navigation Tabs */
+    .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px; }
+    .page-title { font-size: 24px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 12px; }
+    .page-title svg { width: 28px; height: 28px; stroke: var(--text-main); }
+    
+    .tab-group { display: flex; gap: 8px; }
+    .tab-btn { 
+        background: #fff; border: 1px solid transparent; padding: 10px 20px; 
+        border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;
+        transition: 0.2s; color: var(--text-muted);
+    }
+    .tab-btn.active { background: #111; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .tab-btn:hover:not(.active) { background: #f3f5f7; }
 
-    /* منطقة التعديل - معاينة حية + تحكم */
+    .btn-add { 
+        background: var(--accent); color: #fff; padding: 12px 24px; 
+        border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;
+        display: flex; align-items: center; gap: 8px; transition: 0.2s;
+    }
+    .btn-add:hover { background: #4338ca; transform: translateY(-1px); }
+
+    /* Edit Container: Split View */
     .edit-container {
         display: grid;
-        grid-template-columns: 350px 1fr;
-        gap: 30px;
+        grid-template-columns: 300px 1fr;
+        gap: 40px;
         background: #fff;
-        padding: 30px;
-        border-radius: 24px;
-        border: 1px solid #e5e7eb;
-        margin-bottom: 40px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        padding: 40px;
+        border-radius: 20px;
+        border: 1px solid rgba(0,0,0,0.02);
+        margin-bottom: 50px;
+        box-shadow: var(--shadow-lg);
     }
 
-    /* المعاينة الحية في صفحة التعديل */
+    /* Live Preview Box */
     .edit-preview-box {
-        width: 100%;
-        aspect-ratio: 1/1;
-        border-radius: 15px;
-        overflow: hidden;
-        position: sticky;
-        top: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 100%; aspect-ratio: 1/1;
+        border-radius: 16px; overflow: hidden;
+        position: sticky; top: 40px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        color: #fff; text-align: center;
+        transition: background 0.4s ease;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
-    .edit-preview-box img { max-width: 80%; max-height: 70%; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2)); }
-    .edit-preview-box .p-title { font-family: 'Cairo'; font-weight: 900; margin-top: 10px; font-size: 18px; }
-    .edit-preview-box .p-price { font-family: 'Cairo'; font-weight: 700; opacity: 0.9; }
+    .edit-preview-box img { max-width: 70%; max-height: 60%; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2)); }
+    .edit-preview-box .p-title { font-weight: 700; margin-top: 15px; font-size: 20px; }
+    .edit-preview-box .p-price { font-weight: 600; opacity: 0.9; font-size: 16px; }
 
-    /* شبكة المنتجات */
-    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-    .product-card { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #e5e7eb; transition: 0.3s; }
-    .product-card img { width: 100%; height: 200px; object-fit: contain; background: #f9fafb; padding: 15px; }
-    .p-info { padding: 15px; }
-    .p-name { font-weight: 700; font-family: 'Cairo'; margin-bottom: 5px; }
-    .p-price { color: #10b981; font-weight: 800; margin-bottom: 15px; }
+    /* Form Side */
+    .edit-form-side { display: flex; flex-direction: column; gap: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-label { font-weight: 600; font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
     
-    .actions { display: flex; gap: 8px; }
-    .btn-action { flex: 1; padding: 10px; border-radius: 8px; text-align: center; text-decoration: none; font-size: 13px; font-weight: 700; font-family: 'Cairo'; border: none; cursor: pointer; }
-    .btn-edit { background: #f3f4f6; color: #1f2937; }
-    .btn-del { background: #fef2f2; color: #ef4444; }
-
-    /* فورم التعديل */
-    .edit-form-side { display: flex; flex-direction: column; gap: 15px; }
-    .form-label { font-family: 'Cairo'; font-weight: 700; font-size: 14px; color: #374151; display: block; margin-bottom: 5px; }
-    .input-field { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 10px; font-family: 'Cairo'; font-size: 14px; outline: none; }
-    .input-field:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-
-    .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .theme-opt { 
-        padding: 10px; border-radius: 10px; border: 2px solid #e5e7eb; cursor: pointer; text-align: center; font-size: 11px; font-weight: 700; font-family: 'Cairo'; 
-        transition: 0.2s;
+    .input-field { 
+        width: 100%; padding: 14px 16px; border: 1px solid var(--border); 
+        border-radius: 10px; font-size: 15px; outline: none; background: #fcfcfc;
+        transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .theme-opt.active { border-color: #4f46e5; background: #f5f3ff; }
+    .input-field:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
 
+    /* Theme Selector */
+    .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .theme-opt { 
+        padding: 12px; border-radius: 10px; border: 1px solid var(--border); 
+        cursor: pointer; text-align: center; font-size: 12px; font-weight: 600; 
+        transition: 0.2s; background: #fff;
+    }
+    .theme-opt.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+    /* Products Grid */
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
+    .product-card { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.02); transition: 0.3s; box-shadow: var(--shadow-sm); }
+    .product-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); }
+    .product-card img { width: 100%; height: 220px; object-fit: contain; background: #f8f9fa; padding: 20px; }
+    .p-info { padding: 20px; border-top: 1px solid var(--border); }
+    .p-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; color: var(--text-main); }
+    .p-price { color: #10b981; font-weight: 700; font-size: 14px; margin-bottom: 15px; }
+    
+    .actions { display: flex; gap: 10px; }
+    .btn-action { 
+        flex: 1; padding: 10px; border-radius: 8px; text-align: center; 
+        text-decoration: none; font-size: 13px; font-weight: 600; 
+        border: none; cursor: pointer; transition: 0.2s;
+    }
+    .btn-edit { background: #f3f4f6; color: #1f2937; }
+    .btn-edit:hover { background: #e5e7eb; }
+    .btn-del { background: #fef2f2; color: #ef4444; }
+    .btn-del:hover { background: #fee2e2; }
+    
+    .btn-save { background: #111; color: #fff; }
+    .btn-save:hover { background: #000; }
+    .btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+
+    /* Settings Form */
+    .settings-form { 
+        max-width: 900px; background: #fff; padding: 40px; 
+        border-radius: 20px; border: 1px solid rgba(0,0,0,0.02); 
+        box-shadow: var(--shadow-md);
+    }
+    .section-header { 
+        display: flex; align-items: center; gap: 10px; 
+        font-size: 18px; font-weight: 700; margin-bottom: 20px; margin-top: 30px; 
+        color: var(--text-main);
+    }
+    .section-header svg { width: 20px; height: 20px; stroke: var(--text-muted); }
+    .section-header:first-child { margin-top: 0; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    
     @media (max-width: 900px) {
-        .edit-container { grid-template-columns: 1fr; }
-        .edit-preview-box { max-width: 300px; margin: 0 auto; }
+        .edit-container { grid-template-columns: 1fr; padding: 24px; }
+        .edit-preview-box { position: relative; top: 0; max-width: 300px; margin: 0 auto 30px; }
+        .grid-2 { grid-template-columns: 1fr; }
     }
 
     .content-section { display: none; }
@@ -87,57 +136,72 @@
 </style>
 
 <div class="header-flex">
-    <div style="display:flex; align-items:center; gap:15px;">
-        <h1 style="font-size: 24px; font-weight: 900; font-family: 'Cairo';">المخزون</h1>
-        <button class="tab-btn active" onclick="showTab('products', this)">المنتجات</button>
-        <button class="tab-btn" onclick="showTab('settings', this)">إعدادات المتجر</button>
+    <div style="display:flex; align-items:center; gap:20px;">
+        <h1 class="page-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            Inventory
+        </h1>
+        <div class="tab-group">
+            <button class="tab-btn active" onclick="showTab('products', this)">Products</button>
+            <button class="tab-btn" onclick="showTab('settings', this)">Store Settings</button>
+        </div>
     </div>
-    <a href="/" style="background:#4f46e5; color:#fff; padding:12px 20px; border-radius:10px; text-decoration:none; font-family:'Cairo'; font-weight:700;">+ إضافة منتج</a>
+    <a href="/" class="btn-add">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Product
+    </a>
 </div>
 
-<!-- تبويب المنتجات -->
+<!-- Tab: Products -->
 <div id="tab-products" class="content-section active">
     
     {% if edit_product %}
-    <!-- منطقة التعديل مع المعاينة الحية -->
+    <!-- Edit Mode with Live Preview -->
     <div class="edit-container">
         <div id="livePreview" class="edit-preview-box" style="background: var(--theme-{{ edit_product.theme }});">
             <img id="prevImg" src="/static/uploads/{{ edit_product.processed_image_url }}">
             <div id="prevName" class="p-title">{{ edit_product.name }}</div>
-            <div id="prevPrice" class="p-price">{{ edit_product.price }} ₪</div>
+            <div id="prevPrice" class="p-price">${{ edit_product.price }}</div>
         </div>
 
         <form action="/edit_product/{{ edit_product.id }}" method="POST" class="edit-form-side">
-            <h3 style="font-family:'Cairo'; margin-bottom:10px;">✏️ تعديل بيانات المنتج</h3>
+            <h3 style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit Product
+            </h3>
             
-            <div style="display:grid; grid-template-columns: 1fr 120px; gap:15px;">
-                <div>
-                    <label class="form-label">اسم المنتج</label>
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+                <div class="form-group">
+                    <label class="form-label">Product Name</label>
                     <input type="text" name="name" id="inName" value="{{ edit_product.name }}" class="input-field" oninput="syncEdit()" required>
                 </div>
-                <div>
-                    <label class="form-label">السعر (₪)</label>
+                <div class="form-group">
+                    <label class="form-label">Price ($)</label>
                     <input type="number" step="0.01" name="price" id="inPrice" value="{{ edit_product.price }}" class="input-field" oninput="syncEdit()" required>
                 </div>
             </div>
 
-            <label class="form-label">وصف المنتج</label>
-            <textarea name="description" rows="2" class="input-field">{{ edit_product.description or '' }}</textarea>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" rows="2" class="input-field" placeholder="Short description...">{{ edit_product.description or '' }}</textarea>
+            </div>
 
-            <label class="form-label">اختر الثيم (قوي)</label>
-            <div class="theme-grid">
-                {% for t in ['gold', 'black', 'pastel', 'spring', 'fire', 'ocean'] %}
-                <div class="theme-opt {% if edit_product.theme == t %}active{% endif %}" onclick="updateEditTheme('{{ t }}', this)">
-                    {{ 'ذهبي' if t=='gold' else 'أسود' if t=='black' else 'باستيل' if t=='pastel' else 'ربيعي' if t=='spring' else 'ناري' if t=='fire' else 'بحري' }}
+            <div class="form-group">
+                <label class="form-label">Theme</label>
+                <div class="theme-grid">
+                    {% for t in ['gold', 'black', 'pastel', 'spring', 'fire', 'ocean'] %}
+                    <div class="theme-opt {% if edit_product.theme == t %}active{% endif %}" onclick="updateEditTheme('{{ t }}', this)">
+                        {{ t|capitalize }}
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
             <input type="hidden" name="theme" id="editTheme" value="{{ edit_product.theme }}">
             <input type="hidden" name="template_style" value="{{ edit_product.template_style }}">
 
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button type="submit" class="btn-action" style="background:#1f2937; color:#fff;">حفظ التغييرات</button>
-                <a href="/admin" class="btn-action btn-edit">إلغاء</a>
+            <div style="display:flex; gap:12px; margin-top:10px;">
+                <button type="submit" class="btn-action btn-save">Save Changes</button>
+                <a href="/admin" class="btn-action btn-cancel">Cancel</a>
             </div>
         </form>
     </div>
@@ -149,54 +213,88 @@
             <img src="/static/uploads/{{ product.processed_image_url }}">
             <div class="p-info">
                 <div class="p-name">{{ product.name }}</div>
-                <div class="p-price">{{ product.price }} ₪</div>
+                <div class="p-price">${{ product.price }}</div>
                 <div class="actions">
-                    <a href="/admin?edit={{ product.id }}" class="btn-action btn-edit">تعديل</a>
-                    <a href="/delete_product/{{ product.id }}" class="btn-action btn-del" onclick="return confirm('هل أنت متأكد؟')">حذف</a>
+                    <a href="/admin?edit={{ product.id }}" class="btn-action btn-edit">Edit</a>
+                    <a href="/delete_product/{{ product.id }}" class="btn-action btn-del" onclick="return confirm('Are you sure you want to delete this item?')">Delete</a>
                 </div>
             </div>
         </div>
         {% else %}
-        <div style="grid-column: 1/-1; text-align: center; padding: 80px; color: #9ca3af; font-family: 'Cairo';">
-            لا يوجد منتجات حالياً.
+        <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-muted);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 15px; opacity:0.3;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            <p style="font-size: 16px; font-weight: 500;">No products found.</p>
+            <p style="font-size: 14px; margin-top:5px;">Start by adding your first product.</p>
         </div>
         {% endfor %}
     </div>
 </div>
 
-<!-- تبويب الإعدادات (تم تعريبها بالكامل) -->
+<!-- Tab: Settings -->
 <div id="tab-settings" class="content-section">
-    <form action="/update_store" method="POST" style="max-width: 800px; background:#fff; padding:30px; border-radius:20px; border:1px solid #e5e7eb;">
-        <h3 style="font-family:'Cairo'; margin-bottom:20px;">🏪 إعدادات المتجر</h3>
+    <form action="/update_store" method="POST" class="settings-form">
+        <div class="section-header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Store Profile
+        </div>
         
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-            <div>
-                <label class="form-label">اسم المتجر</label>
+        <div class="grid-2">
+            <div class="form-group">
+                <label class="form-label">Store Name</label>
                 <input type="text" name="name" value="{{ store.name }}" class="input-field">
             </div>
-            <div>
-                <label class="form-label">رابط المتجر (Slug)</label>
+            <div class="form-group">
+                <label class="form-label">Store URL Slug</label>
                 <input type="text" name="slug" value="{{ store.slug }}" class="input-field">
             </div>
         </div>
 
-        <label class="form-label">وصف المتجر (Bio)</label>
-        <textarea name="bio" rows="2" class="input-field">{{ store.bio or '' }}</textarea>
+        <div class="form-group">
+            <label class="form-label">Store Bio</label>
+            <textarea name="bio" rows="2" class="input-field" placeholder="A short description of your business...">{{ store.bio or '' }}</textarea>
+        </div>
 
-        <h3 style="font-family:'Cairo'; margin:20px 0 10px;">🔗 حسابات التواصل</h3>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-            <input type="text" name="whatsapp_phone" value="{{ store.whatsapp_phone or '' }}" placeholder="واتساب" class="input-field">
-            <input type="text" name="display_phone" value="{{ store.display_phone or '' }}" placeholder="رقم الهاتف" class="input-field">
-            <input type="text" name="instagram_handle" value="{{ store.instagram_handle or '' }}" placeholder="انستجرام" class="input-field">
-            <input type="text" name="tiktok_handle" value="{{ store.tiktok_handle or '' }}" placeholder="تيك توك" class="input-field">
-            <input type="text" name="facebook_handle" value="{{ store.facebook_handle or '' }}" placeholder="رابط فيسبوك" class="input-field">
-            <input type="text" name="website" value="{{ store.website or '' }}" placeholder="الموقع الإلكتروني" class="input-field">
+        <div class="section-header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Social & Contact
         </div>
         
-        <label class="form-label" style="margin-top:15px;">العنوان الجغرافي</label>
-        <input type="text" name="address" value="{{ store.address or '' }}" placeholder="مثال: رام الله - شارع الإرسال" class="input-field">
+        <div class="grid-2">
+            <div class="form-group">
+                <label class="form-label">WhatsApp Number</label>
+                <input type="text" name="whatsapp_phone" value="{{ store.whatsapp_phone or '' }}" placeholder="972599xxxxxx" class="input-field">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Display Phone</label>
+                <input type="text" name="display_phone" value="{{ store.display_phone or '' }}" placeholder="+972-599-xxx-xxx" class="input-field">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Instagram Handle</label>
+                <input type="text" name="instagram_handle" value="{{ store.instagram_handle or '' }}" placeholder="username (without @)" class="input-field">
+            </div>
+            <div class="form-group">
+                <label class="form-label">TikTok Handle</label>
+                <input type="text" name="tiktok_handle" value="{{ store.tiktok_handle or '' }}" placeholder="username" class="input-field">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Facebook URL</label>
+                <input type="text" name="facebook_handle" value="{{ store.facebook_handle or '' }}" placeholder="https://..." class="input-field">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Website</label>
+                <input type="text" name="website" value="{{ store.website or '' }}" placeholder="https://..." class="input-field">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Location / Address</label>
+            <input type="text" name="address" value="{{ store.address or '' }}" placeholder="City, Street" class="input-field">
+        </div>
 
-        <button type="submit" class="btn-action" style="background:#4f46e5; color:#fff; width:100%; margin-top:20px; font-size:16px;">💾 حفظ الإعدادات</button>
+        <button type="submit" class="btn-action btn-save" style="width:100%; margin-top:30px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" style="margin-right:8px; vertical-align: middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Settings
+        </button>
     </form>
 </div>
 
@@ -208,10 +306,10 @@
         btn.classList.add('active');
     }
 
-    // مزامنة التعديل الحي
+    // Live Edit Sync
     function syncEdit() {
-        document.getElementById('prevName').innerText = document.getElementById('inName').value;
-        document.getElementById('prevPrice').innerText = document.getElementById('inPrice').value + ' ₪';
+        document.getElementById('prevName').innerText = document.getElementById('inName').value || 'Product Name';
+        document.getElementById('prevPrice').innerText = '$' + (document.getElementById('inPrice').value || '0.00');
     }
 
     function updateEditTheme(theme, el) {
