@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #f3f5f7; /* تحولنا للوضع الفاتح لراحة العين كتطبيقات احترافية */
+            --bg-dark: #f3f5f7;
             --sidebar-bg: #ffffff;
             --card-bg: #ffffff;
             --text-main: #1f2937;
@@ -38,10 +38,12 @@
         /* --- Main Content Area --- */
         .main-content { margin-left: 260px; padding: 40px; min-height: 100vh; }
 
-        /* --- Mobile Bottom Nav --- */
+        /* --- Mobile Bottom Nav (Fixed & Glassmorphism) --- */
         .mobile-nav {
             display: none; position: fixed; bottom: 0; left: 0; right: 0;
-            background: #ffffff; border-top: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border);
             justify-content: space-around; padding: 10px 0 25px 0; z-index: 1000;
         }
         .mob-item { text-decoration: none; color: #9ca3af; text-align: center; font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
@@ -50,9 +52,9 @@
 
         /* --- Responsive Magic --- */
         @media (max-width: 768px) {
-            .sidebar { display: none; } /* إخفاء القائمة الجانبية */
-            .mobile-nav { display: flex; } /* إظهار الشريط السفلي */
-            .main-content { margin-left: 0; padding: 20px; padding-bottom: 100px; } /* تعديل الحواف */
+            .sidebar { display: none; }
+            .mobile-nav { display: flex; }
+            .main-content { margin-left: 0; padding: 20px; padding-bottom: 100px; }
         }
         
         /* PWA Install Banner */
@@ -77,7 +79,6 @@
         <nav class="nav-links">
             <a href="/" class="nav-item {% block nav_dashboard %}{% endblock %}"><span>📊</span> Dashboard</a>
             <a href="/admin" class="nav-item {% block nav_products %}{% endblock %}"><span>📦</span> My Products</a>
-            <a href="/admin" class="nav-item {% block nav_settings %}{% endblock %}"><span>⚙️</span> Settings</a>
             {% if stats.store_slug %}
             <a href="/store/{{ stats.store_slug }}" class="nav-item" target="_blank"><span>🌐</span> View Store</a>
             {% endif %}
@@ -89,20 +90,24 @@
     <nav class="mobile-nav">
         <a href="/" class="mob-item {% block mob_dashboard %}{% endblock %}"><span>🏠</span> Home</a>
         <a href="/admin" class="mob-item {% block mob_products %}{% endblock %}"><span>📦</span> Products</a>
+        {% if stats.store_slug %}
+        <a href="/store/{{ stats.store_slug }}" class="mob-item" target="_blank"><span>🌐</span> Store</a>
+        {% else %}
         <a href="/admin" class="mob-item {% block mob_settings %}{% endblock %}"><span>⚙️</span> Settings</a>
+        {% endif %}
         <a href="/logout" class="mob-item"><span>🚪</span></a>
     </nav>
 
-    <!-- Main Content Injected Here -->
+    <!-- Main Content -->
     <div class="main-content">
         {% block content %}{% endblock %}
     </div>
 
-    <!-- PWA Install Logic -->
+    <!-- Install Banner -->
     <div id="installBanner" class="install-banner">
         <div style="display:flex; align-items:center;">
             <button class="close-btn" onclick="this.parentElement.parentElement.style.display='none'">✕</button>
-            <span>📥 Install RT Studio App</span>
+            <span>📥 Install RT Studio</span>
         </div>
         <button id="installBtn" class="install-btn">Install</button>
     </div>
