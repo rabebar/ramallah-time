@@ -176,6 +176,7 @@
     <div class="controls-panel">
         <form action="/save_product" method="POST" id="mainSaveForm">
             <input type="hidden" name="image_url" value="{{ filename }}">
+            <input type="hidden" name="original_image_url" value="{{ original_filename }}">
             <input type="hidden" name="template_style" id="hiddenStyle" value="elegant">
             <input type="hidden" name="theme" id="hiddenTheme" value="gold">
 
