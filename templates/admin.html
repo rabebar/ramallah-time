@@ -60,7 +60,7 @@
             font-family: 'Inter'; font-size: 14px; outline: none;
             transition: border-color 0.2s;
         }
-        input:focus, textarea:focus { border-color: var(--accent-violet); }
+        input:focus, textarea:focus, select:focus { border-color: var(--accent-violet); }
         input::placeholder, textarea::placeholder { color: var(--text-muted); }
         label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px; margin-top: 14px; }
 
@@ -153,9 +153,26 @@
                 <form action="/edit_product/{{ edit_product.id }}" method="POST">
                     <label>Product Name</label>
                     <input type="text" name="name" value="{{ edit_product.name }}" required>
+                    
                     <label>Price (₪)</label>
                     <input type="text" name="price" value="{{ edit_product.price }}" required>
-                    <div style="display:flex; gap:10px; margin-top:10px;">
+
+                    <!-- ✅ الجديد: حقل الوصف -->
+                    <label>Description</label>
+                    <textarea name="description" rows="2">{{ edit_product.description or '' }}</textarea>
+
+                    <!-- ✅ الجديد: حقل الثيم -->
+                    <label>Theme Color</label>
+                    <select name="theme">
+                        <option value="gold" {% if edit_product.theme == 'gold' %}selected{% endif %}>✨ Royal Gold</option>
+                        <option value="black" {% if edit_product.theme == 'black' %}selected{% endif %}>🖤 Night Black</option>
+                        <option value="pastel" {% if edit_product.theme == 'pastel' %}selected{% endif %}>🦋 Pastel</option>
+                        <option value="spring" {% if edit_product.theme == 'spring' %}selected{% endif %}>🌿 Fresh Spring</option>
+                        <option value="fire" {% if edit_product.theme == 'fire' %}selected{% endif %}>🔥 Fire</option>
+                        <option value="ocean" {% if edit_product.theme == 'ocean' %}selected{% endif %}>🌊 Ocean</option>
+                    </select>
+
+                    <div style="display:flex; gap:10px; margin-top:20px;">
                         <button type="submit" class="btn-save">Update Now</button>
                         <a href="/admin" style="color:#666; font-size:14px; margin-top:10px; text-decoration:none;">Cancel</a>
                     </div>
