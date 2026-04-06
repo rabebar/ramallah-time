@@ -1,33 +1,36 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#0A192F">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="{{ store.name }}">
     <link rel="manifest" href="/static/manifest.json">
     <link rel="apple-touch-icon" href="/static/uploads/rt_logo_192.png">
     <title>{{ store.name }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --white: #FFFFFF;
             --off-white: #FAFAFA;
             --black: #0A0A0A;
+            --navy: #0A192F;
+            --gold: #B8974A;
             --gray-100: #F5F5F5;
             --gray-200: #E8E8E8;
-            --gray-400: #AAAAAA;
             --gray-600: #666666;
-            --gold: #B8974A;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'Jost', sans-serif;
+            font-family: 'IBM Plex Sans Arabic', 'Jost', sans-serif;
             background: var(--white);
             color: var(--black);
             -webkit-font-smoothing: antialiased;
@@ -44,28 +47,18 @@
             display: flex; align-items: center; justify-content: space-between;
         }
 
-        .header-left {
-            display: flex; align-items: center; gap: 8px;
-        }
-
         .store-logo {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 22px; font-weight: 500;
-            letter-spacing: 2px; color: var(--black);
-            text-transform: uppercase;
+            font-size: 22px; font-weight: 700;
+            color: var(--navy);
         }
 
-        .header-right {
-            display: flex; align-items: center; gap: 20px;
-        }
-
+        .header-links { display: flex; align-items: center; gap: 20px; }
         .header-link {
-            font-size: 11px; font-weight: 500;
-            letter-spacing: 1.5px; text-transform: uppercase;
+            font-size: 13px; font-weight: 600;
             color: var(--gray-600); text-decoration: none;
             transition: color 0.2s;
         }
-        .header-link:hover { color: var(--black); }
+        .header-link:hover { color: var(--gold); }
 
         /* ===== HERO ===== */
         .hero {
@@ -75,47 +68,45 @@
             grid-template-columns: 1fr 1fr;
             gap: 40px;
             align-items: end;
+            background: linear-gradient(to bottom, var(--gray-100), var(--white));
         }
 
-        .hero-left .hero-label {
-            font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
-            color: var(--gray-400); margin-bottom: 20px; display: block;
+        .hero-left { text-align: right; }
+        .hero-label {
+            font-size: 12px; letter-spacing: 1px; font-weight: 700;
+            color: var(--gold); margin-bottom: 20px; display: block;
+            background: rgba(184, 151, 74, 0.1); padding: 4px 12px; border-radius: 50px; width: fit-content;
         }
         .hero-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(42px, 6vw, 72px);
-            font-weight: 300; line-height: 1.05;
-            letter-spacing: -1px;
+            font-size: clamp(32px, 5vw, 56px);
+            font-weight: 800; line-height: 1.1;
+            color: var(--navy);
         }
-        .hero-title em { font-style: italic; color: var(--gray-600); }
+        .hero-title em { font-style: normal; color: var(--gold); }
 
-        .hero-right {
-            text-align: right; padding-bottom: 8px;
-        }
+        .hero-right { text-align: left; }
         .hero-subtitle {
-            font-size: 13px; color: var(--gray-400);
-            font-weight: 300; letter-spacing: 1px;
-            line-height: 1.8; max-width: 280px;
-            margin-left: auto;
+            font-size: 15px; color: var(--gray-600);
+            font-weight: 400; line-height: 1.8; max-width: 350px;
+            margin-right: auto;
         }
 
-        /* Contact pills in hero */
         .hero-contact {
             display: flex; flex-wrap: wrap; gap: 8px;
-            justify-content: flex-end; margin-top: 20px;
+            justify-content: flex-start; margin-top: 24px;
         }
         .contact-pill {
             display: inline-flex; align-items: center; gap: 6px;
-            border: 1px solid var(--gray-200); padding: 6px 14px;
-            font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
-            color: var(--gray-600); text-decoration: none;
+            border: 1px solid var(--gray-200); padding: 8px 16px;
+            font-size: 12px; font-weight: 600;
+            color: var(--navy); text-decoration: none;
+            background: var(--white); border-radius: 12px;
             transition: all 0.2s;
         }
-        .contact-pill:hover { border-color: var(--black); color: var(--black); }
+        .contact-pill:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
 
         /* ===== COLLECTION ===== */
         .collection { padding: 60px 40px 120px; }
-
         .collection-header {
             display: flex; align-items: baseline;
             justify-content: space-between;
@@ -123,30 +114,19 @@
             border-bottom: 1px solid var(--gray-200);
             padding-bottom: 20px;
         }
-        .collection-title {
-            font-size: 11px; font-weight: 500;
-            letter-spacing: 3px; text-transform: uppercase;
-            color: var(--gray-400);
-        }
-        .collection-count {
-            font-size: 11px; color: var(--gray-400);
-            letter-spacing: 1px;
-        }
+        .collection-title { font-size: 14px; font-weight: 700; color: var(--navy); }
+        .collection-count { font-size: 13px; color: var(--gray-600); }
 
-        /* Product Grid */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 50px 30px;
+            gap: 40px 24px;
         }
 
         .product-card {
             cursor: pointer;
             animation: fadeUp 0.6s ease both;
         }
-        .product-card:nth-child(2) { animation-delay: 0.1s; }
-        .product-card:nth-child(3) { animation-delay: 0.2s; }
-        .product-card:nth-child(4) { animation-delay: 0.3s; }
 
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(20px); }
@@ -157,456 +137,256 @@
             width: 100%; aspect-ratio: 1/1;
             background: var(--gray-100);
             overflow: hidden; position: relative;
-            margin-bottom: 18px;
+            margin-bottom: 18px; border-radius: 20px;
+            border: 1px solid var(--gray-200);
         }
         .card-image img {
             width: 100%; height: 100%;
-            object-fit: contain; padding: 20px;
+            object-fit: contain; padding: 24px;
             transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-        .product-card:hover .card-image img { transform: scale(1.04); }
+        .product-card:hover .card-image img { transform: scale(1.08); }
 
-        /* Hover CTA */
         .card-cta {
             position: absolute; bottom: 0; left: 0; right: 0;
-            background: rgba(10,10,10,0.85);
+            background: var(--navy);
             color: #fff; text-align: center;
-            padding: 14px; font-size: 11px;
-            letter-spacing: 2px; text-transform: uppercase;
-            font-weight: 500;
+            padding: 12px; font-size: 12px; font-weight: 700;
             transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: transform 0.3s ease;
         }
         .product-card:hover .card-cta { transform: translateY(0); }
 
-        .card-info {}
-        .card-number {
-            font-size: 10px; color: var(--gray-400);
-            letter-spacing: 2px; margin-bottom: 6px;
-        }
-        .card-name {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 19px; font-weight: 400;
-            letter-spacing: 0.3px; margin-bottom: 6px;
-            color: var(--black);
-        }
-        .card-price {
-            font-size: 13px; color: var(--gray-600);
-            font-weight: 300; letter-spacing: 1px;
-        }
-
-        /* Empty state */
-        .empty-state {
-            grid-column: 1/-1; text-align: center;
-            padding: 100px 20px;
-        }
-        .empty-state h3 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 28px; font-weight: 300;
-            margin-bottom: 12px; color: var(--gray-400);
-        }
-        .empty-state p { font-size: 13px; color: var(--gray-400); }
-
-        /* ===== FOOTER ===== */
-        .site-footer {
-            background: var(--black); color: rgba(255,255,255,0.4);
-            padding: 50px 40px;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .footer-brand {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 18px; font-weight: 300;
-            letter-spacing: 3px; text-transform: uppercase;
-            color: rgba(255,255,255,0.8);
-        }
-        .footer-copy { font-size: 11px; letter-spacing: 1px; }
+        .card-name { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+        .card-price { font-size: 15px; color: var(--gold); font-weight: 600; }
 
         /* ===== MODAL ===== */
         .modal-overlay {
             position: fixed; inset: 0;
-            background: rgba(255,255,255,0.96);
-            backdrop-filter: blur(20px);
+            background: rgba(10, 25, 47, 0.85);
+            backdrop-filter: blur(12px);
             display: none; align-items: center; justify-content: center;
             z-index: 9999; padding: 20px;
-            animation: fadeIn 0.2s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .modal-card {
-            background: var(--white); width: 100%; max-width: 440px;
-            border: 1px solid var(--gray-200);
+            background: var(--white); width: 100%; max-width: 480px;
+            border-radius: 28px; overflow: hidden;
             position: relative;
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        @keyframes slideUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to   { transform: translateY(0); opacity: 1; }
-        }
+        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .modal-close {
-            position: absolute; top: 16px; right: 16px;
-            width: 36px; height: 36px;
-            background: var(--gray-100); border: none;
+            position: absolute; top: 20px; left: 20px;
+            width: 40px; height: 40px;
+            background: rgba(255,255,255,0.9); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 10; transition: background 0.2s;
+            cursor: pointer; z-index: 10; border: 1px solid var(--gray-200);
         }
-        .modal-close:hover { background: var(--gray-200); }
 
-        /* Modal canvas — themed like the product */
         .modal-canvas {
             width: 100%; aspect-ratio: 1/1;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             position: relative; overflow: hidden;
-            transition: background 0.3s ease;
         }
 
-        /* Theme backgrounds */
-        .theme-gold   { background: linear-gradient(135deg, #fdfbf7, #e2d9ca); }
-        .theme-black  { background: linear-gradient(135deg, #1a1a1a, #434343); }
-        .theme-pastel { background: linear-gradient(135deg, #fdf2f8, #ebf5fb); }
-        .theme-spring { background: linear-gradient(135deg, #f0fff4, #c6f6d5); }
-        .theme-fire   { background: linear-gradient(135deg, #fff5f5, #fed7d7); }
-        .theme-ocean  { background: linear-gradient(135deg, #ebf8ff, #bee3f8); }
+        /* Themes */
+        .theme-gold   { background: linear-gradient(135deg, #F2994A, #F2C94C); }
+        .theme-black  { background: linear-gradient(135deg, #0F2027, #203A43); }
+        .theme-pastel { background: linear-gradient(135deg, #667EEA, #764BA2); }
+        .theme-spring { background: linear-gradient(135deg, #11998E, #38EF7D); }
+        .theme-fire   { background: linear-gradient(135deg, #FF512F, #DD2476); }
+        .theme-ocean  { background: linear-gradient(135deg, #2193B0, #6DD5ED); }
 
         .modal-canvas img {
-            max-width: 78%; max-height: 68%;
+            max-width: 80%; max-height: 70%;
             object-fit: contain; z-index: 2;
-            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.15));
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.2));
         }
 
-        /* Elegant */
-        .modal-canvas.style-elegant { flex-direction: column; }
-        .modal-canvas.style-elegant .m-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; margin-top: 18px; letter-spacing: 1px; }
-        .modal-canvas.style-elegant .m-line { width: 40px; height: 2px; margin: 10px 0; }
-        .modal-canvas.style-elegant .m-price { font-size: 14px; font-weight: 400; letter-spacing: 2px; }
+        /* Styles inside Modal */
+        .m-name { font-size: 24px; font-weight: 800; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .m-price { font-size: 18px; font-weight: 600; color: #fff; opacity: 0.9; }
+        .m-line { width: 40px; height: 3px; background: #fff; margin: 12px 0; border-radius: 2px; }
 
-        /* Modern */
-        .modal-canvas.style-modern .m-name { position: absolute; top: 20px; right: 20px; font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; text-align: right; max-width: 60%; background: rgba(255,255,255,0.88); padding: 8px 12px; letter-spacing: 0.5px; }
-        .modal-canvas.style-modern .m-line { display: none; }
-        .modal-canvas.style-modern .m-price { position: absolute; bottom: 20px; left: 20px; background: #000; color: #fff; font-size: 12px; font-weight: 500; letter-spacing: 2px; padding: 8px 18px; }
-
-        /* Minimal */
-        .modal-canvas.style-minimal { background: #111 !important; justify-content: flex-end; }
-        .modal-canvas.style-minimal img { position: absolute; top: 10%; max-height: 62%; opacity: 0.9; }
-        .modal-canvas.style-minimal .glass-bar { position: absolute; bottom: 0; width: 100%; background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1); padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
-        .modal-canvas.style-minimal .m-name { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; color: #fff; letter-spacing: 1px; }
-        .modal-canvas.style-minimal .m-line { display: none; }
-        .modal-canvas.style-minimal .m-price { font-size: 14px; color: rgba(255,255,255,0.7); font-weight: 300; letter-spacing: 1px; }
-
-        /* Bold */
-        .modal-canvas.style-bold { flex-direction: row; }
-        .modal-canvas.style-bold img { width: 58%; max-height: 100%; object-fit: contain; z-index: 2; margin-right: -8%; }
-        .modal-canvas.style-bold .side-panel { background: #0a0a0a; height: 100%; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 24px 20px; text-align: right; z-index: 3; }
-        .modal-canvas.style-bold .m-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: #fff; letter-spacing: 1px; margin-bottom: 12px; }
-        .modal-canvas.style-bold .m-line { width: 30px; height: 1px; background: rgba(255,255,255,0.3); margin: 0 0 12px auto; }
-        .modal-canvas.style-bold .m-price { background: #fff; color: #000; font-size: 12px; font-weight: 600; padding: 6px 12px; letter-spacing: 1px; display: inline-block; }
-
-        /* Modal Bottom */
-        .modal-bottom { padding: 24px 28px; }
-        .modal-desc {
-            font-size: 12px; color: var(--gray-600);
-            line-height: 1.8; margin-bottom: 20px;
-            font-family: 'Jost'; border-left: 2px solid var(--gray-200);
-            padding-left: 12px;
-        }
+        .modal-bottom { padding: 32px; text-align: center; }
+        .modal-desc { font-size: 14px; color: var(--gray-600); margin-bottom: 24px; line-height: 1.6; }
+        
         .wa-btn {
-            display: block; width: 100%; padding: 16px;
-            background: var(--black); color: #fff;
-            text-align: center; text-decoration: none;
-            font-size: 11px; font-weight: 600;
-            letter-spacing: 2px; text-transform: uppercase;
-            transition: background 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; padding: 16px; background: #25D366; color: #fff;
+            text-decoration: none; font-size: 16px; font-weight: 700;
+            border-radius: 16px; transition: 0.3s;
         }
-        .wa-btn:hover { background: #333; }
+        .wa-btn:hover { background: #128C7E; transform: scale(1.02); }
 
-        /* ===== PWA INSTALL ===== */
-        /* Android */
+        /* ===== PWA BANNERS ===== */
         .install-banner {
-            position: fixed; bottom: 24px; left: 50%;
-            transform: translateX(-50%);
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
             width: calc(100% - 40px); max-width: 400px;
-            background: var(--black); color: #fff;
-            padding: 16px 20px; z-index: 9998;
-            display: none; align-items: center; justify-content: space-between;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            background: var(--navy); color: #fff; padding: 16px 20px;
+            border-radius: 20px; z-index: 9998; display: none;
+            align-items: center; justify-content: space-between;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
-        .install-banner-text { font-size: 13px; font-weight: 400; }
-        .install-banner-text span { display: block; font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px; letter-spacing: 1px; }
-        .install-banner-btns { display: flex; gap: 10px; }
-        .btn-install { background: #fff; color: #000; border: none; padding: 8px 16px; font-size: 11px; font-weight: 600; letter-spacing: 1px; cursor: pointer; }
-        .btn-dismiss { background: transparent; color: rgba(255,255,255,0.5); border: none; font-size: 18px; cursor: pointer; }
-
-        /* iOS Instructions */
-        .ios-banner {
-            position: fixed; bottom: 24px; left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px); max-width: 400px;
-            background: var(--black); color: #fff;
-            padding: 20px; z-index: 9998;
-            display: none;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        .ios-banner p { font-size: 12px; line-height: 1.7; color: rgba(255,255,255,0.8); }
-        .ios-banner strong { color: #fff; }
-        .ios-close { float: right; background: none; border: none; color: rgba(255,255,255,0.5); font-size: 18px; cursor: pointer; margin-left: 10px; }
+        .btn-install { background: var(--gold); color: var(--navy); border: none; padding: 8px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .site-header { padding: 0 20px; }
-            .hero { grid-template-columns: 1fr; padding: 50px 20px 40px; gap: 20px; }
-            .hero-right { text-align: left; }
-            .hero-contact { justify-content: flex-start; }
-            .hero-subtitle { margin-left: 0; }
-            .collection { padding: 40px 20px 80px; }
-            .products-grid { gap: 30px 16px; grid-template-columns: repeat(2, 1fr); }
-            .card-name { font-size: 16px; }
-            .site-footer { flex-direction: column; gap: 12px; text-align: center; padding: 40px 20px; }
+            .hero { grid-template-columns: 1fr; padding: 50px 20px 40px; text-align: center; }
+            .hero-left, .hero-right { text-align: center; }
+            .hero-label { margin: 0 auto 20px; }
+            .hero-subtitle { margin: 0 auto; }
+            .hero-contact { justify-content: center; }
+            .products-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+            .collection { padding: 40px 20px; }
         }
     </style>
 </head>
 <body>
 
-<!-- Header -->
-<header class="site-header">
-    <div class="header-left">
-        <span class="store-logo">{{ store.name }}</span>
-    </div>
-    <div class="header-right">
-        {% if store.whatsapp_phone %}
-        <a href="https://wa.me/{{ store.whatsapp_phone }}" class="header-link" target="_blank">Contact</a>
-        {% endif %}
-        {% if store.instagram_handle %}
-        <a href="https://instagram.com/{{ store.instagram_handle }}" class="header-link" target="_blank">Instagram</a>
-        {% endif %}
-        <button id="headerInstallBtn" class="header-link" style="background:none; border:none; cursor:pointer; display:none;">
-            ↓ Install App
-        </button>
-    </div>
-</header>
-
-<!-- Hero -->
-<section class="hero">
-    <div class="hero-left">
-        <span class="hero-label">{{ store.bio or 'Official Collection' }}</span>
-        <h1 class="hero-title">New<br><em>Arrivals</em></h1>
-    </div>
-    <div class="hero-right">
-        <p class="hero-subtitle">Discover the latest additions to our collection</p>
-        <div class="hero-contact">
-            {% if store.display_phone %}
-            <a href="tel:{{ store.display_phone }}" class="contact-pill">📞 {{ store.display_phone }}</a>
-            {% endif %}
-            {% if store.whatsapp_phone %}
-            <a href="https://wa.me/{{ store.whatsapp_phone }}" class="contact-pill" target="_blank">💬 WhatsApp</a>
-            {% endif %}
-            {% if store.tiktok_handle %}
-            <a href="https://tiktok.com/@{{ store.tiktok_handle }}" class="contact-pill" target="_blank">🎵 TikTok</a>
-            {% endif %}
-            {% if store.facebook_handle %}
-            <a href="https://facebook.com/{{ store.facebook_handle }}" class="contact-pill" target="_blank">👥 Facebook</a>
-            {% endif %}
-            {% if store.address %}
-            <a href="https://maps.google.com/?q={{ store.address }}" class="contact-pill" target="_blank">📍 {{ store.address }}</a>
-            {% endif %}
-            {% if store.website %}
-            <a href="{{ store.website }}" class="contact-pill" target="_blank">🌐 Website</a>
-            {% endif %}
+    <header class="site-header">
+        <div class="store-logo">{{ store.name }}</div>
+        <div class="header-links">
+            <a href="#" class="header-link">الرئيسية</a>
+            <button id="headerInstallBtn" class="header-link" style="background:none; border:none; cursor:pointer; display:none;">تثبيت التطبيق</button>
         </div>
-    </div>
-</section>
+    </header>
 
-<!-- Collection -->
-<section class="collection">
-    <div class="collection-header">
-        <span class="collection-title">All Products</span>
-        <span class="collection-count">{{ products|length }} pieces</span>
-    </div>
-
-    <div class="products-grid">
-        {% for product in products %}
-        {% set current_theme = (product.theme|lower if product.theme else 'gold') %}
-        {% set current_style = (product.template_style|lower if product.template_style else 'elegant') %}
-
-        <div class="product-card"
-             onclick='openModal({{ product.name|tojson|safe }}, {{ product.price|tojson|safe }}, "/static/uploads/{{ product.processed_image_url }}", {{ (product.description or "")|tojson|safe }}, "{{ current_theme }}", "{{ current_style }}")'>
-            <div class="card-image">
-                <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" loading="lazy">
-                <div class="card-cta">View Details</div>
-            </div>
-            <div class="card-info">
-                <div class="card-number">{{ '%02d' % loop.index }}</div>
-                <h3 class="card-name">{{ product.name }}</h3>
-                <div class="card-price">₪ {{ product.price }}</div>
+    <section class="hero">
+        <div class="hero-left">
+            <span class="hero-label">{{ store.bio or 'تشكيلة حصرية' }}</span>
+            <h1 class="hero-title">أحدث<br><em>التشكيلات</em></h1>
+        </div>
+        <div class="hero-right">
+            <p class="hero-subtitle">اكتشف مجموعتنا الجديدة من الساعات المستوردة التي تجمع بين الفخامة والدقة.</p>
+            <div class="hero-contact">
+                {% if store.display_phone %}
+                <a href="tel:{{ store.display_phone }}" class="contact-pill">📞 {{ store.display_phone }}</a>
+                {% endif %}
+                {% if store.whatsapp_phone %}
+                <a href="https://wa.me/{{ store.whatsapp_phone }}" class="contact-pill" target="_blank">💬 واتساب</a>
+                {% endif %}
+                {% if store.instagram_handle %}
+                <a href="https://instagram.com/{{ store.instagram_handle }}" class="contact-pill" target="_blank">📸 إنستغرام</a>
+                {% endif %}
+                {% if store.address %}
+                <a href="https://maps.google.com/?q={{ store.address }}" class="contact-pill" target="_blank">📍 {{ store.address }}</a>
+                {% endif %}
             </div>
         </div>
-        {% else %}
-        <div class="empty-state">
-            <h3>No pieces yet</h3>
-            <p>Check back soon for new arrivals.</p>
-        </div>
-        {% endfor %}
-    </div>
-</section>
+    </section>
 
-<!-- Footer -->
-<footer class="site-footer">
-    <span class="footer-brand">{{ store.name }}</span>
-    <span class="footer-copy">Powered by RT Studio</span>
-</footer>
-
-<!-- Modal -->
-<div id="productModal" class="modal-overlay" onclick="closeModal(event)">
-    <div class="modal-card" onclick="event.stopPropagation()">
-        <button class="modal-close" onclick="closeModal()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M1 1L13 13M13 1L1 13" stroke="#000" stroke-width="1.5"/>
-            </svg>
-        </button>
-
-        <div id="modalCanvas" class="modal-canvas theme-gold style-elegant">
-            <img id="mImg" src="" alt="">
-            <div id="mContent"></div>
+    <section class="collection">
+        <div class="collection-header">
+            <span class="collection-title">جميع المنتجات</span>
+            <span class="collection-count">{{ products|length }} قطعة</span>
         </div>
 
-        <div class="modal-bottom">
-            <div id="mDesc" class="modal-desc" style="display:none;"></div>
-            <a id="mWa" href="#" class="wa-btn" target="_blank">Order via WhatsApp</a>
+        <div class="products-grid">
+            {% for product in products %}
+            {% set current_theme = (product.theme|lower if product.theme else 'gold') %}
+            {% set current_style = (product.template_style|lower if product.template_style else 'elegant') %}
+
+            <div class="product-card" 
+                 onclick='openModal({{ product.name|tojson|safe }}, {{ product.price|tojson|safe }}, "/static/uploads/{{ product.processed_image_url }}", {{ (product.description or "")|tojson|safe }}, "{{ current_theme }}", "{{ current_style }}")'>
+                <div class="card-image">
+                    <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" loading="lazy">
+                    <div class="card-cta">عرض التفاصيل</div>
+                </div>
+                <div class="card-info">
+                    <h3 class="card-name">{{ product.name }}</h3>
+                    <div class="card-price">₪ {{ product.price }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 100px 20px; color: var(--gray-600);">
+                <h3>لا توجد منتجات حالياً</h3>
+                <p>يرجى العودة لاحقاً لمشاهدة التحديثات.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+
+            <div id="modalCanvas" class="modal-canvas theme-gold">
+                <img id="mImg" src="" alt="">
+                <div id="mContent" style="text-align: center; z-index: 3;"></div>
+            </div>
+
+            <div class="modal-bottom">
+                <div id="mDesc" class="modal-desc"></div>
+                <a id="mWa" href="#" class="wa-btn" target="_blank">
+                    اطلب الآن عبر واتساب
+                </a>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- PWA: Android Banner -->
-<div id="androidBanner" class="install-banner">
-    <div class="install-banner-text">
-        Install RT Studio
-        <span>Add to your home screen</span>
+    <!-- PWA Banners -->
+    <div id="androidBanner" class="install-banner">
+        <div>تثبيت تطبيق {{ store.name }}</div>
+        <button id="androidInstallBtn" class="btn-install">تثبيت</button>
     </div>
-    <div class="install-banner-btns">
-        <button class="btn-dismiss" onclick="document.getElementById('androidBanner').style.display='none'">✕</button>
-        <button id="androidInstallBtn" class="btn-install">Install</button>
-    </div>
-</div>
 
-<!-- PWA: iOS Banner -->
-<div id="iosBanner" class="ios-banner">
-    <button class="ios-close" onclick="document.getElementById('iosBanner').style.display='none'">✕</button>
-    <p>
-        To install this app on iPhone:<br>
-        Tap <strong>Share ↑</strong> in Safari, then tap<br>
-        <strong>"Add to Home Screen"</strong>
-    </p>
-</div>
+    <script>
+        function openModal(name, price, img, desc, theme, style) {
+            const canvas  = document.getElementById('modalCanvas');
+            const content = document.getElementById('mContent');
+            const mDesc   = document.getElementById('mDesc');
 
-<!-- Line colors per theme -->
-<style>
-    .theme-gold   { --line-color: #b5935f; --text-color: #2c2c2c; }
-    .theme-black  { --line-color: #ffffff; --text-color: #ffffff; }
-    .theme-pastel { --line-color: #a29bfe; --text-color: #2c3e50; }
-    .theme-spring { --line-color: #48bb78; --text-color: #1a3c2a; }
-    .theme-fire   { --line-color: #fc8181; --text-color: #742a2a; }
-    .theme-ocean  { --line-color: #63b3ed; --text-color: #1a365d; }
-</style>
+            document.getElementById('mImg').src = img;
+            canvas.className = 'modal-canvas theme-' + theme;
 
-<script>
-    // ===== MODAL =====
-    function openModal(name, price, img, desc, theme, style) {
-        const canvas  = document.getElementById('modalCanvas');
-        const content = document.getElementById('mContent');
-        const mDesc   = document.getElementById('mDesc');
-
-        document.getElementById('mImg').src = img;
-        canvas.className = 'modal-canvas theme-' + theme + ' style-' + style;
-
-        // Build content per style
-        if (style === 'elegant') {
-            content.innerHTML = `
-                <div class="m-name" style="color:var(--text-color)">${name}</div>
-                <div class="m-line" style="background:var(--line-color)"></div>
-                <div class="m-price" style="color:var(--text-color)">${price} ₪</div>`;
-        } else if (style === 'modern') {
+            // Build content based on style
             content.innerHTML = `
                 <div class="m-name">${name}</div>
-                <div class="m-price">${price} ₪</div>`;
-        } else if (style === 'minimal') {
-            content.innerHTML = `
-                <div class="glass-bar">
-                    <div class="m-name">${name}</div>
-                    <div class="m-price">${price} ₪</div>
-                </div>`;
-        } else if (style === 'bold') {
-            content.innerHTML = `
-                <div class="side-panel">
-                    <div class="m-name">${name}</div>
-                    <div class="m-line"></div>
-                    <div class="m-price">${price} ₪</div>
-                </div>`;
+                <div class="m-line"></div>
+                <div class="m-price">₪ ${price}</div>
+            `;
+
+            mDesc.innerText = desc || "ساعة فاخرة من تشكيلتنا الجديدة، متوفرة الآن للطلب.";
+            
+            // WhatsApp Logic
+            let phone = "{{ store.whatsapp_phone or store.display_phone or '' }}".replace(/\s+/g, '');
+            if (phone.startsWith('0')) phone = '970' + phone.substring(1);
+            const msg = encodeURIComponent(`مرحباً، أنا مهتم بطلب: ${name} - السعر: ₪${price}`);
+            document.getElementById('mWa').href = `https://wa.me/${phone}?text=${msg}`;
+
+            document.getElementById('productModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
 
-        // Description
-        if (desc && desc.trim()) {
-            mDesc.innerText = desc;
-            mDesc.style.display = 'block';
-        } else {
-            mDesc.style.display = 'none';
+        function closeModal(e) {
+            if (!e || e.target.id === 'productModal' || e.target.className === 'modal-close') {
+                document.getElementById('productModal').style.display = 'none';
+                document.body.style.overflow = '';
+            }
         }
 
-        // WhatsApp
-        let phone = "{{ store.whatsapp_phone or store.display_phone or '' }}".replace(/\s+/g, '');
-        if (phone.startsWith('0')) phone = '970' + phone.substring(1);
-        const msg = encodeURIComponent(`Hello, I'm interested in: ${name} — Price: ₪${price}${desc ? '\nNotes: ' + desc : ''}`);
-        document.getElementById('mWa').href = `https://wa.me/${phone}?text=${msg}`;
+        // PWA Logic
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('androidBanner').style.display = 'flex';
+            document.getElementById('headerInstallBtn').style.display = 'block';
+        });
 
-        document.getElementById('productModal').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal(e) {
-        if (!e || e.target.id === 'productModal' || e.target.closest('.modal-close')) {
-            document.getElementById('productModal').style.display = 'none';
-            document.body.style.overflow = '';
-        }
-    }
-
-    // ===== PWA =====
-    let deferredPrompt = null;
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-    const isInStandaloneMode = window.navigator.standalone === true;
-
-    // Android
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('androidBanner').style.display = 'flex';
-        document.getElementById('headerInstallBtn').style.display = 'inline-block';
-    });
-
-    document.getElementById('androidInstallBtn').addEventListener('click', () => {
-        document.getElementById('androidBanner').style.display = 'none';
-        if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
-    });
-
-    document.getElementById('headerInstallBtn').addEventListener('click', () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt(); deferredPrompt = null;
-        } else if (isIOS && !isInStandaloneMode) {
-            document.getElementById('iosBanner').style.display = 'block';
-        }
-    });
-
-    // iOS — show after 3 seconds if not installed
-    if (isIOS && !isInStandaloneMode) {
-        document.getElementById('headerInstallBtn').style.display = 'inline-block';
-        setTimeout(() => {
-            document.getElementById('iosBanner').style.display = 'block';
-        }, 3000);
-    }
-
-    // Hide install prompt after app installed
-    window.addEventListener('appinstalled', () => {
-        document.getElementById('androidBanner').style.display = 'none';
-        document.getElementById('headerInstallBtn').style.display = 'none';
-    });
-</script>
+        document.getElementById('androidInstallBtn').addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt = null;
+                document.getElementById('androidBanner').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
