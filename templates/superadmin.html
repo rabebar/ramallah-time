@@ -4,67 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الإدارة العليا | RT Studio System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --bg-app: #f3f5f7;
-            --sidebar-bg: #ffffff;
-            --card-bg: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --accent: #4f46e5;
-            --border: #e5e7eb;
+            --navy: #0A192F;
+            --navy-light: #112240;
+            --gold: #B8974A;
+            --white: #FFFFFF;
+            --gray-bg: #F8FAFC;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --border: rgba(0, 0, 0, 0.06);
+            --sidebar-w: 280px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Cairo', sans-serif; }
-        body { background-color: var(--bg-app); color: var(--text-main); display: flex; min-height: 100vh; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; }
+        body { background-color: var(--gray-bg); color: var(--text-main); display: flex; min-height: 100vh; }
 
         /* Sidebar */
-        .sidebar { width: 280px; background: var(--sidebar-bg); border-left: 1px solid var(--border); padding: 30px 20px; height: 100vh; position: sticky; top: 0; flex-shrink: 0; }
-        .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
-        .logo-box { width: 40px; height: 40px; background: var(--accent); color: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; }
-        .nav-item { padding: 14px 18px; border-radius: 12px; margin-bottom: 8px; color: var(--text-muted); display: flex; align-items: center; gap: 15px; text-decoration: none; font-weight: 700; transition: 0.2s; font-size: 14px; }
-        .nav-item.active { background: #f5f3ff; color: var(--accent); }
-        .nav-item:hover:not(.active) { background: #f9fafb; color: var(--text-main); }
+        .sidebar { 
+            width: var(--sidebar-w); 
+            background: var(--navy); 
+            padding: 40px 24px; 
+            height: 100vh; 
+            position: fixed; 
+            right: 0; top: 0; 
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 48px; }
+        .logo-box { 
+            width: 40px; height: 40px; 
+            background: var(--gold); 
+            color: var(--navy); 
+            border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: 800; font-size: 20px;
+            box-shadow: 0 4px 12px rgba(184, 151, 74, 0.3);
+        }
+        .logo-text { color: var(--white); font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+
+        .nav-menu { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .nav-item { 
+            padding: 14px 18px; 
+            border-radius: 14px; 
+            color: rgba(255,255,255,0.6); 
+            display: flex; align-items: center; gap: 14px; 
+            text-decoration: none; 
+            font-weight: 600; 
+            transition: var(--transition); 
+            font-size: 14px; 
+        }
+        .nav-item i { width: 20px; height: 20px; }
+        .nav-item.active { background: var(--gold); color: var(--navy); box-shadow: 0 4px 15px rgba(184, 151, 74, 0.2); }
+        .nav-item:hover:not(.active) { background: rgba(255,255,255,0.05); color: var(--white); }
+
+        .logout-btn { margin-top: auto; color: #f87171 !important; }
+        .logout-btn:hover { background: rgba(239, 68, 68, 0.1) !important; }
 
         /* Main Viewport */
-        .main-viewport { flex-grow: 1; padding: 40px; overflow-y: auto; }
-        .header-area { margin-bottom: 40px; }
-        .header-area h1 { font-size: 28px; font-weight: 900; color: #111; font-family: 'Cairo'; }
+        .main-viewport { flex-grow: 1; margin-right: var(--sidebar-w); padding: 48px; width: 100%; }
+        
+        .header-area { margin-bottom: 48px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .header-area h1 { font-size: 32px; font-weight: 800; color: var(--navy); letter-spacing: -1px; }
+        .header-area p { color: var(--text-muted); font-size: 15px; margin-top: 4px; }
 
         /* Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
-        .stat-card { background: var(--card-bg); border: 1px solid var(--border); padding: 25px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-        .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 10px; font-family: 'Cairo'; }
-        .stat-value { font-size: 32px; font-weight: 900; color: var(--text-main); font-family: 'Inter'; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 48px; }
+        .stat-card { 
+            background: var(--white); 
+            border: 1px solid var(--border); 
+            padding: 32px; 
+            border-radius: 24px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            transition: var(--transition);
+        }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.05); }
+        .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 36px; font-weight: 800; color: var(--navy); }
 
         /* Table Styles */
-        .table-container { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
-        .table-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; font-family: 'Cairo'; }
+        .table-container { 
+            background: var(--white); 
+            border: 1px solid var(--border); 
+            border-radius: 28px; 
+            padding: 32px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02); 
+        }
+        .table-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; color: var(--navy); }
+        
         table { width: 100%; border-collapse: collapse; text-align: right; }
-        th { padding: 15px; color: var(--text-muted); font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--border); font-family: 'Cairo'; }
-        td { padding: 18px 15px; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+        th { padding: 16px; color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--gray-bg); }
+        td { padding: 20px 16px; border-bottom: 1px solid var(--gray-bg); font-size: 14px; color: var(--text-main); }
 
-        .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; font-family: 'Cairo'; }
-        .badge-active { background: #ecfdf5; color: var(--success); }
-        .badge-pending { background: #fffbeb; color: var(--warning); }
-        .badge-store { background: #f3f4f6; color: #4b5563; font-size: 12px; }
+        .badge { padding: 6px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; }
+        .badge-active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge-store { background: var(--gray-bg); color: var(--navy); font-weight: 600; }
 
         /* Actions */
-        .btn-group { display: flex; gap: 8px; }
-        .btn-sm { padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; text-decoration: none; font-family: 'Cairo'; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-group { display: flex; gap: 10px; align-items: center; }
+        .btn-sm { 
+            padding: 10px 16px; border-radius: 12px; 
+            font-size: 12px; font-weight: 700; 
+            text-decoration: none; border: none; 
+            cursor: pointer; transition: all 0.2s; 
+            display: inline-flex; align-items: center; gap: 6px;
+        }
         .btn-approve { background: var(--success); color: #fff; }
-        .btn-reject { background: #fee2e2; color: var(--danger); }
-        .btn-refill { background: var(--accent); color: #fff; }
+        .btn-approve:hover { background: #059669; transform: translateY(-2px); }
+        
+        .btn-reject { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .btn-reject:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
+        
+        .btn-refill { background: var(--navy); color: #fff; }
+        .btn-refill:hover { background: var(--navy-light); transform: translateY(-2px); }
 
-        .refill-input { width: 60px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; text-align: center; font-weight: 700; margin-left: 5px; }
+        .refill-input { 
+            width: 70px; padding: 10px; 
+            border: 1px solid var(--border); 
+            border-radius: 12px; text-align: center; 
+            font-weight: 700; background: var(--gray-bg);
+            transition: all 0.2s;
+        }
+        .refill-input:focus { border-color: var(--gold); outline: none; background: #fff; }
 
         @media (max-width: 1024px) {
-            .sidebar { width: 80px; padding: 20px 10px; }
-            .sidebar h2, .sidebar span:last-child { display: none; }
+            .sidebar { width: 80px; padding: 30px 10px; }
+            .logo-text, .nav-item span { display: none; }
+            .nav-item { justify-content: center; padding: 14px; }
+            .main-viewport { margin-right: 80px; padding: 32px; }
             .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
@@ -72,23 +149,38 @@
 <body>
 
     <!-- Sidebar -->
-    <div class="sidebar">
+    <aside class="sidebar">
         <div class="logo-area">
             <div class="logo-box">RT</div>
-            <h2 style="font-size: 18px; font-weight: 900; font-family: 'Cairo'; color: #111;">المدير العام</h2>
+            <span class="logo-text">RT System</span>
         </div>
-        <nav>
-            <a href="/superadmin" class="nav-item active"><span>📊</span> <span>الإحصائيات</span></a>
-            <a href="/" class="nav-item"><span>🏠</span> <span>عرض الموقع</span></a>
-            <a href="/logout" class="nav-item" style="margin-top: 50px; color: var(--danger);"><span>🚪</span> <span>تسجيل الخروج</span></a>
+        <nav class="nav-menu">
+            <a href="/superadmin" class="nav-item active">
+                <i data-lucide="bar-chart-3"></i>
+                <span>الإحصائيات</span>
+            </a>
+            <a href="/" class="nav-item">
+                <i data-lucide="eye"></i>
+                <span>عرض الموقع</span>
+            </a>
+            <a href="/logout" class="nav-item logout-btn">
+                <i data-lucide="log-out"></i>
+                <span>تسجيل الخروج</span>
+            </a>
         </nav>
-    </div>
+    </aside>
 
     <!-- Main View -->
-    <div class="main-viewport">
+    <main class="main-viewport">
         <div class="header-area">
-            <h1>لوحة تحكم النظام</h1>
-            <p style="color: var(--text-muted); font-size: 14px; margin-top: 5px; font-family: 'Cairo';">مراقبة أداء منصة RT Studio وإدارة التجار</p>
+            <div>
+                <h1>لوحة تحكم النظام</h1>
+                <p>مراقبة أداء منصة RT Studio وإدارة التجار</p>
+            </div>
+            <div style="color: var(--text-muted); font-size: 14px; font-weight: 600;">
+                <i data-lucide="calendar" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;"></i>
+                {{ current_date }}
+            </div>
         </div>
 
         <!-- Global Stats -->
@@ -124,7 +216,7 @@
                 <tbody>
                     {% for user in users %}
                     <tr>
-                        <td style="font-weight: 700; font-family: 'Inter';">{{ user.phone }}</td>
+                        <td style="font-weight: 700;">{{ user.phone }}</td>
                         <td>
                             {% if user.store_name %}
                             <span class="badge badge-store">{{ user.store_name }}</span>
@@ -134,23 +226,32 @@
                         </td>
                         <td>
                             {% if user.status == 'active' %}
-                            <span class="badge badge-active">● نشط</span>
+                            <span class="badge badge-active">نشط</span>
                             {% else %}
-                            <span class="badge badge-pending">● معلق</span>
+                            <span class="badge badge-pending">معلق</span>
                             {% endif %}
                         </td>
-                        <td style="font-weight: 800; color: var(--accent);">{{ user.credits }} صورة</td>
+                        <td style="font-weight: 700; color: var(--gold);">{{ user.credits }} صورة</td>
                         <td style="font-size: 12px; color: var(--text-muted);">{{ user.created_at }}</td>
                         <td>
                             <div class="btn-group">
                                 {% if user.status == 'pending' %}
-                                    <a href="/superadmin/approve/{{ user.id }}" class="btn-sm btn-approve">تفعيل الحساب</a>
-                                    <a href="/superadmin/reject/{{ user.id }}" class="btn-sm btn-reject" onclick="return confirm('هل أنت متأكد من رفض وحذف هذا الطلب؟')">رفض</a>
+                                    <a href="/superadmin/approve/{{ user.id }}" class="btn-sm btn-approve">
+                                        <i data-lucide="check"></i>
+                                        تفعيل
+                                    </a>
+                                    <a href="/superadmin/reject/{{ user.id }}" class="btn-sm btn-reject" onclick="return confirm('هل أنت متأكد من رفض وحذف هذا الطلب؟')">
+                                        <i data-lucide="x"></i>
+                                        رفض
+                                    </a>
                                 {% else %}
-                                    <form action="/superadmin/add_credits" method="POST" style="display:flex; align-items:center;">
+                                    <form action="/superadmin/add_credits" method="POST" style="display:flex; align-items:center; gap: 8px;">
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
                                         <input type="number" name="amount" value="10" class="refill-input" required>
-                                        <button type="submit" class="btn-sm btn-refill">شحن رصيد</button>
+                                        <button type="submit" class="btn-sm btn-refill">
+                                            <i data-lucide="plus"></i>
+                                            شحن
+                                        </button>
                                     </form>
                                 {% endif %}
                             </div>
@@ -158,13 +259,19 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" style="text-align:center; padding:60px; color:#9ca3af; font-family: 'Cairo';">لا يوجد تجار مسجلين في النظام حالياً.</td>
+                        <td colspan="6" style="text-align:center; padding:100px; color: var(--text-muted);">
+                            <i data-lucide="users" style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.2;"></i>
+                            <p>لا يوجد تجار مسجلين في النظام حالياً.</p>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
+    </main>
 
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>

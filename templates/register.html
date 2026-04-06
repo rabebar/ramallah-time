@@ -4,85 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إنشاء حساب تاجر | RT Studio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* نظام التصميم الفاتح (Canva/Notion Style) */
         :root {
-            --bg: #f3f5f7;
-            --card: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --accent: #4f46e5;
-            --border: #e5e7eb;
+            --navy: #0A192F;
+            --navy-light: #112240;
+            --gold: #B8974A;
+            --white: #FFFFFF;
+            --gray-bg: #F8FAFC;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --border: rgba(0, 0, 0, 0.06);
         }
 
         body { 
-            background: var(--bg); 
-            color: var(--text-main); 
-            font-family: 'Inter', 'Cairo', sans-serif; 
+            background: var(--navy); 
+            color: var(--white); 
+            font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             min-height: 100vh; 
             margin: 0; 
-            padding: 20px;
+            padding: 40px 20px;
+            background-image: radial-gradient(circle at 20% 30%, rgba(184, 151, 74, 0.05) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 70%, rgba(184, 151, 74, 0.05) 0%, transparent 50%);
         }
 
         .register-card { 
             text-align: center; 
-            background: var(--card); 
-            padding: 40px; 
-            border-radius: 24px; 
+            background: var(--navy-light); 
+            padding: 50px 40px; 
+            border-radius: 28px; 
             width: 100%;
-            max-width: 400px; 
-            border: 1px solid var(--border);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            max-width: 420px; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
         }
 
         .logo-box { 
-            width: 54px; height: 54px; 
-            background: var(--accent); 
-            border-radius: 14px; 
+            width: 60px; height: 60px; 
+            background: var(--gold); 
+            border-radius: 16px; 
             display: flex; align-items: center; justify-content: center; 
-            font-weight: 900; font-size: 24px; color: #fff; 
+            font-weight: 800; font-size: 24px; color: var(--navy); 
             margin: 0 auto 25px; 
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+            box-shadow: 0 8px 20px rgba(184, 151, 74, 0.3);
         }
 
-        h2 { font-family: 'Cairo'; font-weight: 900; margin-bottom: 8px; font-size: 24px; color: #111; }
-        p { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; font-family: 'Cairo'; }
+        h2 { font-weight: 700; margin-bottom: 8px; font-size: 26px; color: var(--white); }
+        p { color: rgba(255, 255, 255, 0.6); font-size: 15px; margin-bottom: 35px; }
 
-        .form-group { text-align: right; margin-bottom: 15px; }
-        label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #374151; font-family: 'Cairo'; }
+        .form-group { text-align: right; margin-bottom: 20px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; }
 
         input { 
-            padding: 14px; width: 100%; border-radius: 12px; 
-            border: 1px solid var(--border); 
-            background: #fafafa; color: var(--text-main); 
+            padding: 16px; width: 100%; border-radius: 14px; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            background: rgba(255, 255, 255, 0.03); color: var(--white); 
             box-sizing: border-box; outline: none; 
-            font-size: 15px; transition: 0.2s;
-            font-family: 'Inter', 'Cairo';
+            font-size: 16px; transition: all 0.3s;
         }
-        input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.05); }
+        input:focus { border-color: var(--gold); background: rgba(255, 255, 255, 0.05); box-shadow: 0 0 0 4px rgba(184, 151, 74, 0.1); }
 
         button { 
             padding: 16px; width: 100%; 
-            background: var(--accent); color: white; 
-            border: none; border-radius: 12px; 
-            cursor: pointer; font-weight: bold; font-size: 16px; 
-            transition: 0.3s; margin-top: 15px; 
-            font-family: 'Cairo';
+            background: var(--gold); color: var(--navy); 
+            border: none; border-radius: 14px; 
+            cursor: pointer; font-weight: 800; font-size: 16px; 
+            transition: all 0.3s; margin-top: 15px; 
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
-        button:hover { background: #4338ca; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
+        button:hover { background: #c9a65a; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(184, 151, 74, 0.3); }
 
         .pending-notice {
-            background: #fffbeb; border: 1px solid #fef3c7; color: #92400e;
-            padding: 12px; border-radius: 10px; font-size: 12px; margin-top: 20px;
-            font-family: 'Cairo'; line-height: 1.5;
+            background: rgba(184, 151, 74, 0.05); border: 1px solid rgba(184, 151, 74, 0.1); color: var(--gold);
+            padding: 16px; border-radius: 14px; font-size: 13px; margin-top: 25px;
+            text-align: right; line-height: 1.6;
+            display: flex; gap: 12px;
         }
+        .pending-notice i { flex-shrink: 0; }
 
-        .footer-link { margin-top: 25px; font-size: 14px; color: var(--text-muted); font-family: 'Cairo'; }
-        .footer-link a { color: var(--accent); text-decoration: none; font-weight: 700; }
+        .footer-link { margin-top: 30px; font-size: 14px; color: rgba(255, 255, 255, 0.5); }
+        .footer-link a { color: var(--gold); text-decoration: none; font-weight: 700; transition: 0.2s; }
+        .footer-link a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -107,16 +113,24 @@
                 <input type="password" name="password" placeholder="اختر كلمة مرور قوية" required>
             </div>
 
-            <button type="submit">إرسال طلب الانضمام</button>
+            <button type="submit">
+                إرسال طلب الانضمام
+                <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
+            </button>
         </form>
 
         <div class="pending-notice">
-            ⚠️ ملاحظة: سيتم مراجعة طلبك وتفعيل حسابك من قبل الإدارة خلال 24 ساعة.
+            <i data-lucide="info" style="width: 20px; height: 20px;"></i>
+            <div>سيتم مراجعة طلبك وتفعيل حسابك من قبل الإدارة خلال 24 ساعة.</div>
         </div>
 
         <div class="footer-link">
             لديك حساب بالفعل؟ <a href="/login">تسجيل الدخول</a>
         </div>
     </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>

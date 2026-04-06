@@ -1,119 +1,167 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول | RT Studio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        /* نظام التصميم الفاتح والنظيف (Canva/Notion Style) */
-        :root {
-            --bg: #f3f5f7;
-            --card: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --accent: #4f46e5;
-            --border: #e5e7eb;
-        }
+import express from 'express';
+import path from 'path';
+import fs from 'fs';
 
-        body { 
-            background: var(--bg); 
-            color: var(--text-main); 
-            font-family: 'Inter', 'Cairo', sans-serif; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-            padding: 20px;
-        }
+const app = express();
+const PORT = 3000;
 
-        .login-card { 
-            text-align: center; 
-            background: var(--card); 
-            padding: 50px 40px; 
-            border-radius: 24px; 
-            width: 100%;
-            max-width: 380px; 
-            border: 1px solid var(--border);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-        }
+// Mock data for preview
+const mockStats = {
+  credits: 10,
+  processed: 5,
+  store_slug: 'sara-fashion'
+};
 
-        .logo-box { 
-            width: 54px; height: 54px; 
-            background: var(--accent); 
-            border-radius: 14px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: 900; font-size: 24px; color: #fff; 
-            margin: 0 auto 25px; 
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-        }
+const mockStore = {
+  name: 'متجر سارة للأزياء',
+  slug: 'sara-fashion',
+  bio: 'أحدث صيحات الموضة بأسعار مناسبة',
+  whatsapp_phone: '0590000000',
+  display_phone: '0590000000',
+  instagram_handle: 'sara.fashion',
+  tiktok_handle: 'sara.fashion',
+  facebook_handle: 'sara.fashion',
+  address: 'Ramallah, Main Street',
+  website: 'https://sara-fashion.com'
+};
 
-        h2 { font-family: 'Cairo'; font-weight: 900; margin-bottom: 8px; font-size: 24px; color: #111; }
-        p { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; font-family: 'Cairo'; }
+const mockProducts = [
+  { id: 1, name: 'Elegant Dress', price: 150, processed_image_url: 'processed_sample.png', theme: 'gold', template_style: 'elegant', description: 'A beautiful elegant dress for special occasions.' },
+  { id: 2, name: 'Modern Jacket', price: 200, processed_image_url: 'processed_sample.png', theme: 'black', template_style: 'modern', description: 'Stylish jacket for everyday wear.' },
+  { id: 3, name: 'Summer Shirt', price: 80, processed_image_url: 'processed_sample.png', theme: 'pastel', template_style: 'minimal', description: 'Light and comfortable shirt for summer.' }
+];
 
-        .form-group { text-align: right; margin-bottom: 15px; }
-        label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #374151; font-family: 'Cairo'; }
+// Simple Jinja2-like block replacement for preview
+function renderTemplate(templateName: string, data: any = {}) {
+  const standaloneTemplates = ['login', 'register', 'superadmin', 'store'];
+  
+  let content = '';
+  try {
+    const templatePath = path.join(process.cwd(), 'templates', `${templateName}.html`);
+    if (fs.existsSync(templatePath)) {
+      content = fs.readFileSync(templatePath, 'utf-8');
+    } else {
+      content = `<h2>${templateName} Page (Preview)</h2><p>This is a placeholder for the ${templateName} page.</p>`;
+    }
+  } catch (e) {
+    content = `<h2>${templateName} Page (Preview)</h2>`;
+  }
 
-        input { 
-            padding: 14px; width: 100%; border-radius: 12px; 
-            border: 1px solid var(--border); 
-            background: #fafafa; color: var(--text-main); 
-            box-sizing: border-box; outline: none; 
-            font-size: 15px; transition: 0.2s;
-            font-family: 'Inter', 'Cairo';
-        }
-        input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.05); }
-
-        button { 
-            padding: 16px; width: 100%; 
-            background: var(--accent); color: white; 
-            border: none; border-radius: 12px; 
-            cursor: pointer; font-weight: bold; font-size: 16px; 
-            transition: 0.3s; margin-top: 10px; 
-            font-family: 'Cairo';
-        }
-        button:hover { background: #4338ca; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
-
-        .footer-link { margin-top: 25px; font-size: 14px; color: var(--text-muted); font-family: 'Cairo'; }
-        .footer-link a { color: var(--accent); text-decoration: none; font-weight: 700; }
-
-        /* رسائل الخطأ أو التنبيه */
-        .alert { 
-            background: #fef2f2; color: #dc2626; 
-            padding: 12px; border-radius: 10px; 
-            font-size: 13px; margin-bottom: 20px; 
-            font-family: 'Cairo'; border: 1px solid #fee2e2;
-        }
-    </style>
-</head>
-<body>
-    <div class="login-card">
-        <div class="logo-box">RT</div>
-        <h2>تسجيل الدخول</h2>
-        <p>أهلاً بك مجدداً في RT Studio</p>
+  if (standaloneTemplates.includes(templateName)) {
+    let rendered = content;
+    
+    // Handle store.html specific logic
+    if (templateName === 'store') {
+      rendered = rendered
+        .replace(/{{ store.name }}/g, data.store.name)
+        .replace(/{{ store.bio or 'Official Collection' }}/g, data.store.bio)
+        .replace(/{{ store.display_phone }}/g, data.store.display_phone)
+        .replace(/{{ store.whatsapp_phone }}/g, data.store.whatsapp_phone)
+        .replace(/{{ store.instagram_handle }}/g, data.store.instagram_handle)
+        .replace(/{{ store.tiktok_handle }}/g, data.store.tiktok_handle)
+        .replace(/{{ store.facebook_handle }}/g, data.store.facebook_handle)
+        .replace(/{{ store.address }}/g, data.store.address)
+        .replace(/{{ store.website }}/g, data.store.website)
+        .replace(/{{ products\|length }}/g, data.products.length.toString());
         
-        {% if error %}
-        <div class="alert">{{ error }}</div>
-        {% endif %}
+      // Very basic loop simulation for products
+      const productTemplateMatch = rendered.match(/{% for product in products %}([\s\S]*?){% else %}/);
+      if (productTemplateMatch) {
+        const productItemTemplate = productTemplateMatch[1];
+        let productsHtml = '';
+        data.products.forEach((p: any, index: number) => {
+          productsHtml += productItemTemplate
+            .replace(/{{ product.name }}/g, p.name)
+            .replace(/{{ product.price }}/g, p.price)
+            .replace(/{{ product.processed_image_url }}/g, p.processed_image_url)
+            .replace(/{{ product.theme\|lower if product.theme else 'gold' }}/g, p.theme)
+            .replace(/{{ product.template_style\|lower if product.template_style else 'elegant' }}/g, p.template_style)
+            .replace(/{{ '%02d' % loop.index }}/g, (index + 1).toString().padStart(2, '0'))
+            .replace(/{{ product.name\|tojson\|safe }}/g, JSON.stringify(p.name))
+            .replace(/{{ product.price\|tojson\|safe }}/g, JSON.stringify(p.price))
+            .replace(/{{ \(product.description or ""\)\|tojson\|safe }}/g, JSON.stringify(p.description))
+            .replace(/"{{ current_theme }}"/g, `"${p.theme}"`)
+            .replace(/"{{ current_style }}"/g, `"${p.template_style}"`);
+        });
+        rendered = rendered.replace(/{% for product in products %}[\s\S]*?{% endfor %}/, productsHtml);
+      }
+    }
 
-        <form method="POST">
-            <div class="form-group">
-                <label>رقم الجوال</label>
-                <input type="text" name="phone" placeholder="059xxxxxxx" required>
-            </div>
+    // Handle superadmin.html specific logic
+    if (templateName === 'superadmin') {
+      rendered = rendered
+        .replace(/{{ stats.total_users }}/g, '12')
+        .replace(/{{ stats.total_products }}/g, '145')
+        .replace(/{{ stats.total_credits }}/g, '450')
+        .replace(/{{ current_date }}/g, new Date().toLocaleDateString('ar-EG'));
+      
+      const userRowMatch = rendered.match(/{% for user in users %}([\s\S]*?){% else %}/);
+      if (userRowMatch) {
+        const rowTemplate = userRowMatch[1];
+        let usersHtml = '';
+        const mockUsers = [
+          { id: 1, phone: '0591234567', store_name: 'عياد للساعات', status: 'active', credits: 50, created_at: '2025-01-01' },
+          { id: 2, phone: '0597654321', store_name: 'بوتيك الأناقة', status: 'pending', credits: 10, created_at: '2025-04-01' }
+        ];
+        mockUsers.forEach(u => {
+          usersHtml += rowTemplate
+            .replace(/{{ user.phone }}/g, u.phone)
+            .replace(/{{ user.store_name }}/g, u.store_name)
+            .replace(/{{ user.status == 'active' }}/g, u.status === 'active' ? 'true' : 'false')
+            .replace(/{{ user.status }}/g, u.status)
+            .replace(/{{ user.credits }}/g, u.credits.toString())
+            .replace(/{{ user.created_at }}/g, u.created_at)
+            .replace(/{{ user.id }}/g, u.id.toString());
+        });
+        rendered = rendered.replace(/{% for user in users %}[\s\S]*?{% endfor %}/, usersHtml);
+      }
+    }
 
-            <div class="form-group">
-                <label>كلمة المرور</label>
-                <input type="password" name="password" placeholder="أدخل كلمة المرور" required>
-            </div>
+    return rendered;
+  }
 
-            <button type="submit">دخول للمنصة</button>
-        </form>
+  const baseTemplate = fs.readFileSync(path.join(process.cwd(), 'templates', 'base.html'), 'utf-8');
+  // Replace blocks (very basic mock)
+  let rendered = baseTemplate
+    .replace('{% block title %}{% endblock %}', data.title || 'RT Studio')
+    .replace('{% block content %}{% endblock %}', content)
+    .replace(/{{ store_slug if store_slug else 'preview' }}/g, data.store_slug || 'preview')
+    .replace(/{% block nav_dashboard %}{% endblock %}/g, templateName === 'index' ? 'active' : '')
+    .replace(/{% block nav_products %}{% endblock %}/g, templateName === 'admin' ? 'active' : '');
 
-        <div class="footer-link">
-            ليس لديك حساب؟ <a href="/register">أنشئ حسابك الآن</a>
-        </div>
-    </div>
-</body>
-</html>
+  return rendered;
+}
+
+app.use('/static', express.static(path.join(process.cwd(), 'static')));
+
+app.get('/', (req, res) => {
+  res.send(renderTemplate('index', { title: 'Dashboard', ...mockStats }));
+});
+
+app.get('/admin', (req, res) => {
+  res.send(renderTemplate('admin', { title: 'Inventory', store: mockStore, products: mockProducts, ...mockStats }));
+});
+
+app.get('/result', (req, res) => {
+  res.send(renderTemplate('result', { title: 'Design Lab', filename: 'processed_sample.png', original_filename: 'orig_sample.jpg', ...mockStats }));
+});
+
+app.get('/store/:slug', (req, res) => {
+  res.send(renderTemplate('store', { title: 'Public Store', store: mockStore, products: mockProducts, ...mockStats }));
+});
+
+app.get('/login', (req, res) => {
+  res.send(renderTemplate('login'));
+});
+
+app.get('/register', (req, res) => {
+  res.send(renderTemplate('register'));
+});
+
+app.get('/superadmin', (req, res) => {
+  res.send(renderTemplate('superadmin'));
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Preview server running on http://localhost:${PORT}`);
+});
