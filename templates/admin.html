@@ -161,7 +161,7 @@
         <div id="livePreview" class="edit-preview-box" style="background: var(--theme-{{ edit_product.theme }});">
             <img id="prevImg" src="/static/uploads/{{ edit_product.processed_image_url }}">
             <div id="prevName" class="p-title">{{ edit_product.name }}</div>
-            <div id="prevPrice" class="p-price">${{ edit_product.price }}</div>
+            <div id="prevPrice" class="p-price">₪{{ edit_product.price }}</div>
         </div>
 
         <form action="/edit_product/{{ edit_product.id }}" method="POST" class="edit-form-side">
@@ -176,7 +176,7 @@
                     <input type="text" name="name" id="inName" value="{{ edit_product.name }}" class="input-field" oninput="syncEdit()" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Price ($)</label>
+                    <label class="form-label">Price (₪)</label>
                     <input type="number" step="0.01" name="price" id="inPrice" value="{{ edit_product.price }}" class="input-field" oninput="syncEdit()" required>
                 </div>
             </div>
@@ -213,7 +213,7 @@
             <img src="/static/uploads/{{ product.processed_image_url }}">
             <div class="p-info">
                 <div class="p-name">{{ product.name }}</div>
-                <div class="p-price">${{ product.price }}</div>
+                <div class="p-price">₪{{ product.price }}</div>
                 <div class="actions">
                     <a href="/admin?edit={{ product.id }}" class="btn-action btn-edit">Edit</a>
                     <a href="/delete_product/{{ product.id }}" class="btn-action btn-del" onclick="return confirm('Are you sure you want to delete this item?')">Delete</a>
@@ -309,7 +309,7 @@
     // Live Edit Sync
     function syncEdit() {
         document.getElementById('prevName').innerText = document.getElementById('inName').value || 'Product Name';
-        document.getElementById('prevPrice').innerText = '$' + (document.getElementById('inPrice').value || '0.00');
+        document.getElementById('prevPrice').innerText = '₪' + (document.getElementById('inPrice').value || '0.00');
     }
 
     function updateEditTheme(theme, el) {

@@ -62,11 +62,9 @@
     .option-btn:hover { border-color: var(--border); background: #fff; }
     .option-btn.active { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 2px var(--accent); }
     
-    /* Visual Indicators instead of Emojis */
     .opt-color-circle { width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); }
     .opt-icon svg { width: 20px; height: 20px; stroke: var(--text-muted); }
     .opt-txt { font-size: 11px; font-weight: 600; color: var(--text-muted); }
-
     .option-btn.active .opt-txt { color: var(--accent); font-weight: 700; }
     .option-btn.active .opt-icon svg { stroke: var(--accent); }
 
@@ -93,13 +91,12 @@
     #prod-price { font-weight: 600; z-index: 3; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
     /* Vibrant Themes */
-       /* Modern Vibrant Themes (2025 Gradients) */
-    .theme-gold   { background: linear-gradient(135deg, #F2994A, #F2C94C); --line-color: #ffffff; } /* Royal Gold */
-    .theme-black  { background: linear-gradient(135deg, #0F2027, #203A43); --line-color: #ffffff; } /* Obsidian Dark */
-    .theme-pastel { background: linear-gradient(135deg, #667EEA, #764BA2); --line-color: #ffffff; } /* Lavender Violet */
-    .theme-spring { background: linear-gradient(135deg, #11998E, #38EF7D); --line-color: #ffffff; } /* Mint Neon */
-    .theme-fire   { background: linear-gradient(135deg, #FF512F, #DD2476); --line-color: #ffffff; } /* Sunset Glow */
-    .theme-ocean  { background: linear-gradient(135deg, #2193B0, #6DD5ED); --line-color: #ffffff; } /* Aqua Blue */
+    .theme-gold   { background: linear-gradient(135deg, #F2994A, #F2C94C); --line-color: #ffffff; }
+    .theme-black  { background: linear-gradient(135deg, #0F2027, #203A43); --line-color: #ffffff; }
+    .theme-pastel { background: linear-gradient(135deg, #667EEA, #764BA2); --line-color: #ffffff; }
+    .theme-spring { background: linear-gradient(135deg, #11998E, #38EF7D); --line-color: #ffffff; }
+    .theme-fire   { background: linear-gradient(135deg, #FF512F, #DD2476); --line-color: #ffffff; }
+    .theme-ocean  { background: linear-gradient(135deg, #2193B0, #6DD5ED); --line-color: #ffffff; }
 
     .post-main-canvas .divider { background: var(--line-color); width: 40px; height: 3px; margin: 12px 0; border-radius: 2px; opacity: 0.8; }
 
@@ -160,10 +157,9 @@
                 <img id="prod-img" src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Product">
                 
                 <div id="dynamic-content-wrap" style="width: 100%; display: contents;">
-                    <!-- Default Content -->
                     <div id="prod-title">Product Name</div>
                     <div class="divider"></div>
-                    <div id="prod-price">$0.00</div>
+                    <div id="prod-price">0.00 ₪</div>
                 </div>
 
                 <div style="position: absolute; bottom: 10px; font-size: 9px; opacity: 0.5; letter-spacing: 2px; font-weight: 700;">RT STUDIO</div>
@@ -187,7 +183,8 @@
                     Product Details
                 </span>
                 <input type="text" name="name" id="inputName" placeholder="Enter product name..." class="data-input" oninput="liveSync()" required>
-                <input type="number" name="price" id="inputPrice" placeholder="Price ($)" class="data-input" oninput="liveSync()" required>
+                <!-- ✅ إصلاح: $ → ₪ -->
+                <input type="number" name="price" id="inputPrice" placeholder="Price (₪)" class="data-input" oninput="liveSync()" required>
             </div>
 
             <!-- Section 2: Themes -->
@@ -196,7 +193,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z"/></svg>
                     Color Theme
                 </span>
-                                <div class="options-grid">
+                <div class="options-grid">
                     <div class="option-btn active" onclick="applyTheme('gold', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #F2994A, #F2C94C);"></div><span class="opt-txt">Royal</span></div>
                     <div class="option-btn" onclick="applyTheme('black', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #0F2027, #203A43);"></div><span class="opt-txt">Obsidian</span></div>
                     <div class="option-btn" onclick="applyTheme('pastel', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #667EEA, #764BA2);"></div><span class="opt-txt">Lavender</span></div>
@@ -246,8 +243,9 @@
 
 <script>
     function liveSync() {
-        const nameVal = document.getElementById('inputName').value || 'Product Name';
-        const priceVal = '$' + (document.getElementById('inputPrice').value || '0.00');
+        const nameVal  = document.getElementById('inputName').value  || 'Product Name';
+        // ✅ إصلاح: $ → ₪
+        const priceVal = (document.getElementById('inputPrice').value || '0.00') + ' ₪';
         
         document.querySelectorAll('#prod-title').forEach(el => el.innerText = nameVal);
         document.querySelectorAll('#prod-price').forEach(el => el.innerText = priceVal);
@@ -258,16 +256,16 @@
         canvas.classList.remove('theme-gold', 'theme-black', 'theme-pastel', 'theme-spring', 'theme-fire', 'theme-ocean');
         canvas.classList.add('theme-' + themeName);
         document.getElementById('hiddenTheme').value = themeName;
-        
         element.closest('.options-grid').querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
         element.classList.add('active');
     }
 
     function applyStyle(styleName, element) {
         const canvas = document.getElementById('capture-area');
-        const wrap = document.getElementById('dynamic-content-wrap');
-        const name = document.getElementById('inputName').value || 'Product Name';
-        const price = '$' + (document.getElementById('inputPrice').value || '0.00');
+        const wrap   = document.getElementById('dynamic-content-wrap');
+        const name   = document.getElementById('inputName').value  || 'Product Name';
+        // ✅ إصلاح: $ → ₪
+        const price  = (document.getElementById('inputPrice').value || '0.00') + ' ₪';
 
         canvas.classList.remove('style-elegant', 'style-modern', 'style-minimal', 'style-bold');
         canvas.classList.add('style-' + styleName);
@@ -283,20 +281,15 @@
             wrap.innerHTML = `<div class="side-info"><div id="prod-title">${name}</div><div class="divider"></div><div id="prod-price">${price}</div></div>`;
         }
 
-        // Fix active state for buttons
         document.querySelectorAll('.control-section .option-btn').forEach(b => {
-             if(b.getAttribute('onclick').includes('applyStyle')) b.classList.remove('active');
+            if (b.getAttribute('onclick') && b.getAttribute('onclick').includes('applyStyle')) b.classList.remove('active');
         });
         element.classList.add('active');
     }
 
     function triggerDownload() {
         const target = document.getElementById('capture-area');
-        html2canvas(target, { 
-            scale: 3, 
-            useCORS: true,
-            backgroundColor: null 
-        }).then(canvas => {
+        html2canvas(target, { scale: 3, useCORS: true, backgroundColor: null }).then(canvas => {
             const link = document.createElement('a');
             link.download = 'RT-Studio-Design-' + Date.now() + '.jpg';
             link.href = canvas.toDataURL('image/jpeg', 0.95);

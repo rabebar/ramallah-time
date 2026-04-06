@@ -10,7 +10,7 @@ import os
 import io
 import uuid
 import logging
-from flask import Flask, render_template, request, redirect, session, url_for, flash, g
+from flask import Flask, render_template, request, redirect, session, url_for, flash, g, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from rembg import remove
 from PIL import Image
@@ -437,7 +437,7 @@ def super_admin_add_credits():
 
 @app.route('/sw.js')
 def sw():
-    return app.send_static_file('sw.js')
+    return send_from_directory(app.root_path, 'sw.js')
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
