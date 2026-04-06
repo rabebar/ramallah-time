@@ -94,8 +94,8 @@
 <body>
     <div class="login-card">
         <div class="logo-box">RT</div>
-        <h2>تسجيل الدخول</h2>
-        <p>أهلاً بك مجدداً في RT Studio</p>
+        <h2>{% if superadmin %}دخول الإدارة{% else %}تسجيل الدخول{% endif %}</h2>
+        <p>{% if superadmin %}مرحباً بك في لوحة التحكم العليا{% else %}أهلاً بك مجدداً في RT Studio{% endif Sev}</p>
         
         {% if error %}
         <div class="alert">
@@ -105,10 +105,12 @@
         {% endif %}
 
         <form method="POST">
+            {% if not superadmin %}
             <div class="form-group">
                 <label>رقم الجوال</label>
                 <input type="text" name="phone" placeholder="059xxxxxxx" required>
             </div>
+            {% endif %}
 
             <div class="form-group">
                 <label>كلمة المرور</label>

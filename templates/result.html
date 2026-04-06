@@ -97,6 +97,10 @@
     .theme-spring { background: linear-gradient(135deg, #11998E, #38EF7D); --line-color: #ffffff; }
     .theme-fire   { background: linear-gradient(135deg, #FF512F, #DD2476); --line-color: #ffffff; }
     .theme-ocean  { background: linear-gradient(135deg, #2193B0, #6DD5ED); --line-color: #ffffff; }
+    .theme-royal  { background: linear-gradient(135deg, #4F46E5, #7C3AED); --line-color: #ffffff; }
+    .theme-midnight { background: linear-gradient(135deg, #0F172A, #334155); --line-color: #ffffff; }
+    .theme-earth  { background: linear-gradient(135deg, #3F6212, #713F12); --line-color: #ffffff; }
+    .theme-vibrant { background: linear-gradient(135deg, #F43F5E, #FB923C); --line-color: #ffffff; }
 
     .post-main-canvas .divider { background: var(--line-color); width: 40px; height: 3px; margin: 12px 0; border-radius: 2px; opacity: 0.8; }
 
@@ -117,6 +121,12 @@
     .style-bold #prod-img { width: 65%; max-height: 100%; object-fit: cover; margin-right: -15%; z-index: 2; }
     .style-bold .side-info { background: rgba(0,0,0,0.25); height: 100%; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 24px; z-index: 3; text-align: right; backdrop-filter: blur(5px); }
     .style-bold #prod-price { background: #fff; color: #000; padding: 6px 14px; margin-top: 12px; border-radius: 4px; width: fit-content; margin-left: auto; font-size: 14px; }
+
+    .style-glass { justify-content: center; }
+    .style-glass #prod-img { transform: translateY(-20px); }
+    .style-glass .glass-box { position: absolute; bottom: 24px; left: 24px; right: 24px; background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 20px; text-align: center; }
+    .style-glass #prod-title { font-size: 20px; margin-bottom: 4px; }
+    .style-glass #prod-price { font-size: 16px; color: rgba(255,255,255,0.8); }
 
     /* Inputs */
     input.data-input { 
@@ -193,12 +203,16 @@
                     Color Theme
                 </span>
                 <div class="options-grid">
-                    <div class="option-btn active" onclick="applyTheme('gold', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #F2994A, #F2C94C);"></div><span class="opt-txt">Royal</span></div>
-                    <div class="option-btn" onclick="applyTheme('black', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #0F2027, #203A43);"></div><span class="opt-txt">Obsidian</span></div>
-                    <div class="option-btn" onclick="applyTheme('pastel', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #667EEA, #764BA2);"></div><span class="opt-txt">Lavender</span></div>
-                    <div class="option-btn" onclick="applyTheme('spring', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #11998E, #38EF7D);"></div><span class="opt-txt">Mint</span></div>
-                    <div class="option-btn" onclick="applyTheme('fire', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #FF512F, #DD2476);"></div><span class="opt-txt">Sunset</span></div>
-                    <div class="option-btn" onclick="applyTheme('ocean', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #2193B0, #6DD5ED);"></div><span class="opt-txt">Aqua</span></div>
+                    <div class="option-btn active" onclick="applyTheme('gold', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #F2994A, #F2C94C);"></div><span class="opt-txt">Gold</span></div>
+                    <div class="option-btn" onclick="applyTheme('black', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #0F2027, #203A43);"></div><span class="opt-txt">Black</span></div>
+                    <div class="option-btn" onclick="applyTheme('pastel', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #667EEA, #764BA2);"></div><span class="opt-txt">Pastel</span></div>
+                    <div class="option-btn" onclick="applyTheme('spring', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #11998E, #38EF7D);"></div><span class="opt-txt">Spring</span></div>
+                    <div class="option-btn" onclick="applyTheme('fire', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #FF512F, #DD2476);"></div><span class="opt-txt">Fire</span></div>
+                    <div class="option-btn" onclick="applyTheme('ocean', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #2193B0, #6DD5ED);"></div><span class="opt-txt">Ocean</span></div>
+                    <div class="option-btn" onclick="applyTheme('royal', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #4F46E5, #7C3AED);"></div><span class="opt-txt">Royal</span></div>
+                    <div class="option-btn" onclick="applyTheme('midnight', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #0F172A, #334155);"></div><span class="opt-txt">Midnight</span></div>
+                    <div class="option-btn" onclick="applyTheme('earth', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #3F6212, #713F12);"></div><span class="opt-txt">Earth</span></div>
+                    <div class="option-btn" onclick="applyTheme('vibrant', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #F43F5E, #FB923C);"></div><span class="opt-txt">Vibrant</span></div>
                 </div>
             </div>
 
@@ -220,6 +234,10 @@
                     <div class="option-btn" onclick="applyStyle('minimal', this)">
                         <div class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="21" x2="21" y2="21"/></svg></div>
                         <span class="opt-txt">Minimal</span>
+                    </div>
+                    <div class="option-btn" onclick="applyStyle('glass', this)">
+                        <div class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3H7a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V7a4 4 0 0 0-4-4z"/><path d="M9 17v-3a3 3 0 0 1 3-3h3"/></svg></div>
+                        <span class="opt-txt">Glass</span>
                     </div>
                 </div>
                 <div class="option-btn" onclick="applyStyle('bold', this)" style="margin-top:10px; width:100%; flex-direction: row; justify-content: center;">
@@ -251,7 +269,7 @@
 
     function applyTheme(themeName, element) {
         const canvas = document.getElementById('capture-area');
-        canvas.classList.remove('theme-gold', 'theme-black', 'theme-pastel', 'theme-spring', 'theme-fire', 'theme-ocean');
+        canvas.classList.remove('theme-gold', 'theme-black', 'theme-pastel', 'theme-spring', 'theme-fire', 'theme-ocean', 'theme-royal', 'theme-midnight', 'theme-earth', 'theme-vibrant');
         canvas.classList.add('theme-' + themeName);
         document.getElementById('hiddenTheme').value = themeName;
         element.closest('.options-grid').querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
@@ -264,7 +282,7 @@
         const name   = document.getElementById('inputName').value  || 'Product Name';
         const price  = (document.getElementById('inputPrice').value || '0.00') + ' ₪';
 
-        canvas.classList.remove('style-elegant', 'style-modern', 'style-minimal', 'style-bold');
+        canvas.classList.remove('style-elegant', 'style-modern', 'style-minimal', 'style-bold', 'style-glass');
         canvas.classList.add('style-' + styleName);
         document.getElementById('hiddenStyle').value = styleName;
 
@@ -276,6 +294,8 @@
             wrap.innerHTML = `<div class="bottom-bar"><div id="prod-title">${name}</div><div id="prod-price">${price}</div></div>`;
         } else if (styleName === 'bold') {
             wrap.innerHTML = `<div class="side-info"><div id="prod-title">${name}</div><div class="divider"></div><div id="prod-price">${price}</div></div>`;
+        } else if (styleName === 'glass') {
+            wrap.innerHTML = `<div class="glass-box"><div id="prod-title">${name}</div><div id="prod-price">${price}</div></div>`;
         }
 
         document.querySelectorAll('.control-section .option-btn').forEach(b => {

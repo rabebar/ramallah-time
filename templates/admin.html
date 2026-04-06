@@ -13,6 +13,10 @@
         --theme-ocean: linear-gradient(135deg, #0284c7, #075985);
         --theme-spring: linear-gradient(135deg, #059669, #064e3b);
         --theme-pastel: linear-gradient(135deg, #7c3aed, #4c1d95);
+        --theme-royal: linear-gradient(135deg, #4f46e5, #7c3aed);
+        --theme-midnight: linear-gradient(135deg, #0f172a, #334155);
+        --theme-earth: linear-gradient(135deg, #3f6212, #713f12);
+        --theme-vibrant: linear-gradient(135deg, #f43f5e, #fb923c);
     }
 
     /* Header & Navigation Tabs */
@@ -189,15 +193,25 @@
             <div class="form-group">
                 <label class="form-label">Theme</label>
                 <div class="theme-grid">
-                    {% for t in ['gold', 'black', 'pastel', 'spring', 'fire', 'ocean'] %}
+                    {% for t in ['gold', 'black', 'pastel', 'spring', 'fire', 'ocean', 'royal', 'midnight', 'earth', 'vibrant'] %}
                     <div class="theme-opt {% if edit_product.theme == t %}active{% endif %}" onclick="updateEditTheme('{{ t }}', this)">
                         {{ t|capitalize }}
                     </div>
                     {% endfor %}
                 </div>
             </div>
+            <div class="form-group">
+                <label class="form-label">Layout Style</label>
+                <div class="theme-grid">
+                    {% for s in ['elegant', 'modern', 'minimal', 'bold', 'glass'] %}
+                    <div class="theme-opt {% if edit_product.template_style == s %}active{% endif %}" onclick="updateEditStyle('{{ s }}', this)">
+                        {{ s|capitalize }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <input type="hidden" name="template_style" id="editStyle" value="{{ edit_product.template_style }}">
             <input type="hidden" name="theme" id="editTheme" value="{{ edit_product.theme }}">
-            <input type="hidden" name="template_style" value="{{ edit_product.template_style }}">
 
             <div style="display:flex; gap:12px; margin-top:10px;">
                 <button type="submit" class="btn-action btn-save">Save Changes</button>
@@ -339,8 +353,16 @@
     function updateEditTheme(theme, el) {
         document.getElementById('livePreview').style.background = 'var(--theme-' + theme + ')';
         document.getElementById('editTheme').value = theme;
-        document.querySelectorAll('.theme-opt').forEach(opt => opt.classList.remove('active'));
+        el.closest('.theme-grid').querySelectorAll('.theme-opt').forEach(opt => opt.classList.remove('active'));
         el.classList.add('active');
+    }
+
+    // وظيفة تحديث ستايل المنتج
+    function updateEditStyle(style, el) {
+        document.getElementById('editStyle').value = style;
+        el.closest('.theme-grid').querySelectorAll('.theme-opt').forEach(opt => opt.classList.remove('active'));
+        el.classList.add('active');
+        // Note: Live preview for style in admin is limited, but we update the hidden field
     }
 </script>
 {% endblock %}

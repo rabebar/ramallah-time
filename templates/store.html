@@ -268,6 +268,14 @@
         .theme-spring { background: linear-gradient(135deg, #f0fff4, #c6f6d5); }
         .theme-fire   { background: linear-gradient(135deg, #fff5f5, #fed7d7); }
         .theme-ocean  { background: linear-gradient(135deg, #ebf8ff, #bee3f8); }
+        .theme-royal  { background: linear-gradient(135deg, #f5f3ff, #ddd6fe); }
+        .theme-midnight { background: linear-gradient(135deg, #f8fafc, #cbd5e1); }
+        .theme-earth  { background: linear-gradient(135deg, #fefce8, #fef08a); }
+        .theme-vibrant { background: linear-gradient(135deg, #fff1f2, #fecdd3); }
+        .theme-royal  { background: linear-gradient(135deg, #f5f3ff, #ddd6fe); }
+        .theme-midnight { background: linear-gradient(135deg, #f8fafc, #cbd5e1); }
+        .theme-earth  { background: linear-gradient(135deg, #fefce8, #fef08a); }
+        .theme-vibrant { background: linear-gradient(135deg, #fff1f2, #fecdd3); }
 
         .modal-canvas img {
             max-width: 78%; max-height: 68%;
@@ -301,6 +309,14 @@
         .modal-canvas.style-bold .m-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: #fff; letter-spacing: 1px; margin-bottom: 12px; }
         .modal-canvas.style-bold .m-line { width: 30px; height: 1px; background: rgba(255,255,255,0.3); margin: 0 0 12px auto; }
         .modal-canvas.style-bold .m-price { background: #fff; color: #000; font-size: 12px; font-weight: 600; padding: 6px 12px; letter-spacing: 1px; display: inline-block; }
+
+        /* Glass */
+        .modal-canvas.style-glass { justify-content: center; }
+        .modal-canvas.style-glass img { transform: translateY(-20px); }
+        .modal-canvas.style-glass .glass-box { position: absolute; bottom: 24px; left: 24px; right: 24px; background: rgba(255,255,255,0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 20px; text-align: center; }
+        .modal-canvas.style-glass .m-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; margin-bottom: 4px; }
+        .modal-canvas.style-glass .m-line { display: none; }
+        .modal-canvas.style-glass .m-price { font-size: 16px; color: var(--gray-600); font-weight: 400; }
 
         /* Modal Bottom */
         .modal-bottom { padding: 24px 28px; }
@@ -506,6 +522,10 @@
     .theme-spring { --line-color: #48bb78; --text-color: #1a3c2a; }
     .theme-fire   { --line-color: #fc8181; --text-color: #742a2a; }
     .theme-ocean  { --line-color: #63b3ed; --text-color: #1a365d; }
+    .theme-royal  { --line-color: #8b5cf6; --text-color: #4c1d95; }
+    .theme-midnight { --line-color: #64748b; --text-color: #0f172a; }
+    .theme-earth  { --line-color: #a16207; --text-color: #422006; }
+    .theme-vibrant { --line-color: #f43f5e; --text-color: #881337; }
 </style>
 
 <script>
@@ -539,6 +559,12 @@
                 <div class="side-panel">
                     <div class="m-name">${name}</div>
                     <div class="m-line"></div>
+                    <div class="m-price">${price} ₪</div>
+                </div>`;
+        } else if (style === 'glass') {
+            content.innerHTML = `
+                <div class="glass-box">
+                    <div class="m-name">${name}</div>
                     <div class="m-price">${price} ₪</div>
                 </div>`;
         }
