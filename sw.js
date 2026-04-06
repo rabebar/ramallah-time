@@ -3,11 +3,11 @@
  * مسؤول عن تحويل الموقع إلى تطبيق ويب (PWA) يعمل بكفاءة.
  */
 
-const CACHE_NAME = 'rt-studio-v1.1'; // تم تحديث الإصدار لضمان التحديث
+const CACHE_NAME = 'rt-studio-v1.2'; // تم تحديث الإصدار لضمان تنشيط الأيقونات الجديدة
 const ASSETS = [
   '/',
-  '/static/uploads/rt_logo_192.png',
-  '/static/uploads/rt_logo_512.png'
+  '/static/rt_logo_192.png',
+  '/static/rt_logo_512.png'
 ];
 
 // 1. تثبيت العامل (Install): تخزين الملفات الأساسية في ذاكرة الهاتف
