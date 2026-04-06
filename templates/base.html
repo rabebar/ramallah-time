@@ -3,224 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#4f46e5">
+    <meta name="theme-color" content="#0A192F">
     <link rel="manifest" href="/static/manifest.json">
     <title>RT Studio | {% block title %}{% endblock %}</title>
     
-    <!-- Fonts: Inter for Global Professional UI -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         :root {
-            --bg: #f3f5f7;
-            --sidebar-bg: rgba(255, 255, 255, 0.7);
-            --card-bg: #ffffff;
-            --text-main: #111827;
-            --text-muted: #6b7280;
-            --accent: #4f46e5;
-            --accent-light: #e0e7ff;
-            --border: #e5e7eb;
+            --navy: #0A192F;
+            --navy-light: #112240;
+            --gold: #B8974A;
+            --white: #FFFFFF;
+            --gray-bg: #F8FAFC;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --border: rgba(0, 0, 0, 0.06);
             --sidebar-w: 260px;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            --sidebar-collapsed-w: 80px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+        body { background-color: var(--gray-bg); color: var(--text-main); min-height: 100vh; display: flex; }
 
-        /* --- Sidebar (Left Side - Linear Style) --- */
+        /* --- Sidebar Desktop --- */
         .sidebar {
-            width: var(--sidebar-w); 
-            background: var(--sidebar-bg);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border-right: 1px solid rgba(0,0,0,0.05);
-            position: fixed; top: 0; left: 0; height: 100vh;
-            display: flex; flex-direction: column; padding: 24px 16px;
-            z-index: 100;
-            box-shadow: var(--shadow-lg);
-            transition: all 0.3s ease;
+            width: var(--sidebar-w);
+            background: var(--navy);
+            height: 100vh;
+            position: fixed;
+            left: 0; top: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            transition: var(--transition);
+            border-right: 1px solid rgba(255,255,255,0.05);
         }
-        
-        .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; padding-left: 8px; }
-        .logo-box { width: 32px; height: 32px; background: linear-gradient(135deg, #4f46e5, #7c3aed); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-size: 14px; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3); }
-        .logo-text { font-size: 18px; font-weight: 700; color: #111; letter-spacing: -0.5px; }
 
-        .nav-links { list-style: none; flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
-        .nav-item { 
-            padding: 10px 12px; border-radius: 8px; color: var(--text-muted); 
-            display: flex; align-items: center; gap: 12px; text-decoration: none; 
-            font-weight: 500; transition: all 0.2s; font-size: 14px; 
+        .sidebar.collapsed { width: var(--sidebar-collapsed-w); }
+
+        .logo-section {
+            padding: 32px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
         }
-        .nav-item svg { width: 20px; height: 20px; stroke-width: 1.75; }
-        
-        .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
-        .nav-item:hover:not(.active) { background: rgba(0,0,0,0.03); color: var(--text-main); }
-        
-        .nav-divider { height: 1px; background: var(--border); margin: 16px 0; opacity: 0.5; }
+
+        .logo-box {
+            width: 36px; height: 36px;
+            background: var(--gold);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: var(--navy); flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(184, 151, 74, 0.3);
+        }
+
+        .logo-text {
+            color: var(--white);
+            font-size: 20px; font-weight: 700;
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed .logo-text { opacity: 0; pointer-events: none; }
+
+        .nav-menu {
+            flex: 1;
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .nav-link i { width: 20px; height: 20px; }
+        .nav-link:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+        .nav-link.active { background: var(--gold); color: var(--navy); font-weight: 600; box-shadow: 0 4px 15px rgba(184, 151, 74, 0.2); }
+
+        .sidebar.collapsed .nav-link span { display: none; }
+
+        .sidebar-footer {
+            padding: 24px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
 
         /* --- Main Content --- */
-        .main-content { margin-left: var(--sidebar-w); padding: 40px; min-height: 100vh; }
+        .main-wrapper {
+            flex: 1;
+            margin-left: var(--sidebar-w);
+            transition: var(--transition);
+            width: 100%;
+        }
 
-        /* --- Mobile Header (Hidden on Desktop) --- */
-        .mobile-header { display: none; }
+        .sidebar.collapsed + .main-wrapper { margin-left: var(--sidebar-collapsed-w); }
 
-        /* --- Mobile Nav (Hidden on Desktop) --- */
-        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.90); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); justify-content: space-around; padding: 8px 0 24px 0; z-index: 1000; box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
-        
-        .mob-item { text-decoration: none; color: #9ca3af; text-align: center; font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 600; padding: 8px 12px; border-radius: 8px; transition: all 0.2s; }
-        .mob-item svg { width: 24px; height: 24px; stroke-width: 1.75; }
-        .mob-item.active { color: var(--accent); background: var(--accent-light); }
+        .content-area {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-        /* --- Responsive --- */
+        /* --- Mobile Nav (Floating) --- */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10, 25, 47, 0.9);
+            backdrop-filter: blur(12px);
+            padding: 8px 24px;
+            border-radius: 50px;
+            z-index: 2000;
+            gap: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .mob-link {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            padding: 8px;
+        }
+
+        .mob-link.active { color: var(--gold); }
+
+        /* Responsive */
         @media (max-width: 768px) {
             .sidebar { display: none; }
-            
-            /* Show Mobile Header */
-            .mobile-header {
-                display: flex; justify-content: space-between; align-items: center;
-                padding: 16px 20px; background: #fff; border-bottom: 1px solid var(--border);
-                position: sticky; top: 0; z-index: 999;
-            }
-            .mobile-header .logo-area { margin-bottom: 0; padding: 0; }
-            
+            .main-wrapper { margin-left: 0 !important; }
+            .content-area { padding: 24px 16px; padding-bottom: 100px; }
             .mobile-nav { display: flex; }
-            .main-content { margin-left: 0; padding: 24px 16px; padding-bottom: 100px; }
         }
-        
-        /* PWA Install Banner */
-        .install-banner {
-            position: fixed; bottom: 100px; left: 20px; right: 20px; max-width: 360px; margin: 0 auto;
-            background: #ffffff; padding: 16px 20px; border-radius: 16px;
-            display: none; align-items: center; justify-content: space-between;
-            z-index: 1001; box-shadow: 0 10px 40px rgba(0,0,0,0.12);
-            border: 1px solid rgba(0,0,0,0.05);
-            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+        /* PWA Banner (Gemini Style) */
+        .pwa-toast {
+            position: fixed; top: 20px; right: 20px;
+            background: var(--white); padding: 16px;
+            border-radius: 16px; display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 3000; border: 1px solid var(--border);
+            align-items: center; gap: 12px;
+            animation: slideIn 0.5s ease;
         }
-        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        .install-btn { background: #111; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: transform 0.2s; }
-        .install-btn:active { transform: scale(0.96); }
-        .close-banner { font-size: 18px; color: #d1d5db; background: none; border: none; cursor: pointer; margin-left: 12px; line-height: 1; }
-        .install-text { font-size: 13px; font-weight: 500; color: #374151; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
     </style>
 </head>
 <body>
 
-    <!-- Mobile Top Header -->
-    <div class="mobile-header">
-        <div class="logo-area">
-            <div class="logo-box">RT</div>
-            <h2 class="logo-text">RT Studio</h2>
-        </div>
-    </div>
-
     <!-- Sidebar Desktop -->
-    <div class="sidebar">
-        <div class="logo-area">
+    <aside class="sidebar" id="mainSidebar">
+        <div class="logo-section">
             <div class="logo-box">RT</div>
-            <h2 class="logo-text">RT Studio</h2>
+            <span class="logo-text">RT Studio</span>
         </div>
-        <nav class="nav-links">
-            <a href="/" class="nav-item {% block nav_dashboard %}{% endblock %}">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                Dashboard
-            </a>
-            <a href="/admin" class="nav-item {% block nav_products %}{% endblock %}">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                My Products
-            </a>
-            <a href="/store/{{ store_slug if store_slug else 'preview' }}" class="nav-item" target="_blank">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                View Store
-            </a>
-            
-            <div class="nav-divider"></div>
 
-            <a href="/logout" class="nav-item" style="margin-top: auto; color: #6b7280;">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Logout
+        <nav class="nav-menu">
+            <a href="/" class="nav-link {% block nav_dashboard %}{% endblock %}">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/admin" class="nav-link {% block nav_products %}{% endblock %}">
+                <i data-lucide="package"></i>
+                <span>Inventory</span>
+            </a>
+            <a href="/store/{{ store_slug if store_slug else 'preview' }}" class="nav-link" target="_blank">
+                <i data-lucide="external-link"></i>
+                <span>Public Store</span>
+            </a>
+            <a href="/admin?active_tab=settings" class="nav-link {% block nav_settings %}{% endblock %}">
+                <i data-lucide="settings"></i>
+                <span>Settings</span>
             </a>
         </nav>
+
+        <div class="sidebar-footer">
+            <a href="/logout" class="nav-link" style="color: #ef4444;">
+                <i data-lucide="log-out"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <main class="content-area">
+            {% block content %}{% endblock %}
+        </main>
     </div>
 
+    <!-- Mobile Nav -->
     <nav class="mobile-nav">
-        <a href="/" class="mob-item {% block mob_dashboard %}{% endblock %}">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Home
+        <a href="/" class="mob-link {% block mob_dashboard %}{% endblock %}">
+            <i data-lucide="home"></i>
         </a>
-        <a href="/admin" class="mob-item {% block mob_products %}{% endblock %}">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-            Products
+        <a href="/admin" class="mob-link {% block mob_products %}{% endblock %}">
+            <i data-lucide="package"></i>
         </a>
-        <a href="/store/{{ store_slug if store_slug else 'preview' }}" class="mob-item" target="_blank">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            Store
+        <a href="/store/{{ store_slug if store_slug else 'preview' }}" class="mob-link">
+            <i data-lucide="store"></i>
         </a>
-        <a href="/admin?active_tab=settings" class="mob-item {% block mob_settings %}{% endblock %}">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            Settings
-        </a>
-        <a href="/logout" class="mob-item">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Logout
+        <a href="/admin?active_tab=settings" class="mob-link {% block mob_settings %}{% endblock %}">
+            <i data-lucide="settings"></i>
         </a>
     </nav>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        {% block content %}{% endblock %}
-    </div>
-
-    <!-- PWA Install Banner -->
-    <div id="pwaBanner" class="install-banner">
-        <div>
-            <span class="install-text">Install RT Studio for quick access</span>
-        </div>
-        <div style="display:flex; align-items:center;">
-            <button id="pwaBtn" class="install-btn">Install</button>
-            <button class="close-banner" onclick="document.getElementById('pwaBanner').style.display='none'">✕</button>
-        </div>
-    </div>
-
+    <!-- Lucide Init -->
     <script>
-        let deferredPrompt;
-        const pwaBanner = document.getElementById('pwaBanner');
-        const pwaBtn = document.getElementById('pwaBtn');
-        const pwaMessage = document.querySelector('.install-text');
-
-        // 1. Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(reg => console.log('SW Registered'));
-            });
-        }
-
-        // 2. Android/Chrome Install Logic
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            pwaBanner.style.display = 'flex';
-        });
-
-        pwaBtn.addEventListener('click', () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => {
-                    pwaBanner.style.display = 'none';
-                    deferredPrompt = null;
-                });
-            }
-        });
-
-        // 3. iOS Safari Specific Logic
-        const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-
-        if (isIos && !isStandalone) {
-            pwaMessage.innerText = "To install: tap 'Share' then 'Add to Home Screen'";
-            pwaBtn.style.display = 'none'; 
-            pwaBanner.style.display = 'flex';
+        lucide.createIcons();
+        
+        // Sidebar Toggle logic can be added here if needed
+        function toggleSidebar() {
+            document.getElementById('mainSidebar').classList.toggle('collapsed');
         }
     </script>
 </body>

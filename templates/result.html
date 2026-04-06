@@ -154,7 +154,7 @@
     <div class="preview-sticky-wrap">
         <div class="canvas-frame">
             <div id="capture-area" class="post-main-canvas theme-gold style-elegant">
-                <img id="prod-img" src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Product">
+                <img id="prod-img" src="/static/uploads/processed_sample.png" alt="Product">
                 
                 <div id="dynamic-content-wrap" style="width: 100%; display: contents;">
                     <div id="prod-title">Product Name</div>
@@ -171,8 +171,8 @@
     <!-- Right: Controls Panel -->
     <div class="controls-panel">
         <form action="/save_product" method="POST" id="mainSaveForm">
-            <input type="hidden" name="image_url" value="{{ filename }}">
-            <input type="hidden" name="original_image_url" value="{{ original_filename }}">
+            <input type="hidden" name="image_url" value="processed_sample.png">
+            <input type="hidden" name="original_image_url" value="orig_sample.jpg">
             <input type="hidden" name="template_style" id="hiddenStyle" value="elegant">
             <input type="hidden" name="theme" id="hiddenTheme" value="gold">
 
@@ -183,7 +183,6 @@
                     Product Details
                 </span>
                 <input type="text" name="name" id="inputName" placeholder="Enter product name..." class="data-input" oninput="liveSync()" required>
-                <!-- ✅ إصلاح: $ → ₪ -->
                 <input type="number" name="price" id="inputPrice" placeholder="Price (₪)" class="data-input" oninput="liveSync()" required>
             </div>
 
@@ -244,7 +243,6 @@
 <script>
     function liveSync() {
         const nameVal  = document.getElementById('inputName').value  || 'Product Name';
-        // ✅ إصلاح: $ → ₪
         const priceVal = (document.getElementById('inputPrice').value || '0.00') + ' ₪';
         
         document.querySelectorAll('#prod-title').forEach(el => el.innerText = nameVal);
@@ -264,7 +262,6 @@
         const canvas = document.getElementById('capture-area');
         const wrap   = document.getElementById('dynamic-content-wrap');
         const name   = document.getElementById('inputName').value  || 'Product Name';
-        // ✅ إصلاح: $ → ₪
         const price  = (document.getElementById('inputPrice').value || '0.00') + ' ₪';
 
         canvas.classList.remove('style-elegant', 'style-modern', 'style-minimal', 'style-bold');
