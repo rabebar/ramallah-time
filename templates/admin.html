@@ -299,19 +299,43 @@
 </div>
 
 <script>
+    // وظيفة تفعيل التبويب الصحيح بناءً على الرابط (URL)
+    function activateTabFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        const activeTab = params.get('active_tab');
+        
+        if (activeTab === 'settings') {
+            // البحث عن زر الإعدادات والضغط عليه برمجياً
+            const settingsBtn = document.querySelector('button[onclick*="settings"]');
+            if (settingsBtn) {
+                showTab('settings', settingsBtn);
+            }
+        }
+    }
+
+    // تنفيذ الوظيفة فور تحميل الصفحة بالكامل
+    window.addEventListener('load', activateTabFromURL);
+
+    // وظيفة تبديل التبويبات الأصلية
     function showTab(name, btn) {
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-' + name).classList.add('active');
-        btn.classList.add('active');
+        const targetSection = document.getElementById('tab-' + name);
+        if (targetSection) {
+            targetSection.classList.add('active');
+            btn.classList.add('active');
+        }
     }
 
-    // Live Edit Sync
+    // وظيفة المزامنة المباشرة للتعديل (تأكيد العملة ₪)
     function syncEdit() {
-        document.getElementById('prevName').innerText = document.getElementById('inName').value || 'Product Name';
-        document.getElementById('prevPrice').innerText = '₪' + (document.getElementById('inPrice').value || '0.00');
+        const nameVal = document.getElementById('inName').value;
+        const priceVal = document.getElementById('inPrice').value;
+        document.getElementById('prevName').innerText = nameVal || 'Product Name';
+        document.getElementById('prevPrice').innerText = '₪' + (priceVal || '0.00');
     }
 
+    // وظيفة تحديث ثيم المنتج
     function updateEditTheme(theme, el) {
         document.getElementById('livePreview').style.background = 'var(--theme-' + theme + ')';
         document.getElementById('editTheme').value = theme;
