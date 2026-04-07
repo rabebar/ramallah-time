@@ -156,24 +156,64 @@
         .modal-card {
             background: #fff; width: 100%; max-width: 540px; border-radius: 40px;
             border: 1px solid var(--border); box-shadow: var(--shadow-premium);
-            overflow: hidden; position: relative;
+            overflow-y: auto; position: relative; max-height: 92vh;
+            animation: modalIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column;
         }
+        @keyframes modalIn { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
         .modal-close {
-            position: absolute; top: 24px; left: 24px; width: 48px; height: 48px;
-            background: #F1F5F9; border: none; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; cursor: pointer; z-index: 10;
+            position: sticky; top: 20px; right: 20px; width: 44px; height: 44px;
+            background: rgba(241, 245, 249, 0.9); border: none; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; cursor: pointer; z-index: 100;
+            backdrop-filter: blur(10px); box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: -44px; align-self: flex-start; /* لضمان بقائه فوق المحتوى */
         }
-        .modal-canvas { width: 100%; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; background: #F8FAFC; }
-        .modal-canvas img { max-width: 75%; max-height: 75%; object-fit: contain; filter: drop-shadow(0 30px 60px rgba(0,0,0,0.12)); }
-        .modal-info { padding: 40px; text-align: center; }
-        .modal-info h2 { font-size: 28px; font-weight: 800; margin-bottom: 12px; }
-        .modal-info .price { font-size: 24px; font-weight: 700; color: var(--gold); margin-bottom: 32px; }
+        .modal-close:hover { background: #E2E8F0; transform: rotate(90deg); }
+
+        .modal-canvas { width: 100%; aspect-ratio: 1.2/1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #F8FAFC; flex-shrink: 0; border-radius: 32px 32px 0 0; }
+        .modal-canvas img { max-width: 80%; max-height: 80%; object-fit: contain; z-index: 2; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.1)); }
+
+        /* Modal Styles Overlay */
+        .modal-canvas.style-modern .m-name-overlay { position: absolute; top: 30px; right: 30px; background: #fff; padding: 10px 20px; border-radius: 12px; font-weight: 800; box-shadow: var(--shadow-card); z-index: 5; }
+        .modal-canvas.style-modern .m-price-overlay { position: absolute; bottom: 30px; left: 30px; background: var(--navy-deep); color: #fff; padding: 10px 20px; border-radius: 12px; font-weight: 700; z-index: 5; }
+        .modal-canvas.style-glass .glass-box { position: absolute; bottom: 30px; left: 30px; right: 30px; background: rgba(255,255,255,0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 20px; text-align: center; z-index: 5; }
+        .modal-canvas.style-minimal .glass-bar { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.1); backdrop-filter: blur(20px); padding: 20px; display: flex; justify-content: space-between; color: #fff; font-weight: 600; z-index: 5; }
+
+        .modal-info { padding: 32px; flex: 1; }
+        .modal-info h2 { font-size: 26px; font-weight: 800; margin-bottom: 8px; color: var(--text-main); }
+        .modal-info .price { font-size: 22px; font-weight: 700; color: var(--gold); margin-bottom: 24px; }
+        .modal-desc { font-size: 15px; color: var(--text-muted); line-height: 1.8; margin-bottom: 32px; border-right: 4px solid var(--gold-light); padding-right: 20px; text-align: right; }
+
         .wa-btn {
             display: flex; align-items: center; justify-content: center; gap: 12px;
             background: var(--navy-deep); color: #fff; padding: 22px; border-radius: 20px;
             text-decoration: none; font-weight: 700; transition: 0.3s; font-size: 16px;
         }
         .wa-btn:hover { background: #000; transform: translateY(-4px); }
+
+        /* Theme Colors */
+        .theme-gold   { background: linear-gradient(135deg, #fdfbf7, #e2d9ca) !important; }
+        .theme-black  { background: linear-gradient(135deg, #1a1a1a, #434343) !important; }
+        .theme-pastel { background: linear-gradient(135deg, #f5f3ff, #ddd6fe) !important; }
+        .theme-spring { background: linear-gradient(135deg, #f0fff4, #c6f6d5) !important; }
+        .theme-fire   { background: linear-gradient(135deg, #fff5f5, #fed7d7) !important; }
+        .theme-ocean  { background: linear-gradient(135deg, #ebf8ff, #bee3f8) !important; }
+        .theme-royal  { background: linear-gradient(135deg, #4f46e5, #7c3aed) !important; }
+        .theme-midnight { background: linear-gradient(135deg, #0f172a, #334155) !important; }
+        .theme-earth  { background: linear-gradient(135deg, #3f6212, #713f12) !important; }
+        .theme-vibrant { background: linear-gradient(135deg, #f43f5e, #fb923c) !important; }
+
+        /* PWA Banner */
+        .pwa-banner {
+            position: fixed; bottom: 30px; left: 20px; right: 20px;
+            background: #fff; padding: 20px; border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            display: none; align-items: center; gap: 15px; z-index: 5000;
+            border: 1px solid var(--border); animation: slideUp 0.6s cubic-bezier(0.2, 1, 0.3, 1);
+        }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .pwa-btn { background: var(--gold); color: #fff; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; }
 
         /* Responsive */
         @media (max-width: 1024px) {
@@ -221,7 +261,9 @@
         <h2 class="section-title">أحدث المنتجات</h2>
         <div class="products-grid">
             {% for product in products %}
-            <div class="product-card" onclick="openModal('{{ product.name|replace("'", "\\'") }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}', '{{ (product.description or "")|replace("'", "\\'") }}')">
+            {% set current_theme = (product.theme|lower if product.theme else 'gold') %}
+            {% set current_style = (product.template_style|lower if product.template_style else 'elegant') %}
+            <div class="product-card" onclick="openModal('{{ product.name|replace("'", "\\'") }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}', '{{ (product.description or "")|replace("'", "\\'") }}', '{{ current_theme }}', '{{ current_style }}')">
                 <div class="img-container">
                     <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}">
                 </div>
@@ -258,12 +300,14 @@
             <button class="modal-close" onclick="closeModal()">
                 <i data-lucide="x"></i>
             </button>
-            <div class="modal-canvas">
+            <div id="modalCanvas" class="modal-canvas">
                 <img id="mImg" src="" alt="">
+                <div id="mStyleContent"></div>
             </div>
             <div class="modal-info">
                 <h2 id="mName">اسم المنتج</h2>
                 <div class="price" id="mPrice">₪ 0.00</div>
+                <div id="mDesc" class="modal-desc"></div>
                 <a id="mWa" href="#" class="wa-btn" target="_blank">
                     <i data-lucide="message-circle"></i>
                     اطلب الآن عبر واتساب
@@ -272,13 +316,69 @@
         </div>
     </div>
 
+    <!-- PWA Banner -->
+    <div id="pwaBanner" class="pwa-banner">
+        <div class="logo-box" style="width:40px; height:40px;"><i data-lucide="download" style="width:20px;"></i></div>
+        <div style="flex:1">
+            <div style="font-weight:700; font-size:14px;">تثبيت التطبيق</div>
+            <div style="font-size:12px; color:var(--text-muted);">تصفح المتجر بشكل أسرع</div>
+        </div>
+        <button id="installBtn" class="pwa-btn">تثبيت</button>
+        <button onclick="document.getElementById('pwaBanner').style.display='none'" style="background:none; border:none; color:var(--text-muted);"><i data-lucide="x" style="width:18px;"></i></button>
+    </div>
+
     <script>
         lucide.createIcons();
 
-        function openModal(name, price, img, desc) {
+        // PWA Logic
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // إخفاء اللافتة على الكمبيوتر (شاشات أكبر من 1024)
+            if (window.innerWidth > 1024) return;
+            
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('pwaBanner').style.display = 'flex';
+        });
+
+        document.getElementById('installBtn')?.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') document.getElementById('pwaBanner').style.display = 'none';
+                deferredPrompt = null;
+            }
+        });
+
+        function openModal(name, price, img, desc, theme, style) {
+            const canvas = document.getElementById('modalCanvas');
+            const mContent = document.getElementById('mStyleContent');
+            const mDesc = document.getElementById('mDesc');
+
             document.getElementById('mName').innerText = name;
             document.getElementById('mPrice').innerText = '₪ ' + price;
             document.getElementById('mImg').src = img;
+            
+            // Apply Theme and Style
+            canvas.className = 'modal-canvas theme-' + theme + ' style-' + style;
+
+            if (style === 'modern') {
+                mContent.innerHTML = `<div class="m-name-overlay">${name}</div><div class="m-price-overlay">₪ ${price}</div>`;
+            } else if (style === 'glass') {
+                mContent.innerHTML = `<div class="glass-box"><div>${name}</div><div style="font-weight:700; color:var(--gold)">₪ ${price}</div></div>`;
+            } else if (style === 'minimal') {
+                mContent.innerHTML = `<div class="glass-bar"><span>${name}</span><span>₪ ${price}</span></div>`;
+            } else {
+                mContent.innerHTML = '';
+            }
+
+            // Description
+            if (desc && desc.trim()) {
+                mDesc.innerText = desc;
+                mDesc.style.display = 'block';
+            } else {
+                mDesc.style.display = 'none';
+            }
             
             let phone = "{{ store.whatsapp_phone or '970599000000' }}".replace(/\s+/g, '');
             if (phone.startsWith('0')) phone = '970' + phone.substring(1);
