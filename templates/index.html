@@ -92,8 +92,57 @@
     .loader-spin { width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+    /* --- تحديث واجهة الموبايل للتاجر (تركيز على الإنتاج السريع) --- */
     @media (max-width: 600px) {
-        .projects-grid { grid-template-columns: 1fr; }
+        /* إخفاء العناصر الإدارية التي لا تهم التاجر في الميدان */
+        .recent-activity, .quick-actions-row, .section-title:nth-of-type(2) {
+            display: none !important;
+        }
+        
+        /* تحويل الهيدر لبانر فخم */
+        .welcome-header {
+            margin-bottom: 25px;
+            background: var(--navy-gradient);
+            padding: 35px 20px;
+            border-radius: 25px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .welcome-header h1 {
+            color: #fff !important;
+            font-size: 22px;
+        }
+
+        /* زر الرفع "الذهبي" الضخم */
+        .btn-header {
+            width: 100%;
+            height: 65px;
+            font-size: 18px !important;
+            background: var(--gold) !important;
+            color: var(--navy-deep) !important;
+            border: none !important;
+            border-radius: 15px !important;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(184, 151, 74, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* عرض الصور المعالجة بشكل واضح */
+        .projects-grid {
+            grid-template-columns: 1fr !important;
+            gap: 15px;
+            width: 100%;
+        }
+        
+        .project-card {
+            border-radius: 20px !important;
+            padding: 15px !important;
+        }
     }
 </style>
 

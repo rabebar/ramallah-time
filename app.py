@@ -445,7 +445,6 @@ def sw():
     return send_from_directory(app.root_path, 'sw.js')
 
 if __name__ == '__main__':
-    # تعديل المنفذ إلى 3000 ليتوافق مع بيئة AI Studio
-    # وسيبقى متوافقاً مع رندر لأنه سيستخدم PORT البيئة إذا وجد
+   # تشغيل الموقع مع خاصية (threaded) لزيادة السرعة والتعامل مع أكثر من مستخدم
     port = int(os.environ.get("PORT", 3000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, threaded=True)
