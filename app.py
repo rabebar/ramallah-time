@@ -316,6 +316,15 @@ def update_store():
     if not user_id: return redirect(url_for('login'))
 
     name = request.form.get('name')
+    # معالجة رفع شعار المتجر (Logo)
+    logo_file = request.files.get('logo')
+    logo_url = None
+    if logo_file and logo_file.filename != '':
+        unique_id = uuid.uuid4().hex[:6]
+        logo_filename = f"logo_{unique_id}_{logo_file.filename}"
+        logo_path = os.path.join(app.config['UPLOAD_FOLDER'], logo_filename)
+        logo_file.save(logo_path)
+        logo_url = logo_filename
     slug = request.form.get('slug', '').strip().replace(" ", "-") # تنظيف الرابط من المسافات
     bio = request.form.get('bio')
     display_phone = request.form.get('display_phone')
@@ -329,15 +338,27 @@ def update_store():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("""
-            UPDATE stores SET 
-                name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
-                instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                address=%s, website=%s
-            WHERE user_id=%s
-        """, (name, slug, bio, display_phone, whatsapp_phone, 
-              instagram_handle, tiktok_handle, facebook_handle, 
-              address, website, user_id))
+        # تحديث البيانات مع إضافة الشعار إذا تم رفعه
+        if logo_url:
+            cursor.execute("""
+                UPDATE stores SET 
+                    name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
+                    instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
+                    address=%s, website=%s, logo_url=%s
+                WHERE user_id=%s
+            """, (name, slug, bio, display_phone, whatsapp_phone, 
+                  instagram_handle, tiktok_handle, facebook_handle, 
+                  address, website, logo_url, user_id))
+        else:
+            cursor.execute("""
+                UPDATE stores SET 
+                    name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
+                    instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
+                    address=%s, website=%s
+                WHERE user_id=%s
+            """, (name, slug, bio, display_phone, whatsapp_phone, 
+                  instagram_handle, tiktok_handle, facebook_handle, 
+                  address, website, user_id))
         conn.commit()
         flash("تم تحديث الإعدادات.", "success")
     except Exception as e:

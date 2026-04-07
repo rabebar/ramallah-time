@@ -246,10 +246,25 @@
 
 <!-- Tab: Settings -->
 <div id="tab-settings" class="content-section">
-    <form action="/update_store" method="POST" class="settings-form">
+    <form action="/update_store" method="POST" class="settings-form" enctype="multipart/form-data">
         <div class="section-header">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             Store Profile
+        </div>
+        <!-- إضافة خيار رفع شعار المتجر -->
+        <div class="form-group" style="margin-bottom: 25px; padding: 20px; background: #f8fafc; border-radius: 15px; border: 1px dashed #cbd5e1;">
+            <label class="form-label">شعار المتجر (Logo)</label>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                {% if store.logo_url %}
+                <img src="/static/uploads/{{ store.logo_url }}" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover; border: 2px solid #fff; shadow: var(--shadow-sm);">
+                {% else %}
+                <div style="width: 60px; height: 60px; background: #e2e8f0; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                    <i data-lucide="image"></i>
+                </div>
+                {% endif %}
+                <input type="file" name="logo" accept="image/*" class="input-field" style="padding: 8px;">
+            </div>
+            <small style="color: var(--text-muted); margin-top: 8px; display: block;">يفضل أن تكون الصورة مربعة وبخلفية شفافة أو بيضاء.</small>
         </div>
         
         <div class="grid-2">

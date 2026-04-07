@@ -229,7 +229,7 @@
         </main>
     </div>
 
-    <!-- Mobile Nav -->
+    <!-- Mobile Nav (الشريط السفلي المطور) -->
     <nav class="mobile-nav">
         <a href="/" class="mob-link {% block mob_dashboard %}{% endblock %}">
             <i data-lucide="home"></i>
@@ -237,16 +237,24 @@
         <a href="/admin" class="mob-link">
             <i data-lucide="mail"></i>
         </a>
-        <a href="/" class="mob-fab">
+
+        <!-- زر الزائد المطور: يفتح الكاميرا أو معرض الصور فوراً -->
+        <a href="javascript:void(0)" class="mob-fab" onclick="document.getElementById('globalFileInput').click()">
             <i data-lucide="plus" style="width: 28px; height: 28px;"></i>
         </a>
+        
+        <!-- نموذج مخفي للرفع السريع متاح في كل صفحات الموقع -->
+        <form action="/" method="POST" enctype="multipart/form-data" id="globalUploadForm" style="display:none">
+            <input type="file" id="globalFileInput" name="image" accept="image/*" onchange="document.getElementById('globalUploadForm').submit()">
+        </form>
+
         <a href="/store/{{ store_slug if store_slug else 'preview' }}" class="mob-link">
             <i data-lucide="message-square"></i>
         </a>
         <a href="/admin?active_tab=settings" class="mob-link">
             <i data-lucide="settings"></i>
         </a>
-    </nav>
+        </nav>
 
     <!-- Lucide Init -->
     <script>

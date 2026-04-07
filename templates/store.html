@@ -6,12 +6,22 @@
     <meta name="theme-color" content="#1A2238">
     <title>{{ store.name }} | اطلب الآن عبر واتساب</title>
     <!-- الأكواد المسؤولة عن شكل الرابط عند مشاركته (المعاينة الاحترافية) -->
-<meta property="og:title" content="{{ store.name }}">
-<meta property="og:description" content="{{ store.bio or 'اكتشف أحدث منتجاتنا وأفضل الأسعار في متجرنا الإلكتروني' }}">
-<meta property="og:type" content="website">
-<meta property="og:url" content="{{ request.url }}">
-<meta property="og:image" content="{{ url_for('static', filename='rt_logo_512.png', _external=True) }}">
+<!-- الأكواد المسؤولة عن شكل الرابط عند مشاركته (المعاينة الاحترافية) -->
+    <meta property="og:title" content="{{ store.name }}">
+    <meta property="og:description" content="{{ store.bio or 'اكتشف أحدث منتجاتنا وأفضل الأسعار في متجرنا الإلكتروني' }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    
+    {% if store.logo_url %}
+    <meta property="og:image" content="{{ url_for('static', filename='uploads/' + store.logo_url, _external=True) }}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='uploads/' + store.logo_url, _external=True) }}">
+    {% else %}
+    <meta property="og:image" content="{{ url_for('static', filename='rt_logo_512.png', _external=True) }}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='rt_logo_512.png', _external=True) }}">
+    {% endif %}
 
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ store.name }}">
 <!-- تنسيق خاص لتويتر وفيسبوك لعرض الصورة بشكل عريض وجذاب -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ store.name }}">
@@ -899,8 +909,12 @@
     <!-- Sidebar (Brand Identity) -->
     <aside class="sidebar">
         <div class="logo-section">
-            <div class="logo-box">
+            <div class="logo-box" style="overflow: hidden; padding: 0; display: flex; align-items: center; justify-content: center;">
+                {% if store.logo_url %}
+                <img src="/static/uploads/{{ store.logo_url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
                 <i data-lucide="sparkles" style="width: 32px; height: 32px;"></i>
+                {% endif %}
             </div>
             <span class="logo-text">{{ store.name }}</span>
         </div>
@@ -954,8 +968,12 @@
 
     <!-- Mobile Header -->
     <header class="mobile-header">
-        <div class="logo-box">
+        <div class="logo-box" style="overflow: hidden; padding: 0; display: flex; align-items: center; justify-content: center;">
+            {% if store.logo_url %}
+            <img src="/static/uploads/{{ store.logo_url }}" style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
             <i data-lucide="sparkles" style="width: 20px;"></i>
+            {% endif %}
         </div>
         <span class="logo-text">{{ store.name }}</span>
     </header>
