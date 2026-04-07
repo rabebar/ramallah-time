@@ -592,10 +592,56 @@
         .theme-earth  { background: linear-gradient(135deg, #3f6212, #713f12) !important; }
         .theme-vibrant { background: linear-gradient(135deg, #f43f5e, #fb923c) !important; }
 
-        /* PWA Banner */
+        /* Mobile Bottom Nav */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(26, 34, 56, 0.95);
+            backdrop-filter: blur(20px);
+            height: 72px;
+            border-radius: 24px;
+            z-index: 4000;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .m-nav-link {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .m-nav-link.active {
+            color: var(--gold-light);
+        }
+
+        .m-nav-link i {
+            width: 24px;
+            height: 24px;
+        }
+
+        .m-nav-link span {
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* PWA Banner Position Adjustment */
         .pwa-banner {
             position: fixed;
-            bottom: 30px;
+            bottom: 105px; /* فوق شريط التنقل السفلي */
             left: 20px;
             right: 20px;
             background: #fff;
@@ -610,25 +656,11 @@
             animation: slideUp 0.6s cubic-bezier(0.2, 1, 0.3, 1);
         }
 
-        @keyframes slideUp {
-            from { transform: translateY(100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .pwa-btn {
-            background: var(--gold);
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
         /* Responsive */
         @media (max-width: 1024px) {
             .sidebar { display: none; }
-            .main-content { margin-right: 0; padding: 40px 24px; }
+            .mobile-nav { display: flex; }
+            .main-content { margin-right: 0; padding: 40px 24px 120px 24px; }
             .welcome-header { flex-direction: column; align-items: flex-start; gap: 24px; }
             .products-grid { grid-template-columns: 1fr; }
         }
@@ -778,6 +810,26 @@
 
     </main>
 
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-nav">
+        <a href="#home" class="m-nav-link active">
+            <i data-lucide="home"></i>
+            <span data-t="nav_home">الرئيسية</span>
+        </a>
+        <a href="#products" class="m-nav-link">
+            <i data-lucide="package"></i>
+            <span data-t="nav_products">المنتجات</span>
+        </a>
+        <a href="#about" class="m-nav-link">
+            <i data-lucide="info"></i>
+            <span data-t="nav_about">عن المتجر</span>
+        </a>
+        <button class="m-nav-link" onclick="toggleLanguage()">
+            <i data-lucide="languages"></i>
+            <span id="mLangLabel">EN</span>
+        </button>
+    </nav>
+
     <!-- Product Details Modal -->
     <div id="productModal" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-card" onclick="event.stopPropagation()">
@@ -907,9 +959,23 @@
             // 4. Update Language Buttons State
             document.getElementById('btnAr').classList.toggle('active', lang === 'ar');
             document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+            
+            // Update Mobile Label
+            const mLangLabel = document.getElementById('mLangLabel');
+            if (mLangLabel) {
+                mLangLabel.innerText = lang === 'ar' ? 'EN' : 'AR';
+            }
 
             // 5. Refresh Lucide Icons
             lucide.createIcons();
+        }
+
+        /**
+         * Toggle language for mobile
+         */
+        function toggleLanguage() {
+            const nextLang = currentLang === 'ar' ? 'en' : 'ar';
+            setLanguage(nextLang);
         }
 
         // Initialize Language on Page Load
