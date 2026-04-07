@@ -92,7 +92,8 @@
 <div class="upload-container">
     <form action="/" method="POST" enctype="multipart/form-data" id="uploadForm">
         <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
-            <i data-lucide="cloud-upload"></i>
+            <i data-lucide="cloud-upload" id="uploadIcon"></i>
+            <img id="previewImg" style="display:none; max-width: 100%; max-height: 200px; border-radius: 12px; margin-bottom: 20px; object-fit: contain;">
             <h2 id="mainTxt" style="font-size: 18px; font-weight: 700; color: var(--navy);">Drop your product image here</h2>
             <p id="subTxt" style="color: var(--text-muted); margin-top: 8px;">Supports JPG, PNG (Max 5MB)</p>
             <input type="file" id="fileInput" name="image" accept="image/*" style="display:none" onchange="handleSelect(this)">
@@ -117,6 +118,14 @@
 <script>
     function handleSelect(input) {
         if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('previewImg').style.display = 'inline-block';
+                document.getElementById('uploadIcon').style.display = 'none';
+            }
+            reader.readAsDataURL(input.files[0]);
+
             document.getElementById('mainTxt').innerText = "Image Selected!";
             document.getElementById('subTxt').innerText = input.files[0].name;
             document.getElementById('btnArea').style.display = 'flex';
