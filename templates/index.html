@@ -98,58 +98,36 @@
 </style>
 
 <div class="welcome-header">
-    <h1>Welcome back, <span style="color: var(--text-main);">Sarah</span></h1>
+    <h1>Welcome back, <span style="color: var(--text-main);">Creator</span></h1>
     <div class="header-actions">
         <button class="btn-header" onclick="document.getElementById('fileInput').click()">
             <i data-lucide="plus"></i> New Shoot +
         </button>
-        <button class="btn-header">
-            <i data-lucide="box"></i> Templates
-        </button>
-        <button class="btn-header" style="padding: 10px 12px;">
-            <i data-lucide="more-horizontal"></i>
-        </button>
     </div>
 </div>
 
-<h2 class="section-title">Your Projects</h2>
+<h2 class="section-title">Your Recent Processed Images</h2>
 <div class="projects-grid">
-    <div class="project-card">
-        <div class="project-img-box">
-            <img src="https://picsum.photos/seed/watch/200/200" alt="Watch">
+    {% if stats.processed_images %}
+        {% for img in stats.processed_images[:4] %}
+        <div class="project-card" onclick="window.location.href='/result/{{ img.id }}'">
+            <div class="project-img-box">
+                <img src="/static/uploads/{{ img.url }}" alt="Processed Image">
+            </div>
+            <div class="project-info">
+                <div class="p-name">Processed Image</div>
+                <div class="p-meta">{{ img.date }} • Completed</div>
+            </div>
         </div>
-        <div class="project-info">
-            <div class="p-name">Vintage Watch</div>
-            <div class="p-meta">12 photos • Active</div>
+        {% endfor %}
+    {% else %}
+        <div class="project-card" style="grid-column: 1/-1; justify-content: center; padding: 40px; border: 2px dashed var(--border); background: transparent; box-shadow: none;">
+            <div class="project-info" style="text-align: center;">
+                <div class="p-name" style="color: var(--text-muted);">No processed images yet</div>
+                <div class="p-meta">Upload your first product to see it here</div>
+            </div>
         </div>
-    </div>
-    <div class="project-card">
-        <div class="project-img-box">
-            <img src="https://picsum.photos/seed/sneaker/200/200" alt="Sneaker">
-        </div>
-        <div class="project-info">
-            <div class="p-name">Sport Sneakers</div>
-            <div class="p-meta">8 photos • Editing</div>
-        </div>
-    </div>
-    <div class="project-card">
-        <div class="project-img-box">
-            <img src="https://picsum.photos/seed/perfume/200/200" alt="Perfume">
-        </div>
-        <div class="project-info">
-            <div class="p-name">Luxury Perfume</div>
-            <div class="p-meta">10 photos • Completed</div>
-        </div>
-    </div>
-    <div class="project-card">
-        <div class="project-img-box">
-            <img src="https://picsum.photos/seed/headphone/200/200" alt="Headphone">
-        </div>
-        <div class="project-info">
-            <div class="p-name">Wireless Headphones</div>
-            <div class="p-meta">15 photos • Active</div>
-        </div>
-    </div>
+    {% endif %}
 </div>
 
 <h2 class="section-title">Quick Actions</h2>
