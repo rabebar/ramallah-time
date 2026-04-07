@@ -592,6 +592,36 @@
         .theme-earth  { background: linear-gradient(135deg, #3f6212, #713f12) !important; }
         .theme-vibrant { background: linear-gradient(135deg, #f43f5e, #fb923c) !important; }
 
+        /* Mobile Header (Brand Identity on Mobile) */
+        .mobile-header {
+            display: none;
+            background: var(--navy-gradient);
+            padding: 12px 20px;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 3000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .mobile-header .logo-box {
+            width: 36px;
+            height: 36px;
+            background: var(--gold-light);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .mobile-header .logo-text {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
         /* Mobile Bottom Nav */
         .mobile-nav {
             display: none;
@@ -599,29 +629,30 @@
             bottom: 20px;
             left: 20px;
             right: 20px;
-            background: rgba(26, 34, 56, 0.95);
+            background: rgba(26, 34, 56, 0.98);
             backdrop-filter: blur(20px);
-            height: 72px;
-            border-radius: 24px;
+            height: 68px;
+            border-radius: 20px;
             z-index: 4000;
             align-items: center;
             justify-content: space-around;
-            padding: 0 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 0 5px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
             border: 1px solid rgba(255,255,255,0.1);
         }
 
         .m-nav-link {
-            color: rgba(255,255,255,0.6);
+            color: rgba(255,255,255,0.5);
             text-decoration: none;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
             background: none;
             border: none;
             cursor: pointer;
             transition: 0.3s;
+            flex: 1;
         }
 
         .m-nav-link.active {
@@ -629,40 +660,72 @@
         }
 
         .m-nav-link i {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
         }
 
         .m-nav-link span {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 600;
         }
 
         /* PWA Banner Position Adjustment */
         .pwa-banner {
             position: fixed;
-            bottom: 105px; /* فوق شريط التنقل السفلي */
-            left: 20px;
-            right: 20px;
+            bottom: 100px;
+            left: 15px;
+            right: 15px;
             background: #fff;
-            padding: 20px;
-            border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            padding: 16px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
             display: none;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             z-index: 5000;
             border: 1px solid var(--border);
             animation: slideUp 0.6s cubic-bezier(0.2, 1, 0.3, 1);
         }
 
-        /* Responsive */
+        /* Responsive Upgrades */
         @media (max-width: 1024px) {
             .sidebar { display: none; }
+            .mobile-header { display: flex; }
             .mobile-nav { display: flex; }
-            .main-content { margin-right: 0; padding: 40px 24px 120px 24px; }
-            .welcome-header { flex-direction: column; align-items: flex-start; gap: 24px; }
-            .products-grid { grid-template-columns: 1fr; }
+            .main-content { 
+                margin-right: 0; 
+                margin-left: 0;
+                padding: 30px 15px 120px 15px; 
+            }
+            .welcome-header { 
+                padding: 20px;
+                background: #fff;
+                border-radius: 24px;
+                margin-bottom: 30px;
+                box-shadow: var(--shadow-card);
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .welcome-text h1 { font-size: 24px; }
+            .welcome-text p { font-size: 14px; }
+            
+            /* 2-Column Grid for Mobile */
+            .products-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 12px; 
+            }
+            .product-card { border-radius: 20px; }
+            .p-info { padding: 15px; }
+            .p-info .p-name { font-size: 15px; }
+            .p-info .p-meta { font-size: 12px; }
+            .img-container { aspect-ratio: 1/1; }
+            
+            .section-title { font-size: 18px; margin-bottom: 20px; text-align: center; }
+            .quick-actions { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .action-card { padding: 15px; font-size: 13px; border-radius: 15px; }
+            
+            .about-box { padding: 25px; border-radius: 24px; font-size: 14px; }
         }
     </style>
 </head>
@@ -723,6 +786,14 @@
             </a>
         </div>
     </aside>
+
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="logo-box">
+            <i data-lucide="sparkles" style="width: 20px;"></i>
+        </div>
+        <span class="logo-text">{{ store.name }}</span>
+    </header>
 
     <!-- Main Content Area -->
     <main class="main-content" id="home">
