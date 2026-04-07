@@ -4,8 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1A2238">
-    <title>{{ store.name }}</title>
+    <title>{{ store.name }} | اطلب الآن عبر واتساب</title>
+    <!-- الأكواد المسؤولة عن شكل الرابط عند مشاركته (المعاينة الاحترافية) -->
+<meta property="og:title" content="{{ store.name }}">
+<meta property="og:description" content="{{ store.bio or 'اكتشف أحدث منتجاتنا وأفضل الأسعار في متجرنا الإلكتروني' }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ request.url }}">
+<meta property="og:image" content="{{ url_for('static', filename='rt_logo_512.png', _external=True) }}">
+
+<!-- تنسيق خاص لتويتر وفيسبوك لعرض الصورة بشكل عريض وجذاب -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ store.name }}">
+<meta name="twitter:description" content="{{ store.bio or 'اكتشف أحدث منتجاتنا وأفضل الأسعار في متجرنا الإلكتروني' }}">
+<meta name="twitter:image" content="{{ url_for('static', filename='rt_logo_512.png', _external=True) }}">
     
+   
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
@@ -1290,14 +1303,20 @@
                 mDesc.style.display = 'none';
             }
             
-            // Setup WhatsApp Link
+            // إعداد رابط واتساب الذكي والمؤمن ضد أخطاء الإدخال
             let phone = "{{ store.whatsapp_phone or '970599000000' }}";
-            phone = phone.replace(/\s+/g, ''); // Remove spaces
-            
-            if (phone.startsWith('0')) {
+            phone = phone.replace(/\D/g, ''); // يحذف أي شيء ليس رقماً (مسافات، رموز، إلخ)
+
+            // معالجة الرقم ليصبح بالصيغة الدولية الصحيحة (970)
+            if (phone.startsWith('05')) {
                 phone = '970' + phone.substring(1);
+            } else if (phone.startsWith('00970')) {
+                phone = phone.substring(2);
+            } else if (!phone.startsWith('970') && phone.length === 9) {
+                // حالة إذا كتب الرقم بدون الصفر وبدون المقدمة (مثلاً: 599000000)
+                phone = '970' + phone;
             }
-            
+
             const message = encodeURIComponent(`مرحباً، أنا مهتم بمنتج: ${name} — السعر: ₪${price}`);
             const waLink = `https://wa.me/${phone}?text=${message}`;
             document.getElementById('mWa').href = waLink;
