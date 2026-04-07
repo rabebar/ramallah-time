@@ -259,7 +259,13 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Store URL Slug</label>
-                <input type="text" name="slug" value="{{ store.slug }}" class="input-field">
+                <div style="display:flex; gap:10px;">
+                    <input type="text" name="slug" id="storeSlugInput" value="{{ store.slug }}" class="input-field" placeholder="مثال: rabea" oninput="this.value = this.value.trim().replace(/\s+/g, '-')">
+                    <a href="/store/{{ store.slug }}" id="slugPreviewLink" target="_blank" class="btn-action btn-edit" style="width:auto; white-space:nowrap; display:flex; align-items:center; gap:5px;">
+                        <i data-lucide="external-link" style="width:16px;"></i> معاينة
+                    </a>
+                </div>
+                <small style="color:var(--text-muted); margin-top:5px; display:block;">هذا هو الرابط الذي ستعطيه لزبائنك. يفضل أن يكون قصيراً وبدون مسافات.</small>
             </div>
         </div>
 
@@ -325,6 +331,16 @@
                 showTab('settings', settingsBtn);
             }
         }
+    }
+
+    // وظيفة تحديث رابط المعاينة ديناميكياً
+    const slugInput = document.getElementById('storeSlugInput');
+    const previewLink = document.getElementById('slugPreviewLink');
+    if (slugInput && previewLink) {
+        slugInput.addEventListener('input', () => {
+            const cleanSlug = slugInput.value.trim().replace(/\s+/g, '-');
+            previewLink.href = '/store/' + encodeURIComponent(cleanSlug);
+        });
     }
 
     // تنفيذ الوظيفة فور تحميل الصفحة بالكامل

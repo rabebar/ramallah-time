@@ -37,6 +37,7 @@ logging.basicConfig(level=logging.INFO)
 def inject_global_vars():
     """يجعل store_slug متاحاً في جميع القوالب (base.html) تلقائياً"""
     if 'user_id' in session:
+        # نستخدم g لتخزين البيانات مؤقتاً ومنع تكرار الاستعلام في نفس الطلب
         if not hasattr(g, 'user_stats_global'):
             g.user_stats_global = get_user_stats(session['user_id'])
         return {'store_slug': g.user_stats_global.get('store_slug')}
@@ -174,6 +175,7 @@ def index():
             output_path = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
             img_no_bg.save(output_path, "PNG")
             
+            # إرسال اسم الملف الأصلي والمعالج
             return render_template('result.html', 
                                    filename=processed_filename, 
                                    original_filename=original_filename, 
@@ -206,10 +208,11 @@ def save_product():
         flash("رصيدك غير كافٍ لحفظ هذا المنتج.", "error")
         return redirect(url_for('index'))
 
+    # استلام البيانات (تمت إضافة original_image_url)
     name = request.form.get('name', 'Product')
     price = request.form.get('price', 0)
     processed_image_url = request.form.get('image_url')
-    original_image_url = request.form.get('original_image_url')
+    original_image_url = request.form.get('original_image_url') # الحقل الجديد
     template_style = request.form.get('template_style', 'elegant')
     theme = request.form.get('theme', 'gold')
 
@@ -218,6 +221,7 @@ def save_product():
 
     if store:
         try:
+            # تحديث الاستعلام ليشمل العمود الجديد
             cursor.execute("""
                 INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -312,7 +316,7 @@ def update_store():
     if not user_id: return redirect(url_for('login'))
 
     name = request.form.get('name')
-    slug = request.form.get('slug')
+    slug = request.form.get('slug', '').strip().replace(" ", "-") # تنظيف الرابط من المسافات
     bio = request.form.get('bio')
     display_phone = request.form.get('display_phone')
     whatsapp_phone = request.form.get('whatsapp_phone')
@@ -346,9 +350,14 @@ def update_store():
 
 @app.route('/store/<slug>')
 def view_store(slug):
+    import urllib.parse
+    # فك تشفير الرابط لضمان التعامل الصحيح مع الحروف العربية
+    decoded_slug = urllib.parse.unquote(slug)
+    
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM stores WHERE slug = %s", (slug,))
+    # البحث باستخدام الرابط الأصلي أو المشفر لزيادة الدقة
+    cursor.execute("SELECT * FROM stores WHERE slug = %s OR slug = %s", (decoded_slug, slug))
     store = cursor.fetchone()
     
     if not store:
@@ -436,6 +445,7 @@ def sw():
     return send_from_directory(app.root_path, 'sw.js')
 
 if __name__ == '__main__':
-    # تعديل المنفذ ليكون متوافقاً مع بيئة التطوير (3000) ورندر (PORT)
+    # تعديل المنفذ إلى 3000 ليتوافق مع بيئة AI Studio
+    # وسيبقى متوافقاً مع رندر لأنه سيستخدم PORT البيئة إذا وجد
     port = int(os.environ.get("PORT", 3000))
     app.run(host='0.0.0.0', port=port)
