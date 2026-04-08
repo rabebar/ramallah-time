@@ -385,7 +385,39 @@ def update_store():
         flash("خطأ في التحديث. الرابط قد يكون مستخدماً.", "error")
     finally:
         conn.close()
+        
     return redirect(url_for('admin'))
+@app.route('/update_login_info', methods=['POST'])
+def update_login_info():
+    """تعديل رقم الهاتف أو كلمة المرور من قبل صاحب المتجر"""
+    user_id = session.get('user_id')
+    if not user_id: return redirect(url_for('login'))
+
+    new_phone = request.form.get('phone')
+    new_password = request.form.get('password')
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # تحديث رقم الهاتف إذا تم إدخاله
+        if new_phone:
+            cursor.execute("UPDATE users SET phone = %s WHERE id = %s", (new_phone, user_id))
+        
+        # تحديث كلمة المرور إذا تم إدخالها
+        if new_password and new_password.strip() != '':
+            hashed_pw = generate_password_hash(new_password)
+            cursor.execute("UPDATE users SET password_hash = %s WHERE id = %s", (hashed_pw, user_id))
+            
+        conn.commit()
+        flash("تم تحديث بيانات الدخول بنجاح.", "success")
+    except Exception as e:
+        conn.rollback()
+        flash("خطأ: قد يكون رقم الهاتف مستخدماً من قبل حساب آخر.", "error")
+    finally:
+        conn.close()
+        
+    return redirect(url_for('admin', active_tab='settings'))
 
 @app.route('/store/<slug>')
 def view_store(slug):
@@ -490,6 +522,19 @@ def reject_user(user_id):
     cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
     conn.commit()
     conn.close()
+    return redirect(url_for('super_admin'))
+
+@app.route('/superadmin/delete_user/<int:user_id>')
+def delete_user_permanent(user_id):
+    """حذف حساب التاجر وكافة بياناته نهائياً من قبل السوبر أدمن"""
+    if not session.get('is_superadmin'): return redirect(url_for('login'))
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # بفضل ON DELETE CASCADE في قاعدة البيانات، سيتم حذف المتجر والمنتجات تلقائياً
+    cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+    conn.commit()
+    conn.close()
+    flash("تم حذف الحساب وكافة بياناته نهائياً.", "info")
     return redirect(url_for('super_admin'))
 
 @app.route('/superadmin/add_credits', methods=['POST'])

@@ -244,6 +244,10 @@
                                         <i data-lucide="x"></i>
                                         رفض
                                     </a>
+                                    <a href="/superadmin/delete_user/{{ user.id }}" class="btn-sm btn-reject" style="background: rgba(239, 68, 68, 0.2); color: #ef4444;" onclick="return confirm('تنبيه: سيتم حذف التاجر ومتجره وكافة منتجاته نهائياً. هل أنت متأكد؟')">
+                                        <i data-lucide="trash-2"></i>
+                                        حذف نهائي
+                                    </a>
                                 {% else %}
                                     <form action="/superadmin/add_credits" method="POST" style="display:flex; align-items:center; gap: 8px;">
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
@@ -253,6 +257,9 @@
                                             شحن
                                         </button>
                                     </form>
+                                    <a href="/superadmin/delete_user/{{ user.id }}" class="btn-sm btn-reject" style="margin-right: 10px; background: rgba(239, 68, 68, 0.1);" onclick="return confirm('تنبيه نهائي: سيتم حذف هذا التاجر النشط وكافة بياناته. هل أنت متأكد؟')">
+                                        <i data-lucide="trash-2" style="width: 14px;"></i>
+                                    </a>
                                 {% endif %}
                             </div>
                         </td>
