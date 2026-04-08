@@ -11,6 +11,7 @@ import io
 import uuid
 import logging
 from flask import Flask, render_template, request, redirect, session, url_for, flash, g, send_from_directory
+import requests
 from werkzeug.security import generate_password_hash, check_password_hash
 from rembg import remove
 from PIL import Image
@@ -155,14 +156,31 @@ def index():
 
     if request.method == 'POST':
         file = request.files.get('image')
-        if not file or file.filename == '':
-            flash("يرجى اختيار صورة أولاً", "error")
-            return redirect(request.url)
-            
+        image_url = request.form.get('image_url')
         unique_id = uuid.uuid4().hex[:8]
-        original_filename = f"orig_{unique_id}_{file.filename}"
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], original_filename)
-        file.save(filepath)
+
+        # التحقق: هل المصدر رابط أم ملف مرفوع؟
+        if image_url and image_url.strip() != '':
+            original_filename = f"orig_{unique_id}.png"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], original_filename)
+            try:
+                response = requests.get(image_url, timeout=10)
+                if response.status_code == 200:
+                    with open(filepath, 'wb') as f:
+                        f.write(response.content)
+                else:
+                    flash("فشل سحب الصورة من الرابط.", "error")
+                    return redirect(url_for('index'))
+            except:
+                flash("رابط غير صالح أو غير متاح.", "error")
+                return redirect(url_for('index'))
+        elif file and file.filename != '':
+            original_filename = f"orig_{unique_id}_{file.filename}"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], original_filename)
+            file.save(filepath)
+        else:
+            flash("يرجى اختيار ملف أو وضع رابط صورة.", "error")
+            return redirect(url_for('index'))
         
         try:
             with open(filepath, "rb") as f:

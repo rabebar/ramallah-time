@@ -148,6 +148,16 @@
 
 <div class="welcome-header">
     <h1>Welcome back, <span style="color: var(--text-main);">Creator</span></h1>
+    <!-- خانة لصق رابط الصورة للمعلجة السريعة -->
+    <div style="width: 100%; margin-top: 20px;">
+        <form action="/" method="POST" style="display: flex; gap: 10px;">
+            <input type="url" name="image_url" placeholder="أو الصق رابط صورة هنا..." 
+                   style="flex: 1; padding: 15px; border-radius: 12px; border: 1px solid var(--border); outline: none; font-size: 14px;">
+            <button type="submit" class="btn-header" style="background: var(--navy-deep) !important; color: #fff !important; width: auto; padding: 0 25px;">
+                معالجة
+            </button>
+        </form>
+    </div>
     <div class="header-actions">
         <button class="btn-header" onclick="document.getElementById('fileInput').click()">
             <i data-lucide="plus"></i> New Shoot +
