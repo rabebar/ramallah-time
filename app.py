@@ -549,16 +549,27 @@ def delete_user_permanent(user_id):
 @app.route('/superadmin/add_credits', methods=['POST'])
 def super_admin_add_credits():
     if not session.get('is_superadmin'): return redirect(url_for('login'))
-    user_id = request.form.get('user_id')
-    amount = int(request.form.get('amount') or 0)
     
+    try:
+        user_id = int(request.form.get('user_id'))
+        # نأخذ الرقم الذي كتبته في الخانة
+        amount = int(request.form.get('amount') or 0)
+    except:
+        flash("خطأ في القيمة المدخلة", "error")
+        return redirect(url_for('super_admin'))
+
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("UPDATE users SET credits = credits + %s WHERE id = %s", (amount, user_id))
+    
+    # هنا "التثبيت": نجعل الرصيد يساوي القيمة التي كتبتها بالضبط
+    cursor.execute("UPDATE users SET credits = %s WHERE id = %s", (amount, user_id))
+    
     conn.commit()
     conn.close()
+    
+    # هذه الرسالة ستظهر لك لتؤكد نجاح العملية
+    flash(f"تم تحديث رصيد التاجر إلى {amount} صورة بنجاح", "success")
     return redirect(url_for('super_admin'))
-
 @app.route('/sw.js')
 def sw():
     return send_from_directory(app.root_path, 'sw.js')
