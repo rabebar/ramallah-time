@@ -405,8 +405,14 @@ def view_store(slug):
     
     cursor.execute("SELECT * FROM products WHERE store_id = %s ORDER BY id DESC", (store['id'],))
     products = cursor.fetchall()
+    # جلب تفاصيل المنتج المطلوب فتحه (للمعاينة في الواتساب)
+    open_id = request.args.get('open_product')
+    product_to_open = None
+    if open_id:
+        cursor.execute("SELECT * FROM products WHERE id = %s", (open_id,))
+        product_to_open = cursor.fetchone()
     conn.close()
-    return render_template('store.html', store=store, products=products)
+    return render_template('store.html', store=store, products=products, product_to_open=product_to_open)
 @app.route('/product/<int:product_id>')
 def view_product_direct(product_id):
     """رابط مباشر لمنتج معين لسهولة المشاركة"""

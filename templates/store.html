@@ -5,30 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1A2238">
     <title>{{ store.name }} | اطلب الآن عبر واتساب</title>
-    <!-- الأكواد المسؤولة عن شكل الرابط عند مشاركته (المعاينة الاحترافية) -->
-<!-- الأكواد المسؤولة عن شكل الرابط عند مشاركته (المعاينة الاحترافية) -->
-    <meta property="og:title" content="{{ store.name }}">
-    <meta property="og:description" content="{{ store.bio or 'اكتشف أحدث منتجاتنا وأفضل الأسعار في متجرنا الإلكتروني' }}">
+
+    <!-- نظام المعاينة الذكية (واتساب، فيسبوك، تويتر) -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.url }}">
-    
-    {% if store.logo_url %}
-    <meta property="og:image" content="{{ url_for('static', filename='uploads/' + store.logo_url, _external=True) }}">
-    <meta name="twitter:image" content="{{ url_for('static', filename='uploads/' + store.logo_url, _external=True) }}">
+
+    {% if product_to_open %}
+        <!-- إذا كان الرابط لمنتج معين (تظهر صورة المنتج واسمه) -->
+        <meta property="og:title" content="{{ product_to_open.name }} | {{ store.name }}">
+        <meta property="og:description" content="السعر: ₪{{ product_to_open.price }} - اطلب الآن عبر واتساب">
+        <meta property="og:image" content="{{ url_for('static', filename='uploads/' + product_to_open.processed_image_url, _external=True) }}">
+        <meta name="twitter:image" content="{{ url_for('static', filename='uploads/' + product_to_open.processed_image_url, _external=True) }}">
     {% else %}
-    <meta property="og:image" content="{{ url_for('static', filename='rt_logo_512.png', _external=True) }}">
-    <meta name="twitter:image" content="{{ url_for('static', filename='rt_logo_512.png', _external=True) }}">
+        <!-- إذا كان الرابط للمتجر العام (يظهر اللوجو والوصف العام) -->
+        <meta property="og:title" content="{{ store.name }} | المتجر الرسمي">
+        <meta property="og:description" content="{{ store.bio or 'اكتشف مجموعتنا الحصرية من المنتجات الفاخرة.' }}">
+        {% if store.logo_url %}
+            <meta property="og:image" content="{{ url_for('static', filename='uploads/' + store.logo_url, _external=True) }}">
+            <meta name="twitter:image" content="{{ url_for('static', filename='uploads/' + store.logo_url, _external=True) }}">
+        {% else %}
+            <meta property="og:image" content="{{ url_for('static', filename='rt_logo_512.png', _external=True) }}">
+            <meta name="twitter:image" content="{{ url_for('static', filename='rt_logo_512.png', _external=True) }}">
+        {% endif %}
     {% endif %}
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ store.name }}">
-<!-- تنسيق خاص لتويتر وفيسبوك لعرض الصورة بشكل عريض وجذاب -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ store.name }}">
-<meta name="twitter:description" content="{{ store.bio or 'اكتشف أحدث منتجاتنا وأفضل الأسعار في متجرنا الإلكتروني' }}">
-<meta name="twitter:image" content="{{ url_for('static', filename='rt_logo_512.png', _external=True) }}">
-    
-   
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
