@@ -1277,6 +1277,9 @@
          * Open Product Modal with Details
          */
         function openModal(id, name, price, img, desc, theme, style) {
+            // تغيير رابط المتصفح ليتضمن رقم المنتج لسهولة المشاركة
+            const newUrl = window.location.pathname + '?open_product=' + id;
+            window.history.pushState({ path: newUrl }, '', newUrl);
             const canvas = document.getElementById('modalCanvas');
             const mContent = document.getElementById('mStyleContent');
             const mDesc = document.getElementById('mDesc');
@@ -1354,6 +1357,9 @@
                 // but we keep it for safety.
             }
             
+            // إعادة الرابط لشكل المتجر الأساسي عند إغلاق نافذة المنتج
+            window.history.pushState({}, '', window.location.pathname);
+
             document.getElementById('productModal').style.display = 'none';
             document.body.style.overflow = ''; // Restore scroll
         }
