@@ -26,7 +26,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; }
         body { background-color: var(--gray-bg); color: var(--text-main); display: flex; min-height: 100vh; }
 
-        /* Sidebar */
         .sidebar { 
             width: var(--sidebar-w); 
             background: var(--navy); 
@@ -70,14 +69,12 @@
         .logout-btn { margin-top: auto; color: #f87171 !important; }
         .logout-btn:hover { background: rgba(239, 68, 68, 0.1) !important; }
 
-        /* Main Viewport */
         .main-viewport { flex-grow: 1; margin-right: var(--sidebar-w); padding: 48px; width: 100%; }
         
         .header-area { margin-bottom: 48px; display: flex; justify-content: space-between; align-items: flex-end; }
         .header-area h1 { font-size: 32px; font-weight: 800; color: var(--navy); letter-spacing: -1px; }
         .header-area p { color: var(--text-muted); font-size: 15px; margin-top: 4px; }
 
-        /* Stats Grid */
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 48px; }
         .stat-card { 
             background: var(--white); 
@@ -91,7 +88,6 @@
         .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
         .stat-value { font-size: 36px; font-weight: 800; color: var(--navy); }
 
-        /* Table Styles */
         .table-container { 
             background: var(--white); 
             border: 1px solid var(--border); 
@@ -110,7 +106,6 @@
         .badge-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
         .badge-store { background: var(--gray-bg); color: var(--navy); font-weight: 600; }
 
-        /* Actions */
         .btn-group { display: flex; gap: 10px; align-items: center; }
         .btn-sm { 
             padding: 10px 16px; border-radius: 12px; 
@@ -148,7 +143,6 @@
 </head>
 <body>
 
-    <!-- Sidebar -->
     <aside class="sidebar">
         <div class="logo-area">
             <div class="logo-box">RT</div>
@@ -170,7 +164,6 @@
         </nav>
     </aside>
 
-    <!-- Main View -->
     <main class="main-viewport">
         <div class="header-area">
             <div>
@@ -183,7 +176,6 @@
             </div>
         </div>
 
-        <!-- Global Stats -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-label">إجمالي التجار</div>
@@ -199,7 +191,6 @@
             </div>
         </div>
 
-        <!-- Merchants Table -->
         <div class="table-container">
             <div class="table-title">إدارة طلبات وحسابات التجار</div>
             <table>
@@ -251,10 +242,10 @@
                                 {% else %}
                                     <form action="/superadmin/add_credits" method="POST" style="display:flex; align-items:center; gap: 8px;">
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
-                                        <input type="number" name="amount" value="10" class="refill-input" required>
-                                        <button type="submit" class="btn-sm btn-refill">
-                                            <i data-lucide="plus"></i>
-                                            شحن
+                                        <input type="number" name="amount" placeholder="0" class="refill-input" style="width: 60px;" required>
+                                        <button type="submit" class="btn-sm btn-approve" title="تثبيت وشحن الرصيد">
+                                            <i data-lucide="check-circle" style="width: 16px;"></i>
+                                            تثبيت
                                         </button>
                                     </form>
                                     <a href="/superadmin/delete_user/{{ user.id }}" class="btn-sm btn-reject" style="margin-right: 10px; background: rgba(239, 68, 68, 0.1);" onclick="return confirm('تنبيه نهائي: سيتم حذف هذا التاجر النشط وكافة بياناته. هل أنت متأكد؟')">
