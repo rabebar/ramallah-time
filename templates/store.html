@@ -1003,7 +1003,7 @@
             {% set current_theme = (product.theme|lower if product.theme else 'gold') %}
             {% set current_style = (product.template_style|lower if product.template_style else 'elegant') %}
             
-            <div class="product-card" onclick="openModal('{{ product.name|replace("'", "\\'") }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}', '{{ (product.description or "")|replace("'", "\\'") }}', '{{ current_theme }}', '{{ current_style }}')">
+            <div class="product-card" onclick="openModal('{{ product.id }}', '{{ product.name|replace("'", "\\'") }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}', '{{ (product.description or "")|replace("'", "\\'") }}', '{{ current_theme }}', '{{ current_style }}')">
                 <div class="img-container">
                     <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}">
                 </div>
@@ -1276,7 +1276,7 @@
         /**
          * Open Product Modal with Details
          */
-        function openModal(name, price, img, desc, theme, style) {
+        function openModal(id, name, price, img, desc, theme, style) {
             const canvas = document.getElementById('modalCanvas');
             const mContent = document.getElementById('mStyleContent');
             const mDesc = document.getElementById('mDesc');
@@ -1357,6 +1357,23 @@
             document.getElementById('productModal').style.display = 'none';
             document.body.style.overflow = ''; // Restore scroll
         }
+        // وظيفة فحص الرابط وفتح المنتج تلقائياً عند التحميل
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productIdToOpen = urlParams.get('open_product');
+
+            if (productIdToOpen) {
+                // البحث عن كرت المنتج في الصفحة والضغط عليه برمجياً
+                const productCard = document.querySelector(`[onclick*="openModal"][onclick*="'${productIdToOpen}'"]`) || 
+                                    document.querySelector(`div[onclick*="${productIdToOpen}"]`);
+                
+                if (productCard) {
+                    productCard.click();
+                    // تمرير الشاشة للمنتج لكي يراه الزبون خلف الصندوق المنبثق
+                    productCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
     </script>
 </body>
 </html>

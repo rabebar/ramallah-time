@@ -407,6 +407,26 @@ def view_store(slug):
     products = cursor.fetchall()
     conn.close()
     return render_template('store.html', store=store, products=products)
+@app.route('/product/<int:product_id>')
+def view_product_direct(product_id):
+    """رابط مباشر لمنتج معين لسهولة المشاركة"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # جلب بيانات المنتج والمتجر التابع له
+    cursor.execute("""
+        SELECT p.*, s.slug as store_slug, s.name as store_name 
+        FROM products p 
+        JOIN stores s ON p.store_id = s.id 
+        WHERE p.id = %s
+    """, (product_id,))
+    product = cursor.fetchone()
+    conn.close()
+
+    if not product:
+        return "المنتج غير موجود.", 404
+    
+    # توجيه الزبون لصفحة المتجر مع إخبار الصفحة بفتح هذا المنتج تلقائياً
+    return redirect(url_for('view_store', slug=product['store_slug'], open_product=product_id))
 
 # -------------------------------------------------------
 # Super Admin
