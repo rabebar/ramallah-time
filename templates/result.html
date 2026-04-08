@@ -250,6 +250,11 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                 Save to Store
             </button>
+            <!-- زر التبديل الذكي بين الصورة الممسوحة والأصلية -->
+            <button type="button" id="btnTogglePhoto" class="btn-action-dl" onclick="toggleOriginal()" style="margin-top: 15px; background: #f8fafc; border: 1px solid #cbd5e1; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; color: #475569;">
+                <i data-lucide="image" style="width: 18px;"></i>
+                <span>إظهار الخلفية الأصلية</span>
+            </button>
         </form>
         <button class="btn-action-dl" onclick="triggerDownload()">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -312,6 +317,30 @@
             link.href = canvas.toDataURL('image/jpeg', 0.95);
             link.click();
         });
+    }
+    // منطق التبديل السحري بين الصورة الأصلية والمعالجة
+    let showingOriginal = false;
+    const processedImgUrl = "{{ url_for('static', filename='uploads/' + filename) }}";
+    const originalImgUrl = "{{ url_for('static', filename='uploads/' + original_filename) }}";
+
+    function toggleOriginal() {
+        const imgElement = document.getElementById('prod-img');
+        const hiddenInput = document.querySelector('input[name="image_url"]');
+        const btnText = document.querySelector('#btnTogglePhoto span');
+
+        if (!showingOriginal) {
+            // التبديل للصورة الأصلية
+            imgElement.src = originalImgUrl;
+            hiddenInput.value = "{{ original_filename }}";
+            btnText.innerText = "العودة للصورة بدون خلفية";
+            showingOriginal = true;
+        } else {
+            // العودة للصورة المعالجة
+            imgElement.src = processedImgUrl;
+            hiddenInput.value = "{{ filename }}";
+            btnText.innerText = "إظهار الخلفية الأصلية";
+            showingOriginal = false;
+        }
     }
 </script>
 {% endblock %}
