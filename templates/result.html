@@ -329,14 +329,26 @@
         const btnText = document.querySelector('#btnTogglePhoto span');
 
         if (!showingOriginal) {
-            // التبديل للصورة الأصلية
+            // التحويل للصورة الأصلية مع ملء كامل المساحة
             imgElement.src = originalImgUrl;
+            imgElement.style.maxWidth = '100%';
+            imgElement.style.maxHeight = '100%';
+            imgElement.style.width = '100%';
+            imgElement.style.height = '100%';
+            imgElement.style.objectFit = 'cover'; // هذا السطر هو السر لإخفاء الخلفية الملونه
+            
             hiddenInput.value = "{{ original_filename }}";
             btnText.innerText = "العودة للصورة بدون خلفية";
             showingOriginal = true;
         } else {
-            // العودة للصورة المعالجة
+            // العودة للصورة المعالجة (الوضع الافتراضي الأنيق)
             imgElement.src = processedImgUrl;
+            imgElement.style.maxWidth = '80%';
+            imgElement.style.maxHeight = '70%';
+            imgElement.style.width = 'auto';
+            imgElement.style.height = 'auto';
+            imgElement.style.objectFit = 'contain';
+            
             hiddenInput.value = "{{ filename }}";
             btnText.innerText = "إظهار الخلفية الأصلية";
             showingOriginal = false;
