@@ -21,82 +21,111 @@
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
+            --visits: #6366f1;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; }
         body { background-color: var(--gray-bg); color: var(--text-main); display: flex; min-height: 100vh; }
 
         .sidebar { 
-            width: var(--sidebar-w); 
-            background: var(--navy); 
-            padding: 40px 24px; 
-            height: 100vh; 
-            position: fixed; 
-            right: 0; top: 0; 
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
+            width: var(--sidebar-w); background: var(--navy); padding: 40px 24px; 
+            height: 100vh; position: fixed; right: 0; top: 0; z-index: 1000;
+            display: flex; flex-direction: column;
             border-left: 1px solid rgba(255,255,255,0.05);
         }
-        
         .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 48px; }
         .logo-box { 
-            width: 40px; height: 40px; 
-            background: var(--gold); 
-            color: var(--navy); 
-            border-radius: 12px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: 800; font-size: 20px;
-            box-shadow: 0 4px 12px rgba(184, 151, 74, 0.3);
+            width: 40px; height: 40px; background: var(--gold); color: var(--navy); 
+            border-radius: 12px; display: flex; align-items: center; justify-content: center; 
+            font-weight: 800; font-size: 20px; box-shadow: 0 4px 12px rgba(184, 151, 74, 0.3);
         }
         .logo-text { color: var(--white); font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
-
         .nav-menu { flex: 1; display: flex; flex-direction: column; gap: 8px; }
         .nav-item { 
-            padding: 14px 18px; 
-            border-radius: 14px; 
-            color: rgba(255,255,255,0.6); 
-            display: flex; align-items: center; gap: 14px; 
-            text-decoration: none; 
-            font-weight: 600; 
-            transition: var(--transition); 
-            font-size: 14px; 
+            padding: 14px 18px; border-radius: 14px; color: rgba(255,255,255,0.6); 
+            display: flex; align-items: center; gap: 14px; text-decoration: none; 
+            font-weight: 600; transition: var(--transition); font-size: 14px; 
         }
         .nav-item i { width: 20px; height: 20px; }
         .nav-item.active { background: var(--gold); color: var(--navy); box-shadow: 0 4px 15px rgba(184, 151, 74, 0.2); }
         .nav-item:hover:not(.active) { background: rgba(255,255,255,0.05); color: var(--white); }
-
         .logout-btn { margin-top: auto; color: #f87171 !important; }
         .logout-btn:hover { background: rgba(239, 68, 68, 0.1) !important; }
 
         .main-viewport { flex-grow: 1; margin-right: var(--sidebar-w); padding: 48px; width: 100%; }
-        
         .header-area { margin-bottom: 48px; display: flex; justify-content: space-between; align-items: flex-end; }
         .header-area h1 { font-size: 32px; font-weight: 800; color: var(--navy); letter-spacing: -1px; }
         .header-area p { color: var(--text-muted); font-size: 15px; margin-top: 4px; }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 48px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
         .stat-card { 
-            background: var(--white); 
-            border: 1px solid var(--border); 
-            padding: 32px; 
-            border-radius: 24px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-            transition: var(--transition);
+            background: var(--white); border: 1px solid var(--border); padding: 32px; 
+            border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); transition: var(--transition);
         }
         .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.05); }
         .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
         .stat-value { font-size: 36px; font-weight: 800; color: var(--navy); }
 
+        /* ═══════════════════════════════
+           قسم إحصائيات الزيارات
+        ═══════════════════════════════ */
+        .visits-section {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 28px; padding: 32px; margin-bottom: 32px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+        .visits-header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+        .visits-header-icon {
+            width: 42px; height: 42px; background: rgba(99, 102, 241, 0.1);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+        }
+        .visits-header-icon i { width: 20px; height: 20px; color: var(--visits); }
+        .visits-header h2 { font-size: 18px; font-weight: 700; color: var(--navy); }
+        .visits-header p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        .visits-counters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+        .visit-counter { background: var(--gray-bg); border-radius: 18px; padding: 20px 24px; border: 1px solid var(--border); }
+        .visit-counter .vc-label {
+            font-size: 12px; color: var(--text-muted); font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .visit-counter .vc-label i { width: 13px; height: 13px; }
+        .visit-counter .vc-value { font-size: 32px; font-weight: 800; color: var(--navy); }
+        .visit-counter.today .vc-value { color: var(--success); }
+        .visit-counter.week .vc-value { color: var(--visits); }
+
+        .top-stores-title {
+            font-size: 14px; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px;
+        }
+        .top-store-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; border-radius: 14px; margin-bottom: 8px;
+            background: var(--gray-bg); border: 1px solid var(--border); transition: 0.2s;
+        }
+        .top-store-row:hover { background: #f1f5f9; }
+        .top-store-rank {
+            width: 28px; height: 28px; border-radius: 8px;
+            background: var(--navy); color: var(--gold);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 800; margin-left: 12px; flex-shrink: 0;
+        }
+        .top-store-rank.gold { background: var(--gold); color: var(--navy); }
+        .top-store-name { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .top-store-slug { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .top-store-visits {
+            font-size: 15px; font-weight: 800; color: var(--visits);
+            background: rgba(99, 102, 241, 0.08); padding: 4px 12px; border-radius: 50px;
+        }
+        .no-visits-msg { text-align: center; padding: 32px; color: var(--text-muted); font-size: 14px; }
+
+        /* Table */
         .table-container { 
-            background: var(--white); 
-            border: 1px solid var(--border); 
-            border-radius: 28px; 
-            padding: 32px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02); 
+            background: var(--white); border: 1px solid var(--border); 
+            border-radius: 28px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); 
         }
         .table-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; color: var(--navy); }
-        
         table { width: 100%; border-collapse: collapse; text-align: right; }
         th { padding: 16px; color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--gray-bg); }
         td { padding: 20px 16px; border-bottom: 1px solid var(--gray-bg); font-size: 14px; color: var(--text-main); }
@@ -108,27 +137,19 @@
 
         .btn-group { display: flex; gap: 10px; align-items: center; }
         .btn-sm { 
-            padding: 10px 16px; border-radius: 12px; 
-            font-size: 12px; font-weight: 700; 
-            text-decoration: none; border: none; 
-            cursor: pointer; transition: all 0.2s; 
+            padding: 10px 16px; border-radius: 12px; font-size: 12px; font-weight: 700; 
+            text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; 
             display: inline-flex; align-items: center; gap: 6px;
         }
         .btn-approve { background: var(--success); color: #fff; }
         .btn-approve:hover { background: #059669; transform: translateY(-2px); }
-        
         .btn-reject { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
         .btn-reject:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
-        
-        .btn-refill { background: var(--navy); color: #fff; }
-        .btn-refill:hover { background: var(--navy-light); transform: translateY(-2px); }
 
         .refill-input { 
-            width: 70px; padding: 10px; 
-            border: 1px solid var(--border); 
-            border-radius: 12px; text-align: center; 
-            font-weight: 700; background: var(--gray-bg);
-            transition: all 0.2s;
+            width: 60px; padding: 10px; border: 1px solid var(--border); 
+            border-radius: 12px; text-align: center; font-weight: 700; 
+            background: var(--gray-bg); transition: all 0.2s;
         }
         .refill-input:focus { border-color: var(--gold); outline: none; background: #fff; }
 
@@ -137,7 +158,7 @@
             .logo-text, .nav-item span { display: none; }
             .nav-item { justify-content: center; padding: 14px; }
             .main-viewport { margin-right: 80px; padding: 32px; }
-            .stats-grid { grid-template-columns: 1fr; }
+            .stats-grid, .visits-counters { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -176,6 +197,7 @@
             </div>
         </div>
 
+        <!-- إحصائيات عامة -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-label">إجمالي التجار</div>
@@ -191,6 +213,53 @@
             </div>
         </div>
 
+        <!-- إحصائيات زيارات المتاجر -->
+        <div class="visits-section">
+            <div class="visits-header">
+                <div class="visits-header-icon">
+                    <i data-lucide="activity"></i>
+                </div>
+                <div>
+                    <h2>انتشار المنصة عبر المتاجر</h2>
+                    <p>عدد الزوار الذين وصلوا للمنصة عبر متاجر التجار</p>
+                </div>
+            </div>
+
+            <div class="visits-counters">
+                <div class="visit-counter">
+                    <div class="vc-label"><i data-lucide="globe"></i> إجمالي الزيارات</div>
+                    <div class="vc-value">{{ visit_stats.total }}</div>
+                </div>
+                <div class="visit-counter today">
+                    <div class="vc-label"><i data-lucide="sun"></i> اليوم</div>
+                    <div class="vc-value">{{ visit_stats.today }}</div>
+                </div>
+                <div class="visit-counter week">
+                    <div class="vc-label"><i data-lucide="trending-up"></i> آخر 7 أيام</div>
+                    <div class="vc-value">{{ visit_stats.week }}</div>
+                </div>
+            </div>
+
+            <div class="top-stores-title">🏆 أكثر المتاجر استقطاباً للزوار</div>
+            {% if visit_stats.top_stores %}
+                {% for store in visit_stats.top_stores %}
+                <div class="top-store-row">
+                    <div class="top-store-rank {% if loop.index == 1 %}gold{% endif %}">{{ loop.index }}</div>
+                    <div style="flex: 1;">
+                        <div class="top-store-name">{{ store.name }}</div>
+                        <div class="top-store-slug">/store/{{ store.slug }}</div>
+                    </div>
+                    <div class="top-store-visits">{{ store.visits }} زيارة</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-visits-msg">
+                    <p>لا توجد زيارات مسجّلة بعد — ستظهر هنا فور فتح أي متجر</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- جدول التجار -->
         <div class="table-container">
             <div class="table-title">إدارة طلبات وحسابات التجار</div>
             <table>
@@ -228,24 +297,20 @@
                             <div class="btn-group">
                                 {% if user.status == 'pending' %}
                                     <a href="/superadmin/approve/{{ user.id }}" class="btn-sm btn-approve">
-                                        <i data-lucide="check"></i>
-                                        تفعيل
+                                        <i data-lucide="check"></i> تفعيل
                                     </a>
                                     <a href="/superadmin/reject/{{ user.id }}" class="btn-sm btn-reject" onclick="return confirm('هل أنت متأكد من رفض وحذف هذا الطلب؟')">
-                                        <i data-lucide="x"></i>
-                                        رفض
+                                        <i data-lucide="x"></i> رفض
                                     </a>
                                     <a href="/superadmin/delete_user/{{ user.id }}" class="btn-sm btn-reject" style="background: rgba(239, 68, 68, 0.2); color: #ef4444;" onclick="return confirm('تنبيه: سيتم حذف التاجر ومتجره وكافة منتجاته نهائياً. هل أنت متأكد؟')">
-                                        <i data-lucide="trash-2"></i>
-                                        حذف نهائي
+                                        <i data-lucide="trash-2"></i> حذف نهائي
                                     </a>
                                 {% else %}
                                     <form action="/superadmin/add_credits" method="POST" style="display:flex; align-items:center; gap: 8px;">
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
-                                        <input type="number" name="amount" placeholder="0" class="refill-input" style="width: 60px;" required>
+                                        <input type="number" name="amount" placeholder="0" class="refill-input" required>
                                         <button type="submit" class="btn-sm btn-approve" title="تثبيت وشحن الرصيد">
-                                            <i data-lucide="check-circle" style="width: 16px;"></i>
-                                            تثبيت
+                                            <i data-lucide="check-circle" style="width: 16px;"></i> تثبيت
                                         </button>
                                     </form>
                                     <a href="/superadmin/delete_user/{{ user.id }}" class="btn-sm btn-reject" style="margin-right: 10px; background: rgba(239, 68, 68, 0.1);" onclick="return confirm('تنبيه نهائي: سيتم حذف هذا التاجر النشط وكافة بياناته. هل أنت متأكد؟')">
@@ -268,8 +333,6 @@
         </div>
     </main>
 
-    <script>
-        lucide.createIcons();
-    </script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>

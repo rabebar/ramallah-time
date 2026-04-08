@@ -430,8 +430,13 @@ def view_store(slug):
     # البحث باستخدام الرابط الأصلي أو المشفر لزيادة الدقة
     cursor.execute("SELECT * FROM stores WHERE slug = %s OR slug = %s", (decoded_slug, slug))
     store = cursor.fetchone()
+    # تسجيل الزيارة في قاعدة البيانات فور دخول الزبون للمتجر
+    if store:
+        from database import record_store_visit
+        record_store_visit(store['id'])
     
     if not store:
+        
         conn.close()
         return "هذا المتجر غير موجود حالياً.", 404
     
@@ -476,6 +481,9 @@ def super_admin():
     
     conn = get_db_connection()
     cursor = conn.cursor()
+    # جلب إحصائيات الزيارات الجديدة من قاعدة البيانات
+    from database import get_visit_stats
+    visit_stats = get_visit_stats()
     
     cursor.execute("SELECT COUNT(*) as count FROM users")
     t_users = cursor.fetchone()['count']
@@ -494,7 +502,8 @@ def super_admin():
     
     return render_template('superadmin.html', 
                            stats={'total_users': t_users, 'total_products': t_products, 'total_credits': t_credits}, 
-                           users=users)
+                           users=users, 
+                           visit_stats=visit_stats)
 
 @app.route('/superadmin/login', methods=['GET', 'POST'])
 def super_admin_login():
@@ -541,7 +550,7 @@ def delete_user_permanent(user_id):
 def super_admin_add_credits():
     if not session.get('is_superadmin'): return redirect(url_for('login'))
     user_id = request.form.get('user_id')
-    amount = int(request.form.get('amount', 0))
+    amount = int(request.form.get('amount') or 0)
     
     conn = get_db_connection()
     cursor = conn.cursor()
