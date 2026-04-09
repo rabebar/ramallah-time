@@ -184,6 +184,10 @@
                     <input type="number" step="0.01" name="price" id="inPrice" value="{{ edit_product.price }}" class="input-field" oninput="syncEdit()" required>
                 </div>
             </div>
+            <div class="form-group">
+                <label class="form-label">القسم (Category)</label>
+                <input type="text" name="category" value="{{ edit_product.category or 'الكل' }}" class="input-field" placeholder="مثال: خواتم، سلاسل، فساتين...">
+            </div>
 
             <div class="form-group">
                 <label class="form-label">Description</label>

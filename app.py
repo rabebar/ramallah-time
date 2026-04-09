@@ -231,6 +231,8 @@ def save_product():
     price = request.form.get('price', 0)
     processed_image_url = request.form.get('image_url')
     original_image_url = request.form.get('original_image_url') # الحقل الجديد
+    # جلب القسم من الخانة الجديدة (ووضع كلمة 'الكل' كخيار افتراضي إذا تركها فارغة)
+    category = request.form.get('category', '').strip() or 'الكل'
     template_style = request.form.get('template_style', 'elegant')
     theme = request.form.get('theme', 'gold')
 
@@ -241,9 +243,9 @@ def save_product():
         try:
             # تحديث الاستعلام ليشمل العمود الجديد
             cursor.execute("""
-                INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (store['id'], name, price, processed_image_url, original_image_url, template_style, theme))
+                INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme, category)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (store['id'], name, price, processed_image_url, original_image_url, template_style, theme, category))
             
             cursor.execute("UPDATE users SET credits = credits - 1 WHERE id = %s", (user_id,))
             
@@ -294,15 +296,16 @@ def edit_product_route(id):
     price = request.form.get('price')
     description = request.form.get('description')
     theme = request.form.get('theme')
+    category = request.form.get('category', '').strip() or 'الكل'
     template_style = request.form.get('template_style')
 
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            UPDATE products SET name=%s, price=%s, description=%s, theme=%s, template_style=%s
+            UPDATE products SET name=%s, price=%s, description=%s, theme=%s, template_style=%s, category=%s
             WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)
-        """, (name, price, description, theme, template_style, id, user_id))
+        """, (name, price, description, theme, template_style, category, id, user_id))
         conn.commit()
         flash("تم تحديث البيانات.", "success")
     except Exception as e:
