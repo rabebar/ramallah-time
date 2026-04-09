@@ -174,10 +174,7 @@
                 <i data-lucide="bar-chart-3"></i>
                 <span>الإحصائيات</span>
             </a>
-            <a href="/" class="nav-item">
-                <i data-lucide="eye"></i>
-                <span>عرض الموقع</span>
-            </a>
+            
             <a href="/logout" class="nav-item logout-btn">
                 <i data-lucide="log-out"></i>
                 <span>تسجيل الخروج</span>
@@ -267,6 +264,7 @@
                     <tr>
                         <th>هاتف التاجر</th>
                         <th>اسم المتجر</th>
+                        <th>رابط المتجر</th>
                         <th>الحالة</th>
                         <th>الرصيد</th>
                         <th>تاريخ الانضمام</th>
@@ -282,6 +280,16 @@
                             <span class="badge badge-store">{{ user.store_name }}</span>
                             {% else %}
                             <span style="color:#ccc; font-size:11px;">لا يوجد متجر</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.store_slug %}
+                            <a href="/store/{{ user.store_slug }}" target="_blank" style="color: var(--gold); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 5px;">
+                                <i data-lucide="external-link" style="width: 14px;"></i>
+                                معاينة
+                            </a>
+                            {% else %}
+                            -
                             {% endif %}
                         </td>
                         <td>

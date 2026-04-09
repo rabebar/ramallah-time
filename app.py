@@ -491,9 +491,8 @@ def super_admin():
     t_products = cursor.fetchone()['count']
     cursor.execute("SELECT SUM(credits) as sum_c FROM users")
     t_credits = cursor.fetchone()['sum_c'] or 0
-    
     cursor.execute("""
-        SELECT users.*, stores.name as store_name 
+        SELECT users.*, stores.name as store_name, stores.slug as store_slug
         FROM users LEFT JOIN stores ON users.id = stores.user_id 
         ORDER BY users.created_at DESC
     """)
