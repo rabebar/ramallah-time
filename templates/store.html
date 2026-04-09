@@ -224,7 +224,15 @@
             {% if store.whatsapp_phone %}
             <a href="https://wa.me/{{ store.whatsapp_phone }}" target="_blank"><i data-lucide="message-circle"></i></a>
             {% endif %}
-            <a href="#"><i data-lucide="instagram"></i></a>
+            {% if store.instagram_handle %}
+            <a href="https://instagram.com/{{ store.instagram_handle }}" target="_blank"><i data-lucide="instagram"></i></a>
+            {% endif %}
+            {% if store.facebook_handle %}
+            <a href="https://facebook.com/{{ store.facebook_handle }}" target="_blank"><i data-lucide="facebook"></i></a>
+            {% endif %}
+            {% if store.tiktok_handle %}
+            <a href="https://tiktok.com/@{{ store.tiktok_handle }}" target="_blank"><i data-lucide="music"></i></a>
+            {% endif %}
             {% if store.display_phone %}
             <a href="tel:{{ store.display_phone }}"><i data-lucide="phone"></i></a>
             {% endif %}
@@ -315,10 +323,30 @@
                 <span data-t="call_us">اتصال هاتفي</span>
             </a>
             {% endif %}
-            <a href="#" class="action-card">
+            {% if store.instagram_handle %}
+            <a href="https://instagram.com/{{ store.instagram_handle }}" class="action-card" target="_blank">
                 <i data-lucide="instagram" style="color: #E4405F;"></i>
-                <span data-t="instagram">إنستغرام</span>
+                <span>إنستغرام</span>
             </a>
+            {% endif %}
+            {% if store.facebook_handle %}
+            <a href="https://facebook.com/{{ store.facebook_handle }}" class="action-card" target="_blank">
+                <i data-lucide="facebook" style="color: #1877F2;"></i>
+                <span>فيسبوك</span>
+            </a>
+            {% endif %}
+            {% if store.tiktok_handle %}
+            <a href="https://tiktok.com/@{{ store.tiktok_handle }}" class="action-card" target="_blank">
+                <i data-lucide="music" style="color: #000;"></i>
+                <span>تيك توك</span>
+            </a>
+            {% endif %}
+            {% if store.website %}
+            <a href="{{ store.website }}" class="action-card" target="_blank">
+                <i data-lucide="globe" style="color: var(--navy-deep);"></i>
+                <span>الموقع الإلكتروني</span>
+            </a>
+            {% endif %}
         </div>
 
         <h2 class="section-title" id="about" data-t="nav_about">عن المتجر</h2>
