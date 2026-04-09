@@ -10,20 +10,23 @@
     <meta property="og:url" content="{{ request.url }}">
 
     {% if product_to_open %}
+        <!-- معاينة المنتج على فيسبوك -->
         <meta property="og:title" content="{{ product_to_open.name }} | {{ store.name }}">
         <meta property="og:description" content="السعر: ₪{{ product_to_open.price }} - اطلب الآن عبر واتساب">
         <meta property="og:image" content="{{ url_for('static', filename='uploads/' + product_to_open.processed_image_url, _external=True) }}">
-        <meta name="twitter:image" content="{{ url_for('static', filename='uploads/' + product_to_open.processed_image_url, _external=True) }}">
+        <meta property="og:image:width" content="600">
+        <meta property="og:image:height" content="600">
     {% else %}
+        <!-- معاينة المتجر العام على فيسبوك -->
         <meta property="og:title" content="{{ store.name }} | المتجر الرسمي">
-        <meta property="og:description" content="{{ store.bio or 'اكتشف مجموعتنا الحصرية من المنتجات الفاخرة.' }}">
+        <meta property="og:description" content="{{ store.bio or 'اكتشف مجموعتنا الحصرية' }}">
         {% if store.logo_url %}
             <meta property="og:image" content="{{ url_for('static', filename='uploads/' + store.logo_url, _external=True) }}">
-            <meta name="twitter:image" content="{{ url_for('static', filename='uploads/' + store.logo_url, _external=True) }}">
         {% else %}
             <meta property="og:image" content="{{ url_for('static', filename='rt_logo_512.png', _external=True) }}">
-            <meta name="twitter:image" content="{{ url_for('static', filename='rt_logo_512.png', _external=True) }}">
         {% endif %}
+        <meta property="og:image:width" content="512">
+        <meta property="og:image:height" content="512">
     {% endif %}
 
     <meta name="twitter:card" content="summary_large_image">
