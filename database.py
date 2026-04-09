@@ -62,6 +62,7 @@ def init_db():
             processed_image_url TEXT,
             template_style TEXT DEFAULT 'elegant',
             theme TEXT DEFAULT 'gold',
+            category TEXT DEFAULT 'الكل',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE
         )''')
