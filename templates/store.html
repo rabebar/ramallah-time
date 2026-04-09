@@ -225,13 +225,13 @@
             <a href="https://wa.me/{{ store.whatsapp_phone }}" target="_blank"><i data-lucide="message-circle"></i></a>
             {% endif %}
             {% if store.instagram_handle %}
-            <a href="https://instagram.com/{{ store.instagram_handle }}" target="_blank"><i data-lucide="instagram"></i></a>
+            <a href="#" data-social="instagram" data-handle="{{ store.instagram_handle }}" target="_blank"><i data-lucide="instagram"></i></a>
             {% endif %}
             {% if store.facebook_handle %}
-            <a href="https://facebook.com/{{ store.facebook_handle }}" target="_blank"><i data-lucide="facebook"></i></a>
+            <a href="#" data-social="facebook" data-handle="{{ store.facebook_handle }}" target="_blank"><i data-lucide="facebook"></i></a>
             {% endif %}
             {% if store.tiktok_handle %}
-            <a href="https://tiktok.com/@{{ store.tiktok_handle }}" target="_blank"><i data-lucide="music"></i></a>
+            <a href="#" data-social="tiktok" data-handle="{{ store.tiktok_handle }}" target="_blank"><i data-lucide="music"></i></a>
             {% endif %}
             {% if store.display_phone %}
             <a href="tel:{{ store.display_phone }}"><i data-lucide="phone"></i></a>
@@ -324,19 +324,19 @@
             </a>
             {% endif %}
             {% if store.instagram_handle %}
-            <a href="https://instagram.com/{{ store.instagram_handle }}" class="action-card" target="_blank">
+            <a href="#" data-social="instagram" data-handle="{{ store.instagram_handle }}" class="action-card" target="_blank">
                 <i data-lucide="instagram" style="color: #E4405F;"></i>
                 <span>إنستغرام</span>
             </a>
             {% endif %}
             {% if store.facebook_handle %}
-            <a href="https://facebook.com/{{ store.facebook_handle }}" class="action-card" target="_blank">
+            <a href="#" data-social="facebook" data-handle="{{ store.facebook_handle }}" class="action-card" target="_blank">
                 <i data-lucide="facebook" style="color: #1877F2;"></i>
                 <span>فيسبوك</span>
             </a>
             {% endif %}
             {% if store.tiktok_handle %}
-            <a href="https://tiktok.com/@{{ store.tiktok_handle }}" class="action-card" target="_blank">
+            <a href="#" data-social="tiktok" data-handle="{{ store.tiktok_handle }}" class="action-card" target="_blank">
                 <i data-lucide="music" style="color: #000;"></i>
                 <span>تيك توك</span>
             </a>
@@ -429,6 +429,37 @@
         }
 
         function toggleLanguage() { setLanguage(currentLang === 'ar' ? 'en' : 'ar'); }
+
+        /**
+         * تنظيف handle التواصل الاجتماعي — يتعامل مع كل ما يكتبه التاجر:
+         * "mystore" / "@mystore" / "instagram.com/mystore" / "https://instagram.com/mystore"
+         */
+        function cleanHandle(value, platform) {
+            if (!value) return null;
+            let v = value.trim().replace(/^@/, '');
+            try {
+                if (v.includes('://') || v.includes('.com') || v.includes('.net')) {
+                    const url = new URL(v.includes('://') ? v : 'https://' + v);
+                    const parts = url.pathname.replace(/\/$/, '').split('/').filter(Boolean);
+                    v = parts[parts.length - 1] || v;
+                }
+            } catch(e) {}
+            v = v.replace(/^@/, '');
+            if (!v) return null;
+            const bases = { instagram: 'https://instagram.com/', facebook: 'https://facebook.com/', tiktok: 'https://tiktok.com/@' };
+            return bases[platform] + v;
+        }
+
+        // تطبيق التنظيف على كل أزرار السوشيال عند تحميل الصفحة
+        window.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-social]').forEach(link => {
+                const platform = link.getAttribute('data-social');
+                const raw = link.getAttribute('data-handle');
+                const clean = cleanHandle(raw, platform);
+                if (clean) { link.href = clean; }
+                else { link.style.display = 'none'; }
+            });
+        });
 
         window.addEventListener('DOMContentLoaded', () => { setLanguage(currentLang); });
 
