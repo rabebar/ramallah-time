@@ -84,7 +84,13 @@
         body.ltr .modal-canvas.style-modern .m-name-overlay { right: auto; left: 30px; }
         body.ltr .modal-canvas.style-modern .m-price-overlay { left: auto; right: 30px; }
 
-        .main-content { flex: 1; margin-right: var(--sidebar-w); padding: 60px 80px; max-width: 1400px; transition: var(--transition); }
+        .main-content { 
+            flex: 1; 
+            margin-right: var(--sidebar-w); /* هذا السطر هو الذي يمنع تداخل النص مع القائمة الجانبية */
+            padding: 40px 60px; /* تقليل الحشو العلوي قليلاً ليعطي توازناً أفضل */
+            max-width: 100%; 
+            transition: var(--transition); 
+        }
 
         .welcome-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 48px; }
         .welcome-text h1 { font-size: 32px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
@@ -101,8 +107,22 @@
         .product-card { background: var(--white); border-radius: 32px; border: 1px solid var(--border); overflow: hidden; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-card); cursor: pointer; display: flex; flex-direction: column; }
         .product-card:hover { transform: translateY(-12px); box-shadow: var(--shadow-premium); }
 
-        .img-container { width: 100%; aspect-ratio: 16/10; background: #F8FAFC; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-        .img-container img { max-width: 80%; max-height: 80%; object-fit: contain; transition: 0.6s; }
+        .img-container { 
+            width: 100%; 
+            aspect-ratio: 1/1; /* تحويل للمربع لمنع قص أطراف الصور الطولية */
+            background: #F8FAFC; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden; 
+            position: relative; 
+        }
+        .img-container img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; /* جعل الصورة تملأ الإطار بالكامل مثل المتاجر العالمية */
+            transition: 0.6s; 
+        }
         .product-card:hover .img-container img { transform: scale(1.08); }
 
         .p-info { padding: 24px 32px; }
