@@ -4,6 +4,13 @@ Ramallah Time - Core Engine (v3.3 - Composition + Lab Fix)
 - Standardize cutout (PNG 1200x1200 + soft shadow).
 - Compose final images (WebP + JPG) on save_product for OG/share/download usage.
 - Keep Public Store UI unchanged visually.
+
+Added (Store Commerce v1):
+- SKU auto-generation per store (PREFIX-SEQ).
+- Optional inventory per store (no quantities shown to shoppers; only "غير متوفر" at 0).
+- Cart-to-WhatsApp flow: build text-only message with SKU; deduct stock only on merchant confirm.
+- Simple analytics beacon: page_view/product_view/add_to_cart/whatsapp_sent.
+- Admin: list orders (sent/confirmed/canceled) + confirm/cancel endpoints.
 """
 
 import os
@@ -12,10 +19,12 @@ import uuid
 import logging
 import re
 import base64
+import urllib.parse
 from datetime import datetime, timedelta
 from collections import defaultdict
+from decimal import Decimal
 
-from flask import Flask, render_template, request, redirect, session, url_for, flash, g, send_from_directory
+from flask import Flask, render_template, request, redirect, session, url_for, flash, g, send_from_directory, jsonify
 import requests
 from werkzeug.security import generate_password_hash, check_password_hash
 from rembg import remove
@@ -215,7 +224,8 @@ def compose_final(cutout_path, name, price, theme, style, background_key, out_ba
             font_bar = ImageFont.load_default()
 
         name_text = name.strip() if (name and name.strip()) else "Product Name"
-        price_text = f"₪ {price}" if str(price).strip() else "₪ 0.00"
+        price_str = str(price).strip()
+        price_text = f"₪ {price_str}" if price_str else "₪ 0.00"
 
         white = (255, 255, 255, 255)
         navy = (26, 34, 56, 255)
@@ -279,7 +289,104 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 logging.basicConfig(level=logging.INFO)
 
+# =========================
+# Helpers: Store/Products
+# =========================
+def get_store_by_user(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM stores WHERE user_id = %s", (user_id,))
+    store = cur.fetchone()
+    conn.close()
+    return store
+
+def get_store_by_id(store_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM stores WHERE id = %s", (store_id,))
+    store = cur.fetchone()
+    conn.close()
+    return store
+
+def slug_prefix(slug):
+    s = re.sub(r'[^A-Za-z]', '', (slug or '')).upper()
+    return (s[:3] or 'STO')
+
+def generate_sku(conn, cur, store_id):
+    """
+    Generate SKU inside a single DB transaction:
+    - Lock store row FOR UPDATE
+    - Read slug + next_sku_seq
+    - Build PREFIX-SEQ
+    - Increment next_sku_seq
+    """
+    cur.execute("SELECT slug, next_sku_seq FROM stores WHERE id = %s FOR UPDATE", (store_id,))
+    row = cur.fetchone()
+    if not row:
+        raise Exception("Store not found for SKU generation")
+    prefix = slug_prefix(row['slug'])
+    seq = row['next_sku_seq'] or 1001
+    sku = f"{prefix}-{seq}"
+    cur.execute("UPDATE stores SET next_sku_seq = %s WHERE id = %s", (seq + 1, store_id))
+    return sku
+
+def is_available(store, product):
+    if not product.get('active', True):
+        return False
+    inv = bool(store.get('inventory_enabled'))
+    if not inv:
+        return True
+    qty = product.get('stock_qty', 0) or 0
+    return qty > 0
+
+def to_number(n):
+    if n is None:
+        return 0.0
+    if isinstance(n, Decimal):
+        return float(n)
+    try:
+        return float(n)
+    except:
+        return 0.0
+
+def format_money(v):
+    v = to_number(v)
+    return str(int(v)) if abs(v - int(v)) < 1e-9 else f"{v:.2f}"
+
+def build_wa_text(store, lines, subtotal, customer):
+    """
+    Build WhatsApp message text only. No links inside the text.
+    lines: list of dict(name, sku, qty, line_total)
+    """
+    dt_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+
+    parts = []
+    parts.append(f"🛍️ طلب جديد — {store['name']}")
+    parts.append(f"📅 {dt_str}")
+    parts.append("─────────────────")
+    for l in lines:
+        lt = format_money(l['line_total'])
+        parts.append(f"{l['name']} | {l['sku']} | ×{l['qty']} | ₪{lt}")
+    parts.append("─────────────────")
+    parts.append(f"المجموع: ₪{format_money(subtotal)}")
+    parts.append("⚠️ لا تشمل رسوم التوصيل")
+    parts.append("─────────────────")
+    parts.append(f"👤 {customer.get('name') or '-'} | 📞 {customer.get('phone') or '-'}")
+    parts.append(f"📝 {customer.get('notes') or '-'}")
+
+    msg = "\n".join(parts)
+    if len(msg) > 1800:
+        if customer.get('notes'):
+            parts[-1] = "📝 —"
+        msg = "\n".join(parts)
+        if len(msg) > 2000:
+            count_items = sum(1 for p in parts if ' | ' in p)
+            msg = f"🛍️ طلب جديد — {store['name']}\n📅 {dt_str}\nعدد العناصر: {count_items}\nالمجموع: ₪{format_money(subtotal)}\n👤 {customer.get('name') or '-'} | 📞 {customer.get('phone') or '-'}"
+    return msg
+
+# =========================
 # Context Processor
+# =========================
 @app.context_processor
 def inject_global_vars():
     if 'user_id' in session:
@@ -288,7 +395,9 @@ def inject_global_vars():
         return {'store_slug': g.user_stats_global.get('store_slug')}
     return {'store_slug': None}
 
+# =========================
 # Utilities
+# =========================
 def get_user_stats(user_id):
     conn = None
     try:
@@ -314,7 +423,9 @@ def get_user_stats(user_id):
     finally:
         if conn: conn.close()
 
+# =========================
 # Auth
+# =========================
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -374,7 +485,9 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# =========================
 # AI Engine
+# =========================
 @app.route('/', methods=['GET', 'POST'])
 def index():
     user_id = session.get('user_id')
@@ -435,12 +548,16 @@ def index():
             output_path = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
             standardize_cutout(output_data, output_path, size=1200)
 
+            # IMPORTANT: pass store to result.html so it can show stock field when inventory is enabled
+            store = get_store_by_user(user_id)
+
             return render_template(
                 'result.html',
                 filename=processed_filename,
                 original_filename=original_filename,
                 stats=get_user_stats(user_id),  # refresh after processing
-                engine_used=engine_used
+                engine_used=engine_used,
+                store=store  # <-- needed for {% if store.inventory_enabled %} in result.html
             )
         except Exception as e:
             logging.error(f"AI Processing Error: {e}")
@@ -449,7 +566,9 @@ def index():
 
     return render_template('index.html', stats=stats)
 
+# =========================
 # Inventory & Store Management
+# =========================
 @app.route('/save_product', methods=['POST'])
 def save_product():
     user_id = session.get('user_id')
@@ -458,7 +577,8 @@ def save_product():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT credits FROM users WHERE id = %s", (user_id,))
-    user_credits = cursor.fetchone()['credits']
+    row = cursor.fetchone()
+    user_credits = row['credits'] if row else 0
 
     if user_credits <= 0:
         conn.close()
@@ -493,15 +613,28 @@ def save_product():
     except Exception as e:
         logging.error(f"Final composition failed: {e}")
 
-    cursor.execute("SELECT id FROM stores WHERE user_id = %s", (user_id,))
+    cursor.execute("SELECT * FROM stores WHERE user_id = %s", (user_id,))
     store = cursor.fetchone()
 
     if store:
         try:
+            # Inventory handling (optional)
+            stock_qty = None
+            if store.get('inventory_enabled'):
+                try:
+                    stock_qty = int(request.form.get('stock_qty') or 0)
+                except:
+                    stock_qty = 0
+            else:
+                stock_qty = 999  # hidden from users; only "غير متوفر" when 0
+
+            # Generate SKU within same transaction
+            sku = generate_sku(conn, cursor, store['id'])
+
             cursor.execute("""
-                INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme, category, background, final_image_url)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (store['id'], name, price, processed_image_url, original_image_url, template_style, theme, category, background, final_fname))
+                INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme, category, background, final_image_url, sku, stock_qty, active)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE)
+            """, (store['id'], name, price, processed_image_url, original_image_url, template_style, theme, category, background, final_fname, sku, stock_qty))
             cursor.execute("UPDATE users SET credits = credits - 1 WHERE id = %s", (user_id,))
             conn.commit()
             flash("تم حفظ المنتج بنجاح في متجرك!", "success")
@@ -528,9 +661,59 @@ def admin():
     store = cursor.fetchone()
 
     products = []
+    orders = []
+    analytics = {}
     if store:
         cursor.execute("SELECT * FROM products WHERE store_id = %s ORDER BY id DESC", (store['id'],))
         products = cursor.fetchall()
+
+        # Orders (sent/confirmed/canceled)
+        cursor.execute("""
+            SELECT * FROM order_drafts
+            WHERE store_id = %s
+            ORDER BY created_at DESC
+        """, (store['id'],))
+        orders = cursor.fetchall()
+
+        # Simple analytics (last 7/30 days + top 5 viewed)
+        cursor.execute("""
+            SELECT COUNT(*) AS c FROM analytics_events 
+            WHERE store_id=%s AND event_name='page_view' AND created_at >= NOW() - INTERVAL '7 days'
+        """, (store['id'],))
+        last7 = cursor.fetchone()['c']
+        cursor.execute("""
+            SELECT COUNT(*) AS c FROM analytics_events 
+            WHERE store_id=%s AND event_name='page_view' AND created_at >= NOW() - INTERVAL '30 days'
+        """, (store['id'],))
+        last30 = cursor.fetchone()['c']
+        cursor.execute("""
+            SELECT p.id, p.name, COUNT(a.id) AS views
+            FROM analytics_events a
+            JOIN products p ON a.product_id = p.id
+            WHERE a.store_id=%s AND a.event_name='product_view' AND a.created_at >= NOW() - INTERVAL '30 days'
+            GROUP BY p.id, p.name
+            ORDER BY views DESC
+            LIMIT 5
+        """, (store['id'],))
+        top5 = cursor.fetchall()
+        cursor.execute("""
+            SELECT COUNT(*) AS adds FROM analytics_events 
+            WHERE store_id=%s AND event_name='add_to_cart' AND created_at >= NOW() - INTERVAL '30 days'
+        """, (store['id'],))
+        adds = cursor.fetchone()['adds']
+        cursor.execute("""
+            SELECT COUNT(*) AS ws FROM analytics_events 
+            WHERE store_id=%s AND event_name='whatsapp_sent' AND created_at >= NOW() - INTERVAL '30 days'
+        """, (store['id'],))
+        ws = cursor.fetchone()['ws']
+
+        analytics = {
+            'page_views_7d': last7,
+            'page_views_30d': last30,
+            'top_products_30d': top5,
+            'add_to_cart_30d': adds,
+            'whatsapp_30d': ws,
+        }
 
     edit_product = None
     edit_id = request.args.get('edit')
@@ -539,7 +722,7 @@ def admin():
         edit_product = cursor.fetchone()
 
     conn.close()
-    return render_template('admin.html', products=products, stats=stats, store=store, edit_product=edit_product)
+    return render_template('admin.html', products=products, stats=stats, store=store, edit_product=edit_product, orders=orders, analytics=analytics)
 
 @app.route('/edit_product/<int:id>', methods=['POST'])
 def edit_product_route(id):
@@ -552,18 +735,41 @@ def edit_product_route(id):
     theme = request.form.get('theme')
     category = request.form.get('category', '').strip() or 'الكل'
     template_style = request.form.get('template_style')
+    sku = request.form.get('sku')  # optional manual edit
+    active = request.form.get('active') == 'on'
+    stock_qty = request.form.get('stock_qty')
 
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
+        # Update base fields
         cursor.execute("""
-            UPDATE products SET name=%s, price=%s, description=%s, theme=%s, template_style=%s, category=%s
+            UPDATE products SET name=%s, price=%s, description=%s, theme=%s, template_style=%s, category=%s, active=%s
             WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)
-        """, (name, price, description, theme, template_style, category, id, user_id))
+        """, (name, price, description, theme, template_style, category, active, id, user_id))
+        # SKU (ensure unique per store if provided)
+        if sku and sku.strip():
+            cursor.execute("""
+                UPDATE products SET sku=%s
+                WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)
+            """, (sku.strip().upper(), id, user_id))
+        # Stock (if provided)
+        if stock_qty is not None and stock_qty != '':
+            try:
+                sq = int(stock_qty)
+            except:
+                sq = 0
+            cursor.execute("""
+                UPDATE products SET stock_qty=%s
+                WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)
+            """, (sq, id, user_id))
+
         conn.commit()
         flash("تم تحديث البيانات.", "success")
     except Exception as e:
+        conn.rollback()
         logging.error(f"Edit Product Error: {e}")
+        flash("تعذر حفظ التحديثات. تحقق من القيم.", "error")
     finally:
         conn.close()
     return redirect(url_for('admin'))
@@ -581,7 +787,9 @@ def delete_product_route(id):
     flash("تم الحذف.", "info")
     return redirect(url_for('admin'))
 
+# =========================
 # Store Settings & Public View
+# =========================
 @app.route('/update_store', methods=['POST'])
 def update_store():
     user_id = session.get('user_id')
@@ -612,6 +820,7 @@ def update_store():
     facebook_handle = request.form.get('facebook_handle')
     address = request.form.get('address')
     website = request.form.get('website')
+    inventory_enabled = True if request.form.get('inventory_enabled') in ('on', 'true', '1') else False
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -621,21 +830,21 @@ def update_store():
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, logo_url=%s
+                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, logo_url, user_id))
+                  address, website, logo_url, inventory_enabled, user_id))
         else:
             cursor.execute("""
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s
+                    address=%s, website=%s, inventory_enabled=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, user_id))
+                  address, website, inventory_enabled, user_id))
         conn.commit()
         flash("تم تحديث الإعدادات.", "success")
     except Exception as e:
@@ -675,7 +884,6 @@ def update_login_info():
 
 @app.route('/store/<slug>')
 def view_store(slug):
-    import urllib.parse
     decoded_slug = urllib.parse.unquote(slug)
 
     conn = get_db_connection()
@@ -696,10 +904,11 @@ def view_store(slug):
     open_id = request.args.get('open_product')
     product_to_open = None
     if open_id:
-        cursor.execute("SELECT * FROM products WHERE id = %s", (open_id,))
+        cursor.execute("SELECT * FROM products WHERE id = %s AND store_id = %s", (open_id, store['id']))
         product_to_open = cursor.fetchone()
 
     conn.close()
+    # store.html implements localStorage cart UI + /place_order + beacon events
     return render_template('store.html', store=store, products=products, product_to_open=product_to_open)
 
 @app.route('/product/<int:product_id>')
@@ -720,7 +929,215 @@ def view_product_direct(product_id):
 
     return redirect(url_for('view_store', slug=product['store_slug'], open_product=product_id))
 
+# =========================
+# Beacon Analytics
+# =========================
+@app.get("/e")
+def beacon():
+    e = request.args.get("e")
+    store_id = request.args.get("store_id", type=int)
+    product_id = request.args.get("product_id", type=int)
+    allowed = {"page_view", "product_view", "add_to_cart", "whatsapp_sent"}
+    if (not e) or (e not in allowed) or (not store_id):
+        return ("", 204)
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO analytics_events(store_id, product_id, event_name) VALUES (%s, %s, %s)",
+            (store_id, product_id, e)
+        )
+        conn.commit()
+        return ("", 204)
+    except Exception as ex:
+        logging.warning(f"Beacon error: {ex}")
+        return ("", 204)
+    finally:
+        try:
+            conn.close()
+        except:
+            pass
+
+# =========================
+# Cart -> WhatsApp Order
+# =========================
+@app.post("/place_order")
+def place_order():
+    try:
+        data = request.get_json(force=True, silent=False)
+    except Exception:
+        data = None
+    if not data:
+        return jsonify({"error": "بيانات غير صالحة"}), 400
+
+    try:
+        store_id = int(data.get("store_id"))
+    except:
+        return jsonify({"error": "store_id مفقود"}), 400
+    cart = data.get("cart") or []
+    if not isinstance(cart, list) or not cart:
+        return jsonify({"error": "السلة فارغة"}), 400
+
+    customer = {
+        "name": data.get("customer_name"),
+        "phone": data.get("customer_phone"),
+        "notes": data.get("customer_notes"),
+    }
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        # Read store
+        cur.execute("SELECT * FROM stores WHERE id=%s", (store_id,))
+        store = cur.fetchone()
+        if not store:
+            return jsonify({"error": "متجر غير موجود"}), 404
+
+        # Read products
+        ids = tuple(int(i.get("product_id")) for i in cart if i.get("product_id"))
+        if not ids:
+            return jsonify({"error": "عناصر غير صالحة"}), 400
+
+        sql = f"SELECT * FROM products WHERE id IN %s AND store_id=%s"
+        cur.execute(sql, (ids, store_id))
+        prows = cur.fetchall()
+        products = {p['id']: p for p in prows}
+
+        lines = []
+        subtotal = 0.0
+        for item in cart:
+            pid = int(item.get("product_id"))
+            qty = int(item.get("qty") or 1)
+            if qty < 1:
+                return jsonify({"error": "كمية غير صالحة"}), 400
+            p = products.get(pid)
+            if not p:
+                return jsonify({"error": "منتج غير موجود"}), 400
+            if not is_available(store, p):
+                return jsonify({"error": f"المنتج '{p['name']}' غير متوفر حالياً"}), 400
+            if store.get('inventory_enabled') and qty > (p.get('stock_qty') or 0):
+                return jsonify({"error": f"الكمية المطلوبة لمنتج '{p['name']}' غير متوفرة"}), 400
+
+            unit_price = to_number(p.get('price'))
+            line_total = unit_price * qty
+            lines.append({
+                "product_id": pid,
+                "sku": p.get('sku') or '',
+                "name": p.get('name') or '',
+                "unit_price": unit_price,
+                "qty": qty,
+                "line_total": line_total
+            })
+            subtotal += line_total
+
+        wa_text = build_wa_text(store, lines, subtotal, customer)
+
+        # Create order draft + lines (snapshot)
+        cur.execute("""
+            INSERT INTO order_drafts (store_id, subtotal, grand_total, customer_name, customer_phone, customer_notes, wa_text, status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 'sent') RETURNING id
+        """, (store_id, subtotal, subtotal, customer.get('name'), customer.get('phone'), customer.get('notes'), wa_text))
+        order_id = cur.fetchone()['id']
+        for l in lines:
+            cur.execute("""
+                INSERT INTO order_lines (order_id, product_id, sku, name_snapshot, unit_price, qty, line_total)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (order_id, l["product_id"], l["sku"], l["name"], l["unit_price"], l["qty"], l["line_total"]))
+
+        # Analytics: whatsapp_sent
+        cur.execute("INSERT INTO analytics_events(store_id, event_name) VALUES (%s, 'whatsapp_sent')", (store_id,))
+        conn.commit()
+
+        phone = (store.get('whatsapp_phone') or '').strip()
+        encoded = urllib.parse.quote(wa_text)
+        wa_link = f"https://wa.me/{phone}?text={encoded}" if phone else None
+
+        return jsonify({"ok": True, "order_id": order_id, "wa_number": phone, "wa_text": wa_text, "wa_link": wa_link})
+    except Exception as e:
+        conn.rollback()
+        logging.error(f"place_order error: {e}")
+        return jsonify({"error": "تعذر إنشاء الطلب"}), 500
+    finally:
+        conn.close()
+
+@app.post("/confirm_order/<int:order_id>")
+def confirm_order(order_id):
+    # Must be logged-in merchant of that store
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "غير مصرّح"}), 401
+
+    store = get_store_by_user(user_id)
+    if not store:
+        return jsonify({"error": "لا يوجد متجر مرتبط"}), 400
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT id, store_id, status FROM order_drafts WHERE id=%s AND store_id=%s", (order_id, store['id']))
+        order = cur.fetchone()
+        if not order:
+            return jsonify({"error": "طلب غير موجود"}), 404
+        if order['status'] == 'confirmed':
+            return jsonify({"ok": True})
+
+        cur.execute("SELECT product_id, qty FROM order_lines WHERE order_id=%s", (order_id,))
+        lines = cur.fetchall()
+
+        if store.get('inventory_enabled'):
+            # Lock rows and re-check stock then deduct
+            for l in lines:
+                cur.execute("SELECT stock_qty, active FROM products WHERE id=%s AND store_id=%s FOR UPDATE", (l['product_id'], store['id']))
+                p = cur.fetchone()
+                if not p or not p['active']:
+                    conn.rollback()
+                    return jsonify({"error": "منتج غير متاح"}), 400
+                if (p['stock_qty'] or 0) < l['qty']:
+                    conn.rollback()
+                    return jsonify({"error": "المخزون غير كافٍ"}), 400
+            # Deduct
+            for l in lines:
+                cur.execute("UPDATE products SET stock_qty = stock_qty - %s WHERE id=%s AND store_id=%s", (l['qty'], l['product_id'], store['id']))
+
+        cur.execute("UPDATE order_drafts SET status='confirmed' WHERE id=%s", (order_id,))
+        conn.commit()
+        return jsonify({"ok": True})
+    except Exception as e:
+        conn.rollback()
+        logging.error(f"confirm_order error: {e}")
+        return jsonify({"error": "تعذر تأكيد الطلب"}), 500
+    finally:
+        conn.close()
+
+@app.post("/cancel_order/<int:order_id>")
+def cancel_order(order_id):
+    # Optional: allow merchant to cancel (no stock changes)
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "غير مصرّح"}), 401
+    store = get_store_by_user(user_id)
+    if not store:
+        return jsonify({"error": "لا يوجد متجر مرتبط"}), 400
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("UPDATE order_drafts SET status='canceled' WHERE id=%s AND store_id=%s AND status='sent'", (order_id, store['id']))
+        if cur.rowcount == 0:
+            conn.rollback()
+            return jsonify({"error": "لا يمكن إلغاء هذا الطلب"}), 400
+        conn.commit()
+        return jsonify({"ok": True})
+    except Exception as e:
+        conn.rollback()
+        logging.error(f"cancel_order error: {e}")
+        return jsonify({"error": "تعذر إلغاء الطلب"}), 500
+    finally:
+        conn.close()
+
+# =========================
 # Super Admin
+# =========================
 @app.route('/superadmin')
 def super_admin():
     if not session.get('is_superadmin'): return redirect(url_for('super_admin_login'))
@@ -806,10 +1223,16 @@ def super_admin_add_credits():
     flash(f"تم تحديث رصيد التاجر إلى {amount} صورة بنجاح", "success")
     return redirect(url_for('super_admin'))
 
+# =========================
+# Static: Service Worker
+# =========================
 @app.route('/sw.js')
 def sw():
     return send_from_directory(app.root_path, 'sw.js')
 
+# =========================
+# Entrypoint
+# =========================
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 3000))
     app.run(host='0.0.0.0', port=port, threaded=True)

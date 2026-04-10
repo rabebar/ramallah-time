@@ -24,7 +24,6 @@
     #prod-price { font-weight: 600; z-index: 3; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
     .post-main-canvas .divider { background: #fff; width: 40px; height: 3px; margin: 12px 0; border-radius: 2px; opacity: 0.8; }
 
-    /* Themes (visual preview for color themes) */
     .theme-gold   { background: linear-gradient(135deg, #F2994A, #F2C94C); }
     .theme-black  { background: linear-gradient(135deg, #0F2027, #203A43); }
     .theme-pastel { background: linear-gradient(135deg, #667EEA, #764BA2); }
@@ -36,7 +35,6 @@
     .theme-earth  { background: linear-gradient(135deg, #3F6212, #713F12); }
     .theme-vibrant { background: linear-gradient(135deg, #F43F5E, #FB923C); }
 
-    /* Styles */
     .style-elegant #prod-title { font-size: 28px; margin-top: 16px; }
     .style-elegant #prod-price { font-size: 18px; opacity: 0.9; }
 
@@ -106,6 +104,19 @@
                 <input type="number" name="price" id="inputPrice" placeholder="Price (₪)" class="data-input" oninput="liveSync()" required>
                 <input type="text" name="category" placeholder="اسم القسم (مثلاً: خواتم، سلاسل...)" class="data-input">
             </div>
+
+            {% if store and store.inventory_enabled %}
+            <div class="control-section" style="border-top:1px solid #f1f5f9; padding-top: 16px;">
+                <span class="section-title">
+                    <i data-lucide="boxes" style="width: 16px; color: var(--gold);"></i>
+                    إدارة المخزون (اختياري)
+                </span>
+                <input type="number" name="stock_qty" min="0" step="1" placeholder="الكمية المتوفرة" class="data-input">
+                <small style="color: var(--text-muted); display: block; margin-top: 6px;">
+                    هذه الكمية لن تظهر للزبون. عند 0 سيظهر للزبون “غير متوفر” فقط.
+                </small>
+            </div>
+            {% endif %}
 
             <div class="control-section" style="border-top:1px solid #f1f5f9; padding-top: 16px;">
                 <span class="section-title">
@@ -178,7 +189,6 @@
 </div>
 
 <script>
-    // Local backgrounds (stable)
     const BG_IMAGES = {
         marble:  '/static/assets/bg/marble.jpg',
         wood:    '/static/assets/bg/wood.jpg',
@@ -197,10 +207,9 @@
         element.classList.add('active');
 
         if (bgName === 'none') {
-            // show theme gradient only
             canvas.style.backgroundImage = '';
         } else {
-            canvas.className = canvas.className; // keep theme class
+            canvas.className = canvas.className;
             canvas.style.backgroundImage = `url('${BG_IMAGES[bgName]}')`;
             canvas.style.backgroundSize = 'cover';
             canvas.style.backgroundPosition = 'center';
@@ -218,7 +227,7 @@
         const canvas = document.getElementById('capture-area');
         canvas.classList.remove('theme-gold','theme-black','theme-pastel','theme-spring','theme-fire','theme-ocean','theme-royal','theme-midnight','theme-earth','theme-vibrant');
         canvas.classList.add('theme-' + themeName);
-        canvas.style.backgroundImage = canvas.style.backgroundImage; // keep bg if any
+        canvas.style.backgroundImage = canvas.style.backgroundImage;
         document.getElementById('hiddenTheme').value = themeName;
 
         element.closest('.options-grid').querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
