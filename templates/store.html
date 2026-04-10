@@ -172,7 +172,7 @@
         .modal-close:hover { background: #E2E8F0; transform: rotate(90deg); }
 
         .modal-canvas { width: 100%; aspect-ratio: 1.2/1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #F8FAFC; flex-shrink: 0; border-radius: 32px 32px 0 0; }
-        .modal-canvas img { max-width: 80%; max-height: 80%; object-fit: contain; z-index: 2; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.1)); }
+        .modal-canvas img { max-width: 80%; max-height: 80%; object-fit: contain; z-index: 10; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.1)); }
 
         .modal-canvas.style-modern .m-name-overlay { position: absolute; top: 30px; right: 30px; background: #fff; padding: 10px 20px; border-radius: 12px; font-weight: 800; box-shadow: var(--shadow-card); z-index: 5; }
         .modal-canvas.style-modern .m-price-overlay { position: absolute; bottom: 30px; left: 30px; background: var(--navy-deep); color: #fff; padding: 10px 20px; border-radius: 12px; font-weight: 700; z-index: 5; }
@@ -265,6 +265,24 @@
         /* خيار اختياري للشاشات الكبيرة جداً */
         @media (min-width: 1440px) {
             .main-content { max-width: 1120px; }
+        }
+
+        /* لا تجعل السعر/الزجاج يغطي على المنتج داخل المودال */
+        .modal-canvas.style-modern,
+        .modal-canvas.style-glass,
+        .modal-canvas.style-minimal {
+            padding-bottom: 84px; /* مساحة آمنة أسفل الصورة للبار/الصندوق */
+        }
+        .modal-canvas .m-name-overlay,
+        .modal-canvas .m-price-overlay,
+        .modal-canvas .glass-box,
+        .modal-canvas .glass-bar {
+            z-index: 3;             /* أقل من الصورة */
+            pointer-events: none;   /* لا تعيق اللمس/النقر على الصورة */
+        }
+        /* لمسة صغر بسيطة لمربّع الزجاج وأبعاده على الشاشات الصغيرة */
+        .modal-canvas.style-glass .glass-box {
+            left: 24px; right: 24px; bottom: 20px;
         }
 </style>
 </head>
