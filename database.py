@@ -51,7 +51,7 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )''')
 
-    # 3. إنشاء جدول المنتجات (مع حقل theme)
+    # 3. إنشاء جدول المنتجات (مع حقل theme و background)
     cursor.execute('''CREATE TABLE IF NOT EXISTS products (
             id SERIAL PRIMARY KEY,
             store_id INTEGER,
@@ -63,9 +63,17 @@ def init_db():
             template_style TEXT DEFAULT 'elegant',
             theme TEXT DEFAULT 'gold',
             category TEXT DEFAULT 'الكل',
+            background TEXT DEFAULT 'none',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE
         )''')
+    
+    # إضافة عمود background للجداول الموجودة (لو ما كان موجوداً)
+    try:
+        cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS background TEXT DEFAULT 'none'")
+        print("✅ background column ready.")
+    except Exception as e:
+        print(f"background column note: {e}")
 
     # 4. إنشاء جدول المعاملات
     cursor.execute('''CREATE TABLE IF NOT EXISTS transactions (

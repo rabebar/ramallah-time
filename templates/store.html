@@ -477,7 +477,7 @@
             });
         }
 
-        function openModal(id, name, price, img, desc, theme, style, category) {
+        function openModal(id, name, price, img, desc, theme, style, category, background) {
             const newUrl = window.location.pathname + '?open_product=' + id;
             window.history.pushState({ path: newUrl }, '', newUrl);
             const canvas = document.getElementById('modalCanvas');
@@ -487,6 +487,24 @@
             document.getElementById('mPrice').innerText = '₪ ' + price;
             document.getElementById('mImg').src = img;
             canvas.className = 'modal-canvas theme-' + theme + ' style-' + style;
+
+            // ✅ تطبيق الخلفية المحفوظة
+            const BG_IMAGES_STORE = {
+                marble:  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+                wood:    'https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=800&q=80',
+                nature:  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80',
+                palace:  'https://images.unsplash.com/photo-1558618047-f4e4ce0b29e0?w=800&q=80',
+                studio:  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
+                floral:  'https://images.unsplash.com/photo-1490750967868-88df5691cc15?w=800&q=80',
+                stars:   'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800&q=80',
+            };
+            if (background && background !== 'none' && BG_IMAGES_STORE[background]) {
+                canvas.style.backgroundImage = `url('${BG_IMAGES_STORE[background]}')`;
+                canvas.style.backgroundSize = 'cover';
+                canvas.style.backgroundPosition = 'center';
+            } else {
+                canvas.style.backgroundImage = '';
+            }
             if (style === 'modern') { mContent.innerHTML = `<div class="m-name-overlay">${name}</div><div class="m-price-overlay">₪ ${price}</div>`; }
             else if (style === 'glass') { mContent.innerHTML = `<div class="glass-box"><div>${name}</div><div style="font-weight:700; color:var(--gold)">₪ ${price}</div></div>`; }
             else if (style === 'minimal') { mContent.innerHTML = `<div class="glass-bar"><span>${name}</span><span>₪ ${price}</span></div>`; }

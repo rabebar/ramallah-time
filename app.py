@@ -10,12 +10,100 @@ import os
 import io
 import uuid
 import logging
+import re
+import base64
+from datetime import datetime, timedelta
+from collections import defaultdict
 from flask import Flask, render_template, request, redirect, session, url_for, flash, g, send_from_directory
 import requests
 from werkzeug.security import generate_password_hash, check_password_hash
 from rembg import remove
 from PIL import Image
 from database import get_db_connection
+
+# --- OpenAI Config ---
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
+
+# Rate Limiting: عدد الطلبات لكل تاجر في الساعة (حماية الرصيد)
+RATE_LIMIT_PER_HOUR = 20
+_rate_tracker = defaultdict(list)  # { user_id: [timestamps] }
+
+def check_rate_limit(user_id):
+    """يتحقق إن التاجر لم يتجاوز حد الطلبات في الساعة الأخيرة"""
+    now = datetime.utcnow()
+    cutoff = now - timedelta(hours=1)
+    _rate_tracker[user_id] = [t for t in _rate_tracker[user_id] if t > cutoff]
+    if len(_rate_tracker[user_id]) >= RATE_LIMIT_PER_HOUR:
+        return False
+    _rate_tracker[user_id].append(now)
+    return True
+
+def remove_bg_openai(filepath):
+    """إزالة الخلفية عبر OpenAI — يرجع bytes أو None عند الفشل"""
+    try:
+        with open(filepath, 'rb') as f:
+            img_bytes = f.read()
+        
+        # OpenAI يحتاج RGBA mask — نصنع mask أبيض كامل
+        img = Image.open(io.BytesIO(img_bytes)).convert("RGBA")
+        w, h = img.size
+        mask = Image.new("RGBA", (w, h), (255, 255, 255, 255))
+        
+        img_buf = io.BytesIO()
+        img.save(img_buf, format='PNG')
+        img_buf.seek(0)
+        
+        mask_buf = io.BytesIO()
+        mask.save(mask_buf, format='PNG')
+        mask_buf.seek(0)
+        
+        response = requests.post(
+            "https://api.openai.com/v1/images/edits",
+            headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
+            files={
+                "image": ("image.png", img_buf, "image/png"),
+                "mask":  ("mask.png",  mask_buf,  "image/png"),
+            },
+            data={
+                "model": "dall-e-2",
+                "prompt": "Remove the background completely, keep only the product on a transparent background",
+                "n": "1",
+                "size": "1024x1024",
+                "response_format": "b64_json"
+            },
+            timeout=60
+        )
+        
+        if response.status_code == 200:
+            b64 = response.json()['data'][0]['b64_json']
+            return base64.b64decode(b64)
+        else:
+            logging.error(f"OpenAI API Error: {response.status_code} - {response.text}")
+            return None
+    except Exception as e:
+        logging.error(f"OpenAI remove_bg exception: {e}")
+        return None
+
+def remove_bg_with_fallback(filepath):
+    """
+    المحرك الذكي:
+    1. يجرب OpenAI أولاً لو الـ API Key موجود
+    2. لو فشل أو ما في مفتاح — يرجع لـ rembg تلقائياً
+    يرجع: (output_bytes, engine_used)
+    """
+    if OPENAI_API_KEY:
+        logging.info("Trying OpenAI background removal...")
+        result = remove_bg_openai(filepath)
+        if result:
+            logging.info("✅ OpenAI success")
+            return result, 'openai'
+        logging.warning("⚠️ OpenAI failed, falling back to rembg")
+    
+    logging.info("Using rembg fallback...")
+    with open(filepath, 'rb') as f:
+        input_data = f.read()
+    output_data = remove(input_data)
+    return output_data, 'rembg' 
 
 app = Flask(__name__)
 
@@ -87,7 +175,9 @@ def register():
         phone = request.form.get('phone')
         password = request.form.get('password')
         store_name = request.form.get('store_name')
-        slug = store_name.lower().strip().replace(" ", "-")
+        # تنظيف الـ slug عند التسجيل
+        raw_slug = store_name.lower().strip().replace(' ', '-')
+        slug = re.sub(r'[^a-z0-9؀-ۿ-]', '', raw_slug) or 'store'[:30]
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -182,26 +272,35 @@ def index():
             flash("يرجى اختيار ملف أو وضع رابط صورة.", "error")
             return redirect(url_for('index'))
         
+        # ✅ التحقق من الرصيد قبل أي معالجة
+        if stats['credits'] <= 0:
+            flash("رصيدك غير كافٍ. تواصل مع الإدارة لشحن رصيدك.", "error")
+            return redirect(url_for('index'))
+
+        # ✅ التحقق من Rate Limit (حماية رصيد OpenAI من الاستنزاف)
+        if not check_rate_limit(user_id):
+            flash(f"لقد تجاوزت الحد المسموح ({RATE_LIMIT_PER_HOUR} صورة/ساعة). حاول لاحقاً.", "warning")
+            return redirect(url_for('index'))
+
         try:
-            with open(filepath, "rb") as f:
-                input_data = f.read()
-            
-            output_data = remove(input_data)
-            
+            # ✅ المحرك الذكي: OpenAI أولاً ← rembg كـ Fallback
+            output_data, engine_used = remove_bg_with_fallback(filepath)
+            logging.info(f"Background removed using: {engine_used}")
+
             img_no_bg = Image.open(io.BytesIO(output_data)).convert("RGBA")
             processed_filename = f"processed_{unique_id}.png"
             output_path = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
             img_no_bg.save(output_path, "PNG")
-            
-            # إرسال اسم الملف الأصلي والمعالج
-            return render_template('result.html', 
-                                   filename=processed_filename, 
-                                   original_filename=original_filename, 
-                                   stats=stats)
-            
+
+            return render_template('result.html',
+                                   filename=processed_filename,
+                                   original_filename=original_filename,
+                                   stats=stats,
+                                   engine_used=engine_used)
+
         except Exception as e:
             logging.error(f"AI Processing Error: {e}")
-            flash("حدث خطأ أثناء معالجة الصورة.", "error")
+            flash("حدث خطأ أثناء معالجة الصورة. يرجى المحاولة مرة أخرى.", "error")
             return redirect(url_for('index'))
 
     return render_template('index.html', stats=stats)
@@ -346,7 +445,15 @@ def update_store():
         logo_path = os.path.join(app.config['UPLOAD_FOLDER'], logo_filename)
         logo_file.save(logo_path)
         logo_url = logo_filename
-    slug = request.form.get('slug', '').strip().replace(" ", "-") # تنظيف الرابط من المسافات
+    # ✅ تنظيف الـ slug: يتعامل مع كل ما يكتبه التاجر
+    raw_slug = request.form.get('slug', '').strip()
+    # لو لصق رابطاً كاملاً — استخرج الجزء الأخير فقط
+    if '/' in raw_slug:
+        raw_slug = raw_slug.rstrip('/').split('/')[-1]
+    # تحويل لحروف صغيرة، استبدال المسافات بـ -، حذف أي رمز غير مسموح
+    slug = re.sub(r'[^a-z0-9؀-ۿ-]', '', raw_slug.lower().replace(' ', '-'))
+    if not slug:
+        slug = request.form.get('name', 'store').lower().replace(' ', '-')[:30]
     bio = request.form.get('bio')
     display_phone = request.form.get('display_phone')
     whatsapp_phone = request.form.get('whatsapp_phone')
