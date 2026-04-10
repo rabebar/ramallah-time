@@ -3,24 +3,20 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash
 
-# جلب الرابط وتصحيحه ليتوافق مع PostgreSQL الحديثة
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 def get_db_connection():
-    """فتح اتصال مع قاعدة بيانات PostgreSQL"""
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
 
 def init_db():
-    """إنشاء الجداول وبيانات تجريبية (للمرة الأولى)"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     print("🚀 Checking/Initializing Database Schema...")
-    
-    # 1. إنشاء جدول المستخدمين (مع حقل status)
+
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             phone TEXT UNIQUE NOT NULL,
@@ -31,7 +27,6 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )''')
 
-    # 2. إنشاء جدول المتاجر (مع حقول التواصل)
     cursor.execute('''CREATE TABLE IF NOT EXISTS stores (
             id SERIAL PRIMARY KEY,
             user_id INTEGER,
@@ -51,7 +46,6 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )''')
 
-    # 3. إنشاء جدول المنتجات (مع حقل theme و background)
     cursor.execute('''CREATE TABLE IF NOT EXISTS products (
             id SERIAL PRIMARY KEY,
             store_id INTEGER,
@@ -64,18 +58,23 @@ def init_db():
             theme TEXT DEFAULT 'gold',
             category TEXT DEFAULT 'الكل',
             background TEXT DEFAULT 'none',
+            final_image_url TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE
         )''')
-    
-    # إضافة عمود background للجداول الموجودة (لو ما كان موجوداً)
+
     try:
         cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS background TEXT DEFAULT 'none'")
         print("✅ background column ready.")
     except Exception as e:
         print(f"background column note: {e}")
 
-    # 4. إنشاء جدول المعاملات
+    try:
+        cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS final_image_url TEXT")
+        print("✅ final_image_url column ready.")
+    except Exception as e:
+        print(f"final_image_url column note: {e}")
+
     cursor.execute('''CREATE TABLE IF NOT EXISTS transactions (
             id SERIAL PRIMARY KEY,
             user_id INTEGER,
@@ -87,7 +86,6 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )''')
 
-    # 5. جدول زيارات المتاجر — للسوبر أدمن فقط
     cursor.execute('''CREATE TABLE IF NOT EXISTS store_visits (
             id SERIAL PRIMARY KEY,
             store_id INTEGER NOT NULL,
@@ -96,7 +94,6 @@ def init_db():
         )''')
     print("✅ store_visits table ready.")
 
-    # --- إدخال بيانات تجريبية (Seed Data) إذا لم تكن موجودة ---
     cursor.execute("SELECT id FROM users WHERE phone = %s", ("0592776784",))
     if not cursor.fetchone():
         print("🌱 Seeding initial data...")
@@ -119,15 +116,11 @@ def init_db():
     conn.close()
 
 def record_store_visit(store_id):
-    """تسجيل زيارة جديدة لمتجر معين"""
     conn = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO store_visits (store_id) VALUES (%s)",
-            (store_id,)
-        )
+        cursor.execute("INSERT INTO store_visits (store_id) VALUES (%s)", (store_id,))
         conn.commit()
     except Exception as e:
         print(f"Visit record error: {e}")
@@ -135,33 +128,24 @@ def record_store_visit(store_id):
         if conn: conn.close()
 
 def get_visit_stats():
-    """إحصائيات الزيارات للسوبر أدمن"""
     conn = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-
-        # إجمالي كل الزيارات
         cursor.execute("SELECT COUNT(*) as total FROM store_visits")
         total = cursor.fetchone()['total']
-
-        # زيارات اليوم
         cursor.execute("""
             SELECT COUNT(*) as today 
             FROM store_visits 
             WHERE visited_at::date = CURRENT_DATE
         """)
         today = cursor.fetchone()['today']
-
-        # زيارات آخر 7 أيام
         cursor.execute("""
             SELECT COUNT(*) as week
             FROM store_visits
             WHERE visited_at >= NOW() - INTERVAL '7 days'
         """)
         week = cursor.fetchone()['week']
-
-        # أكثر 5 متاجر زيارة
         cursor.execute("""
             SELECT s.name, s.slug, COUNT(sv.id) as visits
             FROM store_visits sv
@@ -171,18 +155,11 @@ def get_visit_stats():
             LIMIT 5
         """)
         top_stores = cursor.fetchall()
-
-        return {
-            'total': total,
-            'today': today,
-            'week': week,
-            'top_stores': top_stores
-        }
+        return {'total': total, 'today': today, 'week': week, 'top_stores': top_stores}
     except Exception as e:
         print(f"Visit stats error: {e}")
         return {'total': 0, 'today': 0, 'week': 0, 'top_stores': []}
     finally:
         if conn: conn.close()
 
-# يتم تنفيذ هذا الكود عند استيراد الملف في app.py
 init_db()

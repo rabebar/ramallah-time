@@ -2,109 +2,41 @@
 {% block title %}Design Lab - RT Studio{% endblock %}
 
 {% block content %}
-<!-- html2canvas for Export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
-    /* Layout: Fixed Preview on Left, Controls on Right */
-    .editor-container {
-        display: grid;
-        grid-template-columns: 1fr 400px;
-        gap: 40px;
-        align-items: start;
-    }
-
-    /* Sticky Preview Area */
-    .preview-sticky-wrap {
-        position: sticky;
-        top: 40px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        z-index: 10;
-    }
-
-    .canvas-frame {
-        width: 100%;
-        max-width: 480px;
-        aspect-ratio: 1/1;
-        background: #ffffff;
-        border-radius: 24px;
-        padding: 16px;
-        box-shadow: var(--shadow-lg);
-        border: 1px solid rgba(0,0,0,0.02);
-    }
-
-    /* Controls Panel */
-    .controls-panel {
-        background: var(--card-bg);
-        padding: 32px;
-        border-radius: 20px;
-        border: 1px solid rgba(0,0,0,0.02);
-        box-shadow: var(--shadow-md);
-    }
-
-    .control-section { margin-bottom: 32px; }
-    .section-title { 
-        display: flex; align-items: center; gap: 10px; 
-        font-size: 13px; font-weight: 600; color: var(--text-muted); 
-        margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; 
-    }
-    .section-title svg { width: 16px; height: 16px; stroke-width: 2; }
-    
-    /* Theme & Style Options */
+    .editor-container { display: grid; grid-template-columns: 1fr 400px; gap: 40px; align-items: start; }
+    .preview-sticky-wrap { position: sticky; top: 40px; display: flex; flex-direction: column; align-items: center; z-index: 10; }
+    .canvas-frame { width: 100%; max-width: 480px; aspect-ratio: 1/1; background: #ffffff; border-radius: 24px; padding: 16px; box-shadow: var(--shadow-lg); border: 1px solid rgba(0,0,0,0.02); }
+    .controls-panel { background: var(--card-bg); padding: 32px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.02); box-shadow: var(--shadow-md); }
+    .control-section { margin-bottom: 24px; }
+    .section-title { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
     .options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .option-btn { 
-        background: #f9fafb; border: 1px solid transparent; padding: 12px 8px; 
-        border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s;
-        display: flex; flex-direction: column; align-items: center; gap: 8px;
-    }
+    .option-btn { background: #f9fafb; border: 1px solid transparent; padding: 12px 8px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
     .option-btn:hover { border-color: var(--border); background: #fff; }
     .option-btn.active { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 2px var(--accent); }
-    
-    .opt-color-circle { width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); }
-    .opt-icon svg { width: 20px; height: 20px; stroke: var(--text-muted); }
     .opt-txt { font-size: 11px; font-weight: 600; color: var(--text-muted); }
     .option-btn.active .opt-txt { color: var(--accent); font-weight: 700; }
-    .option-btn.active .opt-icon svg { stroke: var(--accent); }
 
-    /* Canvas Drawing Area */
-    .post-main-canvas {
-        width: 100%; height: 100%;
-        border-radius: 12px;
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        color: #ffffff;
-    }
-
-    #prod-img { 
-        max-width: 80%; max-height: 70%; object-fit: contain; z-index: 2; 
-        filter: drop-shadow(0 15px 30px rgba(0,0,0,0.3)); 
-        transition: 0.5s; 
-    }
+    .post-main-canvas { width: 100%; height: 100%; border-radius: 12px; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); color: #ffffff; }
+    #prod-img { max-width: 80%; max-height: 70%; object-fit: contain; z-index: 2; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.3)); transition: 0.5s; }
     #prod-title { font-weight: 700; z-index: 3; text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: -0.02em; }
     #prod-price { font-weight: 600; z-index: 3; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .post-main-canvas .divider { background: #fff; width: 40px; height: 3px; margin: 12px 0; border-radius: 2px; opacity: 0.8; }
 
-    /* Vibrant Themes */
-    .theme-gold   { background: linear-gradient(135deg, #F2994A, #F2C94C); --line-color: #ffffff; }
-    .theme-black  { background: linear-gradient(135deg, #0F2027, #203A43); --line-color: #ffffff; }
-    .theme-pastel { background: linear-gradient(135deg, #667EEA, #764BA2); --line-color: #ffffff; }
-    .theme-spring { background: linear-gradient(135deg, #11998E, #38EF7D); --line-color: #ffffff; }
-    .theme-fire   { background: linear-gradient(135deg, #FF512F, #DD2476); --line-color: #ffffff; }
-    .theme-ocean  { background: linear-gradient(135deg, #2193B0, #6DD5ED); --line-color: #ffffff; }
-    .theme-royal  { background: linear-gradient(135deg, #4F46E5, #7C3AED); --line-color: #ffffff; }
-    .theme-midnight { background: linear-gradient(135deg, #0F172A, #334155); --line-color: #ffffff; }
-    .theme-earth  { background: linear-gradient(135deg, #3F6212, #713F12); --line-color: #ffffff; }
-    .theme-vibrant { background: linear-gradient(135deg, #F43F5E, #FB923C); --line-color: #ffffff; }
+    /* Themes (visual preview for color themes) */
+    .theme-gold   { background: linear-gradient(135deg, #F2994A, #F2C94C); }
+    .theme-black  { background: linear-gradient(135deg, #0F2027, #203A43); }
+    .theme-pastel { background: linear-gradient(135deg, #667EEA, #764BA2); }
+    .theme-spring { background: linear-gradient(135deg, #11998E, #38EF7D); }
+    .theme-fire   { background: linear-gradient(135deg, #FF512F, #DD2476); }
+    .theme-ocean  { background: linear-gradient(135deg, #2193B0, #6DD5ED); }
+    .theme-royal  { background: linear-gradient(135deg, #4F46E5, #7C3AED); }
+    .theme-midnight { background: linear-gradient(135deg, #0F172A, #334155); }
+    .theme-earth  { background: linear-gradient(135deg, #3F6212, #713F12); }
+    .theme-vibrant { background: linear-gradient(135deg, #F43F5E, #FB923C); }
 
-    .post-main-canvas .divider { background: var(--line-color); width: 40px; height: 3px; margin: 12px 0; border-radius: 2px; opacity: 0.8; }
-
-    /* Layout Styles */
+    /* Styles */
     .style-elegant #prod-title { font-size: 28px; margin-top: 16px; }
     .style-elegant #prod-price { font-size: 18px; opacity: 0.9; }
 
@@ -128,28 +60,10 @@
     .style-glass #prod-title { font-size: 20px; margin-bottom: 4px; }
     .style-glass #prod-price { font-size: 16px; color: rgba(255,255,255,0.8); }
 
-    /* Inputs */
-    input.data-input { 
-        width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; 
-        margin-bottom: 12px; outline: none; font-size: 15px; background: #fff;
-        transition: border-color 0.2s, box-shadow 0.2s;
-    }
+    input.data-input { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 12px; outline: none; font-size: 15px; background: #fff; transition: border-color 0.2s, box-shadow 0.2s; }
     input.data-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-    
-    /* Action Buttons */
-    .btn-action-save { 
-        background: #111; color: white; border: none; padding: 16px; border-radius: 12px; 
-        width: 100%; font-weight: 600; cursor: pointer; font-size: 15px; 
-        margin-top: 10px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-action-save:hover { background: #000; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-    
-    .btn-action-dl { 
-        background: transparent; color: var(--text-main); border: 1px solid var(--border); 
-        padding: 14px; border-radius: 12px; width: 100%; font-weight: 600; 
-        cursor: pointer; font-size: 14px; margin-top: 10px; transition: 0.2s;
-        display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
+    .btn-action-save { background: #111; color: white; border: none; padding: 16px; border-radius: 12px; width: 100%; font-weight: 600; cursor: pointer; font-size: 15px; margin-top: 10px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-action-dl { background: transparent; color: var(--text-main); border: 1px solid var(--border); padding: 14px; border-radius: 12px; width: 100%; font-weight: 600; cursor: pointer; font-size: 14px; margin-top: 10px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-action-dl:hover { background: #f9fafb; border-color: #d1d5db; }
 
     @media (max-width: 900px) {
@@ -160,25 +74,21 @@
 </style>
 
 <div class="editor-container">
-    <!-- Left: Sticky Preview -->
     <div class="preview-sticky-wrap">
         <div class="canvas-frame">
             <div id="capture-area" class="post-main-canvas theme-gold style-elegant">
                 <img id="prod-img" src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Product">
-                
                 <div id="dynamic-content-wrap" style="width: 100%; display: contents;">
                     <div id="prod-title">Product Name</div>
                     <div class="divider"></div>
                     <div id="prod-price">0.00 ₪</div>
                 </div>
-
                 <div style="position: absolute; bottom: 10px; font-size: 9px; opacity: 0.5; letter-spacing: 2px; font-weight: 700;">RT STUDIO</div>
             </div>
         </div>
         <p style="margin-top: 16px; color: var(--text-muted); font-size: 13px; font-weight: 500;">Live Preview</p>
     </div>
 
-    <!-- Right: Controls Panel -->
     <div class="controls-panel">
         <form action="/save_product" method="POST" id="mainSaveForm">
             <input type="hidden" name="image_url" value="{{ filename }}">
@@ -187,7 +97,6 @@
             <input type="hidden" name="theme" id="hiddenTheme" value="gold">
             <input type="hidden" name="background" id="hiddenBackground" value="none">
 
-            <!-- Section 1: Details -->
             <div class="control-section">
                 <span class="section-title">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -195,85 +104,57 @@
                 </span>
                 <input type="text" name="name" id="inputName" placeholder="Enter product name..." class="data-input" oninput="liveSync()" required>
                 <input type="number" name="price" id="inputPrice" placeholder="Price (₪)" class="data-input" oninput="liveSync()" required>
-                <!-- خانة اختيار أو كتابة القسم -->
                 <input type="text" name="category" placeholder="اسم القسم (مثلاً: خواتم، سلاسل...)" class="data-input">
-                <div class="upload-hint" style="margin-bottom: 10px;">
-                    <i data-lucide="tag"></i>
-                    سيتم تنظيم منتجاتك في المتجر بناءً على اسم القسم.
-                </div>
             </div>
-            <!-- قسم اختيار الخلفية الاحترافية (AI Backgrounds) -->
-            <div class="control-section" style="border-top: 1px solid #f1f5f9; padding-top: 20px;">
+
+            <div class="control-section" style="border-top:1px solid #f1f5f9; padding-top: 16px;">
                 <span class="section-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="color: var(--gold);"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                    <i data-lucide="sparkles" style="width: 16px; color: var(--gold);"></i>
                     خلفية احترافية ذكية
                 </span>
                 <div class="options-grid">
-                    <div class="option-btn active" onclick="selectAIBackground('none', this)">
-                        <div class="opt-icon"><i data-lucide="layers"></i></div>
-                        <span class="opt-txt">شفافة</span>
-                    </div>
-                    <div class="option-btn" onclick="selectAIBackground('marble', this)">
-                        <div class="opt-icon"><i data-lucide="gem"></i></div>
-                        <span class="opt-txt">رخام فخم</span>
-                    </div>
-                    <div class="option-btn" onclick="selectAIBackground('wood', this)">
-                        <div class="opt-icon"><i data-lucide="tree-pine"></i></div>
-                        <span class="opt-txt">خشب طبيعي</span>
-                    </div>
-                    <div class="option-btn" onclick="selectAIBackground('studio', this)">
-                        <div class="opt-icon"><i data-lucide="aperture"></i></div>
-                        <span class="opt-txt">استوديو</span>
-                    </div>
+                    <div class="option-btn active" onclick="applyBackground('none', this)"><span class="opt-txt">شفافة</span></div>
+                    <div class="option-btn" onclick="applyBackground('marble', this)"><span class="opt-txt">رخام فخم</span></div>
+                    <div class="option-btn" onclick="applyBackground('wood', this)"><span class="opt-txt">خشب طبيعي</span></div>
+                    <div class="option-btn" onclick="applyBackground('studio', this)"><span class="opt-txt">استوديو</span></div>
+                    <div class="option-btn" onclick="applyBackground('nature', this)"><span class="opt-txt">طبيعة</span></div>
+                    <div class="option-btn" onclick="applyBackground('floral', this)"><span class="opt-txt">ورود</span></div>
+                    <div class="option-btn" onclick="applyBackground('stars', this)"><span class="opt-txt">نجوم</span></div>
+                    <div class="option-btn" onclick="applyBackground('palace', this)"><span class="opt-txt">قصر</span></div>
                 </div>
             </div>
 
-            <!-- Section 2: Themes -->
             <div class="control-section">
                 <span class="section-title">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z"/></svg>
                     Color Theme
                 </span>
                 <div class="options-grid">
-                    <div class="option-btn active" onclick="applyTheme('gold', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #F2994A, #F2C94C);"></div><span class="opt-txt">Gold</span></div>
-                    <div class="option-btn" onclick="applyTheme('black', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #0F2027, #203A43);"></div><span class="opt-txt">Black</span></div>
-                    <div class="option-btn" onclick="applyTheme('pastel', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #667EEA, #764BA2);"></div><span class="opt-txt">Pastel</span></div>
-                    <div class="option-btn" onclick="applyTheme('spring', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #11998E, #38EF7D);"></div><span class="opt-txt">Spring</span></div>
-                    <div class="option-btn" onclick="applyTheme('fire', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #FF512F, #DD2476);"></div><span class="opt-txt">Fire</span></div>
-                    <div class="option-btn" onclick="applyTheme('ocean', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #2193B0, #6DD5ED);"></div><span class="opt-txt">Ocean</span></div>
-                    <div class="option-btn" onclick="applyTheme('royal', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #4F46E5, #7C3AED);"></div><span class="opt-txt">Royal</span></div>
-                    <div class="option-btn" onclick="applyTheme('midnight', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #0F172A, #334155);"></div><span class="opt-txt">Midnight</span></div>
-                    <div class="option-btn" onclick="applyTheme('earth', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #3F6212, #713F12);"></div><span class="opt-txt">Earth</span></div>
-                    <div class="option-btn" onclick="applyTheme('vibrant', this)"><div class="opt-color-circle" style="background: linear-gradient(135deg, #F43F5E, #FB923C);"></div><span class="opt-txt">Vibrant</span></div>
+                    <div class="option-btn active" onclick="applyTheme('gold', this)"><span class="opt-txt">Gold</span></div>
+                    <div class="option-btn" onclick="applyTheme('black', this)"><span class="opt-txt">Black</span></div>
+                    <div class="option-btn" onclick="applyTheme('pastel', this)"><span class="opt-txt">Pastel</span></div>
+                    <div class="option-btn" onclick="applyTheme('spring', this)"><span class="opt-txt">Spring</span></div>
+                    <div class="option-btn" onclick="applyTheme('fire', this)"><span class="opt-txt">Fire</span></div>
+                    <div class="option-btn" onclick="applyTheme('ocean', this)"><span class="opt-txt">Ocean</span></div>
+                    <div class="option-btn" onclick="applyTheme('royal', this)"><span class="opt-txt">Royal</span></div>
+                    <div class="option-btn" onclick="applyTheme('midnight', this)"><span class="opt-txt">Midnight</span></div>
+                    <div class="option-btn" onclick="applyTheme('earth', this)"><span class="opt-txt">Earth</span></div>
+                    <div class="option-btn" onclick="applyTheme('vibrant', this)"><span class="opt-txt">Vibrant</span></div>
                 </div>
             </div>
 
-            <!-- Section 3: Styles -->
             <div class="control-section">
                 <span class="section-title">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
                     Layout Style
                 </span>
                 <div class="options-grid">
-                    <div class="option-btn active" onclick="applyStyle('elegant', this)">
-                        <div class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-                        <span class="opt-txt">Classic</span>
-                    </div>
-                    <div class="option-btn" onclick="applyStyle('modern', this)">
-                        <div class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>
-                        <span class="opt-txt">Modern</span>
-                    </div>
-                    <div class="option-btn" onclick="applyStyle('minimal', this)">
-                        <div class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="21" x2="21" y2="21"/></svg></div>
-                        <span class="opt-txt">Minimal</span>
-                    </div>
-                    <div class="option-btn" onclick="applyStyle('glass', this)">
-                        <div class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3H7a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V7a4 4 0 0 0-4-4z"/><path d="M9 17v-3a3 3 0 0 1 3-3h3"/></svg></div>
-                        <span class="opt-txt">Glass</span>
-                    </div>
+                    <div class="option-btn active" onclick="applyStyle('elegant', this)"><span class="opt-txt">Classic</span></div>
+                    <div class="option-btn" onclick="applyStyle('modern', this)"><span class="opt-txt">Modern</span></div>
+                    <div class="option-btn" onclick="applyStyle('minimal', this)"><span class="opt-txt">Minimal</span></div>
+                    <div class="option-btn" onclick="applyStyle('glass', this)"><span class="opt-txt">Glass</span></div>
                 </div>
                 <div class="option-btn" onclick="applyStyle('bold', this)" style="margin-top:10px; width:100%; flex-direction: row; justify-content: center;">
-                    <div class="opt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
                     <span class="opt-txt">Bold Style</span>
                 </div>
             </div>
@@ -282,38 +163,13 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                 Save to Store
             </button>
-            <!-- زر التبديل الذكي بين الصورة الممسوحة والأصلية -->
+
             <button type="button" id="btnTogglePhoto" class="btn-action-dl" onclick="toggleOriginal()" style="margin-top: 15px; background: #f8fafc; border: 1px solid #cbd5e1; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; color: #475569;">
                 <i data-lucide="image" style="width: 18px;"></i>
                 <span>إظهار الخلفية الأصلية</span>
             </button>
-            <!-- قسم اختيار الخلفية الاحترافية (AI Backgrounds) -->
-            <div class="control-section" style="border-top: 1px solid #f1f5f9; padding-top: 20px;">
-                <span class="section-title">
-                    <i data-lucide="sparkles" style="width: 16px; color: var(--gold);"></i>
-                    خلفية احترافية ذكية
-                </span>
-                <div class="options-grid">
-                    <div class="option-btn active" onclick="applyBackground('none', this)">
-                        <div class="opt-icon"><i data-lucide="layers"></i></div>
-                        <span class="opt-txt">شفافة</span>
-                    </div>
-                    <div class="option-btn" onclick="applyBackground('marble', this)">
-                        <div class="opt-icon"><i data-lucide="gem"></i></div>
-                        <span class="opt-txt">رخام فخم</span>
-                    </div>
-                    <div class="option-btn" onclick="applyBackground('wood', this)">
-                        <div class="opt-icon"><i data-lucide="tree-pine"></i></div>
-                        <span class="opt-txt">خشب طبيعي</span>
-                    </div>
-                    <div class="option-btn" onclick="applyBackground('studio', this)">
-                        <div class="opt-icon"><i data-lucide="aperture"></i></div>
-                        <span class="opt-txt">استوديو</span>
-                    </div>
-                </div>
-                <input type="hidden" name="background" id="hiddenBackground" value="none">
-            </div>
         </form>
+
         <button class="btn-action-dl" onclick="triggerDownload()">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download Image
@@ -322,49 +178,49 @@
 </div>
 
 <script>
-    // خريطة روابط الخلفيات الاحترافية الجديدة (ثابتة وعالية الجودة)
+    // Local backgrounds (stable)
     const BG_IMAGES = {
-        marble:  'https://images.unsplash.com/photo-1582266255765-fa5cf1a1d501?w=1000&q=80',
-        wood:    'https://images.unsplash.com/photo-1533090161767-e6ffed986c88?w=1000&q=80',
-        studio:  'https://images.unsplash.com/photo-1594913785162-e6785b49dea3?w=1000&q=80',
-        nature:  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1000&q=80',
-        palace:  'https://images.unsplash.com/photo-1505691938895-1758d7eaa511?w=1000&q=80',
-        floral:  'https://images.unsplash.com/photo-1490750967868-88df5691cc15?w=1000&q=80',
-        stars:   'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1000&q=80'
+        marble:  '/static/assets/bg/marble.jpg',
+        wood:    '/static/assets/bg/wood.jpg',
+        studio:  '/static/assets/bg/studio.jpg',
+        nature:  '/static/assets/bg/nature.jpg',
+        palace:  '/static/assets/bg/palace.jpg',
+        floral:  '/static/assets/bg/floral.jpg',
+        stars:   '/static/assets/bg/stars.jpg'
     };
 
     function applyBackground(bgName, element) {
         const canvas = document.getElementById('capture-area');
-        
-        // 1. حفظ الاختيار في الخانة المخفية ليرسل للسيرفر
         document.getElementById('hiddenBackground').value = bgName;
-        
-        // 2. تحديث شكل الأزرار (إضاءة الزر المختار)
+
         element.closest('.options-grid').querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
         element.classList.add('active');
 
-        // 3. تغيير الخلفية في المعاينة أمام التاجر
         if (bgName === 'none') {
+            // show theme gradient only
             canvas.style.backgroundImage = '';
         } else {
+            canvas.className = canvas.className; // keep theme class
             canvas.style.backgroundImage = `url('${BG_IMAGES[bgName]}')`;
             canvas.style.backgroundSize = 'cover';
             canvas.style.backgroundPosition = 'center';
         }
     }
+
     function liveSync() {
         const nameVal  = document.getElementById('inputName').value  || 'Product Name';
         const priceVal = (document.getElementById('inputPrice').value || '0.00') + ' ₪';
-        
-        document.querySelectorAll('#prod-title').forEach(el => el.innerText = nameVal);
-        document.querySelectorAll('#prod-price').forEach(el => el.innerText = priceVal);
+        document.getElementById('prod-title').innerText = nameVal;
+        document.getElementById('prod-price').innerText = priceVal;
     }
 
     function applyTheme(themeName, element) {
         const canvas = document.getElementById('capture-area');
-        canvas.classList.remove('theme-gold', 'theme-black', 'theme-pastel', 'theme-spring', 'theme-fire', 'theme-ocean', 'theme-royal', 'theme-midnight', 'theme-earth', 'theme-vibrant');
+        canvas.classList.remove('theme-gold','theme-black','theme-pastel','theme-spring','theme-fire','theme-ocean','theme-royal','theme-midnight','theme-earth','theme-vibrant');
         canvas.classList.add('theme-' + themeName);
+        canvas.style.backgroundImage = canvas.style.backgroundImage; // keep bg if any
         document.getElementById('hiddenTheme').value = themeName;
+
         element.closest('.options-grid').querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
         element.classList.add('active');
     }
@@ -375,7 +231,7 @@
         const name   = document.getElementById('inputName').value  || 'Product Name';
         const price  = (document.getElementById('inputPrice').value || '0.00') + ' ₪';
 
-        canvas.classList.remove('style-elegant', 'style-modern', 'style-minimal', 'style-bold', 'style-glass');
+        canvas.classList.remove('style-elegant','style-modern','style-minimal','style-bold','style-glass');
         canvas.classList.add('style-' + styleName);
         document.getElementById('hiddenStyle').value = styleName;
 
@@ -406,38 +262,31 @@
             link.click();
         });
     }
-    // منطق التبديل السحري بين الصورة الأصلية والمعالجة
+
+    // Toggle original preview ONLY (does not change hidden image_url)
     let showingOriginal = false;
     const processedImgUrl = "{{ url_for('static', filename='uploads/' + filename) }}";
     const originalImgUrl = "{{ url_for('static', filename='uploads/' + original_filename) }}";
 
     function toggleOriginal() {
         const imgElement = document.getElementById('prod-img');
-        const hiddenInput = document.querySelector('input[name="image_url"]');
         const btnText = document.querySelector('#btnTogglePhoto span');
-
         if (!showingOriginal) {
-            // التحويل للصورة الأصلية مع ملء كامل المساحة
             imgElement.src = originalImgUrl;
             imgElement.style.maxWidth = '100%';
             imgElement.style.maxHeight = '100%';
             imgElement.style.width = '100%';
             imgElement.style.height = '100%';
-            imgElement.style.objectFit = 'cover'; // هذا السطر هو السر لإخفاء الخلفية الملونه
-            
-            hiddenInput.value = "{{ original_filename }}";
+            imgElement.style.objectFit = 'cover';
             btnText.innerText = "العودة للصورة بدون خلفية";
             showingOriginal = true;
         } else {
-            // العودة للصورة المعالجة (الوضع الافتراضي الأنيق)
             imgElement.src = processedImgUrl;
             imgElement.style.maxWidth = '80%';
             imgElement.style.maxHeight = '70%';
             imgElement.style.width = 'auto';
             imgElement.style.height = 'auto';
             imgElement.style.objectFit = 'contain';
-            
-            hiddenInput.value = "{{ filename }}";
             btnText.innerText = "إظهار الخلفية الأصلية";
             showingOriginal = false;
         }

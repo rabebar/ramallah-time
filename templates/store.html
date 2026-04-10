@@ -10,14 +10,13 @@
     <meta property="og:url" content="{{ request.url }}">
 
     {% if product_to_open %}
-        <!-- معاينة المنتج على فيسبوك -->
+        {% set og_img = product_to_open.final_image_url if product_to_open.final_image_url else product_to_open.processed_image_url %}
         <meta property="og:title" content="{{ product_to_open.name }} | {{ store.name }}">
         <meta property="og:description" content="السعر: ₪{{ product_to_open.price }} - اطلب الآن عبر واتساب">
-        <meta property="og:image" content="{{ url_for('static', filename='uploads/' + product_to_open.processed_image_url, _external=True) }}">
+        <meta property="og:image" content="{{ url_for('static', filename='uploads/' + og_img, _external=True) }}">
         <meta property="og:image:width" content="600">
         <meta property="og:image:height" content="600">
     {% else %}
-        <!-- معاينة المتجر العام على فيسبوك -->
         <meta property="og:title" content="{{ store.name }} | المتجر الرسمي">
         <meta property="og:description" content="{{ store.bio or 'اكتشف مجموعتنا الحصرية' }}">
         {% if store.logo_url %}
@@ -100,8 +99,8 @@
 
         .main-content { 
             flex: 1; 
-            margin-right: var(--sidebar-w); /* هذا السطر هو الذي يمنع تداخل النص مع القائمة الجانبية */
-            padding: 40px 60px; /* تقليل الحشو العلوي قليلاً ليعطي توازناً أفضل */
+            margin-right: var(--sidebar-w);
+            padding: 40px 60px;
             max-width: 100%; 
             transition: var(--transition); 
         }
@@ -123,7 +122,7 @@
 
         .img-container { 
             width: 100%; 
-            aspect-ratio: var(--card-ratio); /* قابل للتخصيص حسب الفئة */
+            aspect-ratio: var(--card-ratio);
             background: #F8FAFC; 
             display: flex; 
             align-items: center; 
@@ -134,22 +133,20 @@
         .img-container img { 
             width: 100%; 
             height: 100%; 
-            object-fit: var(--img-fit); /* cover/contain/auto حسب الفئة */
+            object-fit: var(--img-fit);
             padding: var(--img-pad);
             transition: 0.3s; 
             background: #fff; 
         }
         .product-card:hover .img-container img { transform: none; }
-        /* نسب جاهزة وأوضاع الملء */
         .ratio-square   { --card-ratio: 1/1; }
         .ratio-portrait { --card-ratio: 4/5; }
         .ratio-landscape{ --card-ratio: 4/3; }
-        .ratio-auto     { /* ستُضبط من JS حسب أبعاد الصورة */ }
+        .ratio-auto     { }
 
         .fit-cover   { --img-fit: cover;   --img-pad: 0; }
         .fit-contain { --img-fit: contain; --img-pad: 6px; background:#fff; }
-        .fit-auto    { /* سيُحسم من JS */ }
-
+        .fit-auto    { }
 
         .p-info { padding: 24px 32px; }
         .p-info .p-name { font-size: 20px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
@@ -246,41 +243,30 @@
             :root { --sidebar-w: 320px; }
         }
     
-        /* ضبط العرض على الشاشات الكبيرة فقط (لا مساس بالموبايل) */
         @media (min-width: 1024px) {
-            .main-content { 
-                max-width: 980px;   /* يمكنك تعديلها (900-1100) */
-            }
-            /* محاذاة صحيحة مع اختلاف اتجاه الصفحة */
-            body:not(.ltr) .main-content { margin-left: auto; } /* RTL */
-            body.ltr .main-content { margin-right: auto; }      /* LTR */
-
-            .products-grid { 
-                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                gap: 20px !important;
-            }
+            .main-content { max-width: 980px; }
+            body:not(.ltr) .main-content { margin-left: auto; }
+            body.ltr .main-content { margin-right: auto; }
+            .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 20px !important; }
             .product-card { border-radius: 24px; }
         }
 
-        /* خيار اختياري للشاشات الكبيرة جداً */
         @media (min-width: 1440px) {
             .main-content { max-width: 1120px; }
         }
 
-        /* لا تجعل السعر/الزجاج يغطي على المنتج داخل المودال */
         .modal-canvas.style-modern,
         .modal-canvas.style-glass,
         .modal-canvas.style-minimal {
-            padding-bottom: 84px; /* مساحة آمنة أسفل الصورة للبار/الصندوق */
+            padding-bottom: 84px;
         }
         .modal-canvas .m-name-overlay,
         .modal-canvas .m-price-overlay,
         .modal-canvas .glass-box,
         .modal-canvas .glass-bar {
-            z-index: 3;             /* أقل من الصورة */
-            pointer-events: none;   /* لا تعيق اللمس/النقر على الصورة */
+            z-index: 3;
+            pointer-events: none;
         }
-        /* لمسة صغر بسيطة لمربّع الزجاج وأبعاده على الشاشات الصغيرة */
         .modal-canvas.style-glass .glass-box {
             left: 24px; right: 24px; bottom: 20px;
         }
@@ -291,7 +277,6 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="logo-section">
-            <!-- ✅ إصلاح 1: شعار ذكي في الـ Sidebar -->
             <div class="logo-box" style="overflow: hidden; padding: 0; display: flex; align-items: center; justify-content: center;">
                 {% if store.logo_url %}
                 <img src="/static/uploads/{{ store.logo_url }}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -314,21 +299,11 @@
         </div>
 
         <div class="sidebar-socials">
-            {% if store.whatsapp_phone %}
-            <a href="https://wa.me/{{ store.whatsapp_phone }}" target="_blank"><i data-lucide="message-circle"></i></a>
-            {% endif %}
-            {% if store.instagram_handle %}
-            <a href="#" data-social="instagram" data-handle="{{ store.instagram_handle }}" target="_blank"><i data-lucide="instagram"></i></a>
-            {% endif %}
-            {% if store.facebook_handle %}
-            <a href="#" data-social="facebook" data-handle="{{ store.facebook_handle }}" target="_blank"><i data-lucide="facebook"></i></a>
-            {% endif %}
-            {% if store.tiktok_handle %}
-            <a href="#" data-social="tiktok" data-handle="{{ store.tiktok_handle }}" target="_blank"><i data-lucide="music"></i></a>
-            {% endif %}
-            {% if store.display_phone %}
-            <a href="tel:{{ store.display_phone }}"><i data-lucide="phone"></i></a>
-            {% endif %}
+            {% if store.whatsapp_phone %}<a href="https://wa.me/{{ store.whatsapp_phone }}" target="_blank"><i data-lucide="message-circle"></i></a>{% endif %}
+            {% if store.instagram_handle %}<a href="#" data-social="instagram" data-handle="{{ store.instagram_handle }}" target="_blank"><i data-lucide="instagram"></i></a>{% endif %}
+            {% if store.facebook_handle %}<a href="#" data-social="facebook" data-handle="{{ store.facebook_handle }}" target="_blank"><i data-lucide="facebook"></i></a>{% endif %}
+            {% if store.tiktok_handle %}<a href="#" data-social="tiktok" data-handle="{{ store.tiktok_handle }}" target="_blank"><i data-lucide="music"></i></a>{% endif %}
+            {% if store.display_phone %}<a href="tel:{{ store.display_phone }}"><i data-lucide="phone"></i></a>{% endif %}
         </div>
 
         <div style="padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
@@ -338,7 +313,6 @@
 
     <!-- Mobile Header -->
     <header class="mobile-header">
-        <!-- ✅ إصلاح 2: شعار ذكي في الـ Mobile Header -->
         <div class="logo-box" style="overflow: hidden; padding: 0; display: flex; align-items: center; justify-content: center;">
             {% if store.logo_url %}
             <img src="/static/uploads/{{ store.logo_url }}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -374,11 +348,8 @@
         {% endfor %}
 
         {% if categories|length > 1 %}
-        <!-- شريط أقسام احترافي قابل للتمرير يميناً ويساراً بدون تخريب الصفحة -->
         <div class="category-bar" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 5px 25px 5px; margin: 0 -15px; padding-left: 15px; padding-right: 15px; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;">
-            <style>
-                .category-bar::-webkit-scrollbar { display: none; } /* إخفاء شريط التمرير في أجهزة آيفون وأندرويد */
-            </style>
+            <style>.category-bar::-webkit-scrollbar { display: none; }</style>
             <button class="cat-btn active" onclick="filterCategory('all', this)" style="white-space: nowrap; padding: 8px 22px; border-radius: 50px; border: 1px solid var(--gold); background: var(--gold); color: #fff; cursor: pointer; font-weight: 700; transition: 0.3s; flex-shrink: 0;">الكل</button>
             {% for cat in categories %}
                 {% if cat != 'الكل' %}
@@ -392,11 +363,9 @@
             {% for product in products %}
             {% set current_theme = (product.theme|lower if product.theme else 'gold') %}
             {% set current_style = (product.template_style|lower if product.template_style else 'elegant') %}
-            {# إعداد النسبة ووضع ملء الصورة حسب الفئة مع افتراضات ذكية #}
             {% set ratio = (product.card_ratio|lower if product.card_ratio else ('portrait' if product.category in ['ملابس','أحذية','ألبسة','أزياء'] else 'square')) %}
             {% set fit = (product.fit_mode|lower if product.fit_mode else ('cover' if product.category in ['ملابس','أجهزة','الكترونيات','هواتف','أحذية'] else 'contain')) %}
             
-            <!-- ✅ إصلاح 3: كرت المنتج مفتوح بشكل صحيح -->
             <div class="product-card ratio-{{ ratio }} fit-{{ fit }}" data-category="{{ product.category }}" onclick="openModal('{{ product.id }}', '{{ product.name|replace("'", "\\'") }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}', '{{ (product.description or "")|replace("'", "\\'") }}', '{{ current_theme }}', '{{ current_style }}', '{{ product.category }}', '{{ (product.background or "none")|lower }}')">
                 <div class="img-container">
                     <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async">
@@ -506,7 +475,7 @@
         lucide.createIcons();
 
         const translations = {
-            ar: { nav_home:"الرئيسية", nav_products:"المنتجات", nav_about:"عن المتجر", nav_admin:"دخول المدير", contact_us:"تواصل معنا", latest_products:"أحدث المنتجات", quick_links:"روابط سريعة", whatsapp:"واتساب", call_us:"اتصال هاتفي", instagram:"إنستغرام", order_now:"اطلب الآن عبر واتساب", welcome:"أهلاً بك في", install_app:"تثبيت التطبيق", install_desc:"تصفح المتجر بشكل أسرع", install_btn:"تثبيت" },
+            ar: { nav_home:"الرئيسية", nav_products:"المنتجات", nav_about:"عن المتجر", nav_admin:"دخول المدير", contact_us:"تواصل معنا", latest_products:"أحدث المنتجات", quick_links:"روابط سريعة", whatsapp:"واتساب", call_us:"اتصال هاتفي", instagram:"إنستغرام", order_now:"اطلب الآن عبر واتساب", welcome:"أهلاً بك في", install_app:"تثبيت التطبيق", install_desc:"تصفح المتجر بشكل أسرع", install_btn:"Install" },
             en: { nav_home:"Home", nav_products:"Products", nav_about:"About Us", nav_admin:"Admin Login", contact_us:"Contact Us", latest_products:"Latest Products", quick_links:"Quick Links", whatsapp:"WhatsApp", call_us:"Call Us", instagram:"Instagram", order_now:"Order Now via WhatsApp", welcome:"Welcome to", install_app:"Install App", install_desc:"Browse the store faster", install_btn:"Install" }
         };
 
@@ -530,10 +499,6 @@
 
         function toggleLanguage() { setLanguage(currentLang === 'ar' ? 'en' : 'ar'); }
 
-        /**
-         * تنظيف handle التواصل الاجتماعي — يتعامل مع كل ما يكتبه التاجر:
-         * "mystore" / "@mystore" / "instagram.com/mystore" / "https://instagram.com/mystore"
-         */
         function cleanHandle(value, platform) {
             if (!value) return null;
             let v = value.trim().replace(/^@/, '');
@@ -550,7 +515,6 @@
             return bases[platform] + v;
         }
 
-        // تطبيق التنظيف على كل أزرار السوشيال عند تحميل الصفحة
         window.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('[data-social]').forEach(link => {
                 const platform = link.getAttribute('data-social');
@@ -588,15 +552,15 @@
             document.getElementById('mImg').src = img;
             canvas.className = 'modal-canvas theme-' + theme + ' style-' + style;
 
-            // ✅ تطبيق الخلفية المحفوظة
+            // Local backgrounds (same keys as Design Lab)
             const BG_IMAGES_STORE = {
-                marble:  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
-                wood:    'https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=800&q=80',
-                nature:  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80',
-                palace:  'https://images.unsplash.com/photo-1558618047-f4e4ce0b29e0?w=800&q=80',
-                studio:  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
-                floral:  'https://images.unsplash.com/photo-1490750967868-88df5691cc15?w=800&q=80',
-                stars:   'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800&q=80',
+                marble:  '/static/assets/bg/marble.jpg',
+                wood:    '/static/assets/bg/wood.jpg',
+                nature:  '/static/assets/bg/nature.jpg',
+                palace:  '/static/assets/bg/palace.jpg',
+                studio:  '/static/assets/bg/studio.jpg',
+                floral:  '/static/assets/bg/floral.jpg',
+                stars:   '/static/assets/bg/stars.jpg'
             };
             if (background && background !== 'none' && BG_IMAGES_STORE[background]) {
                 canvas.style.backgroundImage = `url('${BG_IMAGES_STORE[background]}')`;
@@ -605,20 +569,21 @@
             } else {
                 canvas.style.backgroundImage = '';
             }
+
             if (style === 'modern') { mContent.innerHTML = `<div class="m-name-overlay">${name}</div><div class="m-price-overlay">₪ ${price}</div>`; }
             else if (style === 'glass') { mContent.innerHTML = `<div class="glass-box"><div>${name}</div><div style="font-weight:700; color:var(--gold)">₪ ${price}</div></div>`; }
             else if (style === 'minimal') { mContent.innerHTML = `<div class="glass-bar"><span>${name}</span><span>₪ ${price}</span></div>`; }
             else { mContent.innerHTML = ''; }
+
             if (desc && desc.trim() !== "") { mDesc.innerText = desc; mDesc.style.display = 'block'; } else { mDesc.style.display = 'none'; }
+
             let phone = "{{ store.whatsapp_phone or '970599000000' }}";
             phone = phone.replace(/\D/g, '');
             if (phone.startsWith('05')) { phone = '970' + phone.substring(1); }
             else if (phone.startsWith('00970')) { phone = phone.substring(2); }
             else if (!phone.startsWith('970') && phone.length === 9) { phone = '970' + phone; }
-            // تجهيز رابط المنتج المباشر لكي تظهر صورته في الواتساب عند التاجر
             const productUrl = window.location.origin + '/product/' + id;
             const fullMessage = encodeURIComponent(`مرحباً، أريد طلب هذا المنتج:\n${name}\nالسعر: ₪${price}\nالرابط: ${productUrl}`);
-            
             document.getElementById('mWa').href = `https://wa.me/${phone}?text=${fullMessage}`;
             document.getElementById('productModal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
@@ -639,7 +604,6 @@
             }
         });
 
-        // ✅ إصلاح 4: فلترة دقيقة بـ data-category
         function filterCategory(category, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => { b.style.background = '#fff'; b.style.color = 'var(--text-main)'; b.style.borderColor = '#e2e8f0'; });
             btn.style.background = 'var(--gold)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--gold)';
@@ -649,7 +613,6 @@
             });
         }
     
-        // ضبط تلقائي عند استخدام fit-auto أو ratio-auto
         function tuneCardByImage(img){
             if (!img || !img.naturalWidth || !img.naturalHeight) return;
             const card = img.closest('.product-card');
