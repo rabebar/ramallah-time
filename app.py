@@ -51,7 +51,7 @@ THEME_COLORS = {
 }
 
 # Rate limiting per user per hour
-RATE_LIMIT_PER_HOUR = 20
+RATE_LIMIT_PER_HOUR = 50
 _rate_tracker = defaultdict(list)
 
 def check_rate_limit(user_id):

@@ -4,6 +4,17 @@
 {% block mob_dashboard %}active{% endblock %}
 
 {% block content %}
+<!-- عرض رسائل التنبيه (مثل: تجاوز الحد أو نقص الرصيد) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div style="padding: 15px; margin-bottom: 20px; border-radius: 12px; background: {% if category == 'error' or category == 'warning' %}#fef2f2{% else %}#f0fdf4{% endif %}; color: {% if category == 'error' or category == 'warning' %}#991b1b{% else %}#166534{% endif %}; border: 1px solid {% if category == 'error' or category == 'warning' %}#fecaca{% else %}#bbf7d0{% endif %}; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+            <i data-lucide="alert-circle" style="width: 20px;"></i>
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 <style>
     .welcome-header { 
         display: flex; justify-content: space-between; align-items: center; 
