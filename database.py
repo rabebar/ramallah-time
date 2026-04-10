@@ -1,3 +1,5 @@
+# database.py
+
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -7,9 +9,11 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
+
 
 def init_db():
     conn = get_db_connection()
@@ -17,6 +21,7 @@ def init_db():
 
     print("🚀 Checking/Initializing Database Schema...")
 
+    # users
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             phone TEXT UNIQUE NOT NULL,
@@ -27,6 +32,7 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )''')
 
+    # stores
     cursor.execute('''CREATE TABLE IF NOT EXISTS stores (
             id SERIAL PRIMARY KEY,
             user_id INTEGER,
@@ -46,6 +52,13 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )''')
 
+    # Ensure new store columns for inventory + SKU sequence + optional tz/currency
+    cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS inventory_enabled BOOLEAN DEFAULT FALSE")
+    cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS next_sku_seq INTEGER DEFAULT 1001")
+    cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS timezone TEXT")
+    cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS currency TEXT")
+
+    # products
     cursor.execute('''CREATE TABLE IF NOT EXISTS products (
             id SERIAL PRIMARY KEY,
             store_id INTEGER,
@@ -63,18 +76,22 @@ def init_db():
             FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE
         )''')
 
-    try:
-        cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS background TEXT DEFAULT 'none'")
-        print("✅ background column ready.")
-    except Exception as e:
-        print(f"background column note: {e}")
+    # Ensure new product columns for SKU + stock + active
+    cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS sku TEXT")
+    cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS stock_qty INTEGER DEFAULT 999")
+    cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE")
 
-    try:
-        cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS final_image_url TEXT")
-        print("✅ final_image_url column ready.")
-    except Exception as e:
-        print(f"final_image_url column note: {e}")
+    # Backward-compat: ensure background/final_image_url exist on older DBs
+    cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS background TEXT DEFAULT 'none'")
+    cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS final_image_url TEXT")
 
+    # Unique SKU per store (NULL allowed; uniqueness enforced when filled)
+    cursor.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS ux_products_store_sku
+        ON products(store_id, sku) WHERE sku IS NOT NULL
+    """)
+
+    # transactions
     cursor.execute('''CREATE TABLE IF NOT EXISTS transactions (
             id SERIAL PRIMARY KEY,
             user_id INTEGER,
@@ -86,6 +103,7 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )''')
 
+    # store_visits
     cursor.execute('''CREATE TABLE IF NOT EXISTS store_visits (
             id SERIAL PRIMARY KEY,
             store_id INTEGER NOT NULL,
@@ -94,6 +112,54 @@ def init_db():
         )''')
     print("✅ store_visits table ready.")
 
+    # order_drafts
+    cursor.execute('''CREATE TABLE IF NOT EXISTS order_drafts (
+            id SERIAL PRIMARY KEY,
+            store_id INTEGER NOT NULL,
+            subtotal NUMERIC(12,2) NOT NULL DEFAULT 0,
+            grand_total NUMERIC(12,2) NOT NULL DEFAULT 0,
+            customer_name TEXT,
+            customer_phone TEXT,
+            customer_notes TEXT,
+            wa_text TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'sent', -- sent | confirmed
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE
+        )''')
+    print("✅ order_drafts table ready.")
+
+    # order_lines
+    cursor.execute('''CREATE TABLE IF NOT EXISTS order_lines (
+            id SERIAL PRIMARY KEY,
+            order_id INTEGER NOT NULL,
+            product_id INTEGER NOT NULL,
+            sku TEXT NOT NULL,
+            name_snapshot TEXT NOT NULL,
+            unit_price NUMERIC(12,2) NOT NULL,
+            qty INTEGER NOT NULL,
+            line_total NUMERIC(12,2) NOT NULL,
+            FOREIGN KEY(order_id) REFERENCES order_drafts(id) ON DELETE CASCADE,
+            FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE RESTRICT
+        )''')
+    cursor.execute("CREATE INDEX IF NOT EXISTS ix_order_lines_order ON order_lines(order_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS ix_order_lines_product ON order_lines(product_id)")
+    print("✅ order_lines table and indexes ready.")
+
+    # analytics_events + index
+    cursor.execute('''CREATE TABLE IF NOT EXISTS analytics_events (
+            id SERIAL PRIMARY KEY,
+            store_id INTEGER NOT NULL,
+            product_id INTEGER,
+            event_name TEXT NOT NULL, -- page_view | product_view | add_to_cart | whatsapp_sent
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE,
+            FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE SET NULL
+        )''')
+    cursor.execute("""CREATE INDEX IF NOT EXISTS ix_analytics_store_event_ts
+                      ON analytics_events(store_id, event_name, created_at)""")
+    print("✅ analytics_events table and index ready.")
+
+    # Seed initial user/store if missing
     cursor.execute("SELECT id FROM users WHERE phone = %s", ("0592776784",))
     if not cursor.fetchone():
         print("🌱 Seeding initial data...")
@@ -115,6 +181,7 @@ def init_db():
     cursor.close()
     conn.close()
 
+
 def record_store_visit(store_id):
     conn = None
     try:
@@ -125,7 +192,9 @@ def record_store_visit(store_id):
     except Exception as e:
         print(f"Visit record error: {e}")
     finally:
-        if conn: conn.close()
+        if conn:
+            conn.close()
+
 
 def get_visit_stats():
     conn = None
@@ -160,6 +229,9 @@ def get_visit_stats():
         print(f"Visit stats error: {e}")
         return {'total': 0, 'today': 0, 'week': 0, 'top_stores': []}
     finally:
-        if conn: conn.close()
+        if conn:
+            conn.close()
 
+
+# Run migration/init on import (as in your original code)
 init_db()
