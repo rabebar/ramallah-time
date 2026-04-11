@@ -403,23 +403,35 @@ def get_user_stats(user_id):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT credits FROM users WHERE id = %s", (user_id,))
+        
+        # جلب بيانات المستخدم بالكامل (بما فيها الاشتراك)
+        cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
         user_data = cursor.fetchone()
+        
         cursor.execute("SELECT id, slug FROM stores WHERE user_id = %s", (user_id,))
         store = cursor.fetchone()
+        
         processed_count = 0
         if store:
             cursor.execute("SELECT COUNT(*) as count FROM products WHERE store_id = %s", (store['id'],))
             res = cursor.fetchone()
             processed_count = res['count'] if res else 0
+            
+        # حساب حالة الاشتراك لإرسالها للواجهة
+        sub_status = {}
+        if user_data:
+             from database import get_subscription_status
+             sub_status = get_subscription_status(user_data)
+        
         return {
             'credits': user_data['credits'] if user_data else 0,
             'processed': processed_count,
-            'store_slug': store['slug'] if store else None
+            'store_slug': store['slug'] if store else None,
+            'sub': sub_status  # <--- هذا هو الجزء الناقص الذي يسبب خطأ index.html
         }
     except Exception as e:
         logging.error(f"Error in get_user_stats: {e}")
-        return {'credits': 0, 'processed': 0, 'store_slug': None}
+        return {'credits': 0, 'processed': 0, 'store_slug': None, 'sub': {}}
     finally:
         if conn: conn.close()
 

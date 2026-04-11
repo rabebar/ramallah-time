@@ -35,12 +35,13 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )''')
 
-    # Migration: add new columns if upgrading from old schema (credits era)
+    # Migration: add new columns if upgrading from old schema
     cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_start TIMESTAMP")
     cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_end TIMESTAMP")
     cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_frozen BOOLEAN DEFAULT FALSE")
-    # Keep credits column temporarily so old data isn't lost — can be dropped manually later
-    # cursor.execute("ALTER TABLE users DROP COLUMN IF EXISTS credits")
+    # Credits column kept for compatibility
+    cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS credits INTEGER DEFAULT 0")
+
 
     # stores
     cursor.execute('''CREATE TABLE IF NOT EXISTS stores (
@@ -62,7 +63,6 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )''')
 
-    # Ensure new store columns for inventory + SKU sequence + optional tz/currency
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS inventory_enabled BOOLEAN DEFAULT FALSE")
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS next_sku_seq INTEGER DEFAULT 1001")
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS timezone TEXT")
@@ -91,6 +91,10 @@ def init_db():
     cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE")
     cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS background TEXT DEFAULT 'none'")
     cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS final_image_url TEXT")
+    
+    # === الإصلاح: إضافة الأعمدة الناقصة بأمان ===
+    cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS card_ratio TEXT DEFAULT 'square'")
+    cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS fit_mode TEXT DEFAULT 'contain'")
 
     cursor.execute("""
         CREATE UNIQUE INDEX IF NOT EXISTS ux_products_store_sku
@@ -192,18 +196,6 @@ def init_db():
 
 
 def get_subscription_status(user):
-    """
-    Returns subscription status dict for a user row.
-
-    Keys:
-        is_active   (bool)  — subscription valid right now (including grace period)
-        is_expired  (bool)  — past end date but within 3-day grace
-        is_blocked  (bool)  — past grace period, access should be denied
-        is_frozen   (bool)  — manually frozen
-        days_left   (int)   — days until subscription_end (negative if expired)
-        warn_renew  (bool)  — True if within 1 day of expiry (show warning)
-        grace_msg   (bool)  — True if expired but in grace period (urgent message)
-    """
     now = datetime.utcnow()
     sub_end = user.get('subscription_end')
     is_frozen = bool(user.get('is_frozen'))
@@ -216,7 +208,6 @@ def get_subscription_status(user):
         }
 
     if not sub_end:
-        # No subscription set yet — treat as blocked
         return {
             'is_active': False, 'is_expired': False,
             'is_blocked': True, 'is_frozen': False,
@@ -227,22 +218,19 @@ def get_subscription_status(user):
     grace_end = sub_end + timedelta(days=3)
 
     if now <= sub_end:
-        # Active subscription
-        warn_renew = days_left <= 1  # warn if 1 day or less left
+        warn_renew = days_left <= 1
         return {
             'is_active': True, 'is_expired': False,
             'is_blocked': False, 'is_frozen': False,
             'days_left': days_left, 'warn_renew': warn_renew, 'grace_msg': False
         }
     elif now <= grace_end:
-        # Expired but within 3-day grace — still accessible, show urgent warning
         return {
             'is_active': True, 'is_expired': True,
             'is_blocked': False, 'is_frozen': False,
             'days_left': days_left, 'warn_renew': False, 'grace_msg': True
         }
     else:
-        # Fully expired, access denied
         return {
             'is_active': False, 'is_expired': True,
             'is_blocked': True, 'is_frozen': False,
@@ -251,10 +239,6 @@ def get_subscription_status(user):
 
 
 def set_subscription(user_id, plan_type):
-    """
-    Assign a new subscription to a user starting from now.
-    plan_type: 'monthly' | 'biannual' | 'annual'
-    """
     PLAN_DAYS = {
         'monthly': 30,
         'biannual': 180,
@@ -281,7 +265,6 @@ def set_subscription(user_id, plan_type):
 
 
 def toggle_freeze(user_id, freeze: bool):
-    """Freeze or unfreeze a user's account."""
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
@@ -313,25 +296,14 @@ def get_visit_stats():
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) as total FROM store_visits")
         total = cursor.fetchone()['total']
-        cursor.execute("""
-            SELECT COUNT(*) as today 
-            FROM store_visits 
-            WHERE visited_at::date = CURRENT_DATE
-        """)
+        cursor.execute("SELECT COUNT(*) as today FROM store_visits WHERE visited_at::date = CURRENT_DATE")
         today = cursor.fetchone()['today']
-        cursor.execute("""
-            SELECT COUNT(*) as week
-            FROM store_visits
-            WHERE visited_at >= NOW() - INTERVAL '7 days'
-        """)
+        cursor.execute("SELECT COUNT(*) as week FROM store_visits WHERE visited_at >= NOW() - INTERVAL '7 days'")
         week = cursor.fetchone()['week']
         cursor.execute("""
             SELECT s.name, s.slug, COUNT(sv.id) as visits
-            FROM store_visits sv
-            JOIN stores s ON sv.store_id = s.id
-            GROUP BY s.id, s.name, s.slug
-            ORDER BY visits DESC
-            LIMIT 5
+            FROM store_visits sv JOIN stores s ON sv.store_id = s.id
+            GROUP BY s.id, s.name, s.slug ORDER BY visits DESC LIMIT 5
         """)
         top_stores = cursor.fetchall()
         return {'total': total, 'today': today, 'week': week, 'top_stores': top_stores}
@@ -342,6 +314,4 @@ def get_visit_stats():
         if conn:
             conn.close()
 
-
-# Run migration/init on import
 init_db()
