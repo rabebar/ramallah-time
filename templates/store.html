@@ -744,8 +744,9 @@
                 return;
             }
             // Success -> open WhatsApp link and keep cart (التاجر يؤكد لاحقاً)
-            if (data.wa_link){
+                        if (data.wa_link){
                 sendBeacon('whatsapp_sent');
+                localStorage.removeItem(CART_KEY); // <--- إضافة هذا السطر لمسح السلة
                 window.location = data.wa_link;
             } else {
                 alert('تم إنشاء الطلب، لكن رقم الواتساب غير مضبوط للمتجر.');

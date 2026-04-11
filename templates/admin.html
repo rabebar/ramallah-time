@@ -271,6 +271,11 @@
     </div>
     {% endif %}
 
+    <!-- خانة البحث -->
+    <div style="margin-bottom: 25px;">
+        <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="ابحث عن منتج (اسم، سعر، SKU)..." class="input-field" style="background: #fff; padding: 16px 20px; border: 1px solid #e5e7eb;">
+    </div>
+
     <div class="products-grid">
         {% for product in products %}
         {% set available = ((product.active if product.active is not none else True) and ((not store.inventory_enabled) or ((product.stock_qty or 0) > 0))) %}
@@ -603,6 +608,15 @@
         const status= (row.children[3]?.textContent||'').trim();
         const text = `طلب #${id}\n${date}\n${total}\n${status}`;
         navigator.clipboard.writeText(text).then(()=>alert('تم نسخ موجز الطلب.'));
+    }
+
+    function searchProducts() {
+        let input = document.getElementById('searchInput').value.toLowerCase();
+        let cards = document.querySelectorAll('.product-card');
+        cards.forEach(card => {
+            let text = card.textContent.toLowerCase();
+            card.style.display = text.includes(input) ? "" : "none";
+        });
     }
 </script>
 {% endblock %}
