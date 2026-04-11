@@ -304,26 +304,30 @@
                         <td>
                             <div class="btn-group">
                                 {% if user.status == 'pending' %}
-                                    <a href="/superadmin/approve/{{ user.id }}" class="btn-sm btn-approve">
-                                        <i data-lucide="check"></i> تفعيل
-                                    </a>
-                                    <a href="/superadmin/reject/{{ user.id }}" class="btn-sm btn-reject" onclick="return confirm('هل أنت متأكد من رفض وحذف هذا الطلب؟')">
-                                        <i data-lucide="x"></i> رفض
-                                    </a>
-                                    <a href="/superadmin/delete_user/{{ user.id }}" class="btn-sm btn-reject" style="background: rgba(239, 68, 68, 0.2); color: #ef4444;" onclick="return confirm('تنبيه: سيتم حذف التاجر ومتجره وكافة منتجاته نهائياً. هل أنت متأكد؟')">
-                                        <i data-lucide="trash-2"></i> حذف نهائي
-                                    </a>
+                                    <a href="/superadmin/approve/{{ user.id }}" class="btn-sm btn-approve"><i data-lucide="check"></i> تفعيل الحساب</a>
+                                    <a href="/superadmin/reject/{{ user.id }}" class="btn-sm btn-reject" onclick="return confirm('حذف الطلب؟')"><i data-lucide="x"></i> رفض</a>
                                 {% else %}
-                                    <form action="/superadmin/add_credits" method="POST" style="display:flex; align-items:center; gap: 8px;">
+                                    <!-- تفعيل باقة اشتراك -->
+                                    <form action="/superadmin/set_subscription" method="POST" style="display:flex; gap:5px;">
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
-                                        <input type="number" name="amount" placeholder="0" class="refill-input" required>
-                                        <button type="submit" class="btn-sm btn-approve" title="تثبيت وشحن الرصيد">
-                                            <i data-lucide="check-circle" style="width: 16px;"></i> تثبيت
+                                        <select name="plan_type" class="refill-input" style="width: 90px; font-size: 11px;">
+                                            <option value="monthly">شهري</option>
+                                            <option value="biannual">6 أشهر</option>
+                                            <option value="annual">سنوي</option>
+                                        </select>
+                                        <button type="submit" class="btn-sm btn-approve" title="تفعيل الاشتراك">
+                                            <i data-lucide="zap" style="width:14px;"></i>
                                         </button>
                                     </form>
-                                    <a href="/superadmin/delete_user/{{ user.id }}" class="btn-sm btn-reject" style="margin-right: 10px; background: rgba(239, 68, 68, 0.1);" onclick="return confirm('تنبيه نهائي: سيتم حذف هذا التاجر النشط وكافة بياناته. هل أنت متأكد؟')">
-                                        <i data-lucide="trash-2" style="width: 14px;"></i>
-                                    </a>
+
+                                    <!-- زر التجميد / إلغاء التجميد -->
+                                    {% if user.is_frozen %}
+                                        <a href="/superadmin/unfreeze/{{ user.id }}" class="btn-sm btn-approve" style="background: #6366f1;"><i data-lucide="play" style="width:14px;"></i> فك التجميد</a>
+                                    {% else %}
+                                        <a href="/superadmin/freeze/{{ user.id }}" class="btn-sm btn-reject" style="background: #000; color: #fff;"><i data-lucide="pause" style="width:14px;"></i> تجميد</a>
+                                    {% endif %}
+                                    
+                                    <a href="/superadmin/delete_user/{{ user.id }}" class="btn-sm btn-reject" onclick="return confirm('حذف نهائي؟')"><i data-lucide="trash-2" style="width: 14px;"></i></a>
                                 {% endif %}
                             </div>
                         </td>

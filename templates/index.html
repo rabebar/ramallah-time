@@ -241,6 +241,32 @@
         .upload-hint { justify-content: center; }
     }
 </style>
+<!-- نظام تنبيهات حالة الاشتراك -->
+    {% set sub = stats.sub %}
+    
+    {% if sub.is_frozen %}
+        <div style="padding: 20px; background: #000; color: #fff; border-radius: 20px; margin-bottom: 25px; text-align: center; border: 2px solid var(--gold);">
+            <i data-lucide="snowflake" style="margin-bottom: 10px; width: 30px; height: 30px;"></i>
+            <h2 style="font-size: 18px;">حسابك مجمّد مؤقتاً</h2>
+            <p style="font-size: 13px; opacity: 0.8;">يرجى التواصل مع الإدارة لإعادة تفعيل المتجر.</p>
+        </div>
+    {% elif sub.grace_msg %}
+        <div style="padding: 15px; background: #fff1f2; color: #be123c; border-radius: 15px; margin-bottom: 25px; border: 1px solid #fda4af; display: flex; align-items: center; gap: 12px;">
+            <i data-lucide="alert-triangle" style="flex-shrink: 0; width: 24px; height: 24px;"></i>
+            <div>
+                <strong style="display: block; font-size: 14px;">تنبيه: انتهى اشتراكك!</strong>
+                <span style="font-size: 12px;">لديك مهلة 3 أيام فقط للتجديد قبل توقف المتجر نهائياً.</span>
+            </div>
+        </div>
+    {% elif sub.warn_renew %}
+        <div style="padding: 15px; background: #fffbeb; color: #92400e; border-radius: 15px; margin-bottom: 25px; border: 1px solid #fde68a; display: flex; align-items: center; gap: 12px;">
+            <i data-lucide="clock" style="flex-shrink: 0; width: 24px; height: 24px;"></i>
+            <div>
+                <strong style="display: block; font-size: 14px;">اقترب موعد انتهاء الاشتراك</strong>
+                <span style="font-size: 12px;">بقي أقل من 24 ساعة؛ يرجى التجديد لضمان استمرار الخدمة.</span>
+            </div>
+        </div>
+    {% endif %}
 
 <div class="welcome-header">
     <h1>Welcome back, <span style="color: var(--text-main);">Creator</span></h1>
