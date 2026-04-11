@@ -295,6 +295,10 @@
         .modal-canvas .glass-box,
         .modal-canvas .glass-bar { z-index: 3; pointer-events: none; }
         .modal-canvas.style-glass .glass-box { left: 24px; right: 24px; bottom: 20px; }
+
+        /* Category Bar Scroll & Drag */
+        .category-bar { cursor: grab; user-select: none; }
+        .category-bar:active { cursor: grabbing; }
     </style>
 </head>
 <body>
@@ -373,7 +377,7 @@
         {% endfor %}
 
         {% if categories|length > 1 %}
-        <div class="category-bar" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 5px 25px 5px; margin: 0 -15px; padding-left: 15px; padding-right: 15px; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;">
+        <div id="categoryBar" class="category-bar" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 5px 25px 5px; margin: 0 -15px; padding-left: 15px; padding-right: 15px; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;">
             <style>.category-bar::-webkit-scrollbar { display: none; }</style>
             <button class="cat-btn active" onclick="filterCategory('all', this)" style="white-space: nowrap; padding: 8px 22px; border-radius: 50px; border: 1px solid var(--gold); background: var(--gold); color: #fff; cursor: pointer; font-weight: 700; transition: 0.3s; flex-shrink: 0;">الكل</button>
             {% for cat in categories %}
@@ -744,9 +748,9 @@
                 return;
             }
             // Success -> open WhatsApp link and keep cart (التاجر يؤكد لاحقاً)
-                        if (data.wa_link){
+            if (data.wa_link){
                 sendBeacon('whatsapp_sent');
-                localStorage.removeItem(CART_KEY); // <--- إضافة هذا السطر لمسح السلة
+                localStorage.removeItem(CART_KEY); // تصفير السلة
                 window.location = data.wa_link;
             } else {
                 alert('تم إنشاء الطلب، لكن رقم الواتساب غير مضبوط للمتجر.');
@@ -785,7 +789,7 @@
             }
 
             if (style === 'modern') { mContent.innerHTML = `<div class="m-name-overlay">${name}</div><div class="m-price-overlay">₪ ${price}</div>`; }
-            else if (style === 'glass') { mContent.innerHTML = `<div class="glass-box"><div>${name}</div><div style="font-weight:700; color:var(--gold)">₪ ${price}</div></div>`; }
+            else if (style === 'glass') { mContent.innerHTML = `<div class="glass-box"><div>${name}</div><div style="font-weight:700; color:var(--gold')">₪ ${price}</div></div>`; }
             else if (style === 'minimal') { mContent.innerHTML = `<div class="glass-bar"><span>${name}</span><span>₪ ${price}</span></div>`; }
             else { mContent.innerHTML = ''; }
 
@@ -852,6 +856,36 @@
             });
             renderCart();
         });
+
+        // تفعيل السحب بالماوس لشريط الأقسام (Desktop Drag Scroll)
+        const slider = document.getElementById('categoryBar');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        if (slider) {
+            slider.addEventListener('mousedown', (e) => {
+                isDown = true;
+                slider.classList.add('active');
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
+            slider.addEventListener('mouseleave', () => {
+                isDown = false;
+                slider.classList.remove('active');
+            });
+            slider.addEventListener('mouseup', () => {
+                isDown = false;
+                slider.classList.remove('active');
+            });
+            slider.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - slider.offsetLeft;
+                const walk = (x - startX) * 2; // سرعة السحب
+                slider.scrollLeft = scrollLeft - walk;
+            });
+        }
     </script>
 </body>
 </html>

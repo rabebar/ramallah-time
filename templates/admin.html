@@ -309,12 +309,13 @@
     <div class="orders-card">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
             <div style="font-weight:800">الطلبات الواردة</div>
-            <div class="muted">خصم المخزون يتم عند التأكيد فقط</div>
+            <div class="muted">اضغط "عرض التفاصيل" لمعرفة محتوى الطلب</div>
         </div>
         <table class="orders">
             <thead>
                 <tr>
                     <th>#</th>
+                    <th>العميل</th>
                     <th>التاريخ</th>
                     <th>الإجمالي</th>
                     <th>الحالة</th>
@@ -325,27 +326,30 @@
                 {% if orders and orders|length %}
                     {% for o in orders %}
                     <tr>
-                        <td>{{ o.id }}</td>
-                        <td>{{ o.created_at }}</td>
-                        <td>₪ {{ o.subtotal }}</td>
+                        <td><strong>#{{ o.id }}</strong></td>
                         <td>
-                            {% if o.status == 'sent' %}<span class="tag">قيد التأكيد</span>
-                            {% elif o.status == 'confirmed' %}<span class="tag">مؤكّد</span>
-                            {% elif o.status == 'canceled' %}<span class="tag">مرفوض</span>
+                            <div style="font-weight:600;">{{ o.customer_name or 'غير محدد' }}</div>
+                            <div style="font-size:11px; color:#6b7280;">{{ o.customer_phone or '-' }}</div>
+                        </td>
+                        <td style="font-size:12px;">{{ o.created_at }}</td>
+                        <td style="font-weight:700;">₪ {{ o.subtotal }}</td>
+                        <td>
+                            {% if o.status == 'sent' %}<span class="tag" style="border-color:#f59e0b; color:#f59e0b;">جديد</span>
+                            {% elif o.status == 'confirmed' %}<span class="tag" style="border-color:#10b981; color:#10b981;">مؤكد</span>
+                            {% elif o.status == 'canceled' %}<span class="tag" style="border-color:#ef4444; color:#ef4444;">ملغي</span>
                             {% else %}<span class="tag">{{ o.status }}</span>{% endif %}
                         </td>
                         <td style="text-align:left">
+                            <button class="btn-small" onclick="viewOrder({{ o.id }}, `{{ o.wa_text | replace('`', '\\`') }}`)">عرض التفاصيل</button>
                             {% if o.status == 'sent' %}
                             <button class="btn-small primary" onclick="confirmOrder({{ o.id }})">تأكيد</button>
                             <button class="btn-small danger" onclick="cancelOrder({{ o.id }})">رفض</button>
-                            {% else %}
-                            <button class="btn-small" onclick="copyOrder({{ o.id }})">نسخ موجز</button>
                             {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
                 {% else %}
-                    <tr><td colspan="5" class="muted" style="padding:10px">لا توجد طلبات بعد.</td></tr>
+                    <tr><td colspan="6" class="muted" style="padding:10px">لا توجد طلبات بعد.</td></tr>
                 {% endif %}
             </tbody>
         </table>
@@ -600,14 +604,8 @@
         }catch(e){ alert('خطأ في الشبكة'); }
     }
 
-    function copyOrder(id){
-        const row = [...document.querySelectorAll('#tab-orders tbody tr')].find(r => (r.children[0]?.textContent||'').trim() === String(id));
-        if(!row){ alert('لم يتم العثور على الطلب'); return; }
-        const date  = (row.children[1]?.textContent||'').trim();
-        const total = (row.children[2]?.textContent||'').trim();
-        const status= (row.children[3]?.textContent||'').trim();
-        const text = `طلب #${id}\n${date}\n${total}\n${status}`;
-        navigator.clipboard.writeText(text).then(()=>alert('تم نسخ موجز الطلب.'));
+    function viewOrder(id, text) {
+        alert("تفاصيل الطلب #" + id + "\n\n" + text);
     }
 
     function searchProducts() {
