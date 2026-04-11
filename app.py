@@ -1205,6 +1205,43 @@ def delete_user_permanent(user_id):
     flash("تم حذف الحساب وكافة بياناته نهائياً.", "info")
     return redirect(url_for('super_admin'))
 
+@app.route('/superadmin/set_subscription', methods=['POST'])
+def super_admin_set_subscription():
+    """تفعيل باقة اشتراك للتاجر من قبل السوبر أدمن"""
+    if not session.get('is_superadmin'): return redirect(url_for('login'))
+    try:
+        user_id = int(request.form.get('user_id'))
+        plan_type = request.form.get('plan_type')
+        
+        from database import set_subscription
+        sub_end = set_subscription(user_id, plan_type)
+        
+        plan_labels = {'monthly': 'شهري', 'biannual': '6 أشهر', 'annual': 'سنوي'}
+        flash(f"✅ تم تفعيل الاشتراك ({plan_labels[plan_type]}) بنجاح حتى {sub_end.strftime('%Y-%m-%d')}", "success")
+    except Exception as e:
+        logging.error(f"Subscription Error: {e}")
+        flash("حدث خطأ أثناء تفعيل الاشتراك.", "error")
+        
+    return redirect(url_for('super_admin'))
+
+@app.route('/superadmin/freeze/<int:user_id>')
+def super_admin_freeze(user_id):
+    """تجميد حساب تاجر فوراً"""
+    if not session.get('is_superadmin'): return redirect(url_for('login'))
+    from database import toggle_freeze
+    toggle_freeze(user_id, True)
+    flash("تم تجميد الحساب وتوقف المتجر عن العمل.", "warning")
+    return redirect(url_for('super_admin'))
+
+@app.route('/superadmin/unfreeze/<int:user_id>')
+def super_admin_unfreeze(user_id):
+    """إلغاء تجميد الحساب"""
+    if not session.get('is_superadmin'): return redirect(url_for('login'))
+    from database import toggle_freeze
+    toggle_freeze(user_id, False)
+    flash("تم إعادة تفعيل الحساب بنجاح.", "success")
+    return redirect(url_for('super_admin'))
+
 @app.route('/superadmin/add_credits', methods=['POST'])
 def super_admin_add_credits():
     if not session.get('is_superadmin'): return redirect(url_for('login'))
