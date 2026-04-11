@@ -1032,9 +1032,12 @@ def place_order():
 
             unit_price = to_number(p.get('price'))
             line_total = unit_price * qty
+                       # نستخدم SKU إذا كان موجوداً، وإذا لم يكن موجوداً نستخدم رقم المنتج #ID
+            display_sku = p.get('sku') or f"#{pid}"
+            
             lines.append({
                 "product_id": pid,
-                "sku": p.get('sku') or '',
+                "sku": display_sku,
                 "name": p.get('name') or '',
                 "unit_price": unit_price,
                 "qty": qty,
@@ -1278,6 +1281,8 @@ def super_admin_add_credits():
 @app.route('/sw.js')
 def sw():
     return send_from_directory(app.root_path, 'sw.js')
+
+
 
 # =========================
 # Entrypoint
