@@ -4,6 +4,7 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash
+from datetime import datetime, timedelta
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
@@ -27,10 +28,19 @@ def init_db():
             phone TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
             status TEXT DEFAULT 'pending',
-            plan_type TEXT DEFAULT 'free',
-            credits INTEGER DEFAULT 10,
+            plan_type TEXT DEFAULT 'monthly',
+            subscription_start TIMESTAMP,
+            subscription_end TIMESTAMP,
+            is_frozen BOOLEAN DEFAULT FALSE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )''')
+
+    # Migration: add new columns if upgrading from old schema (credits era)
+    cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_start TIMESTAMP")
+    cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_end TIMESTAMP")
+    cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_frozen BOOLEAN DEFAULT FALSE")
+    # Keep credits column temporarily so old data isn't lost — can be dropped manually later
+    # cursor.execute("ALTER TABLE users DROP COLUMN IF EXISTS credits")
 
     # stores
     cursor.execute('''CREATE TABLE IF NOT EXISTS stores (
@@ -76,16 +86,12 @@ def init_db():
             FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE
         )''')
 
-    # Ensure new product columns for SKU + stock + active
     cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS sku TEXT")
     cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS stock_qty INTEGER DEFAULT 999")
     cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE")
-
-    # Backward-compat: ensure background/final_image_url exist on older DBs
     cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS background TEXT DEFAULT 'none'")
     cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS final_image_url TEXT")
 
-    # Unique SKU per store (NULL allowed; uniqueness enforced when filled)
     cursor.execute("""
         CREATE UNIQUE INDEX IF NOT EXISTS ux_products_store_sku
         ON products(store_id, sku) WHERE sku IS NOT NULL
@@ -122,7 +128,7 @@ def init_db():
             customer_phone TEXT,
             customer_notes TEXT,
             wa_text TEXT NOT NULL,
-            status TEXT NOT NULL DEFAULT 'sent', -- sent | confirmed
+            status TEXT NOT NULL DEFAULT 'sent',
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE
         )''')
@@ -145,12 +151,12 @@ def init_db():
     cursor.execute("CREATE INDEX IF NOT EXISTS ix_order_lines_product ON order_lines(product_id)")
     print("✅ order_lines table and indexes ready.")
 
-    # analytics_events + index
+    # analytics_events
     cursor.execute('''CREATE TABLE IF NOT EXISTS analytics_events (
             id SERIAL PRIMARY KEY,
             store_id INTEGER NOT NULL,
             product_id INTEGER,
-            event_name TEXT NOT NULL, -- page_view | product_view | add_to_cart | whatsapp_sent
+            event_name TEXT NOT NULL,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE,
             FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE SET NULL
@@ -164,9 +170,12 @@ def init_db():
     if not cursor.fetchone():
         print("🌱 Seeding initial data...")
         MERCHANT_PASSWORD = "12312312"
+        sub_start = datetime.utcnow()
+        sub_end = sub_start + timedelta(days=365)
         cursor.execute(
-            "INSERT INTO users (phone, password_hash, status, credits) VALUES (%s, %s, %s, %s) RETURNING id",
-            ("0592776784", generate_password_hash(MERCHANT_PASSWORD), 'active', 100)
+            """INSERT INTO users (phone, password_hash, status, plan_type, subscription_start, subscription_end)
+               VALUES (%s, %s, %s, %s, %s, %s) RETURNING id""",
+            ("0592776784", generate_password_hash(MERCHANT_PASSWORD), 'active', 'annual', sub_start, sub_end)
         )
         user_id = cursor.fetchone()['id']
         cursor.execute(
@@ -180,6 +189,107 @@ def init_db():
     conn.commit()
     cursor.close()
     conn.close()
+
+
+def get_subscription_status(user):
+    """
+    Returns subscription status dict for a user row.
+
+    Keys:
+        is_active   (bool)  — subscription valid right now (including grace period)
+        is_expired  (bool)  — past end date but within 3-day grace
+        is_blocked  (bool)  — past grace period, access should be denied
+        is_frozen   (bool)  — manually frozen
+        days_left   (int)   — days until subscription_end (negative if expired)
+        warn_renew  (bool)  — True if within 1 day of expiry (show warning)
+        grace_msg   (bool)  — True if expired but in grace period (urgent message)
+    """
+    now = datetime.utcnow()
+    sub_end = user.get('subscription_end')
+    is_frozen = bool(user.get('is_frozen'))
+
+    if is_frozen:
+        return {
+            'is_active': False, 'is_expired': False,
+            'is_blocked': True, 'is_frozen': True,
+            'days_left': 0, 'warn_renew': False, 'grace_msg': False
+        }
+
+    if not sub_end:
+        # No subscription set yet — treat as blocked
+        return {
+            'is_active': False, 'is_expired': False,
+            'is_blocked': True, 'is_frozen': False,
+            'days_left': 0, 'warn_renew': False, 'grace_msg': False
+        }
+
+    days_left = (sub_end - now).days
+    grace_end = sub_end + timedelta(days=3)
+
+    if now <= sub_end:
+        # Active subscription
+        warn_renew = days_left <= 1  # warn if 1 day or less left
+        return {
+            'is_active': True, 'is_expired': False,
+            'is_blocked': False, 'is_frozen': False,
+            'days_left': days_left, 'warn_renew': warn_renew, 'grace_msg': False
+        }
+    elif now <= grace_end:
+        # Expired but within 3-day grace — still accessible, show urgent warning
+        return {
+            'is_active': True, 'is_expired': True,
+            'is_blocked': False, 'is_frozen': False,
+            'days_left': days_left, 'warn_renew': False, 'grace_msg': True
+        }
+    else:
+        # Fully expired, access denied
+        return {
+            'is_active': False, 'is_expired': True,
+            'is_blocked': True, 'is_frozen': False,
+            'days_left': days_left, 'warn_renew': False, 'grace_msg': False
+        }
+
+
+def set_subscription(user_id, plan_type):
+    """
+    Assign a new subscription to a user starting from now.
+    plan_type: 'monthly' | 'biannual' | 'annual'
+    """
+    PLAN_DAYS = {
+        'monthly': 30,
+        'biannual': 180,
+        'annual': 365,
+    }
+    days = PLAN_DAYS.get(plan_type, 30)
+    now = datetime.utcnow()
+    sub_end = now + timedelta(days=days)
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            """UPDATE users
+               SET plan_type = %s, subscription_start = %s, subscription_end = %s, is_frozen = FALSE
+               WHERE id = %s""",
+            (plan_type, now, sub_end, user_id)
+        )
+        conn.commit()
+        return sub_end
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def toggle_freeze(user_id, freeze: bool):
+    """Freeze or unfreeze a user's account."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("UPDATE users SET is_frozen = %s WHERE id = %s", (freeze, user_id))
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def record_store_visit(store_id):
@@ -233,5 +343,5 @@ def get_visit_stats():
             conn.close()
 
 
-# Run migration/init on import (as in your original code)
+# Run migration/init on import
 init_db()
