@@ -538,6 +538,10 @@
                 <input id="c_phone" type="tel" placeholder="اختياري">
             </div>
             <div class="field">
+                <label>العنوان</label>
+                <input id="c_address" type="text" placeholder="اختياري">
+            </div>
+            <div class="field">
                 <label>ملاحظات</label>
                 <textarea id="c_notes" rows="2" placeholder="اختياري"></textarea>
             </div>
@@ -734,6 +738,7 @@
                 cart: cart.map(x => ({ product_id: x.product_id, qty: x.qty })),
                 customer_name: document.getElementById('c_name').value || '',
                 customer_phone: document.getElementById('c_phone').value || '',
+                customer_address: document.getElementById('c_address').value || '',
                 customer_notes: document.getElementById('c_notes').value || ''
             };
             let res;

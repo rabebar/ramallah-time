@@ -372,6 +372,7 @@ def build_wa_text(store, lines, subtotal, customer):
     parts.append("⚠️ لا تشمل رسوم التوصيل")
     parts.append("─────────────────")
     parts.append(f"👤 {customer.get('name') or '-'} | 📞 {customer.get('phone') or '-'}")
+    parts.append(f"📍 {customer.get('address') or '-'}")
     parts.append(f"📝 {customer.get('notes') or '-'}")
 
     msg = "\n".join(parts)
@@ -993,6 +994,7 @@ def place_order():
     customer = {
         "name": data.get("customer_name"),
         "phone": data.get("customer_phone"),
+        "address": data.get("customer_address"),
         "notes": data.get("customer_notes"),
     }
 
