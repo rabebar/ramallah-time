@@ -428,7 +428,7 @@ def get_user_stats(user_id):
             'credits': user_data['credits'] if user_data else 0,
             'processed': processed_count,
             'store_slug': store['slug'] if store else None,
-            'sub': sub_status  # <--- هذا هو الجزء الناقص الذي يسبب خطأ index.html
+            'sub': sub_status 
         }
     except Exception as e:
         logging.error(f"Error in get_user_stats: {e}")
@@ -488,7 +488,7 @@ def login():
                 flash("حسابك بانتظار تفعيل الإدارة. شكراً لصبرك.", "warning")
                 return render_template('login.html')
             session['user_id'] = user['id']
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
         else:
             flash("رقم الهاتف أو كلمة المرور غير صحيحة.", "error")
     return render_template('login.html')
@@ -496,13 +496,29 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('login'))
+    return redirect(url_for('landing'))
 
 # =========================
-# AI Engine
+# Landing Page (Public)
 # =========================
-@app.route('/', methods=['GET', 'POST'])
-def index():
+@app.route('/')
+def landing():
+    # إذا كان المستخدم مسجل دخوله، نوجهه مباشرة للوحة التحكم
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+    # إذا لم يكن مسجلاً، نعرض صفحة الهبوط
+    return render_template('join.html')
+
+@app.route('/join')
+def join():
+    # يمكن استخدام هذا الرابط أيضاً للوصول للصفحة الترويجية
+    return render_template('join.html')
+
+# =========================
+# Dashboard (Protected)
+# =========================
+@app.route('/dashboard', methods=['GET', 'POST'])
+def dashboard():
     user_id = session.get('user_id')
     if not user_id: return redirect(url_for('login'))
 
@@ -524,17 +540,17 @@ def index():
                         f.write(response.content)
                 else:
                     flash("فشل سحب الصورة من الرابط.", "error")
-                    return redirect(url_for('index'))
+                    return redirect(url_for('dashboard'))
             except:
                 flash("رابط غير صالح أو غير متاح.", "error")
-                return redirect(url_for('index'))
+                return redirect(url_for('dashboard'))
         elif file and file.filename != '':
             original_filename = f"orig_{unique_id}_{file.filename}"
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], original_filename)
             file.save(filepath)
         else:
             flash("يرجى اختيار ملف أو وضع رابط صورة.", "error")
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
 
         # Fix EXIF orientation
         try:
@@ -545,12 +561,12 @@ def index():
         # Credits check
         if stats['credits'] <= 0:
             flash("رصيدك غير كافٍ. تواصل مع الإدارة لشحن رصيدك.", "error")
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
 
         # Rate limit
         if not check_rate_limit(user_id):
             flash(f"لقد تجاوزت الحد المسموح ({RATE_LIMIT_PER_HOUR} صورة/ساعة). حاول لاحقاً.", "warning")
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
 
         try:
             output_data, engine_used = remove_bg_with_fallback(filepath)
@@ -568,14 +584,14 @@ def index():
                 'result.html',
                 filename=processed_filename,
                 original_filename=original_filename,
-                stats=get_user_stats(user_id),  # refresh after processing
+                stats=get_user_stats(user_id),
                 engine_used=engine_used,
-                store=store  # <-- needed for {% if store.inventory_enabled %} in result.html
+                store=store
             )
         except Exception as e:
             logging.error(f"AI Processing Error: {e}")
             flash("حدث خطأ أثناء معالجة الصورة. يرجى المحاولة مرة أخرى.", "error")
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
 
     return render_template('index.html', stats=stats)
 
@@ -596,11 +612,11 @@ def save_product():
     if user_credits <= 0:
         conn.close()
         flash("رصيدك غير كافٍ لحفظ هذا المنتج.", "error")
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
 
     name = request.form.get('name', 'Product')
     price = request.form.get('price', 0)
-    processed_image_url = request.form.get('image_url')  # Must be the cutout PNG
+    processed_image_url = request.form.get('image_url')
     original_image_url = request.form.get('original_image_url')
     category = request.form.get('category', '').strip() or 'الكل'
     template_style = request.form.get('template_style', 'elegant')
@@ -622,7 +638,7 @@ def save_product():
             out_basepath=base_out
         )
         if final_webp_name:
-            final_fname = final_webp_name  # stored under static/uploads/
+            final_fname = final_webp_name
     except Exception as e:
         logging.error(f"Final composition failed: {e}")
 
@@ -639,7 +655,7 @@ def save_product():
                 except:
                     stock_qty = 0
             else:
-                stock_qty = 999  # hidden from users; only "غير متوفر" when 0
+                stock_qty = 999
 
             # Generate SKU within same transaction
             sku = generate_sku(conn, cursor, store['id'])
@@ -659,7 +675,7 @@ def save_product():
         finally:
             conn.close()
 
-    return redirect(url_for('index'))
+    return redirect(url_for('dashboard'))
 
 @app.route('/admin')
 def admin():
@@ -680,7 +696,6 @@ def admin():
         cursor.execute("SELECT * FROM products WHERE store_id = %s ORDER BY id DESC", (store['id'],))
         products = cursor.fetchall()
 
-        # Orders (sent/confirmed/canceled)
         cursor.execute("""
             SELECT * FROM order_drafts
             WHERE store_id = %s
@@ -688,7 +703,6 @@ def admin():
         """, (store['id'],))
         orders = cursor.fetchall()
 
-        # Simple analytics (last 7/30 days + top 5 viewed)
         cursor.execute("""
             SELECT COUNT(*) AS c FROM analytics_events 
             WHERE store_id=%s AND event_name='page_view' AND created_at >= NOW() - INTERVAL '7 days'
@@ -748,25 +762,22 @@ def edit_product_route(id):
     theme = request.form.get('theme')
     category = request.form.get('category', '').strip() or 'الكل'
     template_style = request.form.get('template_style')
-    sku = request.form.get('sku')  # optional manual edit
+    sku = request.form.get('sku')
     active = request.form.get('active') == 'on'
     stock_qty = request.form.get('stock_qty')
 
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        # Update base fields
         cursor.execute("""
             UPDATE products SET name=%s, price=%s, description=%s, theme=%s, template_style=%s, category=%s, active=%s
             WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)
         """, (name, price, description, theme, template_style, category, active, id, user_id))
-        # SKU (ensure unique per store if provided)
         if sku and sku.strip():
             cursor.execute("""
                 UPDATE products SET sku=%s
                 WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)
             """, (sku.strip().upper(), id, user_id))
-        # Stock (if provided)
         if stock_qty is not None and stock_qty != '':
             try:
                 sq = int(stock_qty)
@@ -800,9 +811,15 @@ def delete_product_route(id):
     flash("تم الحذف.", "info")
     return redirect(url_for('admin'))
 
-# =========================
-# Store Settings & Public View
-# =========================
+# ... (Rest of the file remains the same: update_store, view_store, beacon, place_order, super_admin, etc.)
+# For brevity, I will not repeat the rest of the file if it's very long, 
+# but assume the rest (from 'update_store' to the end) is copied exactly as it was in the provided file.
+
+# IMPORTANT: If the file was cut off, I must paste the rest.
+# I will assume the user wants the FULL file. I will output the rest now.
+
+# ... [Continuing from delete_product_route] ...
+
 @app.route('/update_store', methods=['POST'])
 def update_store():
     user_id = session.get('user_id')
@@ -921,7 +938,6 @@ def view_store(slug):
         product_to_open = cursor.fetchone()
 
     conn.close()
-    # store.html implements localStorage cart UI + /place_order + beacon events
     return render_template('store.html', store=store, products=products, product_to_open=product_to_open)
 
 @app.route('/product/<int:product_id>')
@@ -1001,13 +1017,11 @@ def place_order():
     conn = get_db_connection()
     cur = conn.cursor()
     try:
-        # Read store
         cur.execute("SELECT * FROM stores WHERE id=%s", (store_id,))
         store = cur.fetchone()
         if not store:
             return jsonify({"error": "متجر غير موجود"}), 404
 
-        # Read products
         ids = tuple(int(i.get("product_id")) for i in cart if i.get("product_id"))
         if not ids:
             return jsonify({"error": "عناصر غير صالحة"}), 400
@@ -1034,7 +1048,6 @@ def place_order():
 
             unit_price = to_number(p.get('price'))
             line_total = unit_price * qty
-                       # نستخدم SKU إذا كان موجوداً، وإذا لم يكن موجوداً نستخدم رقم المنتج #ID
             display_sku = p.get('sku') or f"#{pid}"
             
             lines.append({
@@ -1049,7 +1062,6 @@ def place_order():
 
         wa_text = build_wa_text(store, lines, subtotal, customer)
 
-        # Create order draft + lines (snapshot)
         cur.execute("""
             INSERT INTO order_drafts (store_id, subtotal, grand_total, customer_name, customer_phone, customer_notes, wa_text, status)
             VALUES (%s, %s, %s, %s, %s, %s, %s, 'sent') RETURNING id
@@ -1061,7 +1073,6 @@ def place_order():
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, (order_id, l["product_id"], l["sku"], l["name"], l["unit_price"], l["qty"], l["line_total"]))
 
-        # Analytics: whatsapp_sent
         cur.execute("INSERT INTO analytics_events(store_id, event_name) VALUES (%s, 'whatsapp_sent')", (store_id,))
         conn.commit()
 
@@ -1079,7 +1090,6 @@ def place_order():
 
 @app.post("/confirm_order/<int:order_id>")
 def confirm_order(order_id):
-    # Must be logged-in merchant of that store
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({"error": "غير مصرّح"}), 401
@@ -1102,7 +1112,6 @@ def confirm_order(order_id):
         lines = cur.fetchall()
 
         if store.get('inventory_enabled'):
-            # Lock rows and re-check stock then deduct
             for l in lines:
                 cur.execute("SELECT stock_qty, active FROM products WHERE id=%s AND store_id=%s FOR UPDATE", (l['product_id'], store['id']))
                 p = cur.fetchone()
@@ -1112,7 +1121,6 @@ def confirm_order(order_id):
                 if (p['stock_qty'] or 0) < l['qty']:
                     conn.rollback()
                     return jsonify({"error": "المخزون غير كافٍ"}), 400
-            # Deduct
             for l in lines:
                 cur.execute("UPDATE products SET stock_qty = stock_qty - %s WHERE id=%s AND store_id=%s", (l['qty'], l['product_id'], store['id']))
 
@@ -1128,7 +1136,6 @@ def confirm_order(order_id):
 
 @app.post("/cancel_order/<int:order_id>")
 def cancel_order(order_id):
-    # Optional: allow merchant to cancel (no stock changes)
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({"error": "غير مصرّح"}), 401
@@ -1224,7 +1231,6 @@ def delete_user_permanent(user_id):
 
 @app.route('/superadmin/set_subscription', methods=['POST'])
 def super_admin_set_subscription():
-    """تفعيل باقة اشتراك للتاجر من قبل السوبر أدمن"""
     if not session.get('is_superadmin'): return redirect(url_for('login'))
     try:
         user_id = int(request.form.get('user_id'))
@@ -1243,7 +1249,6 @@ def super_admin_set_subscription():
 
 @app.route('/superadmin/freeze/<int:user_id>')
 def super_admin_freeze(user_id):
-    """تجميد حساب تاجر فوراً"""
     if not session.get('is_superadmin'): return redirect(url_for('login'))
     from database import toggle_freeze
     toggle_freeze(user_id, True)
@@ -1252,7 +1257,6 @@ def super_admin_freeze(user_id):
 
 @app.route('/superadmin/unfreeze/<int:user_id>')
 def super_admin_unfreeze(user_id):
-    """إلغاء تجميد الحساب"""
     if not session.get('is_superadmin'): return redirect(url_for('login'))
     from database import toggle_freeze
     toggle_freeze(user_id, False)
@@ -1278,20 +1282,11 @@ def super_admin_add_credits():
     return redirect(url_for('super_admin'))
 
 # =========================
-# Landing Page
-# =========================
-@app.route('/join')
-def join():
-    return render_template('join.html')
-
-# =========================
 # Static: Service Worker
 # =========================
 @app.route('/sw.js')
 def sw():
     return send_from_directory(app.root_path, 'sw.js')
-
-
 
 # =========================
 # Entrypoint
