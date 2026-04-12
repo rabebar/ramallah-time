@@ -501,11 +501,16 @@ def logout():
 # =========================
 # Landing Page (Public)
 # =========================
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def landing():
+    # إذا كان الطلب رفع ملف (POST)، نمرره مباشرة للوحة التحكم
+    if request.method == 'POST':
+        return dashboard()
+
     # إذا كان المستخدم مسجل دخوله، نوجهه مباشرة للوحة التحكم
     if 'user_id' in session:
         return redirect(url_for('dashboard'))
+        
     # إذا لم يكن مسجلاً، نعرض صفحة الهبوط
     return render_template('join.html')
 
