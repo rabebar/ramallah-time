@@ -1278,6 +1278,13 @@ def super_admin_add_credits():
     return redirect(url_for('super_admin'))
 
 # =========================
+# Landing Page
+# =========================
+@app.route('/join')
+def join():
+    return render_template('join.html')
+
+# =========================
 # Static: Service Worker
 # =========================
 @app.route('/sw.js')
