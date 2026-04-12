@@ -901,7 +901,7 @@ def view_store(slug):
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM stores WHERE slug = %s OR slug = %s", (decoded_slug, slug))
+    cursor.execute("SELECT * FROM stores WHERE slug = %s OR slug = %s", (decoded_slug.lower(), slug.lower()))
     store = cursor.fetchone()
 
     if store:
