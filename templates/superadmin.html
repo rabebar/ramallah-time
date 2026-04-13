@@ -52,10 +52,23 @@
         .logout-btn { margin-top: auto; color: #f87171 !important; }
         .logout-btn:hover { background: rgba(239, 68, 68, 0.1) !important; }
 
-        .main-viewport { flex-grow: 1; margin-right: var(--sidebar-w); padding: 48px; width: 100%; }
+        .main-viewport { flex-grow: 1; margin-right: var(--sidebar-w); padding: 48px; width: 100%; overflow-x: auto; }
         .header-area { margin-bottom: 48px; display: flex; justify-content: space-between; align-items: flex-end; }
         .header-area h1 { font-size: 32px; font-weight: 800; color: var(--navy); letter-spacing: -1px; }
         .header-area p { color: var(--text-muted); font-size: 15px; margin-top: 4px; }
+
+        /* ═══════════════════════════════
+           Flash Messages (Alerts)
+        ═══════════════════════════════ */
+        .alert {
+            padding: 16px 24px; border-radius: 16px; margin-bottom: 24px;
+            display: flex; align-items: center; gap: 12px; font-weight: 600;
+            animation: slideDown 0.5s ease;
+        }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .alert-success { background: rgba(16, 185, 129, 0.1); color: #047857; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .alert-error { background: rgba(239, 68, 68, 0.1); color: #b91c1c; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .alert i { width: 20px; height: 20px; }
 
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
         .stat-card { 
@@ -124,6 +137,7 @@
         .table-container { 
             background: var(--white); border: 1px solid var(--border); 
             border-radius: 28px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); 
+            min-width: 900px; /* لضمان ظهور الجدول كامل */
         }
         .table-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; color: var(--navy); }
         table { width: 100%; border-collapse: collapse; text-align: right; }
@@ -193,6 +207,20 @@
                 {{ current_date }}
             </div>
         </div>
+
+        <!-- ═══════════════════════════════
+             Flash Messages (التنبيهات)
+        ═══════════════════════════════ -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">
+                <i data-lucide="{% if category == 'success' %}check-circle{% else %}alert-circle{% endif %}"></i>
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
 
         <!-- إحصائيات عامة -->
         <div class="stats-grid">
@@ -266,6 +294,7 @@
                         <th>اسم المتجر</th>
                         <th>رابط المتجر</th>
                         <th>الحالة</th>
+                        <th>تاريخ انتهاء الاشتراك</th>
                         <th>الرصيد</th>
                         <th>تاريخ الانضمام</th>
                         <th>الإجراءات</th>
@@ -299,6 +328,19 @@
                             <span class="badge badge-pending">معلق</span>
                             {% endif %}
                         </td>
+                        <!-- عمود تاريخ الانتهاء -->
+                        <td>
+                            {% if user.subscription_end %}
+                                <span style="font-weight:700; color: {% if user.subscription_end < now %}#ef4444{% else %}#10b981{% endif %};">
+                                    {{ user.subscription_end.strftime('%Y-%m-%d') }}
+                                </span>
+                                {% if user.subscription_end < now %}
+                                    <span style="font-size:10px; color:#ef4444; display:block;">(منتهي)</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color:#64748b; font-size:12px;">لا يوجد</span>
+                            {% endif %}
+                        </td>
                         <td style="font-weight: 700; color: var(--gold);">{{ user.credits }} صورة</td>
                         <td style="font-size: 12px; color: var(--text-muted);">{{ user.created_at }}</td>
                         <td>
@@ -308,12 +350,21 @@
                                     <a href="/superadmin/reject/{{ user.id }}" class="btn-sm btn-reject" onclick="return confirm('حذف الطلب؟')"><i data-lucide="x"></i> رفض</a>
                                 {% else %}
                                     <!-- تفعيل باقة اشتراك -->
-                                    <form action="/superadmin/set_subscription" method="POST" style="display:flex; gap:5px;">
+                                    <form action="/superadmin/set_subscription" method="POST" style="display:flex; gap:5px; align-items: center;">
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        
+                                        <!-- عرض الباقة الحالية -->
+                                        <span style="font-size:10px; color:#64748b; width:60px; text-align:center;">
+                                            {% if user.plan_type == 'biannual' %}6 أشهر
+                                            {% elif user.plan_type == 'annual' %}سنوي
+                                            {% else %}شهري{% endif %}
+                                        </span>
+
                                         <select name="plan_type" class="refill-input" style="width: 90px; font-size: 11px;">
-                                            <option value="monthly">شهري</option>
-                                            <option value="biannual">6 أشهر</option>
-                                            <option value="annual">سنوي</option>
+                                            <!-- المنطق الذكي: اختيار الخيار الصحيح -->
+                                            <option value="monthly" {% if user.plan_type == 'monthly' %}selected{% endif %}>شهري</option>
+                                            <option value="biannual" {% if user.plan_type == 'biannual' %}selected{% endif %}>6 أشهر</option>
+                                            <option value="annual" {% if user.plan_type == 'annual' %}selected{% endif %}>سنوي</option>
                                         </select>
                                         <button type="submit" class="btn-sm btn-approve" title="تفعيل الاشتراك">
                                             <i data-lucide="zap" style="width:14px;"></i>
@@ -334,7 +385,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" style="text-align:center; padding:100px; color: var(--text-muted);">
+                        <td colspan="8" style="text-align:center; padding:100px; color: var(--text-muted);">
                             <i data-lucide="users" style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.2;"></i>
                             <p>لا يوجد تجار مسجلين في النظام حالياً.</p>
                         </td>

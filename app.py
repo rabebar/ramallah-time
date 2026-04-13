@@ -1193,7 +1193,8 @@ def super_admin():
     return render_template('superadmin.html',
                            stats={'total_users': t_users, 'total_products': t_products, 'total_credits': t_credits},
                            users=users,
-                           visit_stats=visit_stats)
+                           visit_stats=visit_stats,
+                           now=datetime.utcnow())  # <--- هذا هو السطر الذي كان ناقصاً
 
 @app.route('/superadmin/login', methods=['GET', 'POST'])
 def super_admin_login():
