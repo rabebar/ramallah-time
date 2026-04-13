@@ -966,7 +966,7 @@ def view_product_direct(product_id):
 # =========================
 # Beacon Analytics
 # =========================
-@app.get("/e")
+@app.route("/e", methods=["GET", "POST"])
 def beacon():
     e = request.args.get("e")
     store_id = request.args.get("store_id", type=int)
