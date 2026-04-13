@@ -366,9 +366,9 @@ def build_wa_text(store, lines, subtotal, customer):
     parts.append("─────────────────")
     for l in lines:
         lt = format_money(l['line_total'])
-        parts.append(f"{l['name']} | {l['sku']} | ×{l['qty']} | ₪{lt}")
+        parts.append(f"{l['name']} | {l['sku']} | ×{l['qty']} | {store.get('currency', '₪')}{lt}")
     parts.append("─────────────────")
-    parts.append(f"المجموع: ₪{format_money(subtotal)}")
+    parts.append(f"المجموع: {store.get('currency', '₪')}{format_money(subtotal)}")
     parts.append("⚠️ لا تشمل رسوم التوصيل")
     parts.append("─────────────────")
     parts.append(f"👤 {customer.get('name') or '-'} | 📞 {customer.get('phone') or '-'}")
@@ -864,6 +864,7 @@ def update_store():
     address = request.form.get('address')
     website = request.form.get('website')
     inventory_enabled = True if request.form.get('inventory_enabled') in ('on', 'true', '1') else False
+    currency = request.form.get('currency', '₪')
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -873,21 +874,21 @@ def update_store():
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s
+                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, logo_url, inventory_enabled, user_id))
+                  address, website, logo_url, inventory_enabled, currency, user_id))
         else:
             cursor.execute("""
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, inventory_enabled=%s
+                    address=%s, website=%s, inventory_enabled=%s, currency=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, inventory_enabled, user_id))
+                  address, website, inventory_enabled, currency, user_id))
         conn.commit()
         flash("تم تحديث الإعدادات.", "success")
     except Exception as e:

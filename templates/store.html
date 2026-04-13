@@ -296,20 +296,21 @@
         .wa-btn:hover { background: #000; transform: translateY(-2px); }
         /* شريط التواصل الثابت لنسخة الكمبيوتر */
         @media (min-width: 1025px) {
+            .about-box { margin-bottom: 120px !important; } /* رفع المحتوى لكي لا يختفي خلف الشريط */
             .quick-actions-fixed {
                 position: fixed;
                 bottom: 0;
-                right: var(--sidebar-w); /* يترك مساحة للسايدبار */
                 left: 0;
-                background: rgba(255, 255, 255, 0.85);
-                backdrop-filter: blur(15px);
-                border-top: 1px solid rgba(0,0,0,0.05);
+                width: 100%; /* العرض كامل لضمان التوازن التلقائي */
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border-top: 1px solid #eee;
                 display: flex;
                 justify-content: center;
-                gap: 30px;
-                padding: 15px 40px;
-                z-index: 4000;
-                box-shadow: 0 -5px 25px rgba(0,0,0,0.03);
+                gap: 40px;
+                padding: 20px;
+                z-index: 999; /* أقل من السايدبار لكي لا يغطيه */
+                box-shadow: 0 -5px 15px rgba(0,0,0,0.02);
             }
             .action-item-fixed {
                 display: flex;
@@ -324,7 +325,6 @@
             .action-item-fixed:hover { color: var(--gold); transform: translateY(-2px); }
             .action-item-fixed i { width: 20px; height: 20px; }
             
-            /* إخفاء العنوان القديم وقسم الروابط القديم في نسخة الكمبيوتر */
             #home > .section-title[data-t="quick_links"],
             #home > .quick-actions { display: none; }
         }
@@ -463,7 +463,7 @@
                 </div>
                 <div class="p-info">
                     <div class="p-name">{{ product.name }}</div>
-                    <div class="p-meta">₪ {{ product.price }} • جودة ممتازة</div>
+                    <div class="p-meta">{{ store.currency or '₪' }} {{ product.price }} • جودة ممتازة</div>
                     {% if product.sku %}
                     <div class="p-meta">SKU: {{ product.sku }}</div>
                     {% endif %}
@@ -548,6 +548,18 @@
             <span>إنستغرام</span>
         </a>
         {% endif %}
+        {% if store.facebook_handle %}
+        <a href="#" data-social="facebook" data-handle="{{ store.facebook_handle }}" class="action-item-fixed" target="_blank">
+            <i data-lucide="facebook" style="color: #1877F2;"></i>
+            <span>فيسبوك</span>
+        </a>
+        {% endif %}
+        {% if store.tiktok_handle %}
+        <a href="#" data-social="tiktok" data-handle="{{ store.tiktok_handle }}" class="action-item-fixed" target="_blank">
+            <i data-lucide="music" style="color: #000;"></i>
+            <span>تيك توك</span>
+        </a>
+        {% endif %}
         {% if store.website %}
         <a href="{{ store.website }}" class="action-item-fixed" target="_blank">
             <i data-lucide="globe" style="color: var(--navy-deep);"></i>
@@ -572,7 +584,7 @@
             </div>
             <div class="modal-info">
                 <h2 id="mName">اسم المنتج</h2>
-                <div class="price" id="mPrice">₪ 0.00</div>
+                <div class="price" id="mPrice">{{ store.currency or '₪' }} 0.00</div>
                 <div class="p-meta" id="mSku" style="font-size: 12px; color:#64748b; margin-bottom:10px;"></div>
                 <div id="mDesc" class="modal-desc"></div>
                 <button id="mAdd" class="wa-btn">
@@ -640,6 +652,7 @@
 
         const STORE_ID = {{ store.id }};
         const CART_KEY = `cart_${STORE_ID}`;
+        const CURRENCY = "{{ store.currency or '₪' }}";
 
         const translations = {
             ar: { nav_home:"الرئيسية", nav_products:"المنتجات", nav_about:"عن المتجر", nav_admin:"دخول المدير", contact_us:"تواصل معنا", latest_products:"أحدث المنتجات", quick_links:"روابط سريعة", whatsapp:"واتساب", call_us:"اتصال هاتفي", instagram:"إنستغرام", order_now:"اطلب الآن عبر واتساب", welcome:"أهلاً بك في", install_app:"تثبيت التطبيق", install_desc:"تصفح المتجر بشكل أسرع", install_btn:"Install" },
@@ -775,7 +788,7 @@
             box.innerHTML = '';
             if (!c.length){
                 box.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px;">سلتك فارغة حالياً</div>';
-                sub.textContent = '₪ 0';
+                sub.textContent = CURRENCY + ' 0';
                 return;
             }
             c.forEach(line => {
@@ -795,13 +808,12 @@
                         </div>
                     </div>
                     <div class="line-right">
-                        <div class="line-total">₪ ${(Number(line.price||0)*Number(line.qty||0)).toFixed(0)}</div>
+                        <div class="line-total">${CURRENCY} ${(Number(line.price||0)*Number(line.qty||0)).toFixed(0)}</div>
                     </div>
                 `;
                 box.appendChild(row);
             });
-            sub.textContent = '₪ ' + cartSubtotal().toFixed(0);
-            lucide.createIcons();
+            sub.textContent = CURRENCY + ' ' + cartSubtotal().toFixed(0);
         }
         function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
         function incQty(id){ let c=getCart(); const i=c.findIndex(x=>x.product_id===id); if(i>=0){ c[i].qty++; saveCart(c);} }
