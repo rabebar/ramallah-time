@@ -57,12 +57,23 @@
 
         .logo-box {
             width: 36px; height: 36px;
-            background: var(--gold);
-            border-radius: 10px;
+            border-radius: 10px; overflow: hidden; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 800; color: var(--navy); flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(184, 151, 74, 0.3);
         }
+        .logo-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        .lang-switcher-sidebar {
+            margin: 0 16px 16px; display: flex;
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px; padding: 4px; gap: 4px;
+        }
+        .lang-btn-sidebar {
+            flex: 1; padding: 7px; border: none; border-radius: 8px;
+            font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;
+            background: transparent; color: rgba(255,255,255,0.5);
+        }
+        .lang-btn-sidebar.active { background: var(--gold); color: #fff; }
+        .sidebar.collapsed .lang-switcher-sidebar { display: none; }
 
         .logo-text {
             color: var(--white);
@@ -191,33 +202,40 @@
     <!-- Sidebar Desktop -->
     <aside class="sidebar" id="mainSidebar">
         <div class="logo-section">
-            <div class="logo-box">RT</div>
+            <div class="logo-box">
+                <img src="/static/rt_logo_512.png" alt="RT Studio">
+            </div>
             <span class="logo-text">RT Studio</span>
         </div>
 
         <nav class="nav-menu">
             <a href="/" class="nav-link {% block nav_dashboard %}{% endblock %}">
                 <i data-lucide="layout-dashboard"></i>
-                <span>Dashboard</span>
+                <span data-ar="الرئيسية" data-en="Dashboard">الرئيسية</span>
             </a>
             <a href="/admin" class="nav-link {% block nav_products %}{% endblock %}">
                 <i data-lucide="package"></i>
-                <span>Inventory</span>
+                <span data-ar="المنتجات" data-en="Inventory">المنتجات</span>
             </a>
             <a href="/store/{{ store_slug if store_slug else 'preview' }}" class="nav-link" target="_blank">
                 <i data-lucide="external-link"></i>
-                <span>Public Store</span>
+                <span data-ar="المتجر" data-en="Public Store">المتجر</span>
             </a>
             <a href="/admin?active_tab=settings" class="nav-link {% block nav_settings %}{% endblock %}">
                 <i data-lucide="settings"></i>
-                <span>Settings</span>
+                <span data-ar="الإعدادات" data-en="Settings">الإعدادات</span>
             </a>
         </nav>
+
+        <div class="lang-switcher-sidebar">
+            <button class="lang-btn-sidebar active" id="btnAr" onclick="setLang('ar')">AR</button>
+            <button class="lang-btn-sidebar" id="btnEn" onclick="setLang('en')">EN</button>
+        </div>
 
         <div class="sidebar-footer">
             <a href="/logout" class="nav-link" style="color: #ef4444;">
                 <i data-lucide="log-out"></i>
-                <span>Logout</span>
+                <span data-ar="تسجيل الخروج" data-en="Logout">تسجيل الخروج</span>
             </a>
         </div>
     </aside>
@@ -259,11 +277,30 @@
     <!-- Lucide Init -->
     <script>
         lucide.createIcons();
-        
-        // Sidebar Toggle logic can be added here if needed
+
         function toggleSidebar() {
             document.getElementById('mainSidebar').classList.toggle('collapsed');
         }
+
+        // Language system
+        const LANG_KEY = 'rt_lang';
+        function setLang(lang) {
+            localStorage.setItem(LANG_KEY, lang);
+            applyLang(lang);
+        }
+        function applyLang(lang) {
+            const isAr = lang === 'ar';
+            document.documentElement.setAttribute('lang', lang);
+            document.documentElement.setAttribute('dir', isAr ? 'rtl' : 'ltr');
+            document.getElementById('btnAr').classList.toggle('active', isAr);
+            document.getElementById('btnEn').classList.toggle('active', !isAr);
+            document.querySelectorAll('[data-ar]').forEach(el => {
+                el.textContent = isAr ? el.getAttribute('data-ar') : el.getAttribute('data-en');
+            });
+        }
+        // Init on load
+        const savedLang = localStorage.getItem(LANG_KEY) || 'ar';
+        applyLang(savedLang);
     </script>
 </body>
 </html>
