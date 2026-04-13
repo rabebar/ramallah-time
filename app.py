@@ -701,7 +701,7 @@ def admin():
                 # جلب المنتجات النشطة فقط (التي لم يتم إخفاؤها)
                 # التاجر يرى جميع المنتجات (المخفي والمتوفر)
         
-        cursor.execute("SELECT * FROM products WHERE store_id = %s AND active = TRUE ORDER BY id DESC", (store['id'],))
+        cursor.execute("SELECT * FROM products WHERE store_id = %s ORDER BY id DESC", (store['id'],))
         products = cursor.fetchall()
 
         cursor.execute("""

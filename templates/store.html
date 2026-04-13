@@ -294,6 +294,45 @@
 
         .wa-btn { display: flex; align-items: center; justify-content: center; gap: 12px; background: var(--navy-deep); color: #fff; padding: 16px; border-radius: 16px; text-decoration: none; font-weight: 800; transition: 0.3s; font-size: 15px; cursor: pointer; border: none; }
         .wa-btn:hover { background: #000; transform: translateY(-2px); }
+        /* شريط التواصل الثابت لنسخة الكمبيوتر */
+        @media (min-width: 1025px) {
+            .quick-actions-fixed {
+                position: fixed;
+                bottom: 0;
+                right: var(--sidebar-w); /* يترك مساحة للسايدبار */
+                left: 0;
+                background: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(15px);
+                border-top: 1px solid rgba(0,0,0,0.05);
+                display: flex;
+                justify-content: center;
+                gap: 30px;
+                padding: 15px 40px;
+                z-index: 4000;
+                box-shadow: 0 -5px 25px rgba(0,0,0,0.03);
+            }
+            .action-item-fixed {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                text-decoration: none;
+                color: var(--text-main);
+                font-size: 14px;
+                font-weight: 700;
+                transition: 0.3s;
+            }
+            .action-item-fixed:hover { color: var(--gold); transform: translateY(-2px); }
+            .action-item-fixed i { width: 20px; height: 20px; }
+            
+            /* إخفاء العنوان القديم وقسم الروابط القديم في نسخة الكمبيوتر */
+            #home > .section-title[data-t="quick_links"],
+            #home > .quick-actions { display: none; }
+        }
+        
+        /* إخفاء الشريط الجديد في نسخة الموبايل */
+        @media (max-width: 1024px) {
+            .quick-actions-fixed { display: none; }
+        }
 
         .modal-canvas.style-modern,
         .modal-canvas.style-glass,
@@ -489,6 +528,33 @@
     </main>
 
     <!-- Mobile Bottom Nav -->
+     <!-- Sticky Quick Actions for Desktop (Fixed at Bottom) -->
+    <div class="quick-actions-fixed">
+        {% if store.whatsapp_phone %}
+        <a href="https://wa.me/{{ store.whatsapp_phone }}" class="action-item-fixed" target="_blank">
+            <i data-lucide="message-circle" style="color: #25D366;"></i>
+            <span data-t="whatsapp">واتساب</span>
+        </a>
+        {% endif %}
+        {% if store.display_phone %}
+        <a href="tel:{{ store.display_phone }}" class="action-item-fixed">
+            <i data-lucide="phone" style="color: var(--gold);"></i>
+            <span data-t="call_us">اتصال هاتفي</span>
+        </a>
+        {% endif %}
+        {% if store.instagram_handle %}
+        <a href="#" data-social="instagram" data-handle="{{ store.instagram_handle }}" class="action-item-fixed" target="_blank">
+            <i data-lucide="instagram" style="color: #E4405F;"></i>
+            <span>إنستغرام</span>
+        </a>
+        {% endif %}
+        {% if store.website %}
+        <a href="{{ store.website }}" class="action-item-fixed" target="_blank">
+            <i data-lucide="globe" style="color: var(--navy-deep);"></i>
+            <span data-t="website">الموقع</span>
+        </a>
+        {% endif %}
+    </div>
     <nav class="mobile-nav">
         <a href="#home" class="m-nav-link active"><i data-lucide="home"></i><span data-t="nav_home">الرئيسية</span></a>
         <a href="#products" class="m-nav-link"><i data-lucide="package"></i><span data-t="nav_products">المنتجات</span></a>
