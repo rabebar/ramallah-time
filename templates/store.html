@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1A2238">
+    <link rel="manifest" href="/static/manifest.json">
     <title>{{ store.name }} | اطلب الآن عبر واتساب</title>
 
     <meta property="og:type" content="website">
@@ -627,17 +628,31 @@
 
         window.addEventListener('DOMContentLoaded', () => { setLanguage(currentLang); });
 
+        // منطق تثبيت التطبيق (PWA) المطور
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            if (window.innerWidth > 1024) return;
-            e.preventDefault(); deferredPrompt = e;
+            // منع المتصفح من إظهار النافذة التلقائية
+            e.preventDefault();
+            // حفظ الحدث لاستخدامه عند ضغط الزر
+            deferredPrompt = e;
+            // إظهار البانر الخاص بنا فقط على الموبايل
             const pwaBanner = document.getElementById('pwaBanner');
-            if (pwaBanner) pwaBanner.style.display = 'flex';
+            if (pwaBanner && window.innerWidth <= 1024) {
+                pwaBanner.style.display = 'flex';
+            }
         });
-        const installBtn = document.getElementById('installBtn');
-        if (installBtn) {
-            installBtn.addEventListener('click', async () => {
-                if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') document.getElementById('pwaBanner').style.display = 'none'; deferredPrompt = null; }
+
+        const installBtnElement = document.getElementById('installBtn');
+        if (installBtnElement) {
+            installBtnElement.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    console.log('RT Studio: Install outcome', outcome);
+                    // إخفاء البانر بعد التفاعل
+                    document.getElementById('pwaBanner').style.display = 'none';
+                    deferredPrompt = null;
+                }
             });
         }
 
@@ -832,6 +847,12 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
+           // تسجيل الـ Service Worker بشكل سليم لتفعيل ميزة التثبيت
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('RT Studio: SW Registered!'))
+                    .catch(err => console.log('RT Studio: SW Failed!', err));
+            }
             const productIdToOpen = urlParams.get('open_product');
             if (productIdToOpen) {
                 const productCard = document.querySelector(`[onclick*="openModal"][onclick*="'${productIdToOpen}'"]`) || document.querySelector(`div[onclick*="${productIdToOpen}"]`);
