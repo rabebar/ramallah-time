@@ -699,6 +699,8 @@ def admin():
     analytics = {}
     if store:
                 # جلب المنتجات النشطة فقط (التي لم يتم إخفاؤها)
+                # التاجر يرى جميع المنتجات (المخفي والمتوفر)
+        
         cursor.execute("SELECT * FROM products WHERE store_id = %s AND active = TRUE ORDER BY id DESC", (store['id'],))
         products = cursor.fetchall()
 
@@ -818,6 +820,18 @@ def delete_product_route(id):
     conn.close()
     flash("تمت إزالة المنتج بنجاح.", "info")
     return redirect(url_for('admin'))
+@app.route('/toggle_active/<int:id>')
+def toggle_active_product(id):
+    user_id = session.get('user_id')
+    if not user_id: return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # تبديل الحالة من مخفي إلى ظاهر والعكس
+    cursor.execute("UPDATE products SET active = NOT COALESCE(active, TRUE) WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)", (id, user_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('admin'))
 
 @app.route('/update_store', methods=['POST'])
 def update_store():
@@ -927,7 +941,8 @@ def view_store(slug):
         conn.close()
         return "هذا المتجر غير موجود حالياً.", 404
 
-    cursor.execute("SELECT * FROM products WHERE store_id = %s ORDER BY id DESC", (store['id'],))
+        # جلب المنتجات النشطة فقط (المخفية لا تظهر أبداً)
+    cursor.execute("SELECT * FROM products WHERE store_id = %s AND active = TRUE ORDER BY id DESC", (store['id'],))
     products = cursor.fetchall()
 
     open_id = request.args.get('open_product')

@@ -290,6 +290,10 @@
                 {% if product.sku %}<div class="p-sku">SKU: {{ product.sku }}</div>{% endif %}
                 <div class="actions">
                     <a href="/admin?edit={{ product.id }}" class="btn-action btn-edit">Edit</a>
+                                    <!-- زر الإخفاء/الإظهار -->
+                <a href="/toggle_active/{{ product.id }}" class="btn-action" style="background: {% if not product.active %}#d1fae5; color: #059669;{% else %}#fef3c7; color: #d97706;{% endif %};">
+                    {% if not product.active %}إظهار{% else %}إخفاء{% endif %}
+                </a>
                     <a href="/delete_product/{{ product.id }}" class="btn-action btn-del" onclick="return confirm('Are you sure you want to delete this item?')">Delete</a>
                 </div>
             </div>
