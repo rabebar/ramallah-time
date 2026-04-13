@@ -563,9 +563,10 @@ def dashboard():
         except:
             pass
 
-        # Credits check
-        if stats['credits'] <= 0:
-            flash("رصيدك غير كافٍ. تواصل مع الإدارة لشحن رصيدك.", "error")
+                # Subscription check
+        # نتحقق مما إذا كان الاشتراك فعالاً أو في فترة السماح
+        if not stats.get('sub', {}).get('is_active'):
+            flash("انتهى اشتراكك أو لم يتم تفعيله بعد. يرجى التواصل مع الإدارة للتجديد.", "error")
             return redirect(url_for('dashboard'))
 
         # Rate limit
@@ -608,16 +609,14 @@ def save_product():
     user_id = session.get('user_id')
     if not user_id: return redirect(url_for('login'))
 
+        # Subscription check
+    user_stats = get_user_stats(user_id)
+    if not user_stats.get('sub', {}).get('is_active'):
+        flash("انتهى اشتراكك. لا يمكنك حفظ منتجات جديدة.", "error")
+        return redirect(url_for('dashboard'))
+
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT credits FROM users WHERE id = %s", (user_id,))
-    row = cursor.fetchone()
-    user_credits = row['credits'] if row else 0
-
-    if user_credits <= 0:
-        conn.close()
-        flash("رصيدك غير كافٍ لحفظ هذا المنتج.", "error")
-        return redirect(url_for('dashboard'))
 
     name = request.form.get('name', 'Product')
     price = request.form.get('price', 0)
@@ -669,7 +668,7 @@ def save_product():
                 INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme, category, background, final_image_url, sku, stock_qty, active)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE)
             """, (store['id'], name, price, processed_image_url, original_image_url, template_style, theme, category, background, final_fname, sku, stock_qty))
-            cursor.execute("UPDATE users SET credits = credits - 1 WHERE id = %s", (user_id,))
+            
             conn.commit()
             flash("تم حفظ المنتج بنجاح في متجرك!", "success")
             return redirect(url_for('admin'))
