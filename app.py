@@ -1298,6 +1298,53 @@ def super_admin_add_credits():
     return redirect(url_for('super_admin'))
 
 # =========================
+# Dynamic Store Manifest (PWA)
+# =========================
+@app.route('/store-manifest/<slug>')
+def store_manifest(slug):
+    import json as _json
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM stores WHERE LOWER(slug) = %s", (slug.lower(),))
+    store = cur.fetchone()
+    conn.close()
+
+    if not store:
+        return jsonify({"error": "store not found"}), 404
+
+    store_url = f"/store/{store['slug']}"
+    manifest = {
+        "name": store['name'],
+        "short_name": store['name'][:12],
+        "description": store.get('bio') or f"متجر {store['name']} - اطلب الآن عبر واتساب",
+        "start_url": store_url,
+        "scope": store_url,
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#1A2238",
+        "orientation": "portrait",
+        "icons": [
+            {
+                "src": f"/static/uploads/{store['logo_url']}" if store.get('logo_url') else "/static/rt_logo_192.png",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any maskable"
+            },
+            {
+                "src": f"/static/uploads/{store['logo_url']}" if store.get('logo_url') else "/static/rt_logo_512.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any maskable"
+            }
+        ]
+    }
+    from flask import Response
+    return Response(
+        _json.dumps(manifest, ensure_ascii=False),
+        mimetype='application/manifest+json'
+    )
+
+# =========================
 # Static: Service Worker
 # =========================
 @app.route('/sw.js')

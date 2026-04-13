@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1A2238">
-    <link rel="manifest" href="/static/manifest.json">
+    <link rel="manifest" href="/store-manifest/{{ store.slug }}">
     <title>{{ store.name }} | اطلب الآن عبر واتساب</title>
 
     <meta property="og:type" content="website">
@@ -871,7 +871,7 @@
             const mContent = document.getElementById('mStyleContent');
             const mDesc = document.getElementById('mDesc');
             document.getElementById('mName').innerText = name;
-            document.getElementById('mPrice').innerText = '₪ ' + price;
+            document.getElementById('mPrice').innerText = CURRENCY + ' ' + price;
             document.getElementById('mImg').src = img;
             document.getElementById('mSku').innerText = sku ? ('SKU: ' + sku) : '';
             canvas.className = 'modal-canvas theme-' + theme + ' style-' + style;
@@ -893,9 +893,9 @@
                 canvas.style.backgroundImage = '';
             }
 
-            if (style === 'modern') { mContent.innerHTML = `<div class="m-name-overlay">${name}</div><div class="m-price-overlay">₪ ${price}</div>`; }
-            else if (style === 'glass') { mContent.innerHTML = `<div class="glass-box"><div>${name}</div><div style="font-weight:700; color:var(--gold')">₪ ${price}</div></div>`; }
-            else if (style === 'minimal') { mContent.innerHTML = `<div class="glass-bar"><span>${name}</span><span>₪ ${price}</span></div>`; }
+            if (style === 'modern') { mContent.innerHTML = `<div class="m-name-overlay">${name}</div><div class="m-price-overlay">${CURRENCY} ${price}</div>`; }
+            else if (style === 'glass') { mContent.innerHTML = `<div class="glass-box"><div>${name}</div><div style="font-weight:700; color:var(--gold')">${CURRENCY} ${price}</div></div>`; }
+            else if (style === 'minimal') { mContent.innerHTML = `<div class="glass-bar"><span>${name}</span><span>${CURRENCY} ${price}</span></div>`; }
             else { mContent.innerHTML = ''; }
 
             if (desc && desc.trim() !== "") { mDesc.innerText = desc; mDesc.style.display = 'block'; } else { mDesc.style.display = 'none'; }
