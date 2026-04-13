@@ -698,7 +698,8 @@ def admin():
     orders = []
     analytics = {}
     if store:
-        cursor.execute("SELECT * FROM products WHERE store_id = %s ORDER BY id DESC", (store['id'],))
+                # جلب المنتجات النشطة فقط (التي لم يتم إخفاؤها)
+        cursor.execute("SELECT * FROM products WHERE store_id = %s AND active = TRUE ORDER BY id DESC", (store['id'],))
         products = cursor.fetchall()
 
         cursor.execute("""
@@ -810,20 +811,13 @@ def delete_product_route(id):
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM products WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)", (id, user_id))
+    # بدل الحذف، نقوم بإخفاء المنتج (Soft Delete)
+    # هذا يمنع الخطأ ويحافظ على سجل الطلبات، والمنتج يختفي من المتجر واللوحة
+    cursor.execute("UPDATE products SET active = FALSE WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)", (id, user_id))
     conn.commit()
     conn.close()
-    flash("تم الحذف.", "info")
+    flash("تمت إزالة المنتج بنجاح.", "info")
     return redirect(url_for('admin'))
-
-# ... (Rest of the file remains the same: update_store, view_store, beacon, place_order, super_admin, etc.)
-# For brevity, I will not repeat the rest of the file if it's very long, 
-# but assume the rest (from 'update_store' to the end) is copied exactly as it was in the provided file.
-
-# IMPORTANT: If the file was cut off, I must paste the rest.
-# I will assume the user wants the FULL file. I will output the rest now.
-
-# ... [Continuing from delete_product_route] ...
 
 @app.route('/update_store', methods=['POST'])
 def update_store():
