@@ -223,11 +223,29 @@
         </div>
     </div>
 {% endif %}
+<!-- PWA Install Banner for Merchant Dashboard -->
+<div id="pwaMerchantBanner" style="display: none; background: #fff; padding: 20px; border-radius: 20px; border: 2px solid var(--gold); margin-bottom: 25px; align-items: center; gap: 15px; box-shadow: var(--shadow-premium); animation: slideIn 0.5s ease;">
+    <div style="width: 48px; height: 48px; background: var(--navy-deep); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0;">
+        <i data-lucide="download-cloud"></i>
+    </div>
+    <div style="flex: 1;">
+        <h3 id="pwaTitle" style="font-size: 15px; font-weight: 800; color: var(--navy-deep); margin-bottom: 4px;">تثبيت لوحة التحكم على هاتفك</h3>
+        <p id="pwaDesc" style="font-size: 12px; color: var(--text-muted); font-weight: 500;">تمكن من معالجة صورك والوصول لمتجرك بضغطة واحدة من شاشة هاتفك.</p>
+    </div>
+    <!-- زر للأندرويد (تثبيت مباشر) -->
+    <button id="installMerchantBtn" style="display: none; background: var(--gold); color: #fff; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.3s; white-space: nowrap;">تثبيت الآن</button>
+    <!-- نص إرشادي للآيفون -->
+    <div id="iosInstallInfo" style="display: none; font-size: 12px; color: var(--navy-deep); font-weight: 700; text-align: center;">
+        اضغط <i data-lucide="share" style="width:16px; vertical-align:middle;"></i> ثم "Add to Home Screen"
+    </div>
+    <button onclick="document.getElementById('pwaMerchantBanner').style.display='none'" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 5px;">
+        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+    </button>
+</div>
 
 <div class="welcome-header">
     <h1>Welcome back, <span style="color: var(--text-main);">Creator</span></h1>
 </div>
-
 <!-- منطقة رفع الصور مع دعم السحب والإفلات (مستعادة من الملف القديم) -->
 <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
     <div class="upload-zone-icon">
@@ -376,5 +394,48 @@
     });
 
     lucide.createIcons();
+    // --- منطق تثبيت التطبيق للتاجر (PWA Dashboard) ---
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+    // لا تظهر البانر إذا كان التطبيق مثبتاً بالفعل
+    if (!isStandalone) {
+        const merchantBanner = document.getElementById('pwaMerchantBanner');
+        
+        if (isIOS) {
+            // مستخدم آيفون: أظهر النص الإرشادي فقط
+            if (merchantBanner) {
+                merchantBanner.style.display = 'flex';
+                document.getElementById('iosInstallInfo').style.display = 'block';
+                document.getElementById('installMerchantBtn').style.display = 'none';
+            }
+        } else {
+            // مستخدم أندرويد/كروم: التعامل مع حدث التثبيت المباشر
+            let deferredPromptMerchant;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPromptMerchant = e;
+                if (merchantBanner) {
+                    merchantBanner.style.display = 'flex';
+                    document.getElementById('installMerchantBtn').style.display = 'block';
+                    document.getElementById('iosInstallInfo').style.display = 'none';
+                }
+            });
+
+            const merchantInstallBtn = document.getElementById('installMerchantBtn');
+            if (merchantInstallBtn) {
+                merchantInstallBtn.addEventListener('click', async () => {
+                    if (deferredPromptMerchant) {
+                        deferredPromptMerchant.prompt();
+                        const { outcome } = await deferredPromptMerchant.userChoice;
+                        if (outcome === 'accepted') {
+                            merchantBanner.style.display = 'none';
+                        }
+                        deferredPromptMerchant = null;
+                    }
+                });
+            }
+        }
+    }
 </script>
 {% endblock %}
