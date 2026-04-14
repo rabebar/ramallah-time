@@ -346,6 +346,20 @@
         /* Category Bar Scroll & Drag */
         .category-bar { cursor: grab; user-select: none; }
         .category-bar:active { cursor: grabbing; }
+                /* عدسة التكبير (Zoom Lens) */
+        .img-zoom-lens {
+            position: absolute;
+            width: 150px;      /* حجم العدسة */
+            height: 150px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            background-repeat: no-repeat;
+            border-radius: 8px;
+            z-index: 50;
+            pointer-events: none; /* لكي لا تعيق حركة الماوس */
+            display: none;
+            cursor: none;
+        }
     </style>
 </head>
 <body>
@@ -580,6 +594,8 @@
             <button class="modal-close" onclick="closeModal()"><i data-lucide="x"></i></button>
             <div id="modalCanvas" class="modal-canvas">
                 <img id="mImg" src="" alt="">
+                            <!-- عدسة التكبير -->
+            <div id="zoomLens" class="img-zoom-lens"></div>
                 <div id="mStyleContent"></div>
             </div>
             <div class="modal-info">
@@ -862,17 +878,32 @@
             }
         }
 
-        // Product modal
+                // Product modal
         let currentProduct = null;
+        
         function openModal(id, name, price, img, desc, theme, style, category, background, sku, canAdd){
             const newUrl = window.location.pathname + '?open_product=' + id;
             window.history.pushState({ path: newUrl }, '', newUrl);
             const canvas = document.getElementById('modalCanvas');
             const mContent = document.getElementById('mStyleContent');
             const mDesc = document.getElementById('mDesc');
+            const mImg = document.getElementById('mImg'); // تعديل: تخزين العنصر
+            
             document.getElementById('mName').innerText = name;
             document.getElementById('mPrice').innerText = CURRENCY + ' ' + price;
-            document.getElementById('mImg').src = img;
+            
+            // === إضافة: تهيئة عدسة التكبير ===
+            const zoomFactor = 2.5; // نسبة التكبير
+            mImg.onload = function() {
+                // التأكد من أن متغير العدسة موجود (معرف في الخطوة 4 السابقة)
+                if (typeof zoomLens !== 'undefined' && zoomLens) {
+                     zoomLens.style.backgroundImage = `url('${img}')`;
+                     zoomLens.style.backgroundSize = `${mImg.width * zoomFactor}px ${mImg.height * zoomFactor}px`;
+                }
+            };
+            mImg.src = img; // تعديل: تعيين المصدر بعد تهيئة onload
+            // ===============================
+            
             document.getElementById('mSku').innerText = sku ? ('SKU: ' + sku) : '';
             canvas.className = 'modal-canvas theme-' + theme + ' style-' + style;
 
@@ -916,7 +947,6 @@
             lucide.createIcons();
             sendBeacon('product_view', Number(id));
         }
-
         function closeModal(event) {
             window.history.pushState({}, '', window.location.pathname);
             document.getElementById('productModal').style.display = 'none';
@@ -936,6 +966,54 @@
                 const productCard = document.querySelector(`[onclick*="openModal"][onclick*="'${productIdToOpen}'"]`) || document.querySelector(`div[onclick*="${productIdToOpen}"]`);
                 if (productCard) { productCard.click(); productCard.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
             }
+        });
+
+                // === منطق عدسة التكبير ===
+        const modalCanvasForZoom = document.getElementById('modalCanvas');
+        
+        // عند دخول الماوس لمنطقة الصورة
+        modalCanvasForZoom.addEventListener('mouseenter', () => {
+            zoomLens.style.display = 'block';
+        });
+
+        // عند خروج الماوس
+        modalCanvasForZoom.addEventListener('mouseleave', () => {
+            zoomLens.style.display = 'none';
+        });
+
+        // عند تحريك الماوس
+        modalCanvasForZoom.addEventListener('mousemove', (e) => {
+            const img = document.getElementById('mImg');
+            const rect = img.getBoundingClientRect();
+            
+            // موقع الماوس بالنسبة للصورة
+            let x = e.clientX - rect.left;
+            let y = e.clientY - rect.top;
+            
+            // أبعاد العدسة
+            let lw = zoomLens.offsetWidth;
+            let lh = zoomLens.offsetHeight;
+
+            // حساب موقع العدسة (لكي لا تخرج عن حدود الصورة)
+            let lx = x - lw/2;
+            let ly = y - lh/2;
+            
+            // تثبيت الحدود
+            if (lx < 0) lx = 0;
+            if (lx > rect.width - lw) lx = rect.width - lw;
+            if (ly < 0) ly = 0;
+            if (ly > rect.height - lh) ly = rect.height - lh;
+
+            // تحريك العدسة
+            zoomLens.style.left = lx + "px";
+            zoomLens.style.top = ly + "px";
+
+            // حساب موقع الخلفية المكبرة
+            // المعادلة: (موقع الماوس × التكبير) - (نصف حجم العدسة)
+            let bgX = - (x * zoomFactor) + lw/2;
+            let bgY = - (y * zoomFactor) + lh/2;
+
+            zoomLens.style.backgroundPosition = `${bgX}px ${bgY}px`;
         });
 
         function filterCategory(category, btn) {
