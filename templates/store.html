@@ -507,6 +507,11 @@
         </div>
         <div id="cartItems" class="cart-body"></div>
         <div class="cart-footer">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                <span>المجموع:</span>
+                <strong id="cartSubtotal">₪ 0</strong>
+            </div>
+            <div class="cart-note">لا تشمل رسوم التوصيل</div>
             <div class="field">
                 <label>الاسم</label>
                 <input id="c_name" type="text" placeholder="الاسم الكامل (مطلوب)">
@@ -521,7 +526,7 @@
             </div>
             <div class="field">
                 <label>ملاحظات</label>
-                <input id="c_notes" type="text" placeholder="أي ملاحظات إضافية (اختياري)">
+                <textarea id="c_notes" rows="2" placeholder="أي ملاحظات إضافية (اختياري)"></textarea>
             </div>
             <button class="wa-order-btn" onclick="placeOrder()">اطلب عبر واتساب</button>
         </div>
