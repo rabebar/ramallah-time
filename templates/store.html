@@ -55,12 +55,8 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; }
 
-        .logo-text, .welcome-text h1, .section-title {
-            font-family: 'Playfair Display', 'Noto Naskh Arabic', serif;
-        }
-        .p-info .p-name, .modal-info h2 {
-            font-family: 'Noto Naskh Arabic', serif;
-        }
+        .logo-text, .welcome-text h1, .section-title { font-family: 'Playfair Display', 'Noto Naskh Arabic', serif; }
+        .p-info .p-name, .modal-info h2 { font-family: 'Noto Naskh Arabic', serif; }
 
         body { background-color: var(--gray-bg); color: var(--text-main); min-height: 100vh; display: flex; letter-spacing: -0.01em; overflow-x: hidden; }
 
@@ -70,18 +66,7 @@
 
         .logo-box { width: 64px; height: 64px; background: var(--gold-light); border-radius: 18px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 8px 20px rgba(242, 201, 76, 0.3); }
 
-        .logo-text { 
-            color: var(--white); 
-            font-weight: 700; 
-            letter-spacing: -0.5px; 
-            display: block; 
-            max-width: 100%; 
-            line-height: 1.2; 
-            white-space: normal; 
-            overflow-wrap: anywhere; 
-            word-break: break-word; 
-            font-size: clamp(16px, 2.2vw, 24px); 
-        }
+        .logo-text { color: var(--white); font-weight: 700; letter-spacing: -0.5px; display: block; max-width: 100%; line-height: 1.2; white-space: normal; overflow-wrap: anywhere; word-break: break-word; font-size: clamp(16px, 2.2vw, 24px); }
 
         .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 12px; }
 
@@ -105,13 +90,7 @@
         body.ltr .modal-canvas.style-modern .m-name-overlay { right: auto; left: 30px; }
         body.ltr .modal-canvas.style-modern .m-price-overlay { left: auto; right: 30px; }
 
-        .main-content { 
-            flex: 1; 
-            margin-right: var(--sidebar-w);
-            padding: 40px 60px;
-            max-width: 100%; 
-            transition: var(--transition); 
-        }
+        .main-content { flex: 1; margin-right: var(--sidebar-w); padding: 40px 60px; max-width: 100%; transition: var(--transition); }
 
         .welcome-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 48px; }
         .welcome-text h1 { font-size: 32px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
@@ -128,24 +107,8 @@
         .product-card { background: var(--white); border-radius: 32px; border: 1px solid var(--border); overflow: hidden; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-card); cursor: pointer; display: flex; flex-direction: column; position: relative; }
         .product-card:hover { transform: translateY(-12px); box-shadow: var(--shadow-premium); }
 
-        .img-container { 
-            width: 100%; 
-            aspect-ratio: var(--card-ratio);
-            background: #F8FAFC; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            overflow: hidden; 
-            position: relative; 
-        }
-        .img-container img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: var(--img-fit);
-            padding: var(--img-pad);
-            transition: 0.3s; 
-            background: #fff; 
-        }
+        .img-container { width: 100%; aspect-ratio: var(--card-ratio); background: #F8FAFC; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .img-container img { width: 100%; height: 100%; object-fit: var(--img-fit); padding: var(--img-pad); transition: 0.3s; background: #fff; }
         .product-card:hover .img-container img { transform: none; }
         .ratio-square   { --card-ratio: 1/1; }
         .ratio-portrait { --card-ratio: 4/5; }
@@ -160,34 +123,14 @@
         .p-info .p-name { font-size: 20px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
         .p-info .p-meta { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
 
-        .badge-soldout {
-            position: absolute; top: 12px; left: 12px;
-            background: #ef4444; color: #fff; font-weight: 800;
-            padding: 6px 10px; border-radius: 999px; font-size: 12px; z-index: 5;
-        }
+        .badge-soldout { position: absolute; top: 12px; left: 12px; background: #ef4444; color: #fff; font-weight: 800; padding: 6px 10px; border-radius: 999px; font-size: 12px; z-index: 5; }
         .card-disabled { opacity: 0.55; pointer-events: none; }
 
         /* Cart FAB and Drawer */
-        .cart-fab {
-            position: fixed; bottom: 24px; right: 24px;
-            width: 56px; height: 56px; border-radius: 50%;
-            background: var(--navy-deep); color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 5000; cursor: pointer;
-        }
-        .cart-fab .count {
-            position: absolute; top: -6px; left: -6px; background: #ef4444; color: #fff;
-            width: 22px; height: 22px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800;
-        }
-        .cart-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.35);
-            display: none; z-index: 4999;
-        }
-        .cart-drawer {
-            position: fixed; top: 0; bottom: 0; right: 0; width: min(420px, 92vw);
-            background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.15);
-            transform: translateX(100%); transition: transform 0.35s ease; z-index: 6000; display: flex; flex-direction: column;
-        }
+        .cart-fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--navy-deep); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 5000; cursor: pointer; }
+        .cart-fab .count { position: absolute; top: -6px; left: -6px; background: #ef4444; color: #fff; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+        .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: none; z-index: 4999; }
+        .cart-drawer { position: fixed; top: 0; bottom: 0; right: 0; width: min(420px, 92vw); background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.15); transform: translateX(100%); transition: transform 0.35s ease; z-index: 6000; display: flex; flex-direction: column; }
         .cart-drawer.open { transform: translateX(0); }
         .cart-header { padding: 16px 16px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
         .cart-body { padding: 12px 16px; flex: 1; overflow-y: auto; }
@@ -205,12 +148,8 @@
         .cart-note { font-size: 12px; color: #64748b; margin: 6px 0 10px; }
         .field { margin-bottom: 8px; }
         .field label { display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; }
-        .field input, .field textarea {
-            width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; font-size: 14px; outline: none;
-        }
-        .wa-order-btn {
-            width: 100%; background: var(--navy-deep); color: #fff; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer;
-        }
+        .field input, .field textarea { width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; font-size: 14px; outline: none; }
+        .wa-order-btn { width: 100%; background: var(--navy-deep); color: #fff; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; }
 
         .mobile-header { display: none; background: var(--navy-gradient); padding: 12px 20px; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 3000; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         .mobile-header .logo-box { width: 36px; height: 36px; background: var(--gold-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; }
@@ -229,11 +168,7 @@
             .sidebar { display: none !important; }
             .main-content { margin-right: 0 !important; margin-left: 0 !important; padding: 0 15px 120px 15px !important; width: 100% !important; max-width: 100% !important; }
             .mobile-header { display: flex !important; background: #fff; padding: 12px 20px; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 2000; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-            .mobile-header .logo-text { 
-                font-size: 18px; color: #1A2238; font-weight: 700; 
-                position: absolute; left: 50%; transform: translateX(-50%); 
-                max-width: 55vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            }
+            .mobile-header .logo-text { font-size: 18px; color: #1A2238; font-weight: 700; position: absolute; left: 50%; transform: translateX(-50%); max-width: 55vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             .mobile-header .logo-box { width: 32px; height: 32px; background: #C5A059; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; }
             .welcome-header { background: #fff !important; border-radius: 24px; padding: 25px !important; margin: 20px 0 !important; box-shadow: 0 10px 30px rgba(0,0,0,0.04); text-align: right !important; align-items: flex-start !important; border: 1px solid #eee; flex-direction: column !important; }
             .welcome-text h1 { font-size: 24px !important; margin-bottom: 10px; color: #1A2238; }
@@ -256,9 +191,7 @@
             .about-box { padding: 25px; border-radius: 24px; font-size: 14px; }
         }
     
-        @media (min-width: 1200px) {
-            :root { --sidebar-w: 320px; }
-        }
+        @media (min-width: 1200px) { :root { --sidebar-w: 320px; } }
     
         @media (min-width: 1024px) {
             .main-content { max-width: 980px; }
@@ -268,9 +201,7 @@
             .product-card { border-radius: 24px; }
         }
 
-        @media (min-width: 1440px) {
-            .main-content { max_width: 1120px; }
-        }
+        @media (min-width: 1440px) { .main-content { max_width: 1120px; } }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.94); backdrop-filter: blur(30px); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
         .modal-card { background: #fff; width: 100%; max-width: 540px; border-radius: 40px; border: 1px solid var(--border); box-shadow: var(--shadow-premium); overflow-y: auto; position: relative; max-height: 92vh; animation: modalIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
@@ -294,72 +225,36 @@
 
         .wa-btn { display: flex; align-items: center; justify-content: center; gap: 12px; background: var(--navy-deep); color: #fff; padding: 16px; border-radius: 16px; text-decoration: none; font-weight: 800; transition: 0.3s; font-size: 15px; cursor: pointer; border: none; }
         .wa-btn:hover { background: #000; transform: translateY(-2px); }
+        
         /* شريط التواصل الثابت لنسخة الكمبيوتر */
         @media (min-width: 1025px) {
-            .about-box { margin-bottom: 120px !important; } /* رفع المحتوى لكي لا يختفي خلف الشريط */
+            .about-box { margin-bottom: 120px !important; }
             .quick-actions-fixed {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                width: 100%; /* العرض كامل لضمان التوازن التلقائي */
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(10px);
-                border-top: 1px solid #eee;
-                display: flex;
-                justify-content: center;
-                gap: 40px;
-                padding: 20px;
-                z-index: 999; /* أقل من السايدبار لكي لا يغطيه */
-                box-shadow: 0 -5px 15px rgba(0,0,0,0.02);
+                position: fixed; bottom: 0; left: 0; width: 100%;
+                background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+                border-top: 1px solid #eee; display: flex; justify-content: center;
+                gap: 40px; padding: 20px; z-index: 999; box-shadow: 0 -5px 15px rgba(0,0,0,0.02);
             }
-            .action-item-fixed {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                text-decoration: none;
-                color: var(--text-main);
-                font-size: 14px;
-                font-weight: 700;
-                transition: 0.3s;
-            }
+            .action-item-fixed { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-main); font-size: 14px; font-weight: 700; transition: 0.3s; }
             .action-item-fixed:hover { color: var(--gold); transform: translateY(-2px); }
             .action-item-fixed i { width: 20px; height: 20px; }
-            
-            #home > .section-title[data-t="quick_links"],
-            #home > .quick-actions { display: none; }
+            #home > .section-title[data-t="quick_links"], #home > .quick-actions { display: none; }
         }
         
-        /* إخفاء الشريط الجديد في نسخة الموبايل */
-        @media (max-width: 1024px) {
-            .quick-actions-fixed { display: none; }
-        }
+        @media (max-width: 1024px) { .quick-actions-fixed { display: none; } }
 
-        .modal-canvas.style-modern,
-        .modal-canvas.style-glass,
-        .modal-canvas.style-minimal { padding-bottom: 84px; }
-        .modal-canvas .m-name-overlay,
-        .modal-canvas .m-price-overlay,
-        .modal-canvas .glass-box,
-        .modal-canvas .glass-bar { z-index: 3; pointer-events: none; }
+        .modal-canvas.style-modern, .modal-canvas.style-glass, .modal-canvas.style-minimal { padding-bottom: 84px; }
+        .modal-canvas .m-name-overlay, .modal-canvas .m-price-overlay, .modal-canvas .glass-box, .modal-canvas .glass-bar { z-index: 3; pointer-events: none; }
         .modal-canvas.style-glass .glass-box { left: 24px; right: 24px; bottom: 20px; }
 
         /* Category Bar Scroll & Drag */
         .category-bar { cursor: grab; user-select: none; }
         .category-bar:active { cursor: grabbing; }
-                /* عدسة التكبير (Zoom Lens) */
-        .img-zoom-lens {
-            position: absolute;
-            width: 150px;      /* حجم العدسة */
-            height: 150px;
-            border: 2px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-            background-repeat: no-repeat;
-            border-radius: 8px;
-            z-index: 50;
-            pointer-events: none; /* لكي لا تعيق حركة الماوس */
-            display: none;
-            cursor: none;
-        }
+        
+        /* تكبير الصورة (Zoom) */
+        #mImg { cursor: zoom-in; transition: transform 0.2s ease; transform-origin: center center; user-select: none; -webkit-user-drag: none; }
+        #mImg.zoomed { cursor: grab; }
+        #mImg.zoomed:active { cursor: grabbing; }
     </style>
 </head>
 <body>
@@ -594,8 +489,6 @@
             <button class="modal-close" onclick="closeModal()"><i data-lucide="x"></i></button>
             <div id="modalCanvas" class="modal-canvas">
                 <img id="mImg" src="" alt="">
-                            <!-- عدسة التكبير -->
-            <div id="zoomLens" class="img-zoom-lens"></div>
                 <div id="mStyleContent"></div>
             </div>
             <div class="modal-info">
@@ -723,18 +616,13 @@
 
         window.addEventListener('DOMContentLoaded', () => { setLanguage(currentLang); });
 
-        // منطق تثبيت التطبيق (PWA) المطور
+        // PWA Install
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            // منع المتصفح من إظهار النافذة التلقائية
             e.preventDefault();
-            // حفظ الحدث لاستخدامه عند ضغط الزر
             deferredPrompt = e;
-            // إظهار البانر الخاص بنا فقط على الموبايل
             const pwaBanner = document.getElementById('pwaBanner');
-            if (pwaBanner && window.innerWidth <= 1024) {
-                pwaBanner.style.display = 'flex';
-            }
+            if (pwaBanner && window.innerWidth <= 1024) { pwaBanner.style.display = 'flex'; }
         });
 
         const installBtnElement = document.getElementById('installBtn');
@@ -743,28 +631,21 @@
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
                     const { outcome } = await deferredPrompt.userChoice;
-                    console.log('RT Studio: Install outcome', outcome);
-                    // إخفاء البانر بعد التفاعل
                     document.getElementById('pwaBanner').style.display = 'none';
                     deferredPrompt = null;
                 }
             });
         }
 
-        // Beacon analytics
+        // Beacon Analytics
         function sendBeacon(event, productId){
             const url = `/e?e=${encodeURIComponent(event)}&store_id=${STORE_ID}` + (productId?`&product_id=${productId}`:'');
-            if (navigator.sendBeacon){
-                const blob = new Blob([], {type:'application/x-www-form-urlencoded'});
-                navigator.sendBeacon(url, blob);
-            } else {
-                fetch(url, {method:'GET', keepalive:true});
-            }
+            if (navigator.sendBeacon){ navigator.sendBeacon(url, new Blob([], {type:'application/x-www-form-urlencoded'})); }
+            else { fetch(url, {method:'GET', keepalive:true}); }
         }
-        // page_view
         window.addEventListener('DOMContentLoaded', ()=> sendBeacon('page_view'));
 
-        // Cart utilities
+        // Cart Utilities
         function getCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY) || "[]"); } catch(e){ return []; } }
         function saveCart(c){ localStorage.setItem(CART_KEY, JSON.stringify(c)); renderCart(); }
         function cartCount(){ return getCart().reduce((s,l)=>s+Number(l.qty||0),0); }
@@ -781,32 +662,19 @@
         function updateQty(product_id, qty){
             let c = getCart();
             const i = c.findIndex(x => x.product_id === product_id);
-            if (i >= 0){
-                c[i].qty = Math.max(1, parseInt(qty||1));
-                saveCart(c);
-            }
+            if (i >= 0){ c[i].qty = Math.max(1, parseInt(qty||1)); saveCart(c); }
         }
-        function removeLine(product_id){
-            let c = getCart().filter(x => x.product_id !== product_id);
-            saveCart(c);
-        }
+        function removeLine(product_id){ saveCart(getCart().filter(x => x.product_id !== product_id)); }
 
         function renderCart(){
             const c = getCart();
-            // update count
             const cnt = document.getElementById('cartCount');
             if (cnt) cnt.textContent = cartCount();
-
-            // render lines
             const box = document.getElementById('cartItems');
             const sub = document.getElementById('cartSubtotal');
             if (!box || !sub) return;
             box.innerHTML = '';
-            if (!c.length){
-                box.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px;">سلتك فارغة حالياً</div>';
-                sub.textContent = CURRENCY + ' 0';
-                return;
-            }
+            if (!c.length){ box.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px;">سلتك فارغة حالياً</div>'; sub.textContent = CURRENCY + ' 0'; return; }
             c.forEach(line => {
                 const row = document.createElement('div');
                 row.className = 'cart-line';
@@ -836,93 +704,75 @@
         function decQty(id){ let c=getCart(); const i=c.findIndex(x=>x.product_id===id); if(i>=0){ c[i].qty=Math.max(1,c[i].qty-1); saveCart(c);} }
         function qtyInput(id,v){ let n=parseInt(v||1); if(isNaN(n)||n<1)n=1; updateQty(id,n); }
 
-        function openCart(){
-            document.getElementById('cartOverlay').style.display='block';
-            document.getElementById('cartDrawer').classList.add('open');
-        }
-        function closeCart(){
-            document.getElementById('cartOverlay').style.display='none';
-            document.getElementById('cartDrawer').classList.remove('open');
-        }
+        function openCart(){ document.getElementById('cartOverlay').style.display='block'; document.getElementById('cartDrawer').classList.add('open'); }
+        function closeCart(){ document.getElementById('cartOverlay').style.display='none'; document.getElementById('cartDrawer').classList.remove('open'); }
 
-        // Place order -> server builds WA message and returns wa_link (not included inside message text)
         async function placeOrder(){
             const cart = getCart();
             if (!cart.length){ alert('سلتك فارغة'); return; }
             const payload = {
-                store_id: STORE_ID,
-                cart: cart.map(x => ({ product_id: x.product_id, qty: x.qty })),
+                store_id: STORE_ID, cart: cart.map(x => ({ product_id: x.product_id, qty: x.qty })),
                 customer_name: document.getElementById('c_name').value || '',
                 customer_phone: document.getElementById('c_phone').value || '',
                 customer_address: document.getElementById('c_address').value || '',
                 customer_notes: document.getElementById('c_notes').value || ''
             };
             let res;
-            try{
-                res = await fetch('/place_order', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-            }catch(e){
-                alert('تعذر الاتصال بالخادم'); return;
-            }
+            try{ res = await fetch('/place_order', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); }
+            catch(e){ alert('تعذر الاتصال بالخادم'); return; }
             const data = await res.json().catch(()=>({}));
-            if(!res.ok || !data.ok){
-                alert(data.error || 'تعذر إنشاء الطلب');
-                return;
-            }
-            // Success -> open WhatsApp link and keep cart (التاجر يؤكد لاحقاً)
-            if (data.wa_link){
-                sendBeacon('whatsapp_sent');
-                localStorage.removeItem(CART_KEY); // تصفير السلة
-                window.location = data.wa_link;
-            } else {
-                alert('تم إنشاء الطلب، لكن رقم الواتساب غير مضبوط للمتجر.');
-            }
+            if(!res.ok || !data.ok){ alert(data.error || 'تعذر إنشاء الطلب'); return; }
+            if (data.wa_link){ sendBeacon('whatsapp_sent'); localStorage.removeItem(CART_KEY); window.location = data.wa_link; }
+            else { alert('تم إنشاء الطلب، لكن رقم الواتساب غير مضبوط للمتجر.'); }
         }
 
-                // Product modal
+        // Product Modal
         let currentProduct = null;
         
+        // === متغيرات التكبير والتحريك ===
+        let currentZoom = 1;
+        let panX = 0; let panY = 0;
+        let isDragging = false;
+        let startX, startY, startPanX, startPanY;
+        
+        function resetZoom() {
+            currentZoom = 1; panX = 0; panY = 0;
+            applyTransform();
+        }
+        
+        function applyTransform() {
+            const mImg = document.getElementById('mImg');
+            mImg.style.transform = `scale(${currentZoom}) translate(${panX}px, ${panY}px)`;
+            mImg.style.cursor = currentZoom > 1 ? 'grab' : 'zoom-in';
+        }
+
         function openModal(id, name, price, img, desc, theme, style, category, background, sku, canAdd){
             const newUrl = window.location.pathname + '?open_product=' + id;
             window.history.pushState({ path: newUrl }, '', newUrl);
             const canvas = document.getElementById('modalCanvas');
             const mContent = document.getElementById('mStyleContent');
             const mDesc = document.getElementById('mDesc');
-            const mImg = document.getElementById('mImg'); // تعديل: تخزين العنصر
+            const mImg = document.getElementById('mImg');
             
             document.getElementById('mName').innerText = name;
             document.getElementById('mPrice').innerText = CURRENCY + ' ' + price;
             
-            // === إضافة: تهيئة عدسة التكبير ===
-            const zoomFactor = 2.5; // نسبة التكبير
-            mImg.onload = function() {
-                // التأكد من أن متغير العدسة موجود (معرف في الخطوة 4 السابقة)
-                if (typeof zoomLens !== 'undefined' && zoomLens) {
-                     zoomLens.style.backgroundImage = `url('${img}')`;
-                     zoomLens.style.backgroundSize = `${mImg.width * zoomFactor}px ${mImg.height * zoomFactor}px`;
-                }
-            };
-            mImg.src = img; // تعديل: تعيين المصدر بعد تهيئة onload
-            // ===============================
+            resetZoom();
+            mImg.src = img;
             
             document.getElementById('mSku').innerText = sku ? ('SKU: ' + sku) : '';
             canvas.className = 'modal-canvas theme-' + theme + ' style-' + style;
 
             const BG_IMAGES_STORE = {
-                marble:  '/static/assets/bg/marble.jpg',
-                wood:    '/static/assets/bg/wood.jpg',
-                nature:  '/static/assets/bg/nature.jpg',
-                palace:  '/static/assets/bg/palace.jpg',
-                studio:  '/static/assets/bg/studio.jpg',
-                floral:  '/static/assets/bg/floral.jpg',
+                marble:  '/static/assets/bg/marble.jpg', wood: '/static/assets/bg/wood.jpg',
+                nature:  '/static/assets/bg/nature.jpg', palace: '/static/assets/bg/palace.jpg',
+                studio:  '/static/assets/bg/studio.jpg', floral: '/static/assets/bg/floral.jpg',
                 stars:   '/static/assets/bg/stars.jpg'
             };
             if (background && background !== 'none' && BG_IMAGES_STORE[background]) {
                 canvas.style.backgroundImage = `url('${BG_IMAGES_STORE[background]}')`;
-                canvas.style.backgroundSize = 'cover';
-                canvas.style.backgroundPosition = 'center';
-            } else {
-                canvas.style.backgroundImage = '';
-            }
+                canvas.style.backgroundSize = 'cover'; canvas.style.backgroundPosition = 'center';
+            } else { canvas.style.backgroundImage = ''; }
 
             if (style === 'modern') { mContent.innerHTML = `<div class="m-name-overlay">${name}</div><div class="m-price-overlay">${CURRENCY} ${price}</div>`; }
             else if (style === 'glass') { mContent.innerHTML = `<div class="glass-box"><div>${name}</div><div style="font-weight:700; color:var(--gold-light)">${CURRENCY} ${price}</div></div>`; }
@@ -938,8 +788,7 @@
             addBtn.onclick = () => {
                 if (!currentProduct || !currentProduct.canAdd) return;
                 addToCart({ product_id: currentProduct.id, name: currentProduct.name, price: currentProduct.price, sku: currentProduct.sku, qty: 1 });
-                closeModal();
-                openCart();
+                closeModal(); openCart();
             };
 
             document.getElementById('productModal').style.display = 'flex';
@@ -947,75 +796,85 @@
             lucide.createIcons();
             sendBeacon('product_view', Number(id));
         }
+
         function closeModal(event) {
             window.history.pushState({}, '', window.location.pathname);
             document.getElementById('productModal').style.display = 'none';
             document.body.style.overflow = '';
+            resetZoom();
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-           // تسجيل الـ Service Worker بشكل سليم لتفعيل ميزة التثبيت
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('RT Studio: SW Registered!'))
-                    .catch(err => console.log('RT Studio: SW Failed!', err));
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Failed', err));
             }
             const productIdToOpen = urlParams.get('open_product');
             if (productIdToOpen) {
-                const productCard = document.querySelector(`[onclick*="openModal"][onclick*="'${productIdToOpen}'"]`) || document.querySelector(`div[onclick*="${productIdToOpen}"]`);
+                const productCard = document.querySelector(`[onclick*="openModal"][onclick*="'${productIdToOpen}'"]`);
                 if (productCard) { productCard.click(); productCard.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
             }
         });
 
-                // === منطق عدسة التكبير ===
-        const modalCanvasForZoom = document.getElementById('modalCanvas');
+        // === منطق التكبير والتحرييك (Zoom & Pan) ===
+        const mImgElement = document.getElementById('mImg');
         
-        // عند دخول الماوس لمنطقة الصورة
-        modalCanvasForZoom.addEventListener('mouseenter', () => {
-            zoomLens.style.display = 'block';
+        // 1. التكبير بعجلة الماوس
+        mImgElement.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.5 : 0.5;
+            currentZoom = Math.min(Math.max(1, currentZoom + delta), 4);
+            if(currentZoom === 1) { panX = 0; panY = 0; }
+            applyTransform();
         });
 
-        // عند خروج الماوس
-        modalCanvasForZoom.addEventListener('mouseleave', () => {
-            zoomLens.style.display = 'none';
+        // 2. النقر المزدوج
+        mImgElement.addEventListener('dblclick', () => {
+            if (currentZoom > 1) { currentZoom = 1; panX = 0; panY = 0; }
+            else { currentZoom = 2.5; }
+            applyTransform();
         });
 
-        // عند تحريك الماوس
-        modalCanvasForZoom.addEventListener('mousemove', (e) => {
-            const img = document.getElementById('mImg');
-            const rect = img.getBoundingClientRect();
-            
-            // موقع الماوس بالنسبة للصورة
-            let x = e.clientX - rect.left;
-            let y = e.clientY - rect.top;
-            
-            // أبعاد العدسة
-            let lw = zoomLens.offsetWidth;
-            let lh = zoomLens.offsetHeight;
-
-            // حساب موقع العدسة (لكي لا تخرج عن حدود الصورة)
-            let lx = x - lw/2;
-            let ly = y - lh/2;
-            
-            // تثبيت الحدود
-            if (lx < 0) lx = 0;
-            if (lx > rect.width - lw) lx = rect.width - lw;
-            if (ly < 0) ly = 0;
-            if (ly > rect.height - lh) ly = rect.height - lh;
-
-            // تحريك العدسة
-            zoomLens.style.left = lx + "px";
-            zoomLens.style.top = ly + "px";
-
-            // حساب موقع الخلفية المكبرة
-            // المعادلة: (موقع الماوس × التكبير) - (نصف حجم العدسة)
-            let bgX = - (x * zoomFactor) + lw/2;
-            let bgY = - (y * zoomFactor) + lh/2;
-
-            zoomLens.style.backgroundPosition = `${bgX}px ${bgY}px`;
+        // 3. السحب بالماوس
+        mImgElement.addEventListener('mousedown', (e) => {
+            if (currentZoom <= 1) return;
+            isDragging = true;
+            startX = e.clientX; startY = e.clientY;
+            startPanX = panX; startPanY = panY;
+            mImgElement.style.cursor = 'grabbing';
         });
 
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            panX = startPanX + (e.clientX - startX);
+            panY = startPanY + (e.clientY - startY);
+            applyTransform();
+        });
+
+        window.addEventListener('mouseup', () => { isDragging = false; applyTransform(); });
+
+        // 4. السحب باللمس (Mobile)
+        mImgElement.addEventListener('touchstart', (e) => {
+            if (currentZoom <= 1) return;
+            if (e.touches.length === 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+                startPanX = panX; startPanY = panY;
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            if (e.touches.length === 1) {
+                panX = startPanX + (e.touches[0].clientX - startX);
+                panY = startPanY + (e.touches[0].clientY - startY);
+                applyTransform();
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchend', () => { isDragging = false; });
+
+        // الفلاتر والباقي
         function filterCategory(category, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => { b.style.background = '#fff'; b.style.color = 'var(--text-main)'; b.style.borderColor = '#e2e8f0'; });
             btn.style.background = 'var(--gold)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--gold)';
@@ -1030,50 +889,24 @@
             const card = img.closest('.product-card');
             const box  = img.parentElement;
             const w = img.naturalWidth, h = img.naturalHeight, r = w/h;
-
-            if (card && card.classList.contains('fit-auto')) {
-                if (r > 1.6 || r < 0.7) card.classList.add('fit-contain'); else card.classList.add('fit-cover');
-            }
-            if (card && card.classList.contains('ratio-auto') && box) {
-                box.style.aspectRatio = `${w}/${h}`;
-            }
+            if (card && card.classList.contains('fit-auto')) { if (r > 1.6 || r < 0.7) card.classList.add('fit-contain'); else card.classList.add('fit-cover'); }
+            if (card && card.classList.contains('ratio-auto') && box) { box.style.aspectRatio = `${w}/${h}`; }
         }
         window.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.img-container img').forEach(img=>{
-                if (img.complete) tuneCardByImage(img);
-                else img.addEventListener('load', ()=>tuneCardByImage(img), {once:true});
+            document.querySelectorAll('.img-container img').forEach(img => {
+                if (img.complete) tuneCardByImage(img); else img.addEventListener('load', () => tuneCardByImage(img), {once:true});
             });
             renderCart();
         });
 
-        // تفعيل السحب بالماوس لشريط الأقسام (Desktop Drag Scroll)
+        // Drag Scroll for Category Bar
         const slider = document.getElementById('categoryBar');
-        let isDown = false;
-        let startX;
-        let scrollLeft;
-
+        let isDown = false; let scrollLeft; let startX;
         if (slider) {
-            slider.addEventListener('mousedown', (e) => {
-                isDown = true;
-                slider.classList.add('active');
-                startX = e.pageX - slider.offsetLeft;
-                scrollLeft = slider.scrollLeft;
-            });
-            slider.addEventListener('mouseleave', () => {
-                isDown = false;
-                slider.classList.remove('active');
-            });
-            slider.addEventListener('mouseup', () => {
-                isDown = false;
-                slider.classList.remove('active');
-            });
-            slider.addEventListener('mousemove', (e) => {
-                if (!isDown) return;
-                e.preventDefault();
-                const x = e.pageX - slider.offsetLeft;
-                const walk = (x - startX) * 2; // سرعة السحب
-                slider.scrollLeft = scrollLeft - walk;
-            });
+            slider.addEventListener('mousedown', (e) => { isDown = true; slider.classList.add('active'); startX = e.pageX - slider.offsetLeft; scrollLeft = slider.scrollLeft; });
+            slider.addEventListener('mouseleave', () => { isDown = false; slider.classList.remove('active'); });
+            slider.addEventListener('mouseup', () => { isDown = false; slider.classList.remove('active'); });
+            slider.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); const x = e.pageX - slider.offsetLeft; slider.scrollLeft = scrollLeft - (x - startX) * 2; });
         }
     </script>
 </body>
