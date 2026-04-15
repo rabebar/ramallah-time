@@ -1027,6 +1027,9 @@ def place_order():
         "address": data.get("customer_address"),
         "notes": data.get("customer_notes"),
     }
+    # صمام أمان السيرفر: منع تسجيل الطلب إذا كانت البيانات الأساسية مفقودة
+    if not customer["name"] or not customer["phone"] or not customer["address"]:
+        return jsonify({"error": "الاسم، الهاتف، والعنوان حقول إجبارية"}), 400
 
     conn = get_db_connection()
     cur = conn.cursor()

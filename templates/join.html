@@ -1,30 +1,4 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RT Studio — افتح متجرك الاحترافي</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --purple: #5B3FD4;
-  --purple-light: #7B5FE8;
-  --gold: #D4AF37;
-  --gold-light: #F2C94C;
-  --black: #0A0A0F;
-  --dark: #12101E;
-  --dark2: #1C1830;
-  --text: #E8E4FF;
-  --muted: rgba(232,228,255,0.55);
-  --border: rgba(91,63,212,0.25);
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body { background: var(--black); color: var(--text); font-family: 'IBM Plex Sans Arabic', sans-serif; overflow-x: hidden; min-height: 100vh; }
-body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(91,63,212,0.18) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(91,63,212,0.12) 0%, transparent 55%); pointer-events: none; z-index: 0; }
-body.ltr { direction: ltr; }
-.container { max-width: 1100px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 1; }
-
+<!DOCTYPE html> <html lang="ar" dir="rtl"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>RT Studio — افتح متجرك الاحترافي</title> <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet"> <style> :root { --purple: #5B3FD4; --purple-light: #7B5FE8; --gold: #D4AF37; --gold-light: #F2C94C; --black: #0A0A0F; --dark: #12101E; --dark2: #1C1830; --text: #E8E4FF; --muted: rgba(232,228,255,0.55); --border: rgba(91,63,212,0.25); } *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; } html { scroll-behavior: smooth; } body { background: var(--black); color: var(--text); font-family: 'IBM Plex Sans Arabic', sans-serif; overflow-x: hidden; min-height: 100vh; } body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(91,63,212,0.18) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(91,63,212,0.12) 0%, transparent 55%); pointer-events: none; z-index: 0; } body.ltr { direction: ltr; } .container { max-width: 1100px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 1; }
 nav { padding: 24px 0; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: relative; z-index: 10; }
 .nav-logo { display: flex; align-items: center; gap: 14px; text-decoration: none; }
 .nav-logo img { width: 44px; height: 44px; border-radius: 12px; }
@@ -115,173 +89,41 @@ footer a { color: var(--purple-light); text-decoration: none; }
 .hero-btns { animation-delay: 0.4s; }
 
 @media (max-width: 768px) {
-  .container { padding: 0 20px; }
-  .steps, .features-grid, .pricing-grid, .stats { grid-template-columns: 1fr; }
-  .cta-section { padding: 50px 24px; }
-  .hero { padding: 60px 0 50px; }
+.container { padding: 0 20px; }
+.steps, .features-grid, .pricing-grid, .stats { grid-template-columns: 1fr; }
+.cta-section { padding: 50px 24px; }
+.hero { padding: 60px 0 50px; }
 }
 </style>
-</head>
-<body>
 
-<div class="container">
-  <nav>
-    <a href="/" class="nav-logo">
-      <img src="/static/rt_logo_512.png" alt="RT Studio">
-      <span class="nav-logo-text">RT <span>Studio</span></span>
-    </a>
-    <div class="nav-right">
-      <button class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</button>
-      <a href="/register" class="nav-cta" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
-    </div>
-  </nav>
-</div>
+</head> <body> <div class="container"> <nav> <a href="/" class="nav-logo"> <img src="/static/rt_logo_512.png" alt="RT Studio"> <span class="nav-logo-text">RT <span>Studio</span></span> </a> <div class="nav-right"> <button class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</button> <a href="/register" class="nav-cta" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a> </div> </nav> </div> <hr class="divider"> <div class="container"> <section class="hero"> <div class="hero-badge"> <div class="hero-badge-dot"></div> <span data-ar="مدعوم بالذكاء الاصطناعي" data-en="Powered by AI">مدعوم بالذكاء الاصطناعي</span> </div> <h1> <span data-ar="افتح متجرك الاحترافي" data-en="Launch Your Professional Store">افتح متجرك الاحترافي</span><br> <span class="accent" data-ar="في 5 دقائق فقط" data-en="In Just 5 Minutes">في 5 دقائق فقط</span> </h1> <p class="hero-sub" data-ar="حوّل صور منتجاتك العادية إلى صور احترافية بالذكاء الاصطناعي، وابنِ متجرك الإلكتروني الجاهز فوراً." data-en="Transform your product photos into professional images with AI, and launch your online store instantly.">حوّل صور منتجاتك العادية إلى صور احترافية بالذكاء الاصطناعي، وابنِ متجرك الإلكتروني الجاهز فوراً.</p> <div class="hero-btns"> <a href="/register" class="btn-primary" data-ar="سجّل مجاناً الآن" data-en="Sign Up Free Now">سجّل مجاناً الآن</a> <a href="#how" class="btn-secondary" data-ar="كيف يعمل؟" data-en="How it works?">كيف يعمل؟</a> </div> </section> <div class="stats"> <div class="stat"> <span class="stat-number">+50</span> <span class="stat-label" data-ar="تاجر نشط" data-en="Active Merchants">تاجر نشط</span> </div> <div class="stat"> <span class="stat-number">5 min</span> <span class="stat-label" data-ar="لإطلاق متجرك" data-en="To launch your store">لإطلاق متجرك</span> </div> <div class="stat"> <span class="stat-number">AI</span> <span class="stat-label" data-ar="معالجة احترافية للصور" data-en="Professional image processing">معالجة احترافية للصور</span> </div> </div> </div> <hr class="divider"> <div class="container"> <section class="section" id="how"> <div class="section-label" data-ar="كيف يعمل" data-en="How it works">كيف يعمل</div> <h2 class="section-title" data-ar="3 خطوات وتنطلق" data-en="3 Steps to Launch">3 خطوات وتنطلق</h2> <p class="section-sub" data-ar="بدون خبرة تقنية، بدون تصميم، بدون تعقيد." data-en="No technical skills, no design, no complexity.">بدون خبرة تقنية، بدون تصميم، بدون تعقيد.</p> <div class="steps"> <div class="step"> <div class="step-num">01</div> <div class="step-icon">📝</div> <h3 data-ar="سجّل حسابك" data-en="Create your account">سجّل حسابك</h3> <p data-ar="أنشئ حسابك في ثوانٍ وانتظر تفعيل الإدارة." data-en="Sign up in seconds and wait for admin activation.">أنشئ حسابك في ثوانٍ وانتظر تفعيل الإدارة.</p> </div> <div class="step"> <div class="step-num">02</div> <div class="step-icon">🖼️</div> <h3 data-ar="ارفع صور منتجاتك" data-en="Upload your product photos">ارفع صور منتجاتك</h3> <p data-ar="الذكاء الاصطناعي يزيل الخلفية ويولّد صوراً احترافية تلقائياً." data-en="AI removes backgrounds and generates professional images automatically.">الذكاء الاصطناعي يزيل الخلفية ويولّد صوراً احترافية تلقائياً.</p> </div> <div class="step"> <div class="step-num">03</div> <div class="step-icon">🔗</div> <h3 data-ar="شارك رابط متجرك" data-en="Share your store link">شارك رابط متجرك</h3> <p data-ar="متجرك جاهز برابط خاص — شاركه وابدأ البيع فوراً عبر واتساب." data-en="Your store is ready with a unique link — share it and start selling via WhatsApp instantly.">متجرك جاهز برابط خاص — شاركه وابدأ البيع فوراً عبر واتساب.</p> </div> </div> </section> </div> <hr class="divider"> <div class="container"> <section class="section" id="features"> <div class="section-label" data-ar="المميزات" data-en="Features">المميزات</div> <h2 class="section-title" data-ar="كل ما تحتاجه في مكان واحد" data-en="Everything You Need in One Place">كل ما تحتاجه في مكان واحد</h2> <p class="section-sub" data-ar="أدوات احترافية مصممة خصيصاً للتاجر الفلسطيني." data-en="Professional tools designed for Palestinian merchants.">أدوات احترافية مصممة خصيصاً للتاجر الفلسطيني.</p> <div class="features-grid"> <div class="feature"><div class="feature-icon">🤖</div><div><h4 data-ar="إزالة الخلفية بالذكاء الاصطناعي" data-en="AI Background Removal">إزالة الخلفية بالذكاء الاصطناعي</h4><p data-ar="احصل على صور نظيفة بخلفية شفافة أو احترافية بضغطة واحدة." data-en="Get clean images with transparent or professional backgrounds in one click.">احصل على صور نظيفة بخلفية شفافة أو احترافية بضغطة واحدة.</p></div></div> <div class="feature"><div class="feature-icon">🏪</div><div><h4 data-ar="متجر جاهز برابط خاص" data-en="Ready Store with Custom Link">متجر جاهز برابط خاص</h4><p data-ar="متجرك الإلكتروني بتصميم فاخر جاهز فوراً دون أي خبرة تقنية." data-en="Your online store with a luxury design, ready instantly with no technical skills.">متجرك الإلكتروني بتصميم فاخر جاهز فوراً دون أي خبرة تقنية.</p></div></div> <div class="feature"><div class="feature-icon">💬</div><div><h4 data-ar="طلبات مباشرة على واتساب" data-en="Direct WhatsApp Orders">طلبات مباشرة على واتساب</h4><p data-ar="الزبون يطلب مباشرة عبر واتساب بدون بوابة دفع أو تعقيد." data-en="Customers order directly via WhatsApp with no payment gateway.">الزبون يطلب مباشرة عبر واتساب بدون بوابة دفع أو تعقيد.</p></div></div> <div class="feature"><div class="feature-icon">📊</div><div><h4 data-ar="إحصائيات المتجر" data-en="Store Analytics">إحصائيات المتجر</h4><p data-ar="تابع زيارات متجرك ومشاهدات منتجاتك وأداء مبيعاتك." data-en="Track store visits, product views, and sales performance.">تابع زيارات متجرك ومشاهدات منتجاتك وأداء مبيعاتك.</p></div></div> <div class="feature"><div class="feature-icon">🎨</div><div><h4 data-ar="قوالب تصميم متعددة" data-en="Multiple Design Templates">قوالب تصميم متعددة</h4><p data-ar="اختر من بين قوالب وخلفيات احترافية تناسب منتجاتك." data-en="Choose from professional templates and backgrounds that suit your products.">اختر من بين قوالب وخلفيات احترافية تناسب منتجاتك.</p></div></div> <div class="feature"><div class="feature-icon">📱</div><div><h4 data-ar="متجر متوافق مع الموبايل" data-en="Mobile-Friendly Store">متجر متوافق مع الموبايل</h4><p data-ar="متجرك يبدو رائعاً على كل الأجهزة، ويدعم التثبيت كتطبيق." data-en="Your store looks great on all devices and supports PWA installation.">متجرك يبدو رائعاً على كل الأجهزة، ويدعم التثبيت كتطبيق.</p></div></div> <p data-ar="متجرك يبدو رائعاً على كل الأجهزة، ويظهر لك زر تثبيت التطبيق تلقائياً فور دخولك للوحة التحكم لسهولة الوصول." data-en="Your store looks great on all devices, and an install button appears automatically in your dashboard for easy access.">متجرك يبدو رائعاً على كل الأجهزة، ويظهر لك زر تثبيت التطبيق تلقائياً فور دخولك للوحة التحكم لسهولة الوصول.</p></div></div> </div> </section> </div> <hr class="divider"> <div class="container"> <section class="section" id="pricing"> <div class="section-label" data-ar="الأسعار" data-en="Pricing">الأسعار</div> <h2 class="section-title" data-ar="باقات تناسب كل تاجر" data-en="Plans for Every Merchant">باقات تناسب كل تاجر</h2> <p class="section-sub" data-ar="أسعار شفافة بدون رسوم خفية." data-en="Transparent pricing with no hidden fees.">أسعار شفافة بدون رسوم خفية.</p> <div class="pricing-grid"> <!-- شهري --> <div class="plan"> <div class="plan-name" data-ar="شهري" data-en="Monthly">شهري</div> <div class="plan-price">39<span>$</span></div> <div class="plan-period" data-ar="شهرياً" data-en="per month">شهرياً</div> <div class="plan-save"></div> <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a> </div>
+  <!-- 6 أشهر -->
+  <div class="plan">
+    <div class="plan-name" data-ar="6 أشهر" data-en="6 Months">6 أشهر</div>
+    <div class="plan-price">200<span>$</span></div>
+    <div class="plan-period" data-ar="كل 6 أشهر" data-en="every 6 months">كل 6 أشهر</div>
+    <div class="plan-save" data-ar="وفّر 34$ مقارنة بالشهري" data-en="Save $34 vs monthly">وفّر 34$ مقارنة بالشهري</div>
+    <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
+  </div>
 
-<hr class="divider">
+  <!-- سنوي (الأكثر توفيراً) -->
+  <div class="plan featured">
+    <div class="plan-badge" data-ar="الأكثر توفيراً" data-en="Best Value">الأكثر توفيراً</div>
+    <div class="plan-name" data-ar="سنوي" data-en="Annual">سنوي</div>
+    <div class="plan-price">380<span>$</span></div>
+    <div class="plan-period" data-ar="سنوياً" data-en="per year">سنوياً</div>
+    <div class="plan-save" data-ar="وفّر 88$ مقارنة بالشهري" data-en="Save $88 vs monthly">وفّر 88$ مقارنة بالشهري</div>
+    <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
+  </div>
 
-<div class="container">
-  <section class="hero">
-    <div class="hero-badge">
-      <div class="hero-badge-dot"></div>
-      <span data-ar="مدعوم بالذكاء الاصطناعي" data-en="Powered by AI">مدعوم بالذكاء الاصطناعي</span>
-    </div>
-    <h1>
-      <span data-ar="افتح متجرك الاحترافي" data-en="Launch Your Professional Store">افتح متجرك الاحترافي</span><br>
-      <span class="accent" data-ar="في 5 دقائق فقط" data-en="In Just 5 Minutes">في 5 دقائق فقط</span>
-    </h1>
-    <p class="hero-sub" data-ar="حوّل صور منتجاتك العادية إلى صور احترافية بالذكاء الاصطناعي، وابنِ متجرك الإلكتروني الجاهز فوراً." data-en="Transform your product photos into professional images with AI, and launch your online store instantly.">حوّل صور منتجاتك العادية إلى صور احترافية بالذكاء الاصطناعي، وابنِ متجرك الإلكتروني الجاهز فوراً.</p>
-    <div class="hero-btns">
-      <a href="/register" class="btn-primary" data-ar="سجّل مجاناً الآن" data-en="Sign Up Free Now">سجّل مجاناً الآن</a>
-      <a href="#how" class="btn-secondary" data-ar="كيف يعمل؟" data-en="How it works?">كيف يعمل؟</a>
-    </div>
-  </section>
-
-  <div class="stats">
-    <div class="stat">
-      <span class="stat-number">+50</span>
-      <span class="stat-label" data-ar="تاجر نشط" data-en="Active Merchants">تاجر نشط</span>
-    </div>
-    <div class="stat">
-      <span class="stat-number">5 min</span>
-      <span class="stat-label" data-ar="لإطلاق متجرك" data-en="To launch your store">لإطلاق متجرك</span>
-    </div>
-    <div class="stat">
-      <span class="stat-number">AI</span>
-      <span class="stat-label" data-ar="معالجة احترافية للصور" data-en="Professional image processing">معالجة احترافية للصور</span>
-    </div>
+  <!-- 4 سنوات + الخامسة مجاناً -->
+  <div class="plan featured">
+    <div class="plan-badge" data-ar="عرض مميّز" data-en="Special Offer">عرض مميّز</div>
+    <div class="plan-name" data-ar="4 سنوات (+سنة مجاناً)" data-en="4 Years (+1 Free)">4 سنوات (+سنة مجاناً)</div>
+    <div class="plan-price">1200<span>$</span></div>
+    <div class="plan-period" data-ar="لـ 4 سنوات مدفوعة" data-en="for 4 paid years">لـ 4 سنوات مدفوعة</div>
+    <div class="plan-save" data-ar="السنة الخامسة هدية" data-en="5th year free">السنة الخامسة هدية</div>
+    <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
   </div>
 </div>
-
-<hr class="divider">
-
-<div class="container">
-  <section class="section" id="how">
-    <div class="section-label" data-ar="كيف يعمل" data-en="How it works">كيف يعمل</div>
-    <h2 class="section-title" data-ar="3 خطوات وتنطلق" data-en="3 Steps to Launch">3 خطوات وتنطلق</h2>
-    <p class="section-sub" data-ar="بدون خبرة تقنية، بدون تصميم، بدون تعقيد." data-en="No technical skills, no design, no complexity.">بدون خبرة تقنية، بدون تصميم، بدون تعقيد.</p>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">01</div>
-        <div class="step-icon">📝</div>
-        <h3 data-ar="سجّل حسابك" data-en="Create your account">سجّل حسابك</h3>
-        <p data-ar="أنشئ حسابك في ثوانٍ وانتظر تفعيل الإدارة." data-en="Sign up in seconds and wait for admin activation.">أنشئ حسابك في ثوانٍ وانتظر تفعيل الإدارة.</p>
-      </div>
-      <div class="step">
-        <div class="step-num">02</div>
-        <div class="step-icon">🖼️</div>
-        <h3 data-ar="ارفع صور منتجاتك" data-en="Upload your product photos">ارفع صور منتجاتك</h3>
-        <p data-ar="الذكاء الاصطناعي يزيل الخلفية ويولّد صوراً احترافية تلقائياً." data-en="AI removes backgrounds and generates professional images automatically.">الذكاء الاصطناعي يزيل الخلفية ويولّد صوراً احترافية تلقائياً.</p>
-      </div>
-      <div class="step">
-        <div class="step-num">03</div>
-        <div class="step-icon">🔗</div>
-        <h3 data-ar="شارك رابط متجرك" data-en="Share your store link">شارك رابط متجرك</h3>
-        <p data-ar="متجرك جاهز برابط خاص — شاركه وابدأ البيع فوراً عبر واتساب." data-en="Your store is ready with a unique link — share it and start selling via WhatsApp instantly.">متجرك جاهز برابط خاص — شاركه وابدأ البيع فوراً عبر واتساب.</p>
-      </div>
-    </div>
-  </section>
-</div>
-
-<hr class="divider">
-
-<div class="container">
-  <section class="section" id="features">
-    <div class="section-label" data-ar="المميزات" data-en="Features">المميزات</div>
-    <h2 class="section-title" data-ar="كل ما تحتاجه في مكان واحد" data-en="Everything You Need in One Place">كل ما تحتاجه في مكان واحد</h2>
-    <p class="section-sub" data-ar="أدوات احترافية مصممة خصيصاً للتاجر الفلسطيني." data-en="Professional tools designed for Palestinian merchants.">أدوات احترافية مصممة خصيصاً للتاجر الفلسطيني.</p>
-    <div class="features-grid">
-      <div class="feature"><div class="feature-icon">🤖</div><div><h4 data-ar="إزالة الخلفية بالذكاء الاصطناعي" data-en="AI Background Removal">إزالة الخلفية بالذكاء الاصطناعي</h4><p data-ar="احصل على صور نظيفة بخلفية شفافة أو احترافية بضغطة واحدة." data-en="Get clean images with transparent or professional backgrounds in one click.">احصل على صور نظيفة بخلفية شفافة أو احترافية بضغطة واحدة.</p></div></div>
-      <div class="feature"><div class="feature-icon">🏪</div><div><h4 data-ar="متجر جاهز برابط خاص" data-en="Ready Store with Custom Link">متجر جاهز برابط خاص</h4><p data-ar="متجرك الإلكتروني بتصميم فاخر جاهز فوراً دون أي خبرة تقنية." data-en="Your online store with a luxury design, ready instantly with no technical skills.">متجرك الإلكتروني بتصميم فاخر جاهز فوراً دون أي خبرة تقنية.</p></div></div>
-      <div class="feature"><div class="feature-icon">💬</div><div><h4 data-ar="طلبات مباشرة على واتساب" data-en="Direct WhatsApp Orders">طلبات مباشرة على واتساب</h4><p data-ar="الزبون يطلب مباشرة عبر واتساب بدون بوابة دفع أو تعقيد." data-en="Customers order directly via WhatsApp with no payment gateway.">الزبون يطلب مباشرة عبر واتساب بدون بوابة دفع أو تعقيد.</p></div></div>
-      <div class="feature"><div class="feature-icon">📊</div><div><h4 data-ar="إحصائيات المتجر" data-en="Store Analytics">إحصائيات المتجر</h4><p data-ar="تابع زيارات متجرك ومشاهدات منتجاتك وأداء مبيعاتك." data-en="Track store visits, product views, and sales performance.">تابع زيارات متجرك ومشاهدات منتجاتك وأداء مبيعاتك.</p></div></div>
-      <div class="feature"><div class="feature-icon">🎨</div><div><h4 data-ar="قوالب تصميم متعددة" data-en="Multiple Design Templates">قوالب تصميم متعددة</h4><p data-ar="اختر من بين قوالب وخلفيات احترافية تناسب منتجاتك." data-en="Choose from professional templates and backgrounds that suit your products.">اختر من بين قوالب وخلفيات احترافية تناسب منتجاتك.</p></div></div>
-      <div class="feature"><div class="feature-icon">📱</div><div><h4 data-ar="متجر متوافق مع الموبايل" data-en="Mobile-Friendly Store">متجر متوافق مع الموبايل</h4><p data-ar="متجرك يبدو رائعاً على كل الأجهزة، ويدعم التثبيت كتطبيق." data-en="Your store looks great on all devices and supports PWA installation.">متجرك يبدو رائعاً على كل الأجهزة، ويدعم التثبيت كتطبيق.</p></div></div>
-      <p data-ar="متجرك يبدو رائعاً على كل الأجهزة، ويظهر لك زر تثبيت التطبيق تلقائياً فور دخولك للوحة التحكم لسهولة الوصول." data-en="Your store looks great on all devices, and an install button appears automatically in your dashboard for easy access.">متجرك يبدو رائعاً على كل الأجهزة، ويظهر لك زر تثبيت التطبيق تلقائياً فور دخولك للوحة التحكم لسهولة الوصول.</p></div></div>
-    </div>
-  </section>
-</div>
-
-<hr class="divider">
-
-<div class="container">
-  <section class="section" id="pricing">
-    <div class="section-label" data-ar="الأسعار" data-en="Pricing">الأسعار</div>
-    <h2 class="section-title" data-ar="باقات تناسب كل تاجر" data-en="Plans for Every Merchant">باقات تناسب كل تاجر</h2>
-    <p class="section-sub" data-ar="أسعار شفافة بدون رسوم خفية." data-en="Transparent pricing with no hidden fees.">أسعار شفافة بدون رسوم خفية.</p>
-    <div class="pricing-grid">
-      <div class="plan">
-        <div class="plan-name" data-ar="شهري" data-en="Monthly">شهري</div>
-        <div class="plan-price">120<span>₪</span></div>
-        <div class="plan-period" data-ar="شهرياً" data-en="per month">شهرياً</div>
-        <div class="plan-save"></div>
-        <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
-      </div>
-      <div class="plan featured">
-        <div class="plan-badge" data-ar="الأكثر توفيراً" data-en="Best Value">الأكثر توفيراً</div>
-        <div class="plan-name" data-ar="6 أشهر" data-en="6 Months">6 أشهر</div>
-        <div class="plan-price">600<span>₪</span></div>
-        <div class="plan-period" data-ar="كل 6 أشهر" data-en="every 6 months">كل 6 أشهر</div>
-        <div class="plan-save" data-ar="وفّر 120₪" data-en="Save ₪120">وفّر 120₪</div>
-        <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
-      </div>
-      <div class="plan">
-        <div class="plan-name" data-ar="سنوي" data-en="Annual">سنوي</div>
-        <div class="plan-price">1000<span>₪</span></div>
-        <div class="plan-period" data-ar="سنوياً" data-en="per year">سنوياً</div>
-        <div class="plan-save" data-ar="وفّر 440₪" data-en="Save ₪440">وفّر 440₪</div>
-        <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
-      </div>
-    </div>
-  </section>
-</div>
-
-<div class="container">
-  <div class="cta-section">
-    <h2 data-ar="جاهز تطلق متجرك؟" data-en="Ready to Launch Your Store?">جاهز تطلق متجرك؟</h2>
-    <p data-ar="انضم لمئات التجار الفلسطينيين الذين يبيعون أونلاين الآن." data-en="Join hundreds of Palestinian merchants selling online today.">انضم لمئات التجار الفلسطينيين الذين يبيعون أونلاين الآن.</p>
-    <a href="/register" class="btn-primary" data-ar="سجّل مجاناً الآن" data-en="Sign Up Free Now">سجّل مجاناً الآن</a>
-  </div>
-</div>
-
-<div class="container">
-  <footer>
-    <p>© 2025 RT Studio — <a href="/">ramallahtime.com</a> · <span data-ar="صُنع بـ ❤️ في فلسطين" data-en="Made with ❤️ in Palestine">صُنع بـ ❤️ في فلسطين</span></p>
-  </footer>
-</div>
-
-<script>
-let currentLang = 'ar';
-function toggleLang() {
-  currentLang = currentLang === 'ar' ? 'en' : 'ar';
-  const isAr = currentLang === 'ar';
-  document.documentElement.setAttribute('lang', currentLang);
-  document.documentElement.setAttribute('dir', isAr ? 'rtl' : 'ltr');
-  document.body.classList.toggle('ltr', !isAr);
-  document.getElementById('langBtn').textContent = isAr ? 'EN' : 'AR';
-  document.querySelectorAll('[data-ar]').forEach(el => {
-    el.textContent = isAr ? el.getAttribute('data-ar') : el.getAttribute('data-en');
-  });
-}
-</script>
-</body>
-</html>
+</section> </div> <div class="container"> <div class="cta-section"> <h2 data-ar="جاهز تطلق متجرك؟" data-en="Ready to Launch Your Store?">جاهز تطلق متجرك؟</h2> <p data-ar="انضم لمئات التجار الفلسطينيين الذين يبيعون أونلاين الآن." data-en="Join hundreds of Palestinian merchants selling online today.">انضم لمئات التجار الفلسطينيين الذين يبيعون أونلاين الآن.</p> <a href="/register" class="btn-primary" data-ar="سجّل مجاناً الآن" data-en="Sign Up Free Now">سجّل مجاناً الآن</a> </div> </div> <div class="container"> <footer> <p>© 2025 RT Studio — <a href="/">ramallahtime.com</a> · <span data-ar="صُنع بـ ❤️ في فلسطين" data-en="Made with ❤️ in Palestine">صُنع بـ ❤️ في فلسطين</span></p> </footer> </div> <script> let currentLang = 'ar'; function toggleLang() { currentLang = currentLang === 'ar' ? 'en' : 'ar'; const isAr = currentLang === 'ar'; document.documentElement.setAttribute('lang', currentLang); document.documentElement.setAttribute('dir', isAr ? 'rtl' : 'ltr'); document.body.classList.toggle('ltr', !isAr); document.getElementById('langBtn').textContent = isAr ? 'EN' : 'AR'; document.querySelectorAll('[data-ar]').forEach(el => { el.textContent = isAr ? el.getAttribute('data-ar') : el.getAttribute('data-en'); }); } </script> </body> </html>

@@ -507,26 +507,21 @@
         </div>
         <div id="cartItems" class="cart-body"></div>
         <div class="cart-footer">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                <span>المجموع:</span>
-                <strong id="cartSubtotal">₪ 0</strong>
-            </div>
-            <div class="cart-note">لا تشمل رسوم التوصيل</div>
             <div class="field">
                 <label>الاسم</label>
-                <input id="c_name" type="text" placeholder="اختياري">
+                <input id="c_name" type="text" placeholder="الاسم الكامل (مطلوب)">
             </div>
             <div class="field">
                 <label>رقم الهاتف</label>
-                <input id="c_phone" type="tel" placeholder="اختياري">
+                <input id="c_phone" type="tel" placeholder="05xxxxxxxx (مطلوب)">
             </div>
             <div class="field">
                 <label>العنوان</label>
-                <input id="c_address" type="text" placeholder="اختياري">
+                <input id="c_address" type="text" placeholder="المدينة، الشارع (مطلوب)">
             </div>
             <div class="field">
                 <label>ملاحظات</label>
-                <textarea id="c_notes" rows="2" placeholder="اختياري"></textarea>
+                <input id="c_notes" type="text" placeholder="أي ملاحظات إضافية (اختياري)">
             </div>
             <button class="wa-order-btn" onclick="placeOrder()">اطلب عبر واتساب</button>
         </div>
@@ -820,12 +815,31 @@
                 return;
             }
 
+            // --- التحقق الإجباري من البيانات ---
+            const name = document.getElementById('c_name').value.trim();
+            const address = document.getElementById('c_address').value.trim();
+            let phone = document.getElementById('c_phone').value.trim();
+
+            if (!name || !phone || !address) {
+                alert('يرجى كتابة الاسم ورقم الهاتف والعنوان للمتابعة');
+                return;
+            }
+
+            // المنطق الذكي لرقم الهاتف (إضافة مقدمة الدولة 970)
+            phone = phone.replace(/\D/g, ''); // إزالة أي رموز غير الأرقام
+            if (phone.startsWith('05')) {
+                phone = '970' + phone.substring(1); 
+            } else if (phone.startsWith('5')) {
+                phone = '970' + phone; 
+            }
+            // ------------------------------------
+
             const payload = {
                 store_id: STORE_ID,
                 cart: cart.map(x => ({ product_id: x.product_id, qty: x.qty })),
-                customer_name: document.getElementById('c_name').value || '',
-                customer_phone: document.getElementById('c_phone').value || '',
-                customer_address: document.getElementById('c_address').value || '',
+                customer_name: name,
+                customer_phone: phone,
+                customer_address: address,
                 customer_notes: document.getElementById('c_notes').value || ''
             };
 
