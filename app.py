@@ -1316,6 +1316,7 @@ def store_manifest(slug):
 
     store_url = f"/store/{store['slug']}"
     manifest = {
+        "id": f"/store/{store['slug']}",
         "name": store['name'],
         "short_name": store['name'][:12],
         "description": store.get('bio') or f"متجر {store['name']} - اطلب الآن عبر واتساب",

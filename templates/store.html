@@ -635,8 +635,8 @@
                 else img.addEventListener('load', () => tuneCardByImage(img), { once:true });
             });
 
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Failed', err));
+                        if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js?store={{ store.slug }}', { scope: '/store/{{ store.slug }}/' }).catch(err => console.log('SW Failed', err));
             }
 
             const urlParams = new URLSearchParams(window.location.search);
