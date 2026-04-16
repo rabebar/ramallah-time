@@ -142,7 +142,8 @@
         .table-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; color: var(--navy); }
         table { width: 100%; border-collapse: collapse; text-align: right; }
         th { padding: 16px; color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--gray-bg); }
-        td { padding: 20px 16px; border-bottom: 1px solid var(--gray-bg); font-size: 14px; color: var(--text-main); }
+        th { padding: 12px 8px; color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--gray-bg); }
+        td { padding: 12px 8px; border-bottom: 1px solid var(--gray-bg); font-size: 12.5px; color: var(--text-main); white-space: nowrap; }
 
         .badge { padding: 6px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; }
         .badge-active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
@@ -342,9 +343,9 @@
                             {% endif %}
                         </td>
                         <td style="font-weight: 700; color: var(--gold);">{{ user.credits }} صورة</td>
-                        <td style="font-size: 12px; color: var(--text-muted);">{{ user.created_at }}</td>
-                        <td>
-                            <div class="btn-group">
+                        <td style="font-size: 11px; color: var(--text-muted);">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '-' }}</td>
+                       <td style="width: 100px; padding: 5px;">
+                            <div class="btn-group" style="gap: 3px;">
                                 {% if user.status == 'pending' %}
                                     <a href="/superadmin/approve/{{ user.id }}" class="btn-sm btn-approve"><i data-lucide="check"></i> تفعيل الحساب</a>
                                     <a href="/superadmin/reject/{{ user.id }}" class="btn-sm btn-reject" onclick="return confirm('حذف الطلب؟')"><i data-lucide="x"></i> رفض</a>
