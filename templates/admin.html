@@ -480,12 +480,17 @@
             <div class="form-group">
                 <label class="form-label">WhatsApp Number</label>
                 <div style="display: flex; gap: 8px;">
-                <select name="whatsapp_prefix" class="input-field" style="width: 100px; padding: 10px; font-weight: 600;">
-                    <option value="970" {% if store.whatsapp_phone and store.whatsapp_phone.startswith('970') %}selected{% endif %}>+970</option>
-                    <option value="972" {% if store.whatsapp_phone and store.whatsapp_phone.startswith('972') %}selected{% endif %}>+972</option>
-                    <option value="962" {% if store.whatsapp_phone and store.whatsapp_phone.startswith('962') %}selected{% endif %}>+962</option>
+                <select name="whatsapp_prefix" class="input-field" style="width: 140px; padding: 10px; font-weight: 600; color: #000 !important; background: #fff !important;">
+                    <option value="970" {% if store.whatsapp_phone and store.whatsapp_phone.startswith('970') %}selected{% endif %}>🇵🇸 +970</option>
+                    <option value="972" {% if store.whatsapp_phone and store.whatsapp_phone.startswith('972') %}selected{% endif %}>🇵🇸 +972</option>
+                    <option value="962" {% if store.whatsapp_phone and store.whatsapp_phone.startswith('962') %}selected{% endif %}>🇯🇴 +962</option>
+                    <option value="971" {% if store.whatsapp_phone and store.whatsapp_phone.startswith('971') %}selected{% endif %}>🇦🇪 +971</option>
+                    <option value="963" {% if store.whatsapp_phone and store.whatsapp_phone.startswith('963') %}selected{% endif %}>🇸🇾 +963</option>
+                    <option value="1"   {% if store.whatsapp_phone and (store.whatsapp_phone.startswith('1')) %}selected{% endif %}>🇺🇸 +1</option>
+                    <option value="1"   {% if store.whatsapp_phone and (store.whatsapp_phone.startswith('1')) %}selected{% endif %}>🇨🇦 +1</option>
                 </select>
-                <input type="text" name="whatsapp_phone" value="{{ store.whatsapp_phone[3:] if store.whatsapp_phone and store.whatsapp_phone|length > 3 else store.whatsapp_phone or '' }}" placeholder="5xxxxxxxx" class="input-field" style="flex: 1;">
+                <!-- نعرض الرقم كما هو لضمان عدم حدوث لبس في القص -->
+                <input type="text" name="whatsapp_phone" value="{{ store.whatsapp_phone or '' }}" placeholder="اكتب الرقم هنا" class="input-field" style="flex: 1;">
             </div>
             </div>
             <div class="form-group">

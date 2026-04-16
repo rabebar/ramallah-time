@@ -64,20 +64,22 @@ RATE_LIMIT_PER_HOUR = 50
 _rate_tracker = defaultdict(list)
 
 def clean_phone_number(prefix, phone):
-    """تنظيف رقم الهاتف ودمجه مع مفتاح الدولة"""
+    """تنظيف ذكي: يمنع تكرار مفتاح الدولة ويحذف الرموز"""
     if not phone:
         return None
     
-    # 1. إزالة أي رموز غير رقمية من الرقم (حذف +، -، _، والمسافات)
+    # 1. تنظيف الرقم والمفتاح من أي رموز (+ - _ مسافات)
     phone_digits = re.sub(r'\D', '', str(phone))
-    
-    # 2. إزالة الأصفار من بداية الرقم المكتوب (مثلاً لو كتب 059 يحولها لـ 59)
-    phone_digits = phone_digits.lstrip('0')
-    
-    # 3. إزالة أي رموز من مفتاح الدولة المختار
     prefix_digits = re.sub(r'\D', '', str(prefix))
     
-    # 4. الدمج النهائي (مفتاح الدولة + الرقم الصافي)
+    # 2. إذا كان التاجر قد كتب المفتاح أصلاً داخل الخانة، نحذفه لكي لا يتكرر
+    if phone_digits.startswith(prefix_digits):
+        phone_digits = phone_digits[len(prefix_digits):]
+    
+    # 3. حذف أي أصفار زائدة من بداية الرقم المتبقي (مثل 059 تصبح 59)
+    phone_digits = phone_digits.lstrip('0')
+    
+    # 4. الدمج النهائي الصحيح
     return f"{prefix_digits}{phone_digits}"
 
 def check_rate_limit(user_id):
@@ -459,9 +461,7 @@ def get_user_stats(user_id):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        prefix = request.form.get('phone_prefix', '970')
-        raw_phone = request.form.get('phone')
-        phone = clean_phone_number(prefix, raw_phone)
+        phone = request.form.get('phone')
         password = request.form.get('password')
         store_name = request.form.get('store_name')
         raw_slug = store_name.lower().strip().replace(' ', '-')
