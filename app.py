@@ -63,6 +63,23 @@ THEME_COLORS = {
 RATE_LIMIT_PER_HOUR = 50
 _rate_tracker = defaultdict(list)
 
+def clean_phone_number(prefix, phone):
+    """تنظيف رقم الهاتف ودمجه مع مفتاح الدولة"""
+    if not phone:
+        return None
+    
+    # 1. إزالة أي رموز غير رقمية من الرقم (حذف +، -، _، والمسافات)
+    phone_digits = re.sub(r'\D', '', str(phone))
+    
+    # 2. إزالة الأصفار من بداية الرقم المكتوب (مثلاً لو كتب 059 يحولها لـ 59)
+    phone_digits = phone_digits.lstrip('0')
+    
+    # 3. إزالة أي رموز من مفتاح الدولة المختار
+    prefix_digits = re.sub(r'\D', '', str(prefix))
+    
+    # 4. الدمج النهائي (مفتاح الدولة + الرقم الصافي)
+    return f"{prefix_digits}{phone_digits}"
+
 def check_rate_limit(user_id):
     now = datetime.utcnow()
     cutoff = now - timedelta(hours=1)
@@ -442,7 +459,9 @@ def get_user_stats(user_id):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        phone = request.form.get('phone')
+        prefix = request.form.get('phone_prefix', '970')
+        raw_phone = request.form.get('phone')
+        phone = clean_phone_number(prefix, raw_phone)
         password = request.form.get('password')
         store_name = request.form.get('store_name')
         raw_slug = store_name.lower().strip().replace(' ', '-')
@@ -856,7 +875,9 @@ def update_store():
 
     bio = request.form.get('bio')
     display_phone = request.form.get('display_phone')
-    whatsapp_phone = request.form.get('whatsapp_phone')
+    w_prefix = request.form.get('whatsapp_prefix', '970')
+    w_phone = request.form.get('whatsapp_phone')
+    whatsapp_phone = clean_phone_number(w_prefix, w_phone)
     instagram_handle = request.form.get('instagram_handle')
     tiktok_handle = request.form.get('tiktok_handle')
     facebook_handle = request.form.get('facebook_handle')

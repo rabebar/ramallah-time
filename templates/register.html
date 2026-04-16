@@ -105,7 +105,14 @@
 
             <div class="form-group">
                 <label>رقم الجوال</label>
-                <input type="text" name="phone" placeholder="059xxxxxxx" required>
+                <div style="display: flex; gap: 8px;">
+                    <select name="phone_prefix" style="width: 100px; padding: 16px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03); color: #fff; font-weight: 600; outline: none; -webkit-appearance: none;">
+                        <option value="970" selected>+970</option>
+                        <option value="972">+972</option>
+                        <option value="962">+962</option>
+                    </select>
+                    <input type="text" name="phone" placeholder="5xxxxxxxx" style="flex: 1;" required>
+                </div>
             </div>
 
             <div class="form-group">
