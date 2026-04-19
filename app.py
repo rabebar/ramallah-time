@@ -1369,6 +1369,47 @@ def store_manifest(slug):
     )
 
 # =========================
+# Showcase API (Landing Page)
+# =========================
+@app.route('/api/showcase')
+def api_showcase():
+    """Return latest products from active stores for the landing page showcase."""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT
+                s.name  AS store,
+                s.slug  AS slug,
+                s.currency AS currency,
+                p.name  AS product,
+                p.price AS price,
+                p.processed_image_url AS img
+            FROM products p
+            JOIN stores s ON p.store_id = s.id
+            WHERE p.active = TRUE
+              AND s.is_active = TRUE
+            ORDER BY p.created_at DESC
+            LIMIT 12
+        """)
+        rows = cur.fetchall()
+        conn.close()
+        result = []
+        for r in rows:
+            result.append({
+                'store':    r['store'],
+                'slug':     r['slug'],
+                'currency': r['currency'] or '$',
+                'product':  r['product'],
+                'price':    str(r['price']),
+                'img':      r['img'] or ''
+            })
+        return jsonify(result)
+    except Exception as e:
+        logging.error(f"showcase error: {e}")
+        return jsonify([])
+
+# =========================
 # Static: Service Worker
 # =========================
 @app.route('/sw.js')
