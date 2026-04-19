@@ -1373,24 +1373,23 @@ def store_manifest(slug):
 # =========================
 @app.route('/api/showcase')
 def api_showcase():
-    """Return latest products from active stores for the landing page showcase."""
+    """Return one product per store (latest) from active stores for the landing page showcase."""
     try:
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT
-                s.name  AS store,
-                s.slug  AS slug,
+            SELECT DISTINCT ON (s.id)
+                s.name     AS store,
+                s.slug     AS slug,
                 s.currency AS currency,
-                p.name  AS product,
-                p.price AS price,
+                p.name     AS product,
+                p.price    AS price,
                 p.processed_image_url AS img
             FROM products p
             JOIN stores s ON p.store_id = s.id
             WHERE p.active = TRUE
               AND s.is_active = TRUE
-            ORDER BY p.created_at DESC
-            LIMIT 12
+            ORDER BY s.id, p.created_at DESC
         """)
         rows = cur.fetchall()
         conn.close()
@@ -1399,7 +1398,7 @@ def api_showcase():
             result.append({
                 'store':    r['store'],
                 'slug':     r['slug'],
-                'currency': r['currency'] or '$',
+                'currency': r['currency'] or '₪',
                 'product':  r['product'],
                 'price':    str(r['price']),
                 'img':      r['img'] or ''
