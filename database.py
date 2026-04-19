@@ -169,27 +169,7 @@ def init_db():
                       ON analytics_events(store_id, event_name, created_at)""")
     print("✅ analytics_events table and index ready.")
 
-    # Seed initial user/store if missing
-    cursor.execute("SELECT id FROM users WHERE phone = %s", ("0592776784",))
-    if not cursor.fetchone():
-        print("🌱 Seeding initial data...")
-        MERCHANT_PASSWORD = "12312312"
-        sub_start = datetime.utcnow()
-        sub_end = sub_start + timedelta(days=365)
-        cursor.execute(
-            """INSERT INTO users (phone, password_hash, status, plan_type, subscription_start, subscription_end)
-               VALUES (%s, %s, %s, %s, %s, %s) RETURNING id""",
-            ("0592776784", generate_password_hash(MERCHANT_PASSWORD), 'active', 'annual', sub_start, sub_end)
-        )
-        user_id = cursor.fetchone()['id']
-        cursor.execute(
-            "INSERT INTO stores (user_id, name, slug, bio) VALUES (%s, %s, %s, %s)",
-            (user_id, "متجر سارة للأزياء", "sara-fashion", "أحدث صيحات الموضة بأسعار مناسبة")
-        )
-        print("✅ Initial user and store created.")
-    else:
-        print("✅ User already exists.")
-
+   
     conn.commit()
     cursor.close()
     conn.close()
