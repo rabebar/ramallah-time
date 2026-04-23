@@ -647,7 +647,7 @@
     }
 
     function shareOnFacebook(slug, productId) {
-        const productUrl = encodeURIComponent(window.location.origin + '/product/' + productId);
+        const productUrl = encodeURIComponent(window.location.origin + '/store/' + slug + '?open_product=' + productId);
         const fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + productUrl;
         window.open(fbUrl, '_blank', 'width=600,height=400');
     }
