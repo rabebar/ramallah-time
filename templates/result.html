@@ -138,6 +138,36 @@
 
   .divider-line { height: 1px; background: var(--border); }
 
+  /* Field helpers */
+  .field-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .field-label-row { display: flex; align-items: center; justify-content: space-between; }
+  .field-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .field-hint { font-size: 11px; color: var(--text-muted); margin-top: -2px; }
+
+  /* Tooltip */
+  .tooltip-trigger {
+    font-size: 12px; color: var(--text-muted); cursor: pointer;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #f1f5f9; display: inline-flex; align-items: center; justify-content: center;
+    transition: 0.2s; position: relative;
+  }
+  .tooltip-trigger:hover { background: var(--navy-deep); color: #fff; }
+  .tooltip-trigger::after {
+    content: attr(data-ar-tip);
+    position: absolute; bottom: 26px; right: 0;
+    background: #1e293b; color: #fff;
+    font-size: 11px; font-weight: 500; line-height: 1.5;
+    padding: 8px 12px; border-radius: 8px;
+    white-space: nowrap; max-width: 220px; white-space: normal;
+    width: max-content; max-width: 200px;
+    opacity: 0; pointer-events: none;
+    transform: translateY(4px);
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 100;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+  .tooltip-trigger:hover::after { opacity: 1; transform: translateY(0); }
+
   @media (max-width: 900px) {
     .editor-container { grid-template-columns: 1fr; }
     .preview-sticky-wrap { position: relative; top: 0; margin-bottom: 8px; }
@@ -200,14 +230,55 @@
             <span data-ar="بيانات المنتج" data-en="Product Details">بيانات المنتج</span>
           </div>
           <div class="field-group">
-            <input type="text" name="name" id="inputName" class="data-input"
-              placeholder="" data-ar-placeholder="اسم المنتج..." data-en-placeholder="Product name..."
-              oninput="liveSync()" required>
-            <input type="number" name="price" id="inputPrice" class="data-input"
-              placeholder="" data-ar-placeholder="السعر (₪)" data-en-placeholder="Price (₪)"
-              oninput="liveSync()" required>
-            <input type="text" name="category" class="data-input"
-              placeholder="" data-ar-placeholder="القسم (مثلاً: خواتم، عبايات...)" data-en-placeholder="Category (e.g. rings, dresses...)">
+
+            <!-- اسم المنتج -->
+            <div class="field-wrap">
+              <div class="field-label-row">
+                <span class="field-label" data-ar="اسم المنتج" data-en="Product Name">اسم المنتج</span>
+                <span class="tooltip-trigger" data-ar-tip="سيظهر هذا الاسم على صورة المنتج وفي صفحة متجرك" data-en-tip="This name appears on the product image and in your store">ⓘ</span>
+              </div>
+              <input type="text" name="name" id="inputName" class="data-input"
+                placeholder="" data-ar-placeholder="اسم المنتج" data-en-placeholder="Product name"
+                oninput="liveSync()" required>
+              <small class="field-hint" data-ar="مطلوب — يظهر على الصورة وفي المتجر" data-en="Required — shown on image and in store">مطلوب — يظهر على الصورة وفي المتجر</small>
+            </div>
+
+            <!-- السعر -->
+            <div class="field-wrap">
+              <div class="field-label-row">
+                <span class="field-label" data-ar="السعر (₪)" data-en="Price (₪)">السعر (₪)</span>
+                <span class="tooltip-trigger" data-ar-tip="سيظهر السعر على صورة المنتج تلقائياً" data-en-tip="Price will appear automatically on the product image">ⓘ</span>
+              </div>
+              <input type="number" name="price" id="inputPrice" class="data-input"
+                placeholder="" data-ar-placeholder="0.00" data-en-placeholder="0.00"
+                oninput="liveSync()" required>
+              <small class="field-hint" data-ar="مطلوب — يظهر على الصورة وفي المتجر" data-en="Required — shown on image and in store">مطلوب — يظهر على الصورة وفي المتجر</small>
+            </div>
+
+            <!-- القسم -->
+            <div class="field-wrap">
+              <div class="field-label-row">
+                <span class="field-label" data-ar="القسم" data-en="Category">القسم</span>
+                <span class="tooltip-trigger" data-ar-tip="يساعد الزبائن على تصفح منتجاتك بسهولة" data-en-tip="Helps customers browse your products easily">ⓘ</span>
+              </div>
+              <input type="text" name="category" class="data-input"
+                placeholder="" data-ar-placeholder="مثال: ملابس، إكسسوارات، إلكترونيات..." data-en-placeholder="e.g. Clothing, Accessories, Electronics...">
+              <small class="field-hint" data-ar="اختياري — لتنظيم منتجاتك في المتجر" data-en="Optional — to organize your products">اختياري — لتنظيم منتجاتك في المتجر</small>
+            </div>
+
+            <!-- الوصف -->
+            <div class="field-wrap">
+              <div class="field-label-row">
+                <span class="field-label" data-ar="الوصف" data-en="Description">الوصف</span>
+                <span class="tooltip-trigger" data-ar-tip="أضف تفاصيل مفيدة كالأحجام والألوان والمواد" data-en-tip="Add useful details like sizes, colors, and materials">ⓘ</span>
+              </div>
+              <textarea name="description" rows="3" class="data-input"
+                placeholder="" data-ar-placeholder="الأحجام المتوفرة، الألوان، المواد، أي تفاصيل مفيدة..."
+                data-en-placeholder="Available sizes, colors, materials, any useful details..."
+                style="resize: vertical; line-height: 1.6;"></textarea>
+              <small class="field-hint" data-ar="اختياري — يظهر في صفحة المنتج داخل متجرك" data-en="Optional — shown on the product page in your store">اختياري — يظهر في صفحة المنتج داخل متجرك</small>
+            </div>
+
           </div>
         </div>
 
