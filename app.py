@@ -33,6 +33,7 @@ from PIL import Image, ImageOps, ImageDraw, ImageFont, ImageFilter
 from database import get_db_connection
 
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
+REMOVEBG_API_KEY = os.environ.get('REMOVEBG_API_KEY', '')
 
 # Local background assets (ensure these files exist under static/assets/bg/)
 BG_ASSETS = {
@@ -91,58 +92,35 @@ def check_rate_limit(user_id):
     _rate_tracker[user_id].append(now)
     return True
 
-def remove_bg_openai(filepath):
-    """Try OpenAI background removal. Returns bytes or None."""
+def remove_bg_removebg(filepath):
+    """Remove background using remove.bg API. Returns bytes or None."""
     try:
         with open(filepath, 'rb') as f:
             img_bytes = f.read()
-
-        img = Image.open(io.BytesIO(img_bytes)).convert("RGBA")
-        w, h = img.size
-        mask = Image.new("RGBA", (w, h), (255, 255, 255, 255))
-
-        img_buf = io.BytesIO()
-        img.save(img_buf, format='PNG')
-        img_buf.seek(0)
-
-        mask_buf = io.BytesIO()
-        mask.save(mask_buf, format='PNG')
-        mask_buf.seek(0)
-
         response = requests.post(
-            "https://api.openai.com/v1/images/edits",
-            headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
-            files={
-                "image": ("image.png", img_buf, "image/png"),
-                "mask": ("mask.png", mask_buf, "image/png"),
-            },
-            data={
-                "model": "dall-e-2",
-                "prompt": "Remove the background completely, keep only the product on a transparent background",
-                "n": "1",
-                "size": "1024x1024",
-                "response_format": "b64_json"
-            },
+            "https://api.remove.bg/v1.0/removebg",
+            headers={"X-Api-Key": REMOVEBG_API_KEY},
+            files={"image_file": ("image.png", img_bytes, "image/png")},
+            data={"size": "auto"},
             timeout=60
         )
         if response.status_code == 200:
-            b64 = response.json()['data'][0]['b64_json']
-            return base64.b64decode(b64)
-        logging.error(f"OpenAI API Error: {response.status_code} - {response.text}")
+            logging.info("✅ remove.bg success")
+            return response.content
+        logging.error(f"remove.bg API Error: {response.status_code} - {response.text}")
         return None
     except Exception as e:
-        logging.error(f"OpenAI remove_bg exception: {e}")
+        logging.error(f"remove.bg exception: {e}")
         return None
 
 def remove_bg_with_fallback(filepath):
-    """OpenAI (if key) -> rembg fallback."""
-    if OPENAI_API_KEY:
-        logging.info("Trying OpenAI background removal...")
-        result = remove_bg_openai(filepath)
+    """remove.bg (if key) -> rembg fallback."""
+    if REMOVEBG_API_KEY:
+        logging.info("Trying remove.bg API...")
+        result = remove_bg_removebg(filepath)
         if result:
-            logging.info("✅ OpenAI success")
-            return result, 'openai'
-        logging.warning("⚠️ OpenAI failed, falling back to rembg")
+            return result, 'remove.bg'
+        logging.warning("⚠️ remove.bg failed, falling back to rembg")
     logging.info("Using rembg fallback...")
     with open(filepath, 'rb') as f:
         input_data = f.read()
