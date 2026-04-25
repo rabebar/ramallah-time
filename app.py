@@ -642,6 +642,7 @@ def save_product():
     processed_image_url = request.form.get('image_url')
     original_image_url = request.form.get('original_image_url')
     category = request.form.get('category', '').strip() or 'الكل'
+    description = request.form.get('description', '').strip()
     template_style = request.form.get('template_style', 'elegant')
     theme = request.form.get('theme', 'gold')
     background = request.form.get('background', 'none')
@@ -684,9 +685,9 @@ def save_product():
             sku = generate_sku(conn, cursor, store['id'])
 
             cursor.execute("""
-                INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme, category, background, final_image_url, sku, stock_qty, active)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE)
-            """, (store['id'], name, price, processed_image_url, original_image_url, template_style, theme, category, background, final_fname, sku, stock_qty))
+                INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_image_url, sku, stock_qty, active)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE)
+            """, (store['id'], name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_fname, sku, stock_qty))
             
             conn.commit()
             flash("تم حفظ المنتج بنجاح في متجرك!", "success")
