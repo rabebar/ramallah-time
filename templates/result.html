@@ -164,44 +164,6 @@
 
   /* Category grid */
   .category-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .cat-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 6px; border-radius: 12px; border: 2px solid var(--border); background: #f9fafb; cursor: pointer; transition: 0.2s; gap: 4px; }
-  .cat-btn:hover { border-color: #d1d5db; background: #fff; }
-  .cat-btn.active { border-color: var(--navy-deep); background: var(--navy-deep); }
-  .cat-btn.active .cat-name { color: #fff; }
-  .cat-icon { font-size: 20px; }
-  .cat-name { font-size: 10px; font-weight: 700; color: var(--text-muted); text-align: center; }
-
-  /* Effects */
-  .effects-row { display: flex; gap: 10px; }
-  .effect-toggle { flex: 1; padding: 10px 8px; border-radius: 12px; border: 2px solid var(--border); background: #f9fafb; cursor: pointer; transition: 0.2s; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-muted); }
-  .effect-toggle:hover { border-color: #d1d5db; background: #fff; }
-  .effect-toggle.active { border-color: var(--navy-deep); background: var(--navy-deep); color: #fff; }
-  .drag-hint { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 8px; }
-  #prod-img { cursor: grab; }
-  #prod-img:active { cursor: grabbing; }
-
-  /* New theme CSS */
-  .theme-smoke      { background: linear-gradient(135deg, #14141E, #3C3250); }
-  .theme-luxury     { background: linear-gradient(135deg, #0A0A0A, #28200A); }
-  .theme-rose_gold  { background: linear-gradient(135deg, #B76E79, #D4AF37); }
-  .theme-pearl      { background: linear-gradient(135deg, #F5F5F5, #D2D2D2); }
-  .theme-royal_gold { background: linear-gradient(135deg, #0A0A0A, #D4AF37); }
-  .theme-silver     { background: linear-gradient(135deg, #B4B4C3, #DCDCEB); }
-  .theme-soft_gray  { background: linear-gradient(135deg, #C8C8CD, #F0F0F5); }
-  .theme-cream      { background: linear-gradient(135deg, #F5EBDC, #FFFAF0); }
-  .theme-blush      { background: linear-gradient(135deg, #FFB6C1, #FFDAE0); }
-  .theme-camel      { background: linear-gradient(135deg, #C19A6B, #8B5A2B); }
-  .theme-chocolate  { background: linear-gradient(135deg, #3C1E0A, #783C14); }
-  .theme-beige      { background: linear-gradient(135deg, #E1CDB4, #F5E6D2); }
-  .theme-carbon     { background: linear-gradient(135deg, #14141A, #32323C); }
-  .theme-gunmetal   { background: linear-gradient(135deg, #323738, #64696E); }
-  .theme-champagne  { background: linear-gradient(135deg, #D4AF37, #F5DC82); }
-  .theme-tech_black  { background: linear-gradient(135deg, #05050A, #1E1E28); }
-  .theme-space_gray  { background: linear-gradient(135deg, #505560, #8C9196); }
-  .theme-clean_white { background: linear-gradient(135deg, #F0F0F5, #FFFFFF); }
-
-  /* Category grid */
-  .category-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .cat-btn {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 10px 6px; border-radius: 12px; border: 2px solid var(--border);
@@ -213,20 +175,7 @@
   .cat-icon { font-size: 20px; }
   .cat-name { font-size: 10px; font-weight: 700; color: var(--text-muted); text-align: center; }
 
-  /* Drag handle */
-  .drag-hint { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 8px; }
-  #prod-img { cursor: grab; }
-  #prod-img:active { cursor: grabbing; }
 
-  /* Effects toggles */
-  .effects-row { display: flex; gap: 10px; }
-  .effect-toggle {
-    flex: 1; padding: 10px 8px; border-radius: 12px; border: 2px solid var(--border);
-    background: #f9fafb; cursor: pointer; transition: 0.2s;
-    text-align: center; font-size: 12px; font-weight: 600; color: var(--text-muted);
-  }
-  .effect-toggle:hover { border-color: #d1d5db; background: #fff; }
-  .effect-toggle.active { border-color: var(--navy-deep); background: var(--navy-deep); color: #fff; }
 
   /* Field helpers */
   .field-wrap { display: flex; flex-direction: column; gap: 6px; }
@@ -317,11 +266,6 @@
         <input type="hidden" name="pos_y" id="hiddenPosY" value="0">
         <input type="hidden" name="enable_glow" id="hiddenGlow" value="false">
         <input type="hidden" name="enable_reflection" id="hiddenReflection" value="false">
-        <input type="hidden" name="product_category" id="hiddenCategory" value="other">
-        <input type="hidden" name="pos_x" id="hiddenPosX" value="0">
-        <input type="hidden" name="pos_y" id="hiddenPosY" value="0">
-        <input type="hidden" name="enable_glow" id="hiddenGlow" value="false">
-        <input type="hidden" name="enable_reflection" id="hiddenReflection" value="false">
 
         <!-- Category Selector -->
         <div class="ctrl-section">
@@ -337,25 +281,6 @@
             <div class="cat-btn" data-cat="watches"  onclick="selectCategory('watches', this)"><div class="cat-icon">⌚</div><div class="cat-name" data-ar="ساعات" data-en="Watches">ساعات</div></div>
             <div class="cat-btn" data-cat="mobiles"  onclick="selectCategory('mobiles', this)"><div class="cat-icon">📱</div><div class="cat-name" data-ar="موبايلات" data-en="Mobiles">موبايلات</div></div>
             <div class="cat-btn" data-cat="other"    onclick="selectCategory('other', this)"><div class="cat-icon">🛍️</div><div class="cat-name" data-ar="أخرى" data-en="Other">أخرى</div></div>
-          </div>
-        </div>
-
-        <div class="divider-line"></div>
-
-        <!-- Category -->
-        <div class="ctrl-section">
-          <div class="ctrl-label">
-            <i data-lucide="grid-2x2"></i>
-            <span data-ar="نوع المنتج" data-en="Product Type">نوع المنتج</span>
-          </div>
-          <div class="category-grid">
-            <div class="cat-btn active" data-cat="perfume"  onclick="selectCategory('perfume',this)"><div class="cat-icon">🌸</div><div class="cat-name" data-ar="عطور" data-en="Perfume">عطور</div></div>
-            <div class="cat-btn" data-cat="jewelry"  onclick="selectCategory('jewelry',this)"><div class="cat-icon">💍</div><div class="cat-name" data-ar="مجوهرات" data-en="Jewelry">مجوهرات</div></div>
-            <div class="cat-btn" data-cat="clothes"  onclick="selectCategory('clothes',this)"><div class="cat-icon">👗</div><div class="cat-name" data-ar="ملابس" data-en="Clothes">ملابس</div></div>
-            <div class="cat-btn" data-cat="bags"     onclick="selectCategory('bags',this)"><div class="cat-icon">👜</div><div class="cat-name" data-ar="شنط" data-en="Bags">شنط</div></div>
-            <div class="cat-btn" data-cat="watches"  onclick="selectCategory('watches',this)"><div class="cat-icon">⌚</div><div class="cat-name" data-ar="ساعات" data-en="Watches">ساعات</div></div>
-            <div class="cat-btn" data-cat="mobiles"  onclick="selectCategory('mobiles',this)"><div class="cat-icon">📱</div><div class="cat-name" data-ar="موبايلات" data-en="Mobiles">موبايلات</div></div>
-            <div class="cat-btn" data-cat="other"    onclick="selectCategory('other',this)"><div class="cat-icon">🛍️</div><div class="cat-name" data-ar="أخرى" data-en="Other">أخرى</div></div>
           </div>
         </div>
 
@@ -537,21 +462,6 @@
             <div class="effect-toggle" id="reflectionBtn" onclick="toggleEffect('reflection')">
               🪞 <span data-ar="انعكاس" data-en="Reflection">انعكاس</span>
             </div>
-          </div>
-          <div class="drag-hint" data-ar="💡 اسحب المنتج في المعاينة لتحريكه" data-en="💡 Drag the product in preview to reposition">💡 اسحب المنتج في المعاينة لتحريكه</div>
-        </div>
-
-        <div class="divider-line"></div>
-
-        <!-- Effects -->
-        <div class="ctrl-section">
-          <div class="ctrl-label">
-            <i data-lucide="sparkles"></i>
-            <span data-ar="التأثيرات البصرية" data-en="Visual Effects">التأثيرات البصرية</span>
-          </div>
-          <div class="effects-row">
-            <div class="effect-toggle" id="glowBtn" onclick="toggleEffect('glow')">✨ <span data-ar="توهج" data-en="Glow">توهج</span></div>
-            <div class="effect-toggle" id="reflectionBtn" onclick="toggleEffect('reflection')">🪞 <span data-ar="انعكاس" data-en="Reflection">انعكاس</span></div>
           </div>
           <div class="drag-hint" data-ar="💡 اسحب المنتج في المعاينة لتحريكه" data-en="💡 Drag the product in preview to reposition">💡 اسحب المنتج في المعاينة لتحريكه</div>
         </div>
@@ -766,99 +676,6 @@
     window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
     window.addEventListener('mouseup', onEnd);
 
-    img.addEventListener('touchstart', e => { const t = e.touches[0]; onStart(t.clientX, t.clientY); }, { passive: true });
-    window.addEventListener('touchmove', e => { const t = e.touches[0]; onMove(t.clientX, t.clientY); }, { passive: true });
-    window.addEventListener('touchend', onEnd);
-  })();
-
-  // Category system
-  const CATEGORY_THEMES = {
-    perfume:  ['luxury','smoke','rose_gold','black','gold'],
-    jewelry:  ['pearl','royal_gold','silver','midnight','gold'],
-    clothes:  ['soft_gray','cream','blush','pastel','spring'],
-    bags:     ['camel','chocolate','beige','earth','midnight'],
-    watches:  ['carbon','gunmetal','champagne','black','silver'],
-    mobiles:  ['tech_black','space_gray','clean_white','midnight'],
-    other:    ['gold','black','midnight','ocean','royal'],
-  };
-  const CATEGORY_EFFECTS = {
-    perfume:  { glow: true,  reflection: true },
-    jewelry:  { glow: true,  reflection: true },
-    clothes:  { glow: false, reflection: false },
-    bags:     { glow: false, reflection: false },
-    watches:  { glow: true,  reflection: true },
-    mobiles:  { glow: true,  reflection: false },
-    other:    { glow: false, reflection: false },
-  };
-  const ALL_THEMES = ['gold','black','pastel','spring','fire','ocean','royal','midnight','earth','vibrant',
-    'smoke','luxury','rose_gold','pearl','royal_gold','silver','soft_gray','cream','blush',
-    'camel','chocolate','beige','carbon','gunmetal','champagne','tech_black','space_gray','clean_white'];
-
-  function selectCategory(cat, el) {
-    document.getElementById('hiddenCategory').value = cat;
-    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    const themes = CATEGORY_THEMES[cat] || ['gold'];
-    const canvas = document.getElementById('capture-area');
-    ALL_THEMES.forEach(t => canvas.classList.remove('theme-' + t));
-    canvas.classList.add('theme-' + themes[0]);
-    document.getElementById('hiddenTheme').value = themes[0];
-    document.querySelectorAll('.theme-swatch').forEach(b => b.classList.remove('active'));
-    canvas.style.backgroundImage = '';
-    document.getElementById('hiddenBackground').value = 'none';
-    document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
-    const noneBtn = document.querySelector('.bg-none');
-    if (noneBtn) noneBtn.classList.add('active');
-    const fx = CATEGORY_EFFECTS[cat] || {};
-    setEffect('glow', fx.glow || false);
-    setEffect('reflection', fx.reflection || false);
-  }
-
-  function setEffect(type, val) {
-    if (type === 'glow') {
-      document.getElementById('hiddenGlow').value = val ? 'true' : 'false';
-      document.getElementById('glowBtn').classList.toggle('active', val);
-    } else {
-      document.getElementById('hiddenReflection').value = val ? 'true' : 'false';
-      document.getElementById('reflectionBtn').classList.toggle('active', val);
-    }
-  }
-
-  function toggleEffect(type) {
-    if (type === 'glow') {
-      setEffect('glow', document.getElementById('hiddenGlow').value !== 'true');
-    } else {
-      setEffect('reflection', document.getElementById('hiddenReflection').value !== 'true');
-    }
-  }
-
-  // Override applyTheme to support new themes
-  const _origApplyTheme = applyTheme;
-  function applyTheme(name, el) {
-    const canvas = document.getElementById('capture-area');
-    ALL_THEMES.forEach(t => canvas.classList.remove('theme-' + t));
-    canvas.classList.add('theme-' + name);
-    document.getElementById('hiddenTheme').value = name;
-    document.querySelectorAll('.theme-swatch').forEach(b => b.classList.remove('active'));
-    if (el) el.classList.add('active');
-  }
-
-  // Drag & Drop
-  (function() {
-    let dragging = false, startX, startY, offsetX = 0, offsetY = 0;
-    const img = document.getElementById('prod-img');
-    function onStart(x, y) { dragging = true; startX = x - offsetX; startY = y - offsetY; img.style.transition = 'none'; }
-    function onMove(x, y) {
-      if (!dragging) return;
-      offsetX = x - startX; offsetY = y - startY;
-      img.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-      document.getElementById('hiddenPosX').value = Math.round(offsetX);
-      document.getElementById('hiddenPosY').value = Math.round(offsetY);
-    }
-    function onEnd() { dragging = false; img.style.transition = ''; }
-    img.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX, e.clientY); });
-    window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
-    window.addEventListener('mouseup', onEnd);
     img.addEventListener('touchstart', e => { const t = e.touches[0]; onStart(t.clientX, t.clientY); }, { passive: true });
     window.addEventListener('touchmove', e => { const t = e.touches[0]; onMove(t.clientX, t.clientY); }, { passive: true });
     window.addEventListener('touchend', onEnd);
