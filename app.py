@@ -268,10 +268,11 @@ def compose_final(cutout_path, name, price, theme, style, background_key, out_ba
     try:
         bg = load_background(CANVAS, background_key, theme).copy()
 
-        # Load cutout حسب zoom (30%-150%)
+        # Load cutout مع padding حسب zoom
+        # zoom 100 = يملأ 90% من الكانفاس، zoom 30 = يملأ 27%، zoom 150 = يملأ 100%
         cutout_raw = Image.open(cutout_path).convert("RGBA")
         cw, ch = cutout_raw.size
-        zoom_factor = max(0.3, min(1.5, (zoom or 80) / 100))
+        zoom_factor = max(0.27, min(0.97, (zoom or 80) * 0.9 / 100))
         max_dim = int(CANVAS[0] * zoom_factor)
         scale = min(max_dim / cw, max_dim / ch)
         new_w, new_h = int(cw * scale), int(ch * scale)
