@@ -289,6 +289,7 @@
         <input type="hidden" name="pos_y" id="hiddenPosY" value="0">
         <input type="hidden" name="enable_glow" id="hiddenGlow" value="false">
         <input type="hidden" name="enable_reflection" id="hiddenReflection" value="false">
+        <input type="hidden" name="zoom" id="hiddenZoom" value="80">
 
         <!-- Category Selector -->
         <div class="ctrl-section">
@@ -713,6 +714,7 @@
   function applyZoom(val) {
     const img = document.getElementById('prod-img');
     document.getElementById('zoomVal').textContent = val + '%';
+    document.getElementById('hiddenZoom').value = val;
     const pct = val / 100;
     img.style.maxWidth = (pct * 100) + '%';
     img.style.maxHeight = (pct * 100) + '%';

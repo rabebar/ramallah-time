@@ -254,7 +254,7 @@ def add_reflection(composed, cutout, position=(0, 0), canvas_size=(1200, 1200)):
 
 def compose_final(cutout_path, name, price, theme, style, background_key, out_basepath,
                   pos_x=None, pos_y=None, enable_glow=False, enable_reflection=False,
-                  category='other'):
+                  category='other', zoom=80):
     """
     Compose final marketing image (1200x1200):
     - background (asset or theme gradient)
@@ -268,10 +268,11 @@ def compose_final(cutout_path, name, price, theme, style, background_key, out_ba
     try:
         bg = load_background(CANVAS, background_key, theme).copy()
 
-        # Load cutout and auto-fit to fill 85% of canvas naturally
+        # Load cutout حسب zoom (30%-150%)
         cutout_raw = Image.open(cutout_path).convert("RGBA")
         cw, ch = cutout_raw.size
-        max_dim = int(CANVAS[0] * 0.85)
+        zoom_factor = max(0.3, min(1.5, (zoom or 80) / 100))
+        max_dim = int(CANVAS[0] * zoom_factor)
         scale = min(max_dim / cw, max_dim / ch)
         new_w, new_h = int(cw * scale), int(ch * scale)
         cutout_resized = cutout_raw.resize((new_w, new_h), Image.LANCZOS)
@@ -720,6 +721,7 @@ def save_product():
     pos_y = request.form.get('pos_y', 0)
     enable_glow = request.form.get('enable_glow', 'false') == 'true'
     enable_reflection = request.form.get('enable_reflection', 'false') == 'true'
+    zoom = int(request.form.get('zoom', 80))
 
     # Compose final image
     final_fname = None
@@ -739,7 +741,8 @@ def save_product():
             pos_y=pos_y,
             enable_glow=enable_glow,
             enable_reflection=enable_reflection,
-            category=product_category
+            category=product_category,
+            zoom=zoom
         )
         if final_webp_name:
             final_fname = final_webp_name
