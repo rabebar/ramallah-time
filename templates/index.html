@@ -244,7 +244,7 @@
 </div>
 
 <div class="welcome-header">
-    <h1>Welcome back, <span style="color: var(--text-main);">Creator</span></h1>
+    <h1><span data-ar="أهلاً بك،" data-en="Welcome back,">Welcome back,</span> <span style="color: var(--text-main);" data-ar="مبدع" data-en="Creator">Creator</span></h1>
 </div>
 <!-- منطقة رفع الصور مع دعم السحب والإفلات (مستعادة من الملف القديم) -->
 <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
@@ -280,7 +280,7 @@
     </button>
 </form>
 
-<h2 class="section-title">Your Recent Processed Images</h2>
+<h2 class="section-title" data-ar="صورك المعالجة مؤخراً" data-en="Your Recent Processed Images">Your Recent Processed Images</h2>
 <div class="projects-grid">
     {% if stats.processed_images %}
         {% for img in stats.processed_images[:4] %}
@@ -289,7 +289,7 @@
                 <img src="/static/uploads/{{ img.url }}" alt="Processed Image">
             </div>
             <div class="project-info">
-                <div class="p-name">Processed Image</div>
+                <div class="p-name" data-ar="صورة معالجة" data-en="Processed Image">Processed Image</div>
                 <div class="p-meta">{{ img.date }} • Completed</div>
             </div>
         </div>
@@ -297,20 +297,20 @@
     {% else %}
         <div class="project-card" style="grid-column: 1/-1; justify-content: center; padding: 40px; border: 2px dashed var(--border); background: transparent; box-shadow: none;">
             <div class="project-info" style="text-align: center;">
-                <div class="p-name" style="color: var(--text-muted);">No processed images yet</div>
-                <div class="p-meta">Upload your first product to see it here</div>
+                <div class="p-name" style="color: var(--text-muted);" data-ar="لا توجد صور بعد" data-en="No processed images yet">No processed images yet</div>
+                <div class="p-meta" data-ar="ارفع منتجك الأول ليظهر هنا" data-en="Upload your first product to see it here">Upload your first product to see it here</div>
             </div>
         </div>
     {% endif %}
 </div>
 
-<h2 class="section-title">Quick Actions</h2>
+<h2 class="section-title" data-ar="إجراءات سريعة" data-en="Quick Actions">Quick Actions</h2>
 <div class="quick-actions-row">
     <div class="action-card" onclick="document.getElementById('fileInput').click()">
-        <i data-lucide="image-plus"></i> رفع صورة
+        <i data-lucide="image-plus"></i> <span data-ar="رفع صورة" data-en="Upload Image">رفع صورة</span>
     </div>
     <div class="action-card" onclick="document.getElementById('fileInput').click()">
-        <i data-lucide="scissors"></i> إزالة الخلفية
+        <i data-lucide="scissors"></i> <span data-ar="إزالة الخلفية" data-en="Remove Background">إزالة الخلفية</span>
     </div>
     <div class="action-card">
         <i data-lucide="layers"></i> معالجة مجمّعة
