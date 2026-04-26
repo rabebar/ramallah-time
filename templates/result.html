@@ -21,17 +21,41 @@
   .post-main-canvas .divider { background: #fff; width: 40px; height: 3px; margin: 12px 0; border-radius: 2px; opacity: 0.8; }
   .canvas-logo { position: absolute; bottom: 10px; font-size: 9px; opacity: 0.5; letter-spacing: 2px; font-weight: 700; z-index: 5; }
 
-  /* Themes */
-  .theme-gold     { background: linear-gradient(135deg, #F2994A, #F2C94C); }
-  .theme-black    { background: linear-gradient(135deg, #0F2027, #203A43); }
-  .theme-pastel   { background: linear-gradient(135deg, #667EEA, #764BA2); }
-  .theme-spring   { background: linear-gradient(135deg, #11998E, #38EF7D); }
-  .theme-fire     { background: linear-gradient(135deg, #FF512F, #DD2476); }
-  .theme-ocean    { background: linear-gradient(135deg, #2193B0, #6DD5ED); }
-  .theme-royal    { background: linear-gradient(135deg, #4F46E5, #7C3AED); }
-  .theme-midnight { background: linear-gradient(135deg, #0F172A, #334155); }
-  .theme-earth    { background: linear-gradient(135deg, #3F6212, #713F12); }
-  .theme-vibrant  { background: linear-gradient(135deg, #F43F5E, #FB923C); }
+  /* Themes - General */
+  .theme-gold       { background: linear-gradient(135deg, #F2994A, #F2C94C); }
+  .theme-black      { background: linear-gradient(135deg, #0F2027, #203A43); }
+  .theme-pastel     { background: linear-gradient(135deg, #667EEA, #764BA2); }
+  .theme-spring     { background: linear-gradient(135deg, #11998E, #38EF7D); }
+  .theme-fire       { background: linear-gradient(135deg, #FF512F, #DD2476); }
+  .theme-ocean      { background: linear-gradient(135deg, #2193B0, #6DD5ED); }
+  .theme-royal      { background: linear-gradient(135deg, #4F46E5, #7C3AED); }
+  .theme-midnight   { background: linear-gradient(135deg, #0F172A, #334155); }
+  .theme-earth      { background: linear-gradient(135deg, #3F6212, #713F12); }
+  .theme-vibrant    { background: linear-gradient(135deg, #F43F5E, #FB923C); }
+  /* Themes - Perfume */
+  .theme-smoke      { background: linear-gradient(135deg, #14141E, #3C3250); }
+  .theme-luxury     { background: linear-gradient(135deg, #0A0A0A, #28200A); }
+  .theme-rose_gold  { background: linear-gradient(135deg, #B76E79, #D4AF37); }
+  /* Themes - Jewelry */
+  .theme-pearl      { background: linear-gradient(135deg, #F5F5F5, #D2D2D2); }
+  .theme-royal_gold { background: linear-gradient(135deg, #0A0A0A, #D4AF37); }
+  .theme-silver     { background: linear-gradient(135deg, #B4B4C3, #DCDCEB); }
+  /* Themes - Clothes */
+  .theme-soft_gray  { background: linear-gradient(135deg, #C8C8CD, #F0F0F5); }
+  .theme-cream      { background: linear-gradient(135deg, #F5EBDC, #FFFAF0); }
+  .theme-blush      { background: linear-gradient(135deg, #FFB6C1, #FFDAE0); }
+  /* Themes - Bags */
+  .theme-camel      { background: linear-gradient(135deg, #C19A6B, #8B5A2B); }
+  .theme-chocolate  { background: linear-gradient(135deg, #3C1E0A, #783C14); }
+  .theme-beige      { background: linear-gradient(135deg, #E1CDB4, #F5E6D2); }
+  /* Themes - Watches */
+  .theme-carbon     { background: linear-gradient(135deg, #14141A, #32323C); }
+  .theme-gunmetal   { background: linear-gradient(135deg, #323738, #64696E); }
+  .theme-champagne  { background: linear-gradient(135deg, #D4AF37, #F5DC82); }
+  /* Themes - Mobiles */
+  .theme-tech_black  { background: linear-gradient(135deg, #05050A, #1E1E28); }
+  .theme-space_gray  { background: linear-gradient(135deg, #505560, #8C9196); }
+  .theme-clean_white { background: linear-gradient(135deg, #F0F0F5, #FFFFFF); }
 
   /* Styles */
   .style-elegant #prod-title { font-size: 28px; margin-top: 16px; }
@@ -489,7 +513,10 @@
 
   function applyTheme(name, el) {
     const canvas = document.getElementById('capture-area');
-    canvas.classList.remove('theme-gold','theme-black','theme-pastel','theme-spring','theme-fire','theme-ocean','theme-royal','theme-midnight','theme-earth','theme-vibrant');
+    const allThemes = ['gold','black','pastel','spring','fire','ocean','royal','midnight','earth','vibrant',
+      'smoke','luxury','rose_gold','pearl','royal_gold','silver','soft_gray','cream','blush',
+      'camel','chocolate','beige','carbon','gunmetal','champagne','tech_black','space_gray','clean_white'];
+    allThemes.forEach(t => canvas.classList.remove('theme-' + t));
     canvas.classList.add('theme-' + name);
     document.getElementById('hiddenTheme').value = name;
     document.querySelectorAll('.theme-swatch').forEach(b => b.classList.remove('active'));
@@ -587,6 +614,24 @@
     document.getElementById('hiddenCategory').value = cat;
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
+
+    // Auto-apply first recommended theme
+    const themes = CATEGORY_THEMES[cat] || ['gold'];
+    const firstTheme = themes[0];
+    const canvas = document.getElementById('capture-area');
+    const allThemes = ['gold','black','pastel','spring','fire','ocean','royal','midnight','earth','vibrant',
+      'smoke','luxury','rose_gold','pearl','royal_gold','silver','soft_gray','cream','blush',
+      'camel','chocolate','beige','carbon','gunmetal','champagne','tech_black','space_gray','clean_white'];
+    allThemes.forEach(t => canvas.classList.remove('theme-' + t));
+    canvas.classList.add('theme-' + firstTheme);
+    document.getElementById('hiddenTheme').value = firstTheme;
+    document.querySelectorAll('.theme-swatch').forEach(b => b.classList.remove('active'));
+
+    // Reset background to none (theme takes over)
+    canvas.style.backgroundImage = '';
+    document.getElementById('hiddenBackground').value = 'none';
+    document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.bg-none').classList.add('active');
 
     // Auto-enable effects
     const fx = CATEGORY_EFFECTS[cat] || {};
