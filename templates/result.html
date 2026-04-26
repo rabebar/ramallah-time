@@ -21,41 +21,17 @@
   .post-main-canvas .divider { background: #fff; width: 40px; height: 3px; margin: 12px 0; border-radius: 2px; opacity: 0.8; }
   .canvas-logo { position: absolute; bottom: 10px; font-size: 9px; opacity: 0.5; letter-spacing: 2px; font-weight: 700; z-index: 5; }
 
-  /* Themes - General */
-  .theme-gold       { background: linear-gradient(135deg, #F2994A, #F2C94C); }
-  .theme-black      { background: linear-gradient(135deg, #0F2027, #203A43); }
-  .theme-pastel     { background: linear-gradient(135deg, #667EEA, #764BA2); }
-  .theme-spring     { background: linear-gradient(135deg, #11998E, #38EF7D); }
-  .theme-fire       { background: linear-gradient(135deg, #FF512F, #DD2476); }
-  .theme-ocean      { background: linear-gradient(135deg, #2193B0, #6DD5ED); }
-  .theme-royal      { background: linear-gradient(135deg, #4F46E5, #7C3AED); }
-  .theme-midnight   { background: linear-gradient(135deg, #0F172A, #334155); }
-  .theme-earth      { background: linear-gradient(135deg, #3F6212, #713F12); }
-  .theme-vibrant    { background: linear-gradient(135deg, #F43F5E, #FB923C); }
-  /* Themes - Perfume */
-  .theme-smoke      { background: linear-gradient(135deg, #14141E, #3C3250); }
-  .theme-luxury     { background: linear-gradient(135deg, #0A0A0A, #28200A); }
-  .theme-rose_gold  { background: linear-gradient(135deg, #B76E79, #D4AF37); }
-  /* Themes - Jewelry */
-  .theme-pearl      { background: linear-gradient(135deg, #F5F5F5, #D2D2D2); }
-  .theme-royal_gold { background: linear-gradient(135deg, #0A0A0A, #D4AF37); }
-  .theme-silver     { background: linear-gradient(135deg, #B4B4C3, #DCDCEB); }
-  /* Themes - Clothes */
-  .theme-soft_gray  { background: linear-gradient(135deg, #C8C8CD, #F0F0F5); }
-  .theme-cream      { background: linear-gradient(135deg, #F5EBDC, #FFFAF0); }
-  .theme-blush      { background: linear-gradient(135deg, #FFB6C1, #FFDAE0); }
-  /* Themes - Bags */
-  .theme-camel      { background: linear-gradient(135deg, #C19A6B, #8B5A2B); }
-  .theme-chocolate  { background: linear-gradient(135deg, #3C1E0A, #783C14); }
-  .theme-beige      { background: linear-gradient(135deg, #E1CDB4, #F5E6D2); }
-  /* Themes - Watches */
-  .theme-carbon     { background: linear-gradient(135deg, #14141A, #32323C); }
-  .theme-gunmetal   { background: linear-gradient(135deg, #323738, #64696E); }
-  .theme-champagne  { background: linear-gradient(135deg, #D4AF37, #F5DC82); }
-  /* Themes - Mobiles */
-  .theme-tech_black  { background: linear-gradient(135deg, #05050A, #1E1E28); }
-  .theme-space_gray  { background: linear-gradient(135deg, #505560, #8C9196); }
-  .theme-clean_white { background: linear-gradient(135deg, #F0F0F5, #FFFFFF); }
+  /* Themes */
+  .theme-gold     { background: linear-gradient(135deg, #F2994A, #F2C94C); }
+  .theme-black    { background: linear-gradient(135deg, #0F2027, #203A43); }
+  .theme-pastel   { background: linear-gradient(135deg, #667EEA, #764BA2); }
+  .theme-spring   { background: linear-gradient(135deg, #11998E, #38EF7D); }
+  .theme-fire     { background: linear-gradient(135deg, #FF512F, #DD2476); }
+  .theme-ocean    { background: linear-gradient(135deg, #2193B0, #6DD5ED); }
+  .theme-royal    { background: linear-gradient(135deg, #4F46E5, #7C3AED); }
+  .theme-midnight { background: linear-gradient(135deg, #0F172A, #334155); }
+  .theme-earth    { background: linear-gradient(135deg, #3F6212, #713F12); }
+  .theme-vibrant  { background: linear-gradient(135deg, #F43F5E, #FB923C); }
 
   /* Styles */
   .style-elegant #prod-title { font-size: 28px; margin-top: 16px; }
@@ -162,64 +138,6 @@
 
   .divider-line { height: 1px; background: var(--border); }
 
-  /* Category grid */
-  .category-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .cat-btn {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 10px 6px; border-radius: 12px; border: 2px solid var(--border);
-    background: #f9fafb; cursor: pointer; transition: 0.2s; gap: 4px;
-  }
-  .cat-btn:hover { border-color: #d1d5db; background: #fff; transform: scale(1.03); }
-  .cat-btn.active { border-color: var(--navy-deep); background: var(--navy-deep); }
-  .cat-btn.active .cat-name { color: #fff; }
-  .cat-icon { font-size: 20px; }
-  .cat-name { font-size: 10px; font-weight: 700; color: var(--text-muted); text-align: center; }
-
-  /* Drag handle */
-  .drag-hint { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 8px; }
-  #prod-img { cursor: grab; }
-  #prod-img:active { cursor: grabbing; }
-
-  /* Effects toggles */
-  .effects-row { display: flex; gap: 10px; }
-  .effect-toggle {
-    flex: 1; padding: 10px 8px; border-radius: 12px; border: 2px solid var(--border);
-    background: #f9fafb; cursor: pointer; transition: 0.2s;
-    text-align: center; font-size: 12px; font-weight: 600; color: var(--text-muted);
-  }
-  .effect-toggle:hover { border-color: #d1d5db; background: #fff; }
-  .effect-toggle.active { border-color: var(--navy-deep); background: var(--navy-deep); color: #fff; }
-
-  /* Field helpers */
-  .field-wrap { display: flex; flex-direction: column; gap: 6px; }
-  .field-label-row { display: flex; align-items: center; justify-content: space-between; }
-  .field-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-  .field-hint { font-size: 11px; color: var(--text-muted); margin-top: -2px; }
-
-  /* Tooltip */
-  .tooltip-trigger {
-    font-size: 12px; color: var(--text-muted); cursor: pointer;
-    width: 18px; height: 18px; border-radius: 50%;
-    background: #f1f5f9; display: inline-flex; align-items: center; justify-content: center;
-    transition: 0.2s; position: relative;
-  }
-  .tooltip-trigger:hover { background: var(--navy-deep); color: #fff; }
-  .tooltip-trigger::after {
-    content: attr(data-ar-tip);
-    position: absolute; bottom: 26px; right: 0;
-    background: #1e293b; color: #fff;
-    font-size: 11px; font-weight: 500; line-height: 1.5;
-    padding: 8px 12px; border-radius: 8px;
-    white-space: nowrap; max-width: 220px; white-space: normal;
-    width: max-content; max-width: 200px;
-    opacity: 0; pointer-events: none;
-    transform: translateY(4px);
-    transition: opacity 0.2s, transform 0.2s;
-    z-index: 100;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  }
-  .tooltip-trigger:hover::after { opacity: 1; transform: translateY(0); }
-
   @media (max-width: 900px) {
     .editor-container { grid-template-columns: 1fr; }
     .preview-sticky-wrap { position: relative; top: 0; margin-bottom: 8px; }
@@ -274,30 +192,6 @@
         <input type="hidden" name="template_style" id="hiddenStyle" value="elegant">
         <input type="hidden" name="theme" id="hiddenTheme" value="gold">
         <input type="hidden" name="background" id="hiddenBackground" value="none">
-        <input type="hidden" name="product_category" id="hiddenCategory" value="other">
-        <input type="hidden" name="pos_x" id="hiddenPosX" value="0">
-        <input type="hidden" name="pos_y" id="hiddenPosY" value="0">
-        <input type="hidden" name="enable_glow" id="hiddenGlow" value="false">
-        <input type="hidden" name="enable_reflection" id="hiddenReflection" value="false">
-
-        <!-- Category Selector -->
-        <div class="ctrl-section">
-          <div class="ctrl-label">
-            <i data-lucide="grid-2x2"></i>
-            <span data-ar="نوع المنتج" data-en="Product Type">نوع المنتج</span>
-          </div>
-          <div class="category-grid" id="categoryGrid">
-            <div class="cat-btn active" data-cat="perfume"  onclick="selectCategory('perfume', this)"><div class="cat-icon">🌸</div><div class="cat-name" data-ar="عطور" data-en="Perfume">عطور</div></div>
-            <div class="cat-btn" data-cat="jewelry"  onclick="selectCategory('jewelry', this)"><div class="cat-icon">💍</div><div class="cat-name" data-ar="مجوهرات" data-en="Jewelry">مجوهرات</div></div>
-            <div class="cat-btn" data-cat="clothes"  onclick="selectCategory('clothes', this)"><div class="cat-icon">👗</div><div class="cat-name" data-ar="ملابس" data-en="Clothes">ملابس</div></div>
-            <div class="cat-btn" data-cat="bags"     onclick="selectCategory('bags', this)"><div class="cat-icon">👜</div><div class="cat-name" data-ar="شنط" data-en="Bags">شنط</div></div>
-            <div class="cat-btn" data-cat="watches"  onclick="selectCategory('watches', this)"><div class="cat-icon">⌚</div><div class="cat-name" data-ar="ساعات" data-en="Watches">ساعات</div></div>
-            <div class="cat-btn" data-cat="mobiles"  onclick="selectCategory('mobiles', this)"><div class="cat-icon">📱</div><div class="cat-name" data-ar="موبايلات" data-en="Mobiles">موبايلات</div></div>
-            <div class="cat-btn" data-cat="other"    onclick="selectCategory('other', this)"><div class="cat-icon">🛍️</div><div class="cat-name" data-ar="أخرى" data-en="Other">أخرى</div></div>
-          </div>
-        </div>
-
-        <div class="divider-line"></div>
 
         <!-- Product Details -->
         <div class="ctrl-section">
@@ -306,55 +200,14 @@
             <span data-ar="بيانات المنتج" data-en="Product Details">بيانات المنتج</span>
           </div>
           <div class="field-group">
-
-            <!-- اسم المنتج -->
-            <div class="field-wrap">
-              <div class="field-label-row">
-                <span class="field-label" data-ar="اسم المنتج" data-en="Product Name">اسم المنتج</span>
-                <span class="tooltip-trigger" data-ar-tip="سيظهر هذا الاسم على صورة المنتج وفي صفحة متجرك" data-en-tip="This name appears on the product image and in your store">ⓘ</span>
-              </div>
-              <input type="text" name="name" id="inputName" class="data-input"
-                placeholder="" data-ar-placeholder="اسم المنتج" data-en-placeholder="Product name"
-                oninput="liveSync()" required>
-              <small class="field-hint" data-ar="مطلوب — يظهر على الصورة وفي المتجر" data-en="Required — shown on image and in store">مطلوب — يظهر على الصورة وفي المتجر</small>
-            </div>
-
-            <!-- السعر -->
-            <div class="field-wrap">
-              <div class="field-label-row">
-                <span class="field-label" data-ar="السعر (₪)" data-en="Price (₪)">السعر (₪)</span>
-                <span class="tooltip-trigger" data-ar-tip="سيظهر السعر على صورة المنتج تلقائياً" data-en-tip="Price will appear automatically on the product image">ⓘ</span>
-              </div>
-              <input type="number" name="price" id="inputPrice" class="data-input"
-                placeholder="" data-ar-placeholder="0.00" data-en-placeholder="0.00"
-                oninput="liveSync()" required>
-              <small class="field-hint" data-ar="مطلوب — يظهر على الصورة وفي المتجر" data-en="Required — shown on image and in store">مطلوب — يظهر على الصورة وفي المتجر</small>
-            </div>
-
-            <!-- القسم -->
-            <div class="field-wrap">
-              <div class="field-label-row">
-                <span class="field-label" data-ar="القسم" data-en="Category">القسم</span>
-                <span class="tooltip-trigger" data-ar-tip="يساعد الزبائن على تصفح منتجاتك بسهولة" data-en-tip="Helps customers browse your products easily">ⓘ</span>
-              </div>
-              <input type="text" name="category" class="data-input"
-                placeholder="" data-ar-placeholder="مثال: ملابس، إكسسوارات، إلكترونيات..." data-en-placeholder="e.g. Clothing, Accessories, Electronics...">
-              <small class="field-hint" data-ar="اختياري — لتنظيم منتجاتك في المتجر" data-en="Optional — to organize your products">اختياري — لتنظيم منتجاتك في المتجر</small>
-            </div>
-
-            <!-- الوصف -->
-            <div class="field-wrap">
-              <div class="field-label-row">
-                <span class="field-label" data-ar="الوصف" data-en="Description">الوصف</span>
-                <span class="tooltip-trigger" data-ar-tip="أضف تفاصيل مفيدة كالأحجام والألوان والمواد" data-en-tip="Add useful details like sizes, colors, and materials">ⓘ</span>
-              </div>
-              <textarea name="description" rows="3" class="data-input"
-                placeholder="" data-ar-placeholder="الأحجام المتوفرة، الألوان، المواد، أي تفاصيل مفيدة..."
-                data-en-placeholder="Available sizes, colors, materials, any useful details..."
-                style="resize: vertical; line-height: 1.6;"></textarea>
-              <small class="field-hint" data-ar="اختياري — يظهر في صفحة المنتج داخل متجرك" data-en="Optional — shown on the product page in your store">اختياري — يظهر في صفحة المنتج داخل متجرك</small>
-            </div>
-
+            <input type="text" name="name" id="inputName" class="data-input"
+              placeholder="" data-ar-placeholder="اسم المنتج..." data-en-placeholder="Product name..."
+              oninput="liveSync()" required>
+            <input type="number" name="price" id="inputPrice" class="data-input"
+              placeholder="" data-ar-placeholder="السعر (₪)" data-en-placeholder="Price (₪)"
+              oninput="liveSync()" required>
+            <input type="text" name="category" class="data-input"
+              placeholder="" data-ar-placeholder="القسم (مثلاً: خواتم، عبايات...)" data-en-placeholder="Category (e.g. rings, dresses...)">
           </div>
         </div>
 
@@ -462,25 +315,6 @@
 
         <div class="divider-line"></div>
 
-        <!-- Effects -->
-        <div class="ctrl-section">
-          <div class="ctrl-label">
-            <i data-lucide="sparkles"></i>
-            <span data-ar="التأثيرات البصرية" data-en="Visual Effects">التأثيرات البصرية</span>
-          </div>
-          <div class="effects-row">
-            <div class="effect-toggle" id="glowBtn" onclick="toggleEffect('glow')">
-              ✨ <span data-ar="توهج" data-en="Glow">توهج</span>
-            </div>
-            <div class="effect-toggle" id="reflectionBtn" onclick="toggleEffect('reflection')">
-              🪞 <span data-ar="انعكاس" data-en="Reflection">انعكاس</span>
-            </div>
-          </div>
-          <div class="drag-hint" data-ar="💡 اسحب المنتج في المعاينة لتحريكه" data-en="💡 Drag the product in preview to reposition">💡 اسحب المنتج في المعاينة لتحريكه</div>
-        </div>
-
-        <div class="divider-line"></div>
-
         <button type="submit" class="btn-save">
           <i data-lucide="save" style="width:18px;height:18px;"></i>
           <span data-ar="حفظ في المتجر" data-en="Save to Store">حفظ في المتجر</span>
@@ -513,10 +347,7 @@
 
   function applyTheme(name, el) {
     const canvas = document.getElementById('capture-area');
-    const allThemes = ['gold','black','pastel','spring','fire','ocean','royal','midnight','earth','vibrant',
-      'smoke','luxury','rose_gold','pearl','royal_gold','silver','soft_gray','cream','blush',
-      'camel','chocolate','beige','carbon','gunmetal','champagne','tech_black','space_gray','clean_white'];
-    allThemes.forEach(t => canvas.classList.remove('theme-' + t));
+    canvas.classList.remove('theme-gold','theme-black','theme-pastel','theme-spring','theme-fire','theme-ocean','theme-royal','theme-midnight','theme-earth','theme-vibrant');
     canvas.classList.add('theme-' + name);
     document.getElementById('hiddenTheme').value = name;
     document.querySelectorAll('.theme-swatch').forEach(b => b.classList.remove('active'));
@@ -586,113 +417,6 @@
       if (!el.matches('input,textarea')) el.textContent = isAr ? el.getAttribute('data-ar') : el.getAttribute('data-en');
     });
   }
-
-  // =====================
-  // Category system
-  // =====================
-  const CATEGORY_THEMES = {
-    perfume:  ['luxury', 'smoke', 'rose_gold', 'black', 'gold'],
-    jewelry:  ['pearl', 'royal_gold', 'silver', 'midnight', 'gold'],
-    clothes:  ['soft_gray', 'cream', 'blush', 'pastel', 'spring'],
-    bags:     ['camel', 'chocolate', 'beige', 'earth', 'midnight'],
-    watches:  ['carbon', 'gunmetal', 'champagne', 'black', 'silver'],
-    mobiles:  ['tech_black', 'space_gray', 'clean_white', 'midnight', 'carbon'],
-    other:    ['gold', 'black', 'midnight', 'ocean', 'royal'],
-  };
-
-  const CATEGORY_EFFECTS = {
-    perfume:  { glow: true,  reflection: true },
-    jewelry:  { glow: true,  reflection: true },
-    clothes:  { glow: false, reflection: false },
-    bags:     { glow: false, reflection: false },
-    watches:  { glow: true,  reflection: true },
-    mobiles:  { glow: true,  reflection: false },
-    other:    { glow: false, reflection: false },
-  };
-
-  function selectCategory(cat, el) {
-    document.getElementById('hiddenCategory').value = cat;
-    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-
-    // Auto-apply first recommended theme
-    const themes = CATEGORY_THEMES[cat] || ['gold'];
-    const firstTheme = themes[0];
-    const canvas = document.getElementById('capture-area');
-    const allThemes = ['gold','black','pastel','spring','fire','ocean','royal','midnight','earth','vibrant',
-      'smoke','luxury','rose_gold','pearl','royal_gold','silver','soft_gray','cream','blush',
-      'camel','chocolate','beige','carbon','gunmetal','champagne','tech_black','space_gray','clean_white'];
-    allThemes.forEach(t => canvas.classList.remove('theme-' + t));
-    canvas.classList.add('theme-' + firstTheme);
-    document.getElementById('hiddenTheme').value = firstTheme;
-    document.querySelectorAll('.theme-swatch').forEach(b => b.classList.remove('active'));
-
-    // Reset background to none (theme takes over)
-    canvas.style.backgroundImage = '';
-    document.getElementById('hiddenBackground').value = 'none';
-    document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector('.bg-none').classList.add('active');
-
-    // Auto-enable effects
-    const fx = CATEGORY_EFFECTS[cat] || {};
-    setEffect('glow', fx.glow || false);
-    setEffect('reflection', fx.reflection || false);
-  }
-
-  // =====================
-  // Effects toggles
-  // =====================
-  function setEffect(type, val) {
-    if (type === 'glow') {
-      document.getElementById('hiddenGlow').value = val ? 'true' : 'false';
-      document.getElementById('glowBtn').classList.toggle('active', val);
-    } else {
-      document.getElementById('hiddenReflection').value = val ? 'true' : 'false';
-      document.getElementById('reflectionBtn').classList.toggle('active', val);
-    }
-  }
-
-  function toggleEffect(type) {
-    if (type === 'glow') {
-      const cur = document.getElementById('hiddenGlow').value === 'true';
-      setEffect('glow', !cur);
-    } else {
-      const cur = document.getElementById('hiddenReflection').value === 'true';
-      setEffect('reflection', !cur);
-    }
-  }
-
-  // =====================
-  // Drag & Drop product
-  // =====================
-  (function() {
-    let dragging = false, startX, startY, offsetX = 0, offsetY = 0;
-    const img = document.getElementById('prod-img');
-
-    function onStart(x, y) {
-      dragging = true;
-      startX = x - offsetX;
-      startY = y - offsetY;
-      img.style.transition = 'none';
-    }
-    function onMove(x, y) {
-      if (!dragging) return;
-      offsetX = x - startX;
-      offsetY = y - startY;
-      img.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-      document.getElementById('hiddenPosX').value = Math.round(offsetX);
-      document.getElementById('hiddenPosY').value = Math.round(offsetY);
-    }
-    function onEnd() { dragging = false; img.style.transition = ''; }
-
-    img.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX, e.clientY); });
-    window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
-    window.addEventListener('mouseup', onEnd);
-
-    img.addEventListener('touchstart', e => { const t = e.touches[0]; onStart(t.clientX, t.clientY); }, { passive: true });
-    window.addEventListener('touchmove', e => { const t = e.touches[0]; onMove(t.clientX, t.clientY); }, { passive: true });
-    window.addEventListener('touchend', onEnd);
-  })();
 
   const savedLang = localStorage.getItem('rt_lang') || 'ar';
   document.documentElement.lang = savedLang;
