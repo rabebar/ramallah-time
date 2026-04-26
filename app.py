@@ -268,11 +268,10 @@ def compose_final(cutout_path, name, price, theme, style, background_key, out_ba
     try:
         bg = load_background(CANVAS, background_key, theme).copy()
 
-        # Load cutout مع padding حسب zoom
-        # zoom 100 = يملأ 90% من الكانفاس، zoom 30 = يملأ 27%، zoom 150 = يملأ 100%
+        # Load cutout حسب zoom (30%-150%)
         cutout_raw = Image.open(cutout_path).convert("RGBA")
         cw, ch = cutout_raw.size
-        zoom_factor = max(0.27, min(0.97, (zoom or 80) * 0.9 / 100))
+        zoom_factor = max(0.3, min(1.5, (zoom or 80) / 100))
         max_dim = int(CANVAS[0] * zoom_factor)
         scale = min(max_dim / cw, max_dim / ch)
         new_w, new_h = int(cw * scale), int(ch * scale)
@@ -970,6 +969,7 @@ def update_store():
     website = request.form.get('website')
     inventory_enabled = True if request.form.get('inventory_enabled') in ('on', 'true', '1') else False
     currency = request.form.get('currency', '₪')
+    announcement = request.form.get('announcement', '').strip()
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -979,21 +979,23 @@ def update_store():
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s
+                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s,
+                    announcement=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, logo_url, inventory_enabled, currency, user_id))
+                  address, website, logo_url, inventory_enabled, currency, announcement, user_id))
         else:
             cursor.execute("""
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, inventory_enabled=%s, currency=%s
+                    address=%s, website=%s, inventory_enabled=%s, currency=%s,
+                    announcement=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, inventory_enabled, currency, user_id))
+                  address, website, inventory_enabled, currency, announcement, user_id))
         conn.commit()
         flash("تم تحديث الإعدادات.", "success")
     except Exception as e:

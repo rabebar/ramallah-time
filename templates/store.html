@@ -317,7 +317,22 @@
             </div>
         </header>
 
+        {% if store.announcement %}
+        <div id="announcementBar" style="
+            background: linear-gradient(135deg, #1A2238, #374773);
+            color: #F2C94C;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 24px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 15px rgba(26,34,56,0.15);
+        ">{{ store.announcement }}</div>
+        {% else %}
         <h2 class="section-title" id="products" data-t="latest_products">أحدث المنتجات</h2>
+        {% endif %}
 
         {% set categories = [] %}
         {% for p in products %}

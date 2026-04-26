@@ -468,6 +468,14 @@
             <textarea name="bio" rows="2" class="input-field" placeholder="A short description of your business...">{{ store.bio or '' }}</textarea>
         </div>
         <div class="form-group" style="margin-top: 15px;">
+            <label class="form-label" data-ar="إعلان التنزيلات 🔥" data-en="Sale Announcement 🔥">إعلان التنزيلات 🔥</label>
+            <input type="text" name="announcement" class="input-field"
+                placeholder="مثال: 🔥 خصم 30% على كل المجوهرات هذا الأسبوع!"
+                value="{{ store.announcement or '' }}"
+                maxlength="120">
+            <small style="color: var(--text-muted); font-size: 11px;" data-ar="اتركه فارغاً إذا لا يوجد عروض" data-en="Leave empty if no active promotions">اتركه فارغاً إذا لا يوجد عروض</small>
+        </div>
+        <div class="form-group" style="margin-top: 15px;">
             <label class="form-label">عملة المتجر (Currency)</label>
             <select name="currency" class="input-field">
                 <option value="₪" {% if store.currency == '₪' %}selected{% endif %}>شيكل (₪)</option>
