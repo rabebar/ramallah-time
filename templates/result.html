@@ -714,13 +714,25 @@
   function applyZoom(val) {
     const img = document.getElementById('prod-img');
     document.getElementById('zoomVal').textContent = val + '%';
-    document.getElementById('hiddenZoom').value = val;
     const pct = val / 100;
     img.style.maxWidth = (pct * 100) + '%';
     img.style.maxHeight = (pct * 100) + '%';
   }
 
   // تطبيق الزوم الافتراضي عند التحميل
+  window.addEventListener('DOMContentLoaded', () => {
+    applyZoom(document.getElementById('zoomSlider').value);
+  });
+
+  function applyZoom(val) {
+    const img = document.getElementById('prod-img');
+    document.getElementById('zoomVal').textContent = val + '%';
+    document.getElementById('hiddenZoom').value = val;
+    const pct = val / 100;
+    img.style.maxWidth = (pct * 100) + '%';
+    img.style.maxHeight = (pct * 100) + '%';
+  }
+
   window.addEventListener('DOMContentLoaded', () => {
     applyZoom(document.getElementById('zoomSlider').value);
   });
