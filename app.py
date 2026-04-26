@@ -273,7 +273,7 @@ def add_watermark(composed, logo_path, canvas_size=(1200, 1200), side='right'):
 
 def compose_final(cutout_path, name, price, theme, style, background_key, out_basepath,
                   pos_x=None, pos_y=None, enable_glow=False, enable_reflection=False,
-                  logo_path=None, logo_side='right', category='other'):
+                  category='other'):
     """
     Compose final marketing image (1200x1200):
     - background (asset or theme gradient)
@@ -373,10 +373,6 @@ def compose_final(cutout_path, name, price, theme, style, background_key, out_ba
             draw_text_shadow(draw, name_text[:34], (600, 880), font_title, white)
             draw.line([(560, 930), (640, 930)], fill=(255,255,255,180), width=3)
             draw_text_shadow(draw, price_text, (600, 980), font_price, white)
-
-        # Watermark
-        if logo_path:
-            add_watermark(composed, logo_path, canvas_size=CANVAS, side=logo_side)
 
         # Save outputs
         out_webp = f"{out_basepath}.webp"
@@ -750,18 +746,6 @@ def save_product():
         cutout_path = os.path.join(app.config['UPLOAD_FOLDER'], processed_image_url)
         base_out = os.path.join(app.config['UPLOAD_FOLDER'], f"final_{uuid.uuid4().hex[:8]}")
 
-        # Get store logo for watermark
-        conn_tmp = get_db_connection()
-        cur_tmp = conn_tmp.cursor()
-        cur_tmp.execute("SELECT logo_url FROM stores WHERE user_id = %s", (user_id,))
-        store_tmp = cur_tmp.fetchone()
-        conn_tmp.close()
-        logo_path = None
-        if store_tmp and store_tmp.get('logo_url'):
-            lp = os.path.join('static/uploads', os.path.basename(store_tmp['logo_url']))
-            if os.path.exists(lp):
-                logo_path = lp
-
         final_webp_name = compose_final(
             cutout_path=cutout_path,
             name=name,
@@ -774,7 +758,6 @@ def save_product():
             pos_y=pos_y,
             enable_glow=enable_glow,
             enable_reflection=enable_reflection,
-            logo_path=logo_path,
             category=product_category
         )
         if final_webp_name:
