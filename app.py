@@ -46,18 +46,46 @@ BG_ASSETS = {
     'stars':   'static/assets/bg/stars.jpg'
 }
 
-# Theme colors (for gradient fallback if no background selected)
+# Theme colors
 THEME_COLORS = {
-    'gold':     ((242, 153, 74), (242, 201, 76)),
-    'black':    ((15, 32, 39),   (32, 58, 67)),
-    'pastel':   ((102, 126, 234), (118, 75, 162)),
-    'spring':   ((17, 153, 142), (56, 239, 125)),
-    'fire':     ((255, 81, 47),  (221, 36, 118)),
-    'ocean':    ((33, 147, 176), (109, 213, 237)),
-    'royal':    ((79, 70, 229),  (124, 58, 237)),
-    'midnight': ((15, 23, 42),   (51, 65, 85)),
-    'earth':    ((63, 98, 18),   (113, 63, 18)),
-    'vibrant':  ((244, 63, 94),  (251, 146, 60)),
+    'gold':        ((242, 153, 74),  (242, 201, 76)),
+    'black':       ((15, 32, 39),    (32, 58, 67)),
+    'pastel':      ((102, 126, 234), (118, 75, 162)),
+    'spring':      ((17, 153, 142),  (56, 239, 125)),
+    'fire':        ((255, 81, 47),   (221, 36, 118)),
+    'ocean':       ((33, 147, 176),  (109, 213, 237)),
+    'royal':       ((79, 70, 229),   (124, 58, 237)),
+    'midnight':    ((15, 23, 42),    (51, 65, 85)),
+    'earth':       ((63, 98, 18),    (113, 63, 18)),
+    'vibrant':     ((244, 63, 94),   (251, 146, 60)),
+    'smoke':       ((20, 20, 30),    (60, 50, 80)),
+    'luxury':      ((10, 10, 10),    (40, 30, 10)),
+    'rose_gold':   ((183, 110, 121), (212, 175, 55)),
+    'pearl':       ((245, 245, 245), (210, 210, 210)),
+    'royal_gold':  ((10, 10, 10),    (212, 175, 55)),
+    'silver':      ((180, 180, 195), (220, 220, 235)),
+    'soft_gray':   ((200, 200, 205), (240, 240, 245)),
+    'cream':       ((245, 235, 220), (255, 250, 240)),
+    'blush':       ((255, 182, 193), (255, 218, 224)),
+    'camel':       ((193, 154, 107), (139, 90, 43)),
+    'chocolate':   ((60, 30, 10),    (120, 60, 20)),
+    'beige':       ((225, 205, 180), (245, 230, 210)),
+    'carbon':      ((20, 20, 25),    (50, 50, 60)),
+    'gunmetal':    ((50, 55, 60),    (100, 105, 110)),
+    'champagne':   ((212, 175, 55),  (245, 220, 130)),
+    'tech_black':  ((5, 5, 10),      (30, 30, 40)),
+    'space_gray':  ((80, 85, 90),    (140, 145, 150)),
+    'clean_white': ((240, 240, 245), (255, 255, 255)),
+}
+
+CATEGORY_PRESETS = {
+    'perfume':  {'themes': ['luxury','smoke','rose_gold','black','gold'],       'glow': True,  'reflection': True},
+    'jewelry':  {'themes': ['pearl','royal_gold','silver','midnight','gold'],   'glow': True,  'reflection': True},
+    'clothes':  {'themes': ['soft_gray','cream','blush','pastel','spring'],     'glow': False, 'reflection': False},
+    'bags':     {'themes': ['camel','chocolate','beige','earth','midnight'],    'glow': False, 'reflection': False},
+    'watches':  {'themes': ['carbon','gunmetal','champagne','black','silver'],  'glow': True,  'reflection': True},
+    'mobiles':  {'themes': ['tech_black','space_gray','clean_white','midnight'],'glow': True,  'reflection': False},
+    'other':    {'themes': ['gold','black','midnight','ocean','royal'],         'glow': False, 'reflection': False},
 }
 
 # Rate limiting per user per hour
@@ -192,21 +220,103 @@ def load_background(canvas_size, background_key, theme):
 def draw_text_center(draw, text, center_xy, font, fill, anchor="mm"):
     draw.text(center_xy, text, font=font, fill=fill, anchor=anchor)
 
-def compose_final(cutout_path, name, price, theme, style, background_key, out_basepath):
+def remove_white_bg(img, threshold=240):
+    img = img.convert("RGBA")
+    data = img.getdata()
+    new_data = [(r, g, b, 0) if r >= threshold and g >= threshold and b >= threshold else (r, g, b, a) for r, g, b, a in data]
+    img.putdata(new_data)
+    return img
+
+def add_glow(composed, cutout, position=(0, 0)):
+    try:
+        alpha = cutout.split()[-1]
+        glow = Image.new("RGBA", cutout.size, (255, 220, 120, 60))
+        glow.putalpha(alpha)
+        glow_blur = glow.filter(ImageFilter.GaussianBlur(40))
+        composed.alpha_composite(glow_blur, position)
+    except Exception as e:
+        logging.warning(f"Glow warning: {e}")
+
+def add_reflection(composed, cutout, position=(0, 0), canvas_size=(1200, 1200)):
+    try:
+        cx, cy = position
+        flipped = cutout.transpose(Image.FLIP_TOP_BOTTOM)
+        fade = Image.new("L", flipped.size, 0)
+        fade_draw = ImageDraw.Draw(fade)
+        for y in range(min(flipped.size[1], 200)):
+            fade_draw.line([(0, y), (flipped.size[0], y)], fill=int(80 * (1 - y / 200)))
+        flipped.putalpha(fade)
+        ref_y = cy + cutout.size[1] - 60
+        if ref_y < canvas_size[1]:
+            composed.alpha_composite(flipped, (cx, ref_y))
+    except Exception as e:
+        logging.warning(f"Reflection warning: {e}")
+
+def add_watermark(composed, logo_path, canvas_size=(1200, 1200), side='right'):
+    try:
+        if not logo_path or not os.path.exists(logo_path):
+            return
+        logo = Image.open(logo_path).convert("RGBA")
+        logo = remove_white_bg(logo)
+        max_size = int(canvas_size[0] * 0.05)
+        logo.thumbnail((max_size, max_size), Image.LANCZOS)
+        alpha = logo.split()[-1]
+        alpha = alpha.point(lambda p: int(p * 0.55))
+        logo.putalpha(alpha)
+        margin = int(canvas_size[0] * 0.035)
+        lw, lh = logo.size
+        x = canvas_size[0] - lw - margin if side == 'right' else margin
+        y = canvas_size[1] - lh - margin
+        composed.alpha_composite(logo, (x, y))
+    except Exception as e:
+        logging.warning(f"Watermark warning: {e}")
+
+def compose_final(cutout_path, name, price, theme, style, background_key, out_basepath,
+                  pos_x=None, pos_y=None, enable_glow=False, enable_reflection=False,
+                  logo_path=None, logo_side='right', category='other'):
     """
     Compose final marketing image (1200x1200):
     - background (asset or theme gradient)
-    - cutout with shadow (already baked into cutout)
-    - style overlays (title/price)
+    - cutout auto-fitted to fill frame naturally
+    - glow + reflection effects
+    - draggable position
+    - store logo watermark
     Saves WebP and JPG. Returns filename (webp).
     """
     CANVAS = (1200, 1200)
     try:
         bg = load_background(CANVAS, background_key, theme).copy()
-        cutout = Image.open(cutout_path).convert("RGBA")  # cutout already 1200x1200
+
+        # Load cutout and auto-fit to fill 85% of canvas naturally
+        cutout_raw = Image.open(cutout_path).convert("RGBA")
+        cw, ch = cutout_raw.size
+        max_dim = int(CANVAS[0] * 0.85)
+        scale = min(max_dim / cw, max_dim / ch)
+        new_w, new_h = int(cw * scale), int(ch * scale)
+        cutout_resized = cutout_raw.resize((new_w, new_h), Image.LANCZOS)
+
+        # Center the cutout on canvas
+        default_x = (CANVAS[0] - new_w) // 2
+        default_y = (CANVAS[1] - new_h) // 2
+
+        # Apply drag offset
+        px = default_x + (int(pos_x) if pos_x else 0)
+        py = default_y + (int(pos_y) if pos_y else 0)
+        px = max(-new_w // 2, min(CANVAS[0] - new_w // 2, px))
+        py = max(-new_h // 2, min(CANVAS[1] - new_h // 2, py))
+
+        # Build full canvas cutout for effects
+        cutout = Image.new("RGBA", CANVAS, (0, 0, 0, 0))
+        cutout.paste(cutout_resized, (px, py), cutout_resized)
 
         composed = Image.new("RGBA", CANVAS)
         composed.paste(bg, (0, 0))
+
+        if enable_glow:
+            add_glow(composed, cutout, position=(0, 0))
+        if enable_reflection:
+            add_reflection(composed, cutout, position=(0, 0), canvas_size=CANVAS)
+
         composed.paste(cutout, (0, 0), cutout)
 
         draw = ImageDraw.Draw(composed)
@@ -263,6 +373,10 @@ def compose_final(cutout_path, name, price, theme, style, background_key, out_ba
             draw_text_shadow(draw, name_text[:34], (600, 880), font_title, white)
             draw.line([(560, 930), (640, 930)], fill=(255,255,255,180), width=3)
             draw_text_shadow(draw, price_text, (600, 980), font_price, white)
+
+        # Watermark
+        if logo_path:
+            add_watermark(composed, logo_path, canvas_size=CANVAS, side=logo_side)
 
         # Save outputs
         out_webp = f"{out_basepath}.webp"
@@ -624,12 +738,30 @@ def save_product():
     template_style = request.form.get('template_style', 'elegant')
     theme = request.form.get('theme', 'gold')
     background = request.form.get('background', 'none')
+    product_category = request.form.get('product_category', 'other')
+    pos_x = request.form.get('pos_x', 0)
+    pos_y = request.form.get('pos_y', 0)
+    enable_glow = request.form.get('enable_glow', 'false') == 'true'
+    enable_reflection = request.form.get('enable_reflection', 'false') == 'true'
 
-    # Compose final image for OG/share
+    # Compose final image
     final_fname = None
     try:
         cutout_path = os.path.join(app.config['UPLOAD_FOLDER'], processed_image_url)
         base_out = os.path.join(app.config['UPLOAD_FOLDER'], f"final_{uuid.uuid4().hex[:8]}")
+
+        # Get store logo for watermark
+        conn_tmp = get_db_connection()
+        cur_tmp = conn_tmp.cursor()
+        cur_tmp.execute("SELECT logo_url FROM stores WHERE user_id = %s", (user_id,))
+        store_tmp = cur_tmp.fetchone()
+        conn_tmp.close()
+        logo_path = None
+        if store_tmp and store_tmp.get('logo_url'):
+            lp = os.path.join('static/uploads', os.path.basename(store_tmp['logo_url']))
+            if os.path.exists(lp):
+                logo_path = lp
+
         final_webp_name = compose_final(
             cutout_path=cutout_path,
             name=name,
@@ -637,7 +769,13 @@ def save_product():
             theme=theme,
             style=template_style,
             background_key=background,
-            out_basepath=base_out
+            out_basepath=base_out,
+            pos_x=pos_x,
+            pos_y=pos_y,
+            enable_glow=enable_glow,
+            enable_reflection=enable_reflection,
+            logo_path=logo_path,
+            category=product_category
         )
         if final_webp_name:
             final_fname = final_webp_name
