@@ -355,12 +355,12 @@
 
             <div class="product-card ratio-{{ ratio }} fit-{{ fit }} {% if not available %}card-disabled{% endif %}" 
                  data-category="{{ product.category }}"
-                 onclick="openModal('{{ product.id }}', '{{ product.name|replace("'", "\\'") }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}', '{{ (product.description or "")|replace("'", "\\'") }}', '{{ current_theme }}', '{{ current_style }}', '{{ product.category }}', '{{ (product.background or "none")|lower }}', '{{ product.sku or '' }}', {{ 'true' if available else 'false' }})">
+                 onclick="openModal('{{ product.id }}', '{{ product.name|replace("'", "\\'") }}', '{{ product.price }}', '/static/uploads/{{ product.final_image_url if product.final_image_url else product.processed_image_url }}', '{{ (product.description or "")|replace("'", "\\'") }}', '{{ current_theme }}', '{{ current_style }}', '{{ product.category }}', '{{ (product.background or "none")|lower }}', '{{ product.sku or '' }}', {{ 'true' if available else 'false' }})">
                 {% if not available %}
                     <div class="badge-soldout">غير متوفر</div>
                 {% endif %}
                 <div class="img-container">
-                    <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async">
+                    <img src="/static/uploads/{{ product.final_image_url if product.final_image_url else product.processed_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async">
                 </div>
                 <div class="p-info">
                     <div class="p-name">{{ product.name }}</div>
