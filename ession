@@ -1,0 +1,135 @@
+[33m298609f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix: remove watermark, use final_image_url with cover in store
+[33m0975002[m fix: auto-fit product in compose_final, cover in store cards
+[33mf6114fe[m fix: revert to processed_image_url in store cards
+[33m613d90b[m fix: remove all boxes/pills from compose_final, use clean text with shadow
+[33m6b48e0e[m fix: use final_image_url in store cards and modal
+[33m203d57c[m fix: category themes apply on preview + add new theme CSS
+[33m9426900[m add category presets, glow, reflection, watermark, drag & drop
+[33mece3618[m replace OpenAI with remove.bg API for background removal
+[33m624ce01[m fix: save description field for new products
+[33m6c05f8d[m add tooltips, field hints, progress bar, description field
+[33mc036287[m fix: use direct product link for facebook sharing to fix loading issue
+[33mdb45bc5[m add Facebook share button per product in admin
+[33m580b7b6[m fix: remove auto-seeding of Sara store in database
+[33m5edb963[m fix showcase: one product per store + correct currency
+[33m575a5ed[m add showcase banner to landing + fix features grid
+[33me0dabfc[m style: optimize superadmin table for better visibility and remove scroll
+[33m1eab26e[m feat: enhance international prefixes and smart phone cleaning
+[33md7c5dbd[m feat: add international phone prefixes and clean phone data
+[33mefc7887[m fix: enforce customer data and isolate store PWA instances
+[33m34c8080[m fix: make customer data required and fix phone format
+[33mba0fa1a[m fix: make customer data required and fix phone format
+[33m80aa635[m Final fix: Corrected JS variables and function definitions
+[33md352fd4[m Update latest HTML and keep all features
+[33m2599946[m Fix: Correct syntax in modal style generator
+[33m722c627[m Fix: Switch authorization from credits to subscription model
+[33mb886f78[m add dynamic store manifest route
+[33m214c256[m add dynamic store manifest route
+[33mcd54553[m Fix: Direct dashboard routing in base.html to prevent PWA redirect conflict
+[33mf6fd79e[m Store: Fixed desktop footer layout and added multi-currency support (ILS, USD, JOD, EUR)
+[33mf2f8486[m Store: Added sticky contact bar for desktop; Admin: Fixed hidden products persistent view; Marketing: Updated PWA copy
+[33m8e050e9[m Add smart PWA install banner for merchants on dashboard
+[33m97c9417[m Fix PWA installation: update manifest link, service worker registration, and install button logic
+[33m9249c57[m Feat: Add soft delete and toggle active button for products
+[33m32bf7c4[m Change product delete to soft delete (archive) to protect order history
+[33m84072df[m Final fixes: Subscription UI logic, Flash messages, and Date display
+[33m5a9ed29[m redesign index, result, base with bilingual support and real logo
+[33ma4cdfbf[m Fix: Allow POST method for analytics beacon
+[33m1e34d38[m Fix: Allow POST requests on root route for image processing
+[33m27d344f[m Refactor: Redirect root to Landing Page, move app to /dashboard
+[33mf0ec59d[m add bilingual landing page /join
+[33mf5ef06f[m add premium fonts
+[33m6ad0692[m fix slug case sensitivity
+[33meb8a0f6[m add address field
+[33m12d12cf[m grid: 3 columns on desktop
+[33m8f28352[m Final UI fixes: Drag scroll for categories, Show customer details in orders, Cart clear
+[33m2d7a885[m Add analytics, search, fix cart clear and WA message
+[33mab07389[m Fix: Display Product ID in WhatsApp message if SKU is missing
+[33mdc76265[m Add Analytics tab to merchant dashboard
+[33mb60843f[m Fix: Safe data retrieval and DB schema update
+[33mf137eff[m تصحيح لنظام الاشتراكات، التجميد، وإحصائيات الزيارات المتقدمة
+[33mc1e0fd0[m الإطلاق الرسمي لنظام الاشتراكات، التجميد، وإحصائيات الزيارات المتقدمة
+[33m62d9492[m تجهيز جداول الاشتراكات والتواريخ في قاعدة البيانات
+[33mb456b4b[m Initial commit with Commerce v1
+[33md95d1d8[m تجهيز البنية التحتية الشاملة: المخازن، الطلبات، والإحصائيات
+[33mbee2fd2[m زيادة حد الرفع لـ 30 صورة وتفعيل رسائل التنبيه الواضحة للتاجر
+[33m58256e0[m إضافة أصول الخلفيات والخطوط والنسخة النهائية للمتجر
+[33mb832259[m النسخة النهائية الكاملة: إصلاح تداخل الأسعار، تنسيق عرض الكمبيوتر، وتفعيل الخلفيات الذكية
+[33mf690193[m تنسيق عرض الكمبيوتر ومنع قص الصور وتفعيل ميزة الخلفيات الذكية
+[33md31f14a[m الإطلاق الرسمي والشامل: نظام الأقسام، الخلفيات، الروابط الذكية، والضبط التلقائي للصور
+[33m2ca5771[m النسخة النهائية الكاملة: الأقسام، الخلفيات، الواتساب الذكي، والشعار
+[33mb9979bd[m إصلاح إزاحة الأقسام وتطوير رسالة الواتساب وتحديث الخلفيات الاحترافية
+[33m67c13bc[m إطلاق التحديث الأكبر: دمج OpenAI API، نظام الخلفيات الاحترافية، وإحصائيات الزيارات الشاملة
+[33m5e59231[m تفعيل نظام التنظيف الذكي لروابط التواصل وإصلاح هيكل المنتجات النهائي
+[33mc136a42[m fix: social links + product card
+[33m660fab5[m تحسين ظهور الشعار وصور المنتجات عند المشاركة على فيسبوك
+[33m5facd81[m إطلاق نظام الأقسام المتطور وتفعيل ميزة شعار التاجر والروابط الذكية
+[33ma1b0c7c[m تجهيز قاعدة البيانات لاستقبال الأقسام
+[33m0cc447a[m إضافة روابط معاينة المتاجر في لوحة السوبر أدمن وتنظيف القائمة الجانبية
+[33md4ab2f1[m الإطلاق الشامل: نظام الزيارات، تثبيت الرصيد، الروابط العميقة، وتأمين الحسابات
+[33ma228eb6[m إطلاق لوحة السوبر أدمن المطورة مع نظام إحصائيات الزيارات وترتيب المتاجر
+[33mc2a18bf[m تطوير نظام شحن الرصيد وإضافة زر التثبيت في لوحة السوبر أدمن
+[33m1ca74f9[m تنظيف لوحة التاجر وحذف البيانات الوهمية وتفعيل ميزات الأمان والروابط الذكية
+[33m5e42d26[m إضافة ميزات الإدارة العليا وتعديل بيانات الأمان للتاجر
+[33m39796e1[m النسخة النهائية: تفعيل الروابط العميقة والمعاينة الذكية للمنتجات والشعار
+[33m5675b17[m جعل رابط المنتج يتغير ديناميكياً عند الفتح والإغلاق لسهولة المشاركة
+[33mb005009[m إضافة الروابط المباشرة للمنتجات وخيار المعالجة عبر رابط وتحسينات الشعار
+[33mb0f51bb[m إضافة ميزة معالجة الصور عبر الروابط المباشرة
+[33m94f86bd[m تحسين عرض الصورة الأصلية لتغطية الخلفية بالكامل
+[33m7caaf4a[m إضافة ميزة اختيار الخلفية الأصلية في المختبر
+[33m37a15c1[m تحديث شامل: إضافة شعار التاجر، نظام واتساب ذكي، وتحسين واجهة الموبايل
+[33m310d87a[m تحسين واجهة التاجر وتسريع أداء السيرفر
+[33mbd51e48[m تحديث تصميم المتجر وتأمين رابط الواتساب
+[33m257a8de[m Final Royal Mobile Upgrade: App-like interface with floating nav and 2-column grid
+[33mfebbead[m Emergency fix for mobile layout: forced sidebar hide and full-width content
+[33mcddcfe8[m Mobile UI upgrade: 2-column grid, mobile header, and layout fixes
+[33mfd757a4[m Final store update: Luxurious mobile navigation, bilingual support, and PWA fixes
+[33me79cddb[m Detailed store page with bilingual support, sidebar links, and social icons
+[33m8b4433d[m Fix STORE ISSUES
+[33m2f49a79[m Fix Arabic slug handling and enhance admin settings
+[33mb843776[m Final premium design overhaul for store and dashboard
+[33m3c99e68[m Update design to premium SaaS style and fix data
+[33m703748f[m Final premium UI update and image fix
+[33m8a113b5[m Apply premium Apple-Notion aesthetic to store and dashboard
+[33m67f943b[m Fix image preview and dynamic results display
+[33m9a374d8[m Fix login file error
+[33m2eca48d[m Fix superadmin login view and add modern themes
+[33m8039850[m Make store hero dynamic and generic
+[33m326d8c0[m Fix TemplateSyntaxError in login.html
+[33m434b1c2[m Complete UI overhaul for Login, Register and SuperAdmin
+[33m8d77f77[m Fix store UI for Arabic and Navy/Gold theme
+[33m7dea9ab[m Update UI to Navy & Gold and fix port compatibility
+[33m88c1dd8[m Final Fix: Move PWA icons to static root and update sw.js cache v1.2
+[33m35f632e[m Fix: Settings tab redirect, Currency ₪, and PWA Service Worker root path
+[33mc515542[m Hotfix: Currency to ₪, Mobile Nav update, and PWA root service worker
+[33m669c218[m Fix PWA: Move sw.js to root directory for correct scope
+[33m542911e[m Major Upgrade: Luxury Dior-style Store with full PWA support
+[33mac94fa8[m Major UI Redesign: Luxury Store (Dior Style) + Mobile Fixes
+[33m744ea9a[m Fix: Mobile Header, Store Modal Themes, Currency (ILS), and DB constraints
+[33m1194b29[m Critical Fix: Database constraint error, Context Processor, and Theme UI updates
+[33mc732171[m Final Redesign: Modern English UI, 2025 Vibrant Themes, SVG Icons
+[33mc253242[m تحديث شامل: الألوان القوية، الستايلات الأربعة، إصلاح المعاينة، ودعم PWA بالكامل
+[33m573c7ac[m Fix: PWA Service Worker Route & Mobile Nav Store Link
+[33mc154659[m Refactor: Implement Unified App Shell (Base Template) for Desktop & Mobile
+[33m0540b72[m UI Revolution: Transform to Native Mobile App Layout & Bottom Nav
+[33m4ee22bd[m Feature: Add Smart Install Banner & RT Studio Branding
+[33mb4b2431[m Final: Launch RT Studio PWA with Offline Support
+[33m78d139a[m Launch: RT Studio Branding & PWA Support
+[33mbc9aeab[m UI Upgrade: Light Mode Design Studio & Mobile Optimization
+[33mea47625[m Feature: Add Layout Style selection in Admin Panel
+[33m98703ee[m Fix v3.1: Theme colors sync, credit logic fix, and DB auto-init
+[33m953c471[m Major Fix v3.0: Sync credits, theme support, and DB auto-init
+[33m7903555[m Fix v2.6: Sync credits, validation, and admin panel
+[33m62b336c[m Update: Core logic for product themes and Modal fix
+[33m5493b82[m Fix: Modal crash and theme mapping for store
+[33m4c09322[m Final fix for store modal and theme compatibility
+[33m82ce838[m Final Launch: Full SaaS System with Approval and SuperAdmin
+[33m48b7479[m Fix: Move register.html to templates folder
+[33mea68f16[m Complete SaaS Approval System with Social Store Design
+[33me75ba17[m Final schema update: social fields and user status
+[33m16eb585[m Full system update: Integrated store management and luxury design
+[33m8fd4947[m Add social media fields to stores
+[33m0a134d5[m Final Config with External URL and Timeout
+[33m404adf8[m Increase gunicorn timeout for AI models
+[33maf4b2ba[m Fix rembg installation for Render
+[33md91f110[m Final Clean Deploy
