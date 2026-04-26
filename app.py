@@ -48,52 +48,16 @@ BG_ASSETS = {
 
 # Theme colors (for gradient fallback if no background selected)
 THEME_COLORS = {
-    # General
-    'gold':       ((242, 153, 74),  (242, 201, 76)),
-    'black':      ((15, 32, 39),    (32, 58, 67)),
-    'pastel':     ((102, 126, 234), (118, 75, 162)),
-    'spring':     ((17, 153, 142),  (56, 239, 125)),
-    'fire':       ((255, 81, 47),   (221, 36, 118)),
-    'ocean':      ((33, 147, 176),  (109, 213, 237)),
-    'royal':      ((79, 70, 229),   (124, 58, 237)),
-    'midnight':   ((15, 23, 42),    (51, 65, 85)),
-    'earth':      ((63, 98, 18),    (113, 63, 18)),
-    'vibrant':    ((244, 63, 94),   (251, 146, 60)),
-    # Perfume
-    'smoke':      ((20, 20, 30),    (60, 50, 80)),
-    'luxury':     ((10, 10, 10),    (40, 30, 10)),
-    'rose_gold':  ((183, 110, 121), (212, 175, 55)),
-    # Jewelry
-    'pearl':      ((245, 245, 245), (210, 210, 210)),
-    'royal_gold': ((10, 10, 10),    (212, 175, 55)),
-    'silver':     ((180, 180, 195), (220, 220, 235)),
-    # Clothes
-    'soft_gray':  ((200, 200, 205), (240, 240, 245)),
-    'cream':      ((245, 235, 220), (255, 250, 240)),
-    'blush':      ((255, 182, 193), (255, 218, 224)),
-    # Bags
-    'camel':      ((193, 154, 107), (139, 90, 43)),
-    'chocolate':  ((60, 30, 10),    (120, 60, 20)),
-    'beige':      ((225, 205, 180), (245, 230, 210)),
-    # Watches
-    'carbon':     ((20, 20, 25),    (50, 50, 60)),
-    'gunmetal':   ((50, 55, 60),    (100, 105, 110)),
-    'champagne':  ((212, 175, 55),  (245, 220, 130)),
-    # Mobiles
-    'tech_black': ((5, 5, 10),      (30, 30, 40)),
-    'space_gray': ((80, 85, 90),    (140, 145, 150)),
-    'clean_white':((240, 240, 245), (255, 255, 255)),
-}
-
-# Category presets: recommended themes + effects per category
-CATEGORY_PRESETS = {
-    'perfume':    {'themes': ['luxury', 'smoke', 'rose_gold', 'black', 'gold'],      'glow': True,  'reflection': True},
-    'jewelry':    {'themes': ['pearl', 'royal_gold', 'silver', 'midnight', 'gold'],  'glow': True,  'reflection': True},
-    'clothes':    {'themes': ['soft_gray', 'cream', 'blush', 'pastel', 'spring'],    'glow': False, 'reflection': False},
-    'bags':       {'themes': ['camel', 'chocolate', 'beige', 'earth', 'midnight'],   'glow': False, 'reflection': False},
-    'watches':    {'themes': ['carbon', 'gunmetal', 'champagne', 'black', 'silver'], 'glow': True,  'reflection': True},
-    'mobiles':    {'themes': ['tech_black', 'space_gray', 'clean_white', 'midnight', 'carbon'], 'glow': True, 'reflection': False},
-    'other':      {'themes': ['gold', 'black', 'midnight', 'ocean', 'royal'],        'glow': False, 'reflection': False},
+    'gold':     ((242, 153, 74), (242, 201, 76)),
+    'black':    ((15, 32, 39),   (32, 58, 67)),
+    'pastel':   ((102, 126, 234), (118, 75, 162)),
+    'spring':   ((17, 153, 142), (56, 239, 125)),
+    'fire':     ((255, 81, 47),  (221, 36, 118)),
+    'ocean':    ((33, 147, 176), (109, 213, 237)),
+    'royal':    ((79, 70, 229),  (124, 58, 237)),
+    'midnight': ((15, 23, 42),   (51, 65, 85)),
+    'earth':    ((63, 98, 18),   (113, 63, 18)),
+    'vibrant':  ((244, 63, 94),  (251, 146, 60)),
 }
 
 # Rate limiting per user per hour
@@ -228,82 +192,12 @@ def load_background(canvas_size, background_key, theme):
 def draw_text_center(draw, text, center_xy, font, fill, anchor="mm"):
     draw.text(center_xy, text, font=font, fill=fill, anchor=anchor)
 
-def add_glow(composed, cutout, position=(0,0)):
-    """Add soft glow effect behind the product."""
-    try:
-        alpha = cutout.split()[-1]
-        glow = Image.new("RGBA", cutout.size, (255, 220, 120, 60))
-        glow.putalpha(alpha)
-        glow_blur = glow.filter(ImageFilter.GaussianBlur(40))
-        composed.alpha_composite(glow_blur, position)
-    except Exception as e:
-        logging.warning(f"Glow effect warning: {e}")
-
-def add_reflection(composed, cutout, position=(0,0), canvas_size=(1200,1200)):
-    """Add subtle reflection below the product."""
-    try:
-        cx, cy = position
-        flipped = cutout.transpose(Image.FLIP_TOP_BOTTOM)
-        alpha = flipped.split()[-1]
-        fade = Image.new("L", flipped.size, 0)
-        fade_draw = ImageDraw.Draw(fade)
-        h = flipped.size[1]
-        for y in range(min(h, 200)):
-            opacity = int(80 * (1 - y / 200))
-            fade_draw.line([(0, y), (flipped.size[0], y)], fill=opacity)
-        flipped.putalpha(fade)
-        ref_y = cy + cutout.size[1] - 60
-        if ref_y < canvas_size[1]:
-            composed.alpha_composite(flipped, (cx, ref_y))
-    except Exception as e:
-        logging.warning(f"Reflection effect warning: {e}")
-
-def remove_white_bg(img, threshold=240):
-    """Remove white/near-white background from logo automatically."""
-    img = img.convert("RGBA")
-    data = img.getdata()
-    new_data = []
-    for r, g, b, a in data:
-        if r >= threshold and g >= threshold and b >= threshold:
-            new_data.append((r, g, b, 0))
-        else:
-            new_data.append((r, g, b, a))
-    img.putdata(new_data)
-    return img
-
-def add_watermark(composed, logo_path, canvas_size=(1200,1200), side='right'):
-    """Add store logo watermark in bottom corner."""
-    try:
-        if not logo_path or not os.path.exists(logo_path):
-            return
-        logo = Image.open(logo_path).convert("RGBA")
-        logo = remove_white_bg(logo)
-        max_size = int(canvas_size[0] * 0.055)
-        logo.thumbnail((max_size, max_size), Image.LANCZOS)
-        alpha = logo.split()[-1]
-        alpha = alpha.point(lambda p: int(p * 0.55))
-        logo.putalpha(alpha)
-        margin = int(canvas_size[0] * 0.035)
-        lw, lh = logo.size
-        if side == 'right':
-            x = canvas_size[0] - lw - margin
-        else:
-            x = margin
-        y = canvas_size[1] - lh - margin
-        composed.alpha_composite(logo, (x, y))
-    except Exception as e:
-        logging.warning(f"Watermark warning: {e}")
-
-def compose_final(cutout_path, name, price, theme, style, background_key, out_basepath,
-                  pos_x=None, pos_y=None, enable_glow=False, enable_reflection=False,
-                  logo_path=None, logo_side='right', category='other'):
+def compose_final(cutout_path, name, price, theme, style, background_key, out_basepath):
     """
     Compose final marketing image (1200x1200):
     - background (asset or theme gradient)
-    - cutout with optional glow + reflection
-    - draggable product position
+    - cutout with shadow (already baked into cutout)
     - style overlays (title/price)
-    - store logo watermark
     Saves WebP and JPG. Returns filename (webp).
     """
     CANVAS = (1200, 1200)
@@ -311,24 +205,9 @@ def compose_final(cutout_path, name, price, theme, style, background_key, out_ba
         bg = load_background(CANVAS, background_key, theme).copy()
         cutout = Image.open(cutout_path).convert("RGBA")  # cutout already 1200x1200
 
-        # Product position (drag & drop support)
-        px = int(pos_x) if pos_x is not None else 0
-        py = int(pos_y) if pos_y is not None else 0
-        px = max(-600, min(600, px))
-        py = max(-600, min(600, py))
-
         composed = Image.new("RGBA", CANVAS)
         composed.paste(bg, (0, 0))
-
-        # Glow effect
-        if enable_glow:
-            add_glow(composed, cutout, position=(px, py))
-
-        # Reflection effect
-        if enable_reflection:
-            add_reflection(composed, cutout, position=(px, py), canvas_size=CANVAS)
-
-        composed.paste(cutout, (px, py), cutout)
+        composed.paste(cutout, (0, 0), cutout)
 
         draw = ImageDraw.Draw(composed)
         # Fonts (fallback to default if TTF not provided)
@@ -349,45 +228,41 @@ def compose_final(cutout_path, name, price, theme, style, background_key, out_ba
         navy = (26, 34, 56, 255)
         glass_bg = (255, 255, 255, 130)
 
+        # Helper: draw text with soft shadow for readability on any background
+        def draw_text_shadow(draw, text, xy, font, fill, shadow_color=(0,0,0,160), offset=3):
+            draw.text((xy[0]+offset, xy[1]+offset), text, font=font, fill=shadow_color, anchor="mm")
+            draw.text(xy, text, font=font, fill=fill, anchor="mm")
+
         style = (style or 'elegant').lower()
         if style == 'modern':
-            # name pill (top-right)
-            name_box = Image.new("RGBA", (900, 110), (255, 255, 255, 220))
-            composed.alpha_composite(name_box, (1200 - 120 - 900, 60))
-            draw.text((1200 - 120 - 900 + 28, 60 + 30), name_text[:42], font=font_title, fill=navy)
-            # price pill (bottom-left)
-            price_box = Image.new("RGBA", (360, 90), navy)
-            composed.alpha_composite(price_box, (60, 1200 - 60 - 90))
-            draw.text((60 + 24, 1200 - 60 - 90 + 22), price_text, font=font_price, fill=white)
+            # Name top-right, price bottom-left — no boxes, just text with shadow
+            draw.text((80, 70), name_text[:36], font=font_title, fill=white)
+            draw.text((84, 74), name_text[:36], font=font_title, fill=(0,0,0,100))  # shadow
+            pw = draw.textlength(price_text, font=font_price)
+            draw.text((1200 - 80 - pw + 3, 1200 - 90 + 3), price_text, font=font_price, fill=(0,0,0,100))
+            draw.text((1200 - 80 - pw, 1200 - 90), price_text, font=font_price, fill=white)
         elif style == 'minimal':
-            bar_h = 140
-            glass = Image.new("RGBA", (1200, bar_h), glass_bg)
-            composed.alpha_composite(glass, (0, 1200 - bar_h))
-            draw.text((48, 1200 - bar_h + 48), name_text[:36], font=font_bar, fill=white)
-            w = draw.textlength(price_text, font=font_bar)
-            draw.text((1200 - 48 - w, 1200 - bar_h + 48), price_text, font=font_bar, fill=white)
+            # Name left, price right — bottom area, text only
+            draw.text((51, 1200 - 91), name_text[:32], font=font_bar, fill=(0,0,0,100))
+            draw.text((48, 1200 - 94), name_text[:32], font=font_bar, fill=white)
+            pw = draw.textlength(price_text, font=font_bar)
+            draw.text((1200 - 48 - pw + 2, 1200 - 91), price_text, font=font_bar, fill=(0,0,0,100))
+            draw.text((1200 - 48 - pw, 1200 - 94), price_text, font=font_bar, fill=white)
         elif style == 'glass':
-            box_w, box_h = 900, 180
-            glass = Image.new("RGBA", (box_w, box_h), glass_bg)
-            x = (1200 - box_w)//2
-            y = 1200 - 60 - box_h
-            composed.alpha_composite(glass, (x, y))
-            draw_text_center(draw, name_text[:40], (1200//2, y + 60), font_title, navy)
-            draw_text_center(draw, price_text, (1200//2, y + 130), font_price, navy)
+            # Centered bottom — text only with shadow
+            draw_text_shadow(draw, name_text[:36], (600, 940), font_title, white)
+            draw_text_shadow(draw, price_text, (600, 1020), font_price, white)
         elif style == 'bold':
-            panel = Image.new("RGBA", (380, 1200), (0, 0, 0, 80))
-            composed.alpha_composite(panel, (1200 - 380, 0))
-            draw.text((1200 - 350, 120), name_text[:26], font=font_title, fill=white)
-            draw.text((1200 - 350, 200), price_text, font=font_price, fill=white)
+            # Right side vertical — text only
+            draw.text((1200 - 360 + 3, 123), name_text[:22], font=font_title, fill=(0,0,0,120))
+            draw.text((1200 - 360, 120), name_text[:22], font=font_title, fill=white)
+            draw.text((1200 - 360 + 3, 203), price_text, font=font_price, fill=(0,0,0,120))
+            draw.text((1200 - 360, 200), price_text, font=font_price, fill=white)
         else:
-            # elegant/default
-            draw_text_center(draw, name_text[:34], (600, 880), font_title, white)
-            draw.line([(560, 930), (640, 930)], fill=white, width=4)
-            draw_text_center(draw, price_text, (600, 980), font_price, white)
-
-        # Watermark
-        if logo_path:
-            add_watermark(composed, logo_path, canvas_size=CANVAS, side=logo_side)
+            # elegant/default — centered bottom with divider line
+            draw_text_shadow(draw, name_text[:34], (600, 880), font_title, white)
+            draw.line([(560, 930), (640, 930)], fill=(255,255,255,180), width=3)
+            draw_text_shadow(draw, price_text, (600, 980), font_price, white)
 
         # Save outputs
         out_webp = f"{out_basepath}.webp"
@@ -749,30 +624,12 @@ def save_product():
     template_style = request.form.get('template_style', 'elegant')
     theme = request.form.get('theme', 'gold')
     background = request.form.get('background', 'none')
-    product_category = request.form.get('product_category', 'other')
-    pos_x = request.form.get('pos_x', 0)
-    pos_y = request.form.get('pos_y', 0)
-    enable_glow = request.form.get('enable_glow', 'false') == 'true'
-    enable_reflection = request.form.get('enable_reflection', 'false') == 'true'
 
     # Compose final image for OG/share
     final_fname = None
     try:
         cutout_path = os.path.join(app.config['UPLOAD_FOLDER'], processed_image_url)
         base_out = os.path.join(app.config['UPLOAD_FOLDER'], f"final_{uuid.uuid4().hex[:8]}")
-
-        # Get store logo for watermark
-        conn_tmp = get_db_connection()
-        cur_tmp = conn_tmp.cursor()
-        cur_tmp.execute("SELECT logo_url FROM stores WHERE user_id = %s", (user_id,))
-        store_tmp = cur_tmp.fetchone()
-        conn_tmp.close()
-        logo_path = None
-        if store_tmp and store_tmp.get('logo_url'):
-            lp = os.path.join('static/uploads', os.path.basename(store_tmp['logo_url']))
-            if os.path.exists(lp):
-                logo_path = lp
-
         final_webp_name = compose_final(
             cutout_path=cutout_path,
             name=name,
@@ -780,13 +637,7 @@ def save_product():
             theme=theme,
             style=template_style,
             background_key=background,
-            out_basepath=base_out,
-            pos_x=pos_x,
-            pos_y=pos_y,
-            enable_glow=enable_glow,
-            enable_reflection=enable_reflection,
-            logo_path=logo_path,
-            category=product_category
+            out_basepath=base_out
         )
         if final_webp_name:
             final_fname = final_webp_name
