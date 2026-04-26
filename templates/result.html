@@ -180,6 +180,13 @@
   #prod-img { cursor: grab; }
   #prod-img:active { cursor: grabbing; }
 
+  /* Zoom slider */
+  .zoom-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .zoom-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+  .zoom-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 4px; background: #e2e8f0; outline: none; cursor: pointer; }
+  .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--navy-deep); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+  .zoom-slider::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--navy-deep); cursor: pointer; border: none; }
+
   /* Effects toggles */
   .effects-row { display: flex; gap: 10px; }
   .effect-toggle {
@@ -241,7 +248,7 @@
   <!-- Preview -->
   <div class="preview-sticky-wrap">
     <div class="canvas-frame">
-      <div id="capture-area" class="post-main-canvas theme-gold style-elegant">
+      <div id="capture-area" class="post-main-canvas theme-midnight style-elegant">
         <img id="prod-img" src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Product">
         <div id="dynamic-content-wrap" style="width:100%;display:contents;">
           <div id="prod-title" data-ar="اسم المنتج" data-en="Product Name">اسم المنتج</div>
@@ -275,7 +282,7 @@
         <input type="hidden" name="image_url" value="{{ filename }}">
         <input type="hidden" name="original_image_url" value="{{ original_filename }}">
         <input type="hidden" name="template_style" id="hiddenStyle" value="elegant">
-        <input type="hidden" name="theme" id="hiddenTheme" value="gold">
+        <input type="hidden" name="theme" id="hiddenTheme" value="midnight">
         <input type="hidden" name="background" id="hiddenBackground" value="none">
         <input type="hidden" name="product_category" id="hiddenCategory" value="other">
         <input type="hidden" name="pos_x" id="hiddenPosX" value="0">
@@ -480,6 +487,11 @@
             </div>
           </div>
           <div class="drag-hint" data-ar="💡 اسحب المنتج في المعاينة لتحريكه" data-en="💡 Drag the product in preview to reposition">💡 اسحب المنتج في المعاينة لتحريكه</div>
+          <div class="zoom-row">
+            <span class="zoom-label">🔍</span>
+            <input type="range" class="zoom-slider" id="zoomSlider" min="30" max="150" value="80" oninput="applyZoom(this.value)">
+            <span class="zoom-label" id="zoomVal">80%</span>
+          </div>
         </div>
 
         <div class="divider-line"></div>
@@ -696,6 +708,20 @@
     window.addEventListener('touchmove', e => { const t = e.touches[0]; onMove(t.clientX, t.clientY); }, { passive: true });
     window.addEventListener('touchend', onEnd);
   })();
+
+  // Zoom slider
+  function applyZoom(val) {
+    const img = document.getElementById('prod-img');
+    document.getElementById('zoomVal').textContent = val + '%';
+    const pct = val / 100;
+    img.style.maxWidth = (pct * 100) + '%';
+    img.style.maxHeight = (pct * 100) + '%';
+  }
+
+  // تطبيق الزوم الافتراضي عند التحميل
+  window.addEventListener('DOMContentLoaded', () => {
+    applyZoom(document.getElementById('zoomSlider').value);
+  });
 
   const savedLang = localStorage.getItem('rt_lang') || 'ar';
   document.documentElement.lang = savedLang;
