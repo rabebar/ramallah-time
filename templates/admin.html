@@ -206,6 +206,11 @@
                     <input type="number" step="0.01" name="original_price" value="{{ edit_product.original_price or '' }}" class="input-field" placeholder="اتركه فارغاً إذا لا يوجد خصم">
                     <small style="color:var(--text-muted)">سيظهر مشطوباً بجانب السعر الجديد في المتجر</small>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">سبب الخصم</label>
+                    <input type="text" name="discount_reason" value="{{ edit_product.discount_reason or '' }}" class="input-field" placeholder="مثال: تخفيضات نهاية الموسم" maxlength="60">
+                    <small style="color:var(--text-muted)">اختياري — يظهر تحت السعر في المتجر</small>
+                </div>
             </div>
 
             <div class="form-group">

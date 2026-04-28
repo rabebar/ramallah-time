@@ -386,6 +386,9 @@
                         <span class="price-sale">{{ store.currency or '₪' }} {{ product.price }}</span>
                         &nbsp;<span class="price-original">{{ store.currency or '₪' }} {{ product.original_price }}</span>
                     </div>
+                    {% if product.discount_reason %}
+                    <div class="p-meta" style="color:#ef4444; font-size:11px;">🔥 {{ product.discount_reason }}</div>
+                    {% endif %}
                     {% else %}
                     <div class="p-meta">{{ store.currency or '₪' }} {{ product.price }} • جودة ممتازة</div>
                     {% endif %}

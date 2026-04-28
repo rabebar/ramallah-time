@@ -869,6 +869,7 @@ def edit_product_route(id):
     name = request.form.get('name')
     price = request.form.get('price')
     original_price = request.form.get('original_price') or None
+    discount_reason = request.form.get('discount_reason', '').strip() or None
     description = request.form.get('description')
     theme = request.form.get('theme')
     category = request.form.get('category', '').strip() or 'الكل'
@@ -881,9 +882,9 @@ def edit_product_route(id):
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            UPDATE products SET name=%s, price=%s, original_price=%s, description=%s, theme=%s, template_style=%s, category=%s, active=%s
+            UPDATE products SET name=%s, price=%s, original_price=%s, discount_reason=%s, description=%s, theme=%s, template_style=%s, category=%s, active=%s
             WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)
-        """, (name, price, original_price, description, theme, template_style, category, active, id, user_id))
+        """, (name, price, original_price, discount_reason, description, theme, template_style, category, active, id, user_id))
         if sku and sku.strip():
             cursor.execute("""
                 UPDATE products SET sku=%s
