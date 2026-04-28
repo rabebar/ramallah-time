@@ -868,6 +868,7 @@ def edit_product_route(id):
 
     name = request.form.get('name')
     price = request.form.get('price')
+    original_price = request.form.get('original_price') or None
     description = request.form.get('description')
     theme = request.form.get('theme')
     category = request.form.get('category', '').strip() or 'الكل'
@@ -880,9 +881,9 @@ def edit_product_route(id):
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            UPDATE products SET name=%s, price=%s, description=%s, theme=%s, template_style=%s, category=%s, active=%s
+            UPDATE products SET name=%s, price=%s, original_price=%s, description=%s, theme=%s, template_style=%s, category=%s, active=%s
             WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)
-        """, (name, price, description, theme, template_style, category, active, id, user_id))
+        """, (name, price, original_price, description, theme, template_style, category, active, id, user_id))
         if sku and sku.strip():
             cursor.execute("""
                 UPDATE products SET sku=%s
@@ -969,7 +970,6 @@ def update_store():
     website = request.form.get('website')
     inventory_enabled = True if request.form.get('inventory_enabled') in ('on', 'true', '1') else False
     currency = request.form.get('currency', '₪')
-    announcement = request.form.get('announcement', '').strip()
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -979,23 +979,21 @@ def update_store():
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s,
-                    announcement=%s
+                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, logo_url, inventory_enabled, currency, announcement, user_id))
+                  address, website, logo_url, inventory_enabled, currency, user_id))
         else:
             cursor.execute("""
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, inventory_enabled=%s, currency=%s,
-                    announcement=%s
+                    address=%s, website=%s, inventory_enabled=%s, currency=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, inventory_enabled, currency, announcement, user_id))
+                  address, website, inventory_enabled, currency, user_id))
         conn.commit()
         flash("تم تحديث الإعدادات.", "success")
     except Exception as e:
