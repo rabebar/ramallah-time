@@ -199,17 +199,18 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Price (₪)</label>
-                    <input type="number" step="0.01" name="price" id="inPrice" value="{{ edit_product.price }}" class="input-field" oninput="syncEdit()" required>
+                    <input type="number" step="0.01" name="price" id="inPrice" value="{{ edit_product.price }}" class="input-field" oninput="syncEdit(); checkDiscount();" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">السعر الأصلي قبل الخصم (₪)</label>
-                    <input type="number" step="0.01" name="original_price" value="{{ edit_product.original_price or '' }}" class="input-field" placeholder="اتركه فارغاً إذا لا يوجد خصم">
+                    <input type="number" step="0.01" name="original_price" id="inOriginalPrice" value="{{ edit_product.original_price or '' }}" class="input-field" placeholder="اتركه فارغاً إذا لا يوجد خصم" oninput="checkDiscount()">
                     <small style="color:var(--text-muted)">سيظهر مشطوباً بجانب السعر الجديد في المتجر</small>
+                    <div id="discountWarning" style="display:none; color:#ef4444; font-size:12px; font-weight:600; margin-top:4px;">⚠️ السعر الأصلي يجب أن يكون أعلى من سعر البيع حتى يظهر الخصم</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">سبب الخصم</label>
                     <input type="text" name="discount_reason" value="{{ edit_product.discount_reason or '' }}" class="input-field" placeholder="مثال: تخفيضات نهاية الموسم" maxlength="60">
-                    <small style="color:var(--text-muted)">اختياري — يظهر تحت السعر في المتجر</small>
+                    <small style="color:#f59e0b; font-weight:600;">💡 يُنصح بكتابة سبب الخصم — يزيد ثقة الزبون ويرفع المبيعات</small>
                 </div>
             </div>
 
@@ -605,6 +606,14 @@
             btn.classList.add('active');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+    }
+
+    function checkDiscount() {
+        const price = parseFloat(document.getElementById('inPrice')?.value || 0);
+        const orig = parseFloat(document.getElementById('inOriginalPrice')?.value || 0);
+        const warning = document.getElementById('discountWarning');
+        if (!warning) return;
+        warning.style.display = (orig > 0 && orig <= price) ? 'block' : 'none';
     }
 
     function syncEdit() {
