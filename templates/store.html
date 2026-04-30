@@ -108,7 +108,8 @@
         .product-card:hover { transform: translateY(-12px); box-shadow: var(--shadow-premium); }
 
         .img-container { width: 100%; aspect-ratio: var(--card-ratio); background: #F8FAFC; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-        .img-container img { width: 100%; height: 100%; object-fit: contain; padding: 8px; transition: 0.3s; background: #fff; }
+        /* الزووم يتحكم بحجم الصورة عبر inline style — لا تضع width/height هنا */
+        .img-container img { object-fit: contain; padding: 8px; transition: 0.3s; background: #fff; }
         .product-card:hover .img-container img { transform: none; }
         .ratio-square   { --card-ratio: 1/1; }
         .ratio-portrait { --card-ratio: 4/5; }
@@ -365,6 +366,7 @@
             {% set p_active = product.get('active', True) %}
             {% set p_stock = product.get('stock_qty', 0) %}
             {% set p_category = product.category or 'الكل' %}
+            {% set prod_zoom = (product.get('zoom') or 80) %}
 
             {% set ratio = (p_ratio|lower if p_ratio else ('portrait' if p_category in ['ملابس','أحذية','ألبسة','أزياء'] else 'square')) %}
             {% set fit = (p_fit|lower if p_fit else ('cover' if p_category in ['ملابس','أجهزة','الكترونيات','هواتف','أحذية'] else 'contain')) %}
@@ -377,8 +379,7 @@
                     <div class="badge-soldout">غير متوفر</div>
                 {% endif %}
                 <div class="img-container">
-                    {% set prod_zoom = product.get('zoom', 80) %}
-<img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async" style="max-width: {{ prod_zoom }}%; max-height: {{ prod_zoom }}%; object-fit: contain;">
+                    <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async" style="max-width: {{ prod_zoom }}%; max-height: {{ prod_zoom }}%; object-fit: contain;">
                 </div>
                 <div class="p-info">
                     <div class="p-name">{{ product.name }}</div>
@@ -658,12 +659,7 @@
             renderCart();
             sendBeacon('page_view');
 
-            document.querySelectorAll('.img-container img').forEach(img => {
-                if (img.complete) tuneCardByImage(img);
-                else img.addEventListener('load', () => tuneCardByImage(img), { once:true });
-            });
-
-                        if ('serviceWorker' in navigator) {
+            if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js?store={{ store.slug }}', { scope: '/store/{{ store.slug }}/' }).catch(err => console.log('SW Failed', err));
             }
 
@@ -810,19 +806,13 @@
         function incQty(id) {
             let c = getCart();
             const i = c.findIndex(x => x.product_id === id);
-            if (i >= 0) {
-                c[i].qty++;
-                saveCart(c);
-            }
+            if (i >= 0) { c[i].qty++; saveCart(c); }
         }
 
         function decQty(id) {
             let c = getCart();
             const i = c.findIndex(x => x.product_id === id);
-            if (i >= 0) {
-                c[i].qty = Math.max(1, c[i].qty - 1);
-                saveCart(c);
-            }
+            if (i >= 0) { c[i].qty = Math.max(1, c[i].qty - 1); saveCart(c); }
         }
 
         function qtyInput(id, v) {
@@ -843,12 +833,8 @@
 
         async function placeOrder() {
             const cart = getCart();
-            if (!cart.length) {
-                alert('سلتك فارغة');
-                return;
-            }
+            if (!cart.length) { alert('سلتك فارغة'); return; }
 
-            // --- التحقق الإجباري من البيانات ---
             const name = document.getElementById('c_name').value.trim();
             const address = document.getElementById('c_address').value.trim();
             let phone = document.getElementById('c_phone').value.trim();
@@ -858,14 +844,9 @@
                 return;
             }
 
-            // المنطق الذكي لرقم الهاتف (إضافة مقدمة الدولة 970)
-            phone = phone.replace(/\D/g, ''); // إزالة أي رموز غير الأرقام
-            if (phone.startsWith('05')) {
-                phone = '970' + phone.substring(1); 
-            } else if (phone.startsWith('5')) {
-                phone = '970' + phone; 
-            }
-            // ------------------------------------
+            phone = phone.replace(/\D/g, '');
+            if (phone.startsWith('05')) { phone = '970' + phone.substring(1); }
+            else if (phone.startsWith('5')) { phone = '970' + phone; }
 
             const payload = {
                 store_id: STORE_ID,
@@ -883,16 +864,10 @@
                     headers:{ 'Content-Type':'application/json' },
                     body: JSON.stringify(payload)
                 });
-            } catch(e) {
-                alert('تعذر الاتصال بالخادم');
-                return;
-            }
+            } catch(e) { alert('تعذر الاتصال بالخادم'); return; }
 
             const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.ok) {
-                alert(data.error || 'تعذر إنشاء الطلب');
-                return;
-            }
+            if (!res.ok || !data.ok) { alert(data.error || 'تعذر إنشاء الطلب'); return; }
 
             if (data.wa_link) {
                 sendBeacon('whatsapp_sent');
@@ -904,7 +879,6 @@
         }
 
         let currentProduct = null;
-
         let currentZoom = 1;
         let panX = 0;
         let panY = 0;
@@ -912,9 +886,7 @@
         let startX, startY, startPanX, startPanY;
 
         function resetZoom() {
-            currentZoom = 1;
-            panX = 0;
-            panY = 0;
+            currentZoom = 1; panX = 0; panY = 0;
             applyTransform();
         }
 
@@ -944,13 +916,26 @@
             canvas.className = 'modal-canvas theme-' + theme + ' style-' + style;
 
             const BG_IMAGES_STORE = {
-                marble: '/static/assets/bg/marble.jpg',
-                wood: '/static/assets/bg/wood.jpg',
-                nature: '/static/assets/bg/nature.jpg',
-                palace: '/static/assets/bg/palace.jpg',
-                studio: '/static/assets/bg/studio.jpg',
-                floral: '/static/assets/bg/floral.jpg',
-                stars: '/static/assets/bg/stars.jpg'
+                marble:          '/static/assets/bg/marble.jpg',
+                wood:            '/static/assets/bg/wood.jpg',
+                nature:          '/static/assets/bg/nature.jpg',
+                palace:          '/static/assets/bg/palace.jpg',
+                studio:          '/static/assets/bg/studio.jpg',
+                floral:          '/static/assets/bg/floral.jpg',
+                stars:           '/static/assets/bg/stars.jpg',
+                shelf_minimal:   '/static/assets/bg/lifestyle_bg_01_shelf_minimal.png',
+                window_light:    '/static/assets/bg/lifestyle_bg_02_window_light.png',
+                dark_elegant:    '/static/assets/bg/lifestyle_bg_03_dark_elegant.png',
+                beige_shadow:    '/static/assets/bg/lifestyle_bg_04_beige_shadow.png',
+                cabinet_frames:  '/static/assets/bg/lifestyle_bg_05_cabinet_frames.png',
+                white_shelf:     '/static/assets/bg/lifestyle_bg_06_white_shelf_modern.png',
+                sea_window:      '/static/assets/bg/lifestyle_bg_07_sea_window.png',
+                tropical_beige:  '/static/assets/bg/lifestyle_bg_08_tropical_beige.png',
+                desert_sand:     '/static/assets/bg/lifestyle_bg_09_desert_sand.png',
+                curtain_shadow:  '/static/assets/bg/lifestyle_bg_10_curtain_shadow.png',
+                velvet_pink:     '/static/assets/bg/lifestyle_bg_11_velvet_pink.png',
+                studio_gray:     '/static/assets/bg/lifestyle_bg_12_studio_gray.png',
+                golden_arch:     '/static/assets/bg/lifestyle_bg_13_golden_arch.png',
             };
 
             if (background && background !== 'none' && BG_IMAGES_STORE[background]) {
@@ -984,23 +969,11 @@
                 ? `<i data-lucide="shopping-cart"></i><span>أضف للسلة</span>`
                 : `<i data-lucide="ban"></i><span>غير متوفر</span>`;
 
-            currentProduct = {
-                id: Number(id),
-                name,
-                price: Number(price || 0),
-                sku: sku || '',
-                canAdd: !!canAdd
-            };
+            currentProduct = { id: Number(id), name, price: Number(price || 0), sku: sku || '', canAdd: !!canAdd };
 
             addBtn.onclick = () => {
                 if (!currentProduct || !currentProduct.canAdd) return;
-                addToCart({
-                    product_id: currentProduct.id,
-                    name: currentProduct.name,
-                    price: currentProduct.price,
-                    sku: currentProduct.sku,
-                    qty: 1
-                });
+                addToCart({ product_id: currentProduct.id, name: currentProduct.name, price: currentProduct.price, sku: currentProduct.sku, qty: 1 });
                 closeModal();
                 openCart();
             };
@@ -1025,31 +998,21 @@
                 e.preventDefault();
                 const delta = e.deltaY > 0 ? -0.5 : 0.5;
                 currentZoom = Math.min(Math.max(1, currentZoom + delta), 4);
-                if (currentZoom === 1) {
-                    panX = 0;
-                    panY = 0;
-                }
+                if (currentZoom === 1) { panX = 0; panY = 0; }
                 applyTransform();
             });
 
             mImgElement.addEventListener('dblclick', () => {
-                if (currentZoom > 1) {
-                    currentZoom = 1;
-                    panX = 0;
-                    panY = 0;
-                } else {
-                    currentZoom = 2.5;
-                }
+                if (currentZoom > 1) { currentZoom = 1; panX = 0; panY = 0; }
+                else { currentZoom = 2.5; }
                 applyTransform();
             });
 
             mImgElement.addEventListener('mousedown', (e) => {
                 if (currentZoom <= 1) return;
                 isDragging = true;
-                startX = e.clientX;
-                startY = e.clientY;
-                startPanX = panX;
-                startPanY = panY;
+                startX = e.clientX; startY = e.clientY;
+                startPanX = panX; startPanY = panY;
                 mImgElement.style.cursor = 'grabbing';
             });
 
@@ -1057,10 +1020,8 @@
                 if (currentZoom <= 1) return;
                 if (e.touches.length === 1) {
                     isDragging = true;
-                    startX = e.touches[0].clientX;
-                    startY = e.touches[0].clientY;
-                    startPanX = panX;
-                    startPanY = panY;
+                    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+                    startPanX = panX; startPanY = panY;
                 }
             }, { passive: false });
         }
@@ -1072,10 +1033,7 @@
             applyTransform();
         });
 
-        window.addEventListener('mouseup', () => {
-            isDragging = false;
-            applyTransform();
-        });
+        window.addEventListener('mouseup', () => { isDragging = false; applyTransform(); });
 
         window.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
@@ -1086,9 +1044,7 @@
             }
         }, { passive: false });
 
-        window.addEventListener('touchend', () => {
-            isDragging = false;
-        });
+        window.addEventListener('touchend', () => { isDragging = false; });
 
         function filterCategory(category, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => {
@@ -1096,11 +1052,9 @@
                 b.style.color = 'var(--text-main)';
                 b.style.borderColor = '#e2e8f0';
             });
-
             btn.style.background = 'var(--gold)';
             btn.style.color = '#fff';
             btn.style.borderColor = 'var(--gold)';
-
             document.querySelectorAll('.product-card').forEach(card => {
                 if (category === 'all' || card.getAttribute('data-category') === category) {
                     card.style.display = 'flex';
@@ -1108,24 +1062,6 @@
                     card.style.display = 'none';
                 }
             });
-        }
-    
-        function tuneCardByImage(img) {
-            if (!img || !img.naturalWidth || !img.naturalHeight) return;
-            const card = img.closest('.product-card');
-            const box = img.parentElement;
-            const w = img.naturalWidth;
-            const h = img.naturalHeight;
-            const r = w / h;
-
-            if (card && card.classList.contains('fit-auto')) {
-                if (r > 1.6 || r < 0.7) card.classList.add('fit-contain');
-                else card.classList.add('fit-cover');
-            }
-
-            if (card && card.classList.contains('ratio-auto') && box) {
-                box.style.aspectRatio = `${w}/${h}`;
-            }
         }
 
         const slider = document.getElementById('categoryBar');
@@ -1139,40 +1075,25 @@
                 catStartX = e.pageX - slider.offsetLeft;
                 scrollLeft = slider.scrollLeft;
             });
-
-            slider.addEventListener('mouseleave', () => {
-                isDown = false;
-            });
-
-            slider.addEventListener('mouseup', () => {
-                isDown = false;
-            });
-
+            slider.addEventListener('mouseleave', () => { isDown = false; });
+            slider.addEventListener('mouseup', () => { isDown = false; });
             slider.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 e.preventDefault();
                 const x = e.pageX - slider.offsetLeft;
-                const walk = (x - catStartX) * 2;
-                slider.scrollLeft = scrollLeft - walk;
+                slider.scrollLeft = scrollLeft - (x - catStartX) * 2;
             });
-
             slider.addEventListener('touchstart', (e) => {
                 if (e.touches.length !== 1) return;
                 isDown = true;
                 catStartX = e.touches[0].pageX - slider.offsetLeft;
                 scrollLeft = slider.scrollLeft;
             }, { passive: true });
-
             slider.addEventListener('touchmove', (e) => {
                 if (!isDown || e.touches.length !== 1) return;
-                const x = e.touches[0].pageX - slider.offsetLeft;
-                const walk = (x - catStartX) * 2;
-                slider.scrollLeft = scrollLeft - walk;
+                slider.scrollLeft = scrollLeft - (e.touches[0].pageX - slider.offsetLeft - catStartX) * 2;
             }, { passive: true });
-
-            slider.addEventListener('touchend', () => {
-                isDown = false;
-            });
+            slider.addEventListener('touchend', () => { isDown = false; });
         }
     </script>
 </body>
