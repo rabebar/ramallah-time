@@ -379,7 +379,11 @@
                     <div class="badge-soldout">غير متوفر</div>
                 {% endif %}
                 <div class="img-container">
-                    <img src="/static/uploads/{{ product.final_image_url if product.final_image_url else product.processed_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async" style="width: {{ prod_zoom }}%; height: {{ prod_zoom }}%; object-fit: contain;">
+                    {% if product.final_image_url and product.background and product.background != 'none' %}
+                    <img src="/static/uploads/{{ product.final_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                    <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async" style="max-width: {{ prod_zoom }}%; max-height: {{ prod_zoom }}%; object-fit: contain;">
+                    {% endif %}
                 </div>
                 <div class="p-info">
                     <div class="p-name">{{ product.name }}</div>
