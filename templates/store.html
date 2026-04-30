@@ -379,7 +379,7 @@
                     <div class="badge-soldout">غير متوفر</div>
                 {% endif %}
                 <div class="img-container">
-                    <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async" style="max-width: {{ prod_zoom }}%; max-height: {{ prod_zoom }}%; object-fit: contain;">
+                    <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async" style="width: {{ prod_zoom }}%; height: {{ prod_zoom }}%; object-fit: contain;">
                 </div>
                 <div class="p-info">
                     <div class="p-name">{{ product.name }}</div>
