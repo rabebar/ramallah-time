@@ -43,9 +43,21 @@ BG_ASSETS = {
     'nature':  'static/assets/bg/nature.jpg',
     'palace':  'static/assets/bg/palace.jpg',
     'floral':  'static/assets/bg/floral.jpg',
-    'stars':   'static/assets/bg/stars.jpg'
+    'stars':   'static/assets/bg/stars.jpg',
+    'shelf_minimal':   'static/assets/bg/lifestyle_bg_01_shelf_minimal.png',
+    'window_light':    'static/assets/bg/lifestyle_bg_02_window_light.png',
+    'dark_elegant':    'static/assets/bg/lifestyle_bg_03_dark_elegant.png',
+    'beige_shadow':    'static/assets/bg/lifestyle_bg_04_beige_shadow.png',
+    'cabinet_frames':  'static/assets/bg/lifestyle_bg_05_cabinet_frames.png',
+    'white_shelf':     'static/assets/bg/lifestyle_bg_06_white_shelf_modern.png',
+    'sea_window':      'static/assets/bg/lifestyle_bg_07_sea_window.png',
+    'tropical_beige':  'static/assets/bg/lifestyle_bg_08_tropical_beige.png',
+    'desert_sand':     'static/assets/bg/lifestyle_bg_09_desert_sand.png',
+    'curtain_shadow':  'static/assets/bg/lifestyle_bg_10_curtain_shadow.png',
+    'velvet_pink':     'static/assets/bg/lifestyle_bg_11_velvet_pink.png',
+    'studio_gray':     'static/assets/bg/lifestyle_bg_12_studio_gray.png',
+    'golden_arch':     'static/assets/bg/lifestyle_bg_13_golden_arch.png',
 }
-
 # Theme colors
 THEME_COLORS = {
     'gold':        ((242, 153, 74),  (242, 201, 76)),
