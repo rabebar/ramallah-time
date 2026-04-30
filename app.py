@@ -756,8 +756,9 @@ def save_product():
             category=product_category,
             zoom=zoom
         )
-        if final_webp_name:
+        if final_webp_name and background and background.lower() != 'none':
             final_fname = final_webp_name
+
     except Exception as e:
         logging.error(f"Final composition failed: {e}")
 
