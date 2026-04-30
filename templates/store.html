@@ -109,7 +109,7 @@
 
         .img-container { width: 100%; aspect-ratio: var(--card-ratio); background: #F8FAFC; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
         /* الزووم يتحكم بحجم الصورة عبر inline style — لا تضع width/height هنا */
-        .img-container img { object-fit: cover; transition: 0.3s; }
+        .img-container img { object-fit: contain; padding: 8px; transition: 0.3s; background: #fff; }
         .product-card:hover .img-container img { transform: none; }
         .ratio-square   { --card-ratio: 1/1; }
         .ratio-portrait { --card-ratio: 4/5; }
