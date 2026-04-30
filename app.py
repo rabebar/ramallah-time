@@ -780,9 +780,9 @@ def save_product():
             sku = generate_sku(conn, cursor, store['id'])
 
             cursor.execute("""
-                INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_image_url, sku, stock_qty, active)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE)
-            """, (store['id'], name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_fname, sku, stock_qty))
+    INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_image_url, sku, stock_qty, active, zoom)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE, %s)
+""", (store['id'], name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_fname, sku, stock_qty, zoom))
             
             conn.commit()
             flash("تم حفظ المنتج بنجاح في متجرك!", "success")
