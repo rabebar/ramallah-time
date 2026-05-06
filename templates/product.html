@@ -163,12 +163,60 @@
         box-shadow: var(--shadow-md);
         position: relative;
         aspect-ratio: 1 / 1;
+        cursor: zoom-in;
+    }
+    .product-image-wrap.zoomed {
+        cursor: zoom-out;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        border-radius: 0;
+        aspect-ratio: auto;
+        background: rgba(0,0,0,0.92);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
     .product-image-wrap img {
         width: 100%;
         height: 100%;
         object-fit: contain;
         background: var(--white);
+        transition: transform 0.3s ease;
+    }
+    .product-image-wrap.zoomed img {
+        max-width: 95vw;
+        max-height: 95vh;
+        width: auto;
+        height: auto;
+        background: transparent;
+    }
+    .zoom-hint {
+        position: absolute;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.7);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+    }
+    .product-image-wrap:hover .zoom-hint { opacity: 1; }
+    .product-image-wrap.zoomed .zoom-hint {
+        bottom: 32px;
+        opacity: 1;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
     }
     .image-badge {
         position: absolute;
@@ -181,6 +229,7 @@
         font-weight: 700;
         box-shadow: var(--shadow-sm);
     }
+    .product-image-wrap.zoomed .image-badge { display: none; }
     
     /* Info */
     .product-info {
@@ -523,7 +572,7 @@
 <main class="product-main">
     
     <!-- Image -->
-    <div class="product-image-wrap">
+    <div class="product-image-wrap" id="productImage" onclick="toggleZoom()">
         {% set image_src = product.final_image_url or product.processed_image_url %}
         {% if image_src %}
             <img src="/static/uploads/{{ image_src }}" alt="{{ product.name }}">
@@ -531,6 +580,7 @@
         {% if product.category and product.category != 'other' %}
             <div class="image-badge">{{ product.category }}</div>
         {% endif %}
+        <div class="zoom-hint" id="zoomHint">اضغط للتكبير 🔍</div>
     </div>
     
     <!-- Info -->
@@ -678,6 +728,27 @@
     lucide.createIcons();
     
     const productUrl = window.location.href;
+    
+    function toggleZoom() {
+        const img = document.getElementById('productImage');
+        const hint = document.getElementById('zoomHint');
+        img.classList.toggle('zoomed');
+        if (img.classList.contains('zoomed')) {
+            hint.textContent = 'اضغط للإغلاق';
+            document.body.style.overflow = 'hidden';
+        } else {
+            hint.textContent = 'اضغط للتكبير 🔍';
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // Close zoom on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const img = document.getElementById('productImage');
+            if (img.classList.contains('zoomed')) toggleZoom();
+        }
+    });
     
     function showToast(msg) {
         const t = document.getElementById('toast');
