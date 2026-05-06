@@ -541,6 +541,170 @@
         box-shadow: var(--shadow-lg);
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
+    
+    /* ── CART ── */
+    .cart-fab {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--text);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        z-index: 5000;
+        cursor: pointer;
+        border: none;
+    }
+    .cart-fab .count {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: #ef4444;
+        color: #fff;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+    }
+    .cart-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        z-index: 5999;
+    }
+    .cart-overlay.show { display: block; }
+    .cart-drawer {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: min(420px, 92vw);
+        background: #fff;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.15);
+        transform: translateX(100%);
+        transition: transform 0.35s ease;
+        z-index: 6000;
+        display: flex;
+        flex-direction: column;
+    }
+    .cart-drawer.open { transform: translateX(0); }
+    .cart-header {
+        padding: 16px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .cart-header strong { font-size: 1.1rem; }
+    .cart-header button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: var(--text);
+    }
+    .cart-body {
+        padding: 12px 16px;
+        flex: 1;
+        overflow-y: auto;
+    }
+    .cart-line {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        padding: 12px 0;
+        border-bottom: 1px dashed #eee;
+    }
+    .line-title { font-weight: 700; font-size: 0.9rem; }
+    .line-sku { font-size: 0.75rem; color: var(--text-light); }
+    .line-total { font-weight: 800; font-size: 0.95rem; white-space: nowrap; }
+    .qty-box {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 6px;
+    }
+    .qty-box button {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        font-weight: 700;
+    }
+    .qty-box input {
+        width: 40px;
+        text-align: center;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        height: 28px;
+        font-weight: 700;
+    }
+    .remove-btn {
+        background: none;
+        border: none;
+        color: #ef4444;
+        font-size: 0.75rem;
+        cursor: pointer;
+        margin-right: 8px;
+    }
+    .cart-footer {
+        padding: 14px 16px;
+        border-top: 1px solid #eee;
+    }
+    .cart-note {
+        font-size: 12px;
+        color: var(--text-light);
+        margin: 6px 0 10px;
+    }
+    .cart-field { margin-bottom: 10px; }
+    .cart-field label {
+        display: block;
+        font-size: 0.75rem;
+        margin-bottom: 4px;
+        font-weight: 600;
+        color: var(--text-light);
+    }
+    .cart-field input, .cart-field textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        outline: none;
+    }
+    .cart-field input:focus, .cart-field textarea:focus { border-color: var(--text); }
+    .wa-order-btn {
+        width: 100%;
+        padding: 14px;
+        background: #25D366;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .wa-order-btn:hover { background: #1da851; }
+    
     </style>
 </head>
 <body>
@@ -614,18 +778,17 @@
         
         <!-- Actions -->
         <div class="actions">
-            {% if available and store.whatsapp_phone %}
-                <a href="https://wa.me/{{ store.whatsapp_phone }}?text=مرحباً، أنا مهتم بـ {{ product.name }} - السعر: {{ product.price }} ₪%0A{{ request.url }}" 
-                   class="btn-primary" target="_blank" id="orderBtn">
-                    <i data-lucide="message-circle"></i>
-                    اطلب الآن عبر واتساب
-                </a>
-            {% elif not available %}
+            {% if available %}
+                <button class="btn-primary" id="addToCartBtn" onclick="addProductToCart()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    أضف إلى السلة
+                </button>
+            {% else %}
                 <button class="btn-primary" disabled>غير متوفر حالياً</button>
             {% endif %}
             
             <a href="/store/{{ store.slug }}" class="btn-secondary">
-                <i data-lucide="store"></i>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><line x1="2" y1="7" x2="22" y2="7"/><path d="M22 7v3a2 2 0 0 1-2 2 2.7 2.7 0 0 1-2-1 2.7 2.7 0 0 0-2-1 2.7 2.7 0 0 0-2 1 2.7 2.7 0 0 1-2 1 2.7 2.7 0 0 1-2-1 2.7 2.7 0 0 0-2-1 2.7 2.7 0 0 0-2 1 2.7 2.7 0 0 1-2 1 2 2 0 0 1-2-2V7"/><path d="M5 22V12"/><path d="M19 22V12"/></svg>
                 تصفح المتجر
             </a>
         </div>
@@ -722,12 +885,233 @@
 </section>
 {% endif %}
 
+<!-- Cart FAB -->
+<button class="cart-fab" onclick="openCart()" aria-label="السلة">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    <div id="cartCount" class="count">0</div>
+</button>
+
+<!-- Cart Overlay -->
+<div id="cartOverlay" class="cart-overlay" onclick="closeCart()"></div>
+
+<!-- Cart Drawer -->
+<aside id="cartDrawer" class="cart-drawer">
+    <div class="cart-header">
+        <strong>سلة الشراء</strong>
+        <button onclick="closeCart()">×</button>
+    </div>
+    <div id="cartItems" class="cart-body"></div>
+    <div class="cart-footer">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <span>المجموع:</span>
+            <strong id="cartSubtotal">₪ 0</strong>
+        </div>
+        <div class="cart-note">لا تشمل رسوم التوصيل</div>
+        <div class="cart-field">
+            <label>الاسم</label>
+            <input id="c_name" type="text" placeholder="الاسم الكامل (مطلوب)">
+        </div>
+        <div class="cart-field">
+            <label>رقم الهاتف</label>
+            <input id="c_phone" type="tel" placeholder="05xxxxxxxx (مطلوب)">
+        </div>
+        <div class="cart-field">
+            <label>العنوان</label>
+            <input id="c_address" type="text" placeholder="المدينة، الشارع (مطلوب)">
+        </div>
+        <div class="cart-field">
+            <label>ملاحظات</label>
+            <textarea id="c_notes" rows="2" placeholder="أي ملاحظات إضافية (اختياري)"></textarea>
+        </div>
+        <button class="wa-order-btn" onclick="placeOrder()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            اطلب عبر واتساب
+        </button>
+    </div>
+</aside>
+
 <div class="toast" id="toast">تم النسخ</div>
 
 <script>
     lucide.createIcons();
     
     const productUrl = window.location.href;
+    const STORE_ID = {{ store.id }};
+    const CART_KEY = `cart_${STORE_ID}`;
+    const CURRENCY = "{{ store.currency or '₪' }}";
+    const PRODUCT_DATA = {
+        product_id: {{ product.id }},
+        name: {{ product.name|tojson }},
+        sku: {{ (product.sku or '')|tojson }},
+        price: {{ product.price }}
+    };
+    
+    // ── CART FUNCTIONS ──
+    function getCart() {
+        try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); }
+        catch(e) { return []; }
+    }
+    
+    function saveCart(c) {
+        localStorage.setItem(CART_KEY, JSON.stringify(c));
+        renderCart();
+    }
+    
+    function cartCount() {
+        return getCart().reduce((s, l) => s + Number(l.qty || 0), 0);
+    }
+    
+    function cartSubtotal() {
+        return getCart().reduce((s, l) => s + Number(l.price || 0) * Number(l.qty || 0), 0);
+    }
+    
+    function addProductToCart() {
+        let c = getCart();
+        const i = c.findIndex(x => x.product_id === PRODUCT_DATA.product_id);
+        if (i >= 0) c[i].qty += 1;
+        else c.push({
+            product_id: PRODUCT_DATA.product_id,
+            name: PRODUCT_DATA.name,
+            sku: PRODUCT_DATA.sku,
+            price: Number(PRODUCT_DATA.price),
+            qty: 1
+        });
+        saveCart(c);
+        showToast('تم إضافة المنتج إلى السلة ✓');
+        // Auto-open cart after a moment
+        setTimeout(openCart, 600);
+    }
+    
+    function escapeHtml(s) {
+        return (s || '').toString().replace(/[&<>"']/g, m => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+        }[m]));
+    }
+    
+    function renderCart() {
+        const c = getCart();
+        const cnt = document.getElementById('cartCount');
+        if (cnt) cnt.textContent = cartCount();
+        
+        const box = document.getElementById('cartItems');
+        const sub = document.getElementById('cartSubtotal');
+        if (!box || !sub) return;
+        
+        box.innerHTML = '';
+        if (!c.length) {
+            box.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px;">سلتك فارغة حالياً</div>';
+            sub.textContent = CURRENCY + ' 0';
+            return;
+        }
+        
+        c.forEach(line => {
+            const row = document.createElement('div');
+            row.className = 'cart-line';
+            row.innerHTML = `
+                <div>
+                    <div class="line-title">${escapeHtml(line.name || 'منتج')}</div>
+                    <div class="line-sku">${line.sku ? 'SKU: ' + escapeHtml(line.sku) : ''}</div>
+                    <div style="margin-top:6px;">
+                        <div class="qty-box">
+                            <button onclick="decQty(${line.product_id})">-</button>
+                            <input value="${line.qty}" oninput="qtyInput(${line.product_id}, this.value)">
+                            <button onclick="incQty(${line.product_id})">+</button>
+                        </div>
+                        <button class="remove-btn" onclick="removeLine(${line.product_id})">حذف</button>
+                    </div>
+                </div>
+                <div class="line-right">
+                    <div class="line-total">${CURRENCY} ${(Number(line.price || 0) * Number(line.qty || 0)).toFixed(0)}</div>
+                </div>
+            `;
+            box.appendChild(row);
+        });
+        
+        sub.textContent = CURRENCY + ' ' + cartSubtotal().toFixed(0);
+    }
+    
+    function incQty(id) {
+        let c = getCart();
+        const i = c.findIndex(x => x.product_id === id);
+        if (i >= 0) { c[i].qty++; saveCart(c); }
+    }
+    
+    function decQty(id) {
+        let c = getCart();
+        const i = c.findIndex(x => x.product_id === id);
+        if (i >= 0) { c[i].qty = Math.max(1, c[i].qty - 1); saveCart(c); }
+    }
+    
+    function qtyInput(id, v) {
+        let n = parseInt(v || 1);
+        if (isNaN(n) || n < 1) n = 1;
+        let c = getCart();
+        const i = c.findIndex(x => x.product_id === id);
+        if (i >= 0) { c[i].qty = n; saveCart(c); }
+    }
+    
+    function removeLine(id) {
+        saveCart(getCart().filter(x => x.product_id !== id));
+    }
+    
+    function openCart() {
+        document.getElementById('cartOverlay').classList.add('show');
+        document.getElementById('cartDrawer').classList.add('open');
+    }
+    
+    function closeCart() {
+        document.getElementById('cartOverlay').classList.remove('show');
+        document.getElementById('cartDrawer').classList.remove('open');
+    }
+    
+    async function placeOrder() {
+        const cart = getCart();
+        if (!cart.length) { alert('سلتك فارغة'); return; }
+        
+        const name = document.getElementById('c_name').value.trim();
+        const address = document.getElementById('c_address').value.trim();
+        let phone = document.getElementById('c_phone').value.trim();
+        
+        if (!name || !phone || !address) {
+            alert('يرجى كتابة الاسم ورقم الهاتف والعنوان للمتابعة');
+            return;
+        }
+        
+        phone = phone.replace(/\D/g, '');
+        if (phone.startsWith('05')) { phone = '970' + phone.substring(1); }
+        else if (phone.startsWith('5')) { phone = '970' + phone; }
+        
+        const payload = {
+            store_id: STORE_ID,
+            cart: cart.map(x => ({ product_id: x.product_id, qty: x.qty })),
+            customer_name: name,
+            customer_phone: phone,
+            customer_address: address,
+            customer_notes: document.getElementById('c_notes').value || ''
+        };
+        
+        let res;
+        try {
+            res = await fetch('/place_order', {
+                method:'POST',
+                headers:{ 'Content-Type':'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } catch(e) { alert('تعذر الاتصال بالخادم'); return; }
+        
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) { alert(data.error || 'تعذر إنشاء الطلب'); return; }
+        
+        if (data.wa_link) {
+            localStorage.removeItem(CART_KEY);
+            window.location = data.wa_link;
+        } else {
+            alert('تم إنشاء الطلب، لكن رقم الواتساب غير مضبوط للمتجر.');
+        }
+    }
+    
+    // Initialize cart
+    renderCart();
     
     function toggleZoom() {
         const img = document.getElementById('productImage');
