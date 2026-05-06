@@ -196,14 +196,12 @@
         @media (min-width: 1200px) { :root { --sidebar-w: 320px; } }
     
         @media (min-width: 1024px) {
-            .main-content { max-width: 980px; }
+            .main-content { max-width: 1280px; }
             body:not(.ltr) .main-content { margin-left: auto; }
             body.ltr .main-content { margin-right: auto; }
-            .products-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 20px !important; }
-            .product-card { border-radius: 24px; }
+            .products-grid { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: 16px !important; }
+            .product-card { border-radius: 16px; }
         }
-
-        @media (min-width: 1440px) { .main-content { max-width: 1120px; } }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.94); backdrop-filter: blur(30px); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
         .modal-card { background: #fff; width: 100%; max-width: 540px; border-radius: 40px; border: 1px solid var(--border); box-shadow: var(--shadow-premium); overflow-y: auto; position: relative; max-height: 92vh; animation: modalIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
@@ -372,9 +370,9 @@
             {% set fit = (p_fit|lower if p_fit else ('cover' if p_category in ['ملابس','أجهزة','الكترونيات','هواتف','أحذية'] else 'contain')) %}
             {% set available = ( p_active and ( (not store.get('inventory_enabled')) or (p_stock > 0) ) ) %}
 
-            <div class="product-card ratio-{{ ratio }} fit-{{ fit }} {% if not available %}card-disabled{% endif %}" 
+            <a href="/store/{{ store.slug }}/product/{{ product.id }}" class="product-card ratio-{{ ratio }} fit-{{ fit }} {% if not available %}card-disabled{% endif %}" 
                  data-category="{{ product.category }}"
-                 onclick="openModal('{{ product.id }}', '{{ product.name|replace("'", "\\'") }}', '{{ product.price }}', '/static/uploads/{{ product.processed_image_url }}', '{{ (product.description or "")|replace("'", "\\'") }}', '{{ current_theme }}', '{{ current_style }}', '{{ product.category }}', '{{ (product.background or "none")|lower }}', '{{ product.sku or '' }}', {{ 'true' if available else 'false' }})">
+                 style="text-decoration: none; color: inherit; display: block;">
                 {% if not available %}
                     <div class="badge-soldout">غير متوفر</div>
                 {% endif %}
@@ -401,7 +399,7 @@
                     <div class="p-meta">SKU: {{ product.sku }}</div>
                     {% endif %}
                 </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
 

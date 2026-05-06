@@ -1074,6 +1074,56 @@ def view_store(slug):
     conn.close()
     return render_template('store.html', store=store, products=products, product_to_open=product_to_open)
 
+@app.route('/store/<slug>/product/<int:product_id>')
+def view_product_page(slug, product_id):
+    """Dedicated product page with full details, store info, and shareable URL."""
+    decoded_slug = urllib.parse.unquote(slug)
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Get store
+    cursor.execute("SELECT * FROM stores WHERE slug = %s OR slug = %s", (decoded_slug.lower(), slug.lower()))
+    store = cursor.fetchone()
+    
+    if not store:
+        conn.close()
+        return "هذا المتجر غير موجود.", 404
+    
+    # Get product
+    cursor.execute("SELECT * FROM products WHERE id = %s AND store_id = %s AND active = TRUE", 
+                   (product_id, store['id']))
+    product = cursor.fetchone()
+    
+    if not product:
+        conn.close()
+        return "المنتج غير موجود.", 404
+    
+    # Get other products from same store (for "More from this store")
+    cursor.execute("""
+        SELECT * FROM products 
+        WHERE store_id = %s AND active = TRUE AND id != %s 
+        ORDER BY id DESC LIMIT 12
+    """, (store['id'], product_id))
+    related_products = cursor.fetchall()
+    
+    # Record product view
+    try:
+        from database import record_store_visit
+        record_store_visit(store['id'])
+    except Exception:
+        pass
+    
+    available = is_available(store, product)
+    
+    conn.close()
+    return render_template('product.html', 
+                          store=store, 
+                          product=product, 
+                          related_products=related_products,
+                          available=available)
+
+
 @app.route('/product/<int:product_id>')
 def view_product_direct(product_id):
     conn = get_db_connection()
@@ -1090,7 +1140,7 @@ def view_product_direct(product_id):
     if not product:
         return "المنتج غير موجود.", 404
 
-    return redirect(url_for('view_store', slug=product['store_slug'], open_product=product_id))
+    return redirect(url_for('view_product_page', slug=product['store_slug'], product_id=product_id))
 
 # =========================
 # Beacon Analytics
