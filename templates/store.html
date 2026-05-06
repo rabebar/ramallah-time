@@ -105,12 +105,14 @@
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 32px; margin-bottom: 60px; }
 
         .product-card { background: var(--white); border-radius: 32px; border: 1px solid var(--border); overflow: hidden; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-card); cursor: pointer; display: flex; flex-direction: column; position: relative; }
-        .product-card:hover { transform: translateY(-12px); box-shadow: var(--shadow-premium); }
+        .product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-premium); }
+        .img-container { overflow: hidden; }
+        .img-container img { object-fit: contain; transition: transform 0.5s ease; background: #fff; }
+        .product-card:hover .img-container img { transform: scale(1.08); }
+        
 
         .img-container { width: 100%; aspect-ratio: var(--card-ratio); background: #F8FAFC; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
         /* الزووم يتحكم بحجم الصورة عبر inline style — لا تضع width/height هنا */
-        .img-container img { object-fit: contain; transition: 0.3s; background: #fff; }
-        .product-card:hover .img-container img { transform: none; }
         .ratio-square   { --card-ratio: 1/1; }
         .ratio-portrait { --card-ratio: 4/5; }
         .ratio-landscape{ --card-ratio: 4/3; }
@@ -196,11 +198,18 @@
         @media (min-width: 1200px) { :root { --sidebar-w: 320px; } }
     
         @media (min-width: 1024px) {
-            .main-content { max-width: 1280px; }
-            body:not(.ltr) .main-content { margin-left: auto; }
-            body.ltr .main-content { margin-right: auto; }
+            .main-content { 
+                max-width: calc(100vw - var(--sidebar-w) - 40px) !important;
+                padding: 40px 30px !important;
+            }
             .products-grid { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: 16px !important; }
             .product-card { border-radius: 16px; }
+        }
+        
+        @media (min-width: 1600px) {
+            .main-content {
+                max-width: 1280px !important;
+            }
         }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.94); backdrop-filter: blur(30px); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
