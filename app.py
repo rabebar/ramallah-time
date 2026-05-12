@@ -57,6 +57,18 @@ BG_ASSETS = {
     'velvet_pink':     'static/assets/bg/lifestyle_bg_11_velvet_pink.png',
     'studio_gray':     'static/assets/bg/lifestyle_bg_12_studio_gray.png',
     'golden_arch':     'static/assets/bg/lifestyle_bg_13_golden_arch.png',
+    # ── خلفيات فاخرة للساعات والإكسسوار ──
+    'dark_concrete':   'static/assets/bg/dark_concrete.jpg',
+    'black_marble':    'static/assets/bg/black_marble.jpg',
+    'dark_slate':      'static/assets/bg/dark_slate.jpg',
+    'grey_marble':     'static/assets/bg/grey_marble.jpg',
+    'carbon_wave':     'static/assets/bg/carbon_wave.jpg',
+    'dark_gold_metal': 'static/assets/bg/dark_gold_metal.jpg',
+    'velvet_teal':     'static/assets/bg/velvet_teal.jpg',
+    'velvet_red':      'static/assets/bg/velvet_red.jpg',
+    'navy_silk':       'static/assets/bg/navy_silk.jpg',
+    'brushed_silver':  'static/assets/bg/brushed_silver.jpg',
+    'rose_blur':       'static/assets/bg/rose_blur.jpg',
 }
 # Theme colors
 THEME_COLORS = {
@@ -91,13 +103,13 @@ THEME_COLORS = {
 }
 
 CATEGORY_PRESETS = {
-    'perfume':  {'themes': ['luxury','smoke','rose_gold','black','gold'],       'glow': True,  'reflection': True},
-    'jewelry':  {'themes': ['pearl','royal_gold','silver','midnight','gold'],   'glow': True,  'reflection': True},
-    'clothes':  {'themes': ['soft_gray','cream','blush','pastel','spring'],     'glow': False, 'reflection': False},
-    'bags':     {'themes': ['camel','chocolate','beige','earth','midnight'],    'glow': False, 'reflection': False},
-    'watches':  {'themes': ['carbon','gunmetal','champagne','black','silver'],  'glow': True,  'reflection': True},
-    'mobiles':  {'themes': ['tech_black','space_gray','clean_white','midnight'],'glow': True,  'reflection': False},
-    'other':    {'themes': ['gold','black','midnight','ocean','royal'],         'glow': False, 'reflection': False},
+    'perfume':  {'themes': ['luxury','smoke','rose_gold','black','gold'],       'glow': True,  'reflection': True,  'backgrounds': ['velvet_red','velvet_teal','dark_gold_metal','black_marble','rose_blur']},
+    'jewelry':  {'themes': ['pearl','royal_gold','silver','midnight','gold'],   'glow': True,  'reflection': True,  'backgrounds': ['velvet_teal','velvet_red','black_marble','rose_blur','brushed_silver','dark_gold_metal']},
+    'clothes':  {'themes': ['soft_gray','cream','blush','pastel','spring'],     'glow': False, 'reflection': False, 'backgrounds': ['grey_marble','brushed_silver','rose_blur','navy_silk']},
+    'bags':     {'themes': ['camel','chocolate','beige','earth','midnight'],    'glow': False, 'reflection': False, 'backgrounds': ['dark_concrete','dark_slate','black_marble','navy_silk']},
+    'watches':  {'themes': ['carbon','gunmetal','champagne','black','silver'],  'glow': True,  'reflection': True,  'backgrounds': ['carbon_wave','dark_gold_metal','black_marble','dark_concrete','dark_slate','grey_marble','navy_silk','brushed_silver']},
+    'mobiles':  {'themes': ['tech_black','space_gray','clean_white','midnight'],'glow': True,  'reflection': False, 'backgrounds': ['carbon_wave','dark_concrete','dark_slate','navy_silk']},
+    'other':    {'themes': ['gold','black','midnight','ocean','royal'],         'glow': False, 'reflection': False, 'backgrounds': ['dark_concrete','black_marble','grey_marble','navy_silk']},
 }
 
 # Rate limiting per user per hour
