@@ -179,28 +179,39 @@ def exif_transpose_inplace(image_path):
 def standardize_cutout(png_bytes, out_path, size=1200):
     """
     Standardize cutout PNG:
-    - RGBA, fit within 1200x1200
+    - RGBA, crop transparent borders first (tight bbox)
+    - Scale to fill 88% of canvas (always upscale/downscale)
     - Centered on transparent canvas
     - Soft shadow underneath (from alpha)
     """
     try:
         img = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
+
+        # ── 1. Crop transparent borders للحصول على المنتج بالضبط ──
+        bbox = img.getbbox()
+        if bbox:
+            img = img.crop(bbox)
+
         w, h = img.size
-        scale = min(size / w, size / h, 1.0)
+
+        # ── 2. المنتج يملأ 88% من الإطار دائماً (يكبر ويصغر) ──
+        target = int(size * 0.88)
+        scale = min(target / w, target / h)
         new_w, new_h = max(1, int(w * scale)), max(1, int(h * scale))
         img = img.resize((new_w, new_h), Image.LANCZOS)
 
+        # ── 3. توسيط دقيق على Canvas شفاف ──
         canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
         px = (size - new_w) // 2
         py = (size - new_h) // 2
 
-        # soft shadow from alpha
+        # ── 4. ظل ناعم من الـ alpha ──
         try:
             alpha = img.split()[-1]
-            shadow = Image.new("RGBA", img.size, (0, 0, 0, 190))
+            shadow = Image.new("RGBA", img.size, (0, 0, 0, 180))
             shadow.putalpha(alpha)
-            shadow = shadow.filter(ImageFilter.GaussianBlur(18))
-            canvas.paste(shadow, (px, py + 14), shadow)
+            shadow = shadow.filter(ImageFilter.GaussianBlur(22))
+            canvas.paste(shadow, (px + 8, py + 18), shadow)
         except Exception as e:
             logging.warning(f"Shadow creation warning: {e}")
 
@@ -220,12 +231,19 @@ def make_vertical_gradient(size, c1, c2):
     return Image.composite(top, base, mask)
 
 def load_background(canvas_size, background_key, theme):
-    """Return background Image (RGB) according to key or theme gradient."""
+    """Return background Image (RGB) according to key or theme gradient.
+    Asset backgrounds are blurred so the product remains the hero."""
     if background_key and background_key.lower() != 'none':
         path = BG_ASSETS.get(background_key.lower())
         if path and os.path.exists(path):
             bg = Image.open(path).convert("RGB")
-            return bg.resize(canvas_size, Image.LANCZOS)
+            bg = bg.resize(canvas_size, Image.LANCZOS)
+            # ── ضبابية خفيفة: الخلفية تخدم المنتج لا تنافسه ──
+            bg = bg.filter(ImageFilter.GaussianBlur(radius=6))
+            # ── تعتيم خفيف لزيادة التباين مع المنتج ──
+            darkener = Image.new("RGB", canvas_size, (0, 0, 0))
+            bg = Image.blend(bg, darkener, alpha=0.18)
+            return bg
     c1, c2 = THEME_COLORS.get(theme.lower(), ((245, 245, 245), (230, 230, 230)))
     return make_vertical_gradient(canvas_size, c1, c2)
 
@@ -266,24 +284,27 @@ def add_reflection(composed, cutout, position=(0, 0), canvas_size=(1200, 1200)):
 
 def compose_final(cutout_path, name, price, theme, style, background_key, out_basepath,
                   pos_x=None, pos_y=None, enable_glow=False, enable_reflection=False,
-                  category='other', zoom=80):
+                  category='other', zoom=92):
     """
     Compose final marketing image (1200x1200):
     - background (asset or theme gradient)
-    - cutout auto-fitted to fill frame naturally
+    - cutout auto-fitted to fill frame naturally (crop transparent borders)
     - glow + reflection effects
     - draggable position
-    - store logo watermark
     Saves WebP and JPG. Returns filename (webp).
     """
     CANVAS = (1200, 1200)
     try:
         bg = load_background(CANVAS, background_key, theme).copy()
 
-        # Load cutout حسب zoom (30%-150%)
+        # ── تحميل الـ cutout مع crop للحدود الشفافة ──
         cutout_raw = Image.open(cutout_path).convert("RGBA")
+        bbox = cutout_raw.getbbox()
+        if bbox:
+            cutout_raw = cutout_raw.crop(bbox)
+
         cw, ch = cutout_raw.size
-        zoom_factor = max(0.3, min(1.5, (zoom or 80) / 100))
+        zoom_factor = max(0.3, min(1.5, (zoom or 92) / 100))
         max_dim = int(CANVAS[0] * zoom_factor)
         scale = min(max_dim / cw, max_dim / ch)
         new_w, new_h = int(cw * scale), int(ch * scale)
