@@ -383,7 +383,7 @@
                  data-category="{{ product.category }}"
                  style="text-decoration: none; color: inherit; display: block;">
                 {% if not available %}
-                    <div class="badge-soldout">غير متوفر</div>
+                    <div class="badge-soldout" data-t="sold_out">غير متوفر</div>
                 {% endif %}
                 <div class="img-container">
                     {% if product.final_image_url and product.background and product.background != 'none' %}
@@ -447,7 +447,7 @@
             {% if store.website %}
             <a href="{{ store.website }}" class="action-card" target="_blank">
                 <i data-lucide="globe" style="color: var(--navy-deep);"></i>
-                <span>الموقع الإلكتروني</span>
+                <span data-t="website_full">الموقع الإلكتروني</span>
             </a>
             {% endif %}
         </div>
@@ -527,7 +527,7 @@
                 <div id="mDesc" class="modal-desc"></div>
                 <button id="mAdd" class="wa-btn">
                     <i data-lucide="shopping-cart"></i>
-                    <span>أضف للسلة</span>
+                    <span data-t="add_to_cart">أضف للسلة</span>
                 </button>
             </div>
         </div>
@@ -541,33 +541,33 @@
 
     <aside id="cartDrawer" class="cart-drawer" aria-hidden="true">
         <div class="cart-header">
-            <strong>سلة الشراء</strong>
+            <strong data-t="cart_title">سلة الشراء</strong>
             <button onclick="closeCart()" style="background:none;border:none;"><i data-lucide="x"></i></button>
         </div>
         <div id="cartItems" class="cart-body"></div>
         <div class="cart-footer">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                <span>المجموع:</span>
+                <span data-t="cart_total">المجموع:</span>
                 <strong id="cartSubtotal">₪ 0</strong>
             </div>
-            <div class="cart-note">لا تشمل رسوم التوصيل</div>
+            <div class="cart-note" data-t="cart_no_delivery">لا تشمل رسوم التوصيل</div>
             <div class="field">
-                <label>الاسم</label>
-                <input id="c_name" type="text" placeholder="الاسم الكامل (مطلوب)">
+                <label data-t="field_name">الاسم</label>
+                <input id="c_name" type="text" data-t-ph="field_name_ph" placeholder="الاسم الكامل (مطلوب)">
             </div>
             <div class="field">
-                <label>رقم الهاتف</label>
-                <input id="c_phone" type="tel" placeholder="05xxxxxxxx (مطلوب)">
+                <label data-t="field_phone">رقم الهاتف</label>
+                <input id="c_phone" type="tel" data-t-ph="field_phone_ph" placeholder="05xxxxxxxx (مطلوب)">
             </div>
             <div class="field">
-                <label>العنوان</label>
-                <input id="c_address" type="text" placeholder="المدينة، الشارع (مطلوب)">
+                <label data-t="field_address">العنوان</label>
+                <input id="c_address" type="text" data-t-ph="field_address_ph" placeholder="المدينة، الشارع (مطلوب)">
             </div>
             <div class="field">
-                <label>ملاحظات</label>
-                <textarea id="c_notes" rows="2" placeholder="أي ملاحظات إضافية (اختياري)"></textarea>
+                <label data-t="field_notes">ملاحظات</label>
+                <textarea id="c_notes" rows="2" data-t-ph="field_notes_ph" placeholder="أي ملاحظات إضافية (اختياري)"></textarea>
             </div>
-            <button class="wa-order-btn" onclick="placeOrder()">اطلب عبر واتساب</button>
+            <button class="wa-order-btn" onclick="placeOrder()" data-t="cart_order_btn">اطلب عبر واتساب</button>
         </div>
     </aside>
 
@@ -591,8 +591,42 @@
         const CURRENCY = "{{ store.currency or '₪' }}";
 
         const translations = {
-            ar: { nav_home:"الرئيسية", nav_products:"المنتجات", nav_about:"عن المتجر", nav_admin:"دخول المدير", contact_us:"تواصل معنا", latest_products:"أحدث المنتجات", quick_links:"روابط سريعة", whatsapp:"واتساب", call_us:"اتصال هاتفي", instagram:"إنستغرام", order_now:"اطلب الآن عبر واتساب", welcome:"أهلاً بك في", install_app:"تثبيت التطبيق", install_desc:"تصفح المتجر بشكل أسرع", install_btn:"Install" },
-            en: { nav_home:"Home", nav_products:"Products", nav_about:"About Us", nav_admin:"Admin Login", contact_us:"Contact Us", latest_products:"Latest Products", quick_links:"Quick Links", whatsapp:"WhatsApp", call_us:"Call Us", instagram:"Instagram", order_now:"Order Now via WhatsApp", welcome:"Welcome to", install_app:"Install App", install_desc:"Browse the store faster", install_btn:"Install" }
+            ar: {
+                nav_home:"الرئيسية", nav_products:"المنتجات", nav_about:"عن المتجر", nav_admin:"دخول المدير",
+                contact_us:"تواصل معنا", latest_products:"أحدث المنتجات", quick_links:"روابط سريعة",
+                whatsapp:"واتساب", call_us:"اتصال هاتفي", instagram:"إنستغرام",
+                order_now:"اطلب الآن عبر واتساب", welcome:"أهلاً بك في",
+                install_app:"تثبيت التطبيق", install_desc:"تصفح المتجر بشكل أسرع", install_btn:"تثبيت",
+                website:"الموقع", website_full:"الموقع الإلكتروني",
+                add_to_cart:"أضف للسلة", not_available:"غير متوفر", sold_out:"غير متوفر",
+                cart_title:"سلة الشراء", cart_total:"المجموع:", cart_no_delivery:"لا تشمل رسوم التوصيل",
+                field_name:"الاسم", field_name_ph:"الاسم الكامل (مطلوب)",
+                field_phone:"رقم الهاتف", field_phone_ph:"05xxxxxxxx (مطلوب)",
+                field_address:"العنوان", field_address_ph:"المدينة، الشارع (مطلوب)",
+                field_notes:"ملاحظات", field_notes_ph:"أي ملاحظات إضافية (اختياري)",
+                cart_order_btn:"اطلب عبر واتساب",
+                alert_required:"يرجى كتابة الاسم ورقم الهاتف والعنوان للمتابعة",
+                default_bio:"اكتشف مجموعتنا الحصرية من المنتجات الفاخرة.",
+                page_title_suffix:"اطلب الآن عبر واتساب"
+            },
+            en: {
+                nav_home:"Home", nav_products:"Products", nav_about:"About Us", nav_admin:"Admin Login",
+                contact_us:"Contact Us", latest_products:"Latest Products", quick_links:"Quick Links",
+                whatsapp:"WhatsApp", call_us:"Call Us", instagram:"Instagram",
+                order_now:"Order Now via WhatsApp", welcome:"Welcome to",
+                install_app:"Install App", install_desc:"Browse the store faster", install_btn:"Install",
+                website:"Website", website_full:"Visit Website",
+                add_to_cart:"Add to Cart", not_available:"Not Available", sold_out:"Sold Out",
+                cart_title:"Shopping Cart", cart_total:"Subtotal:", cart_no_delivery:"Delivery fees not included",
+                field_name:"Name", field_name_ph:"Full name (required)",
+                field_phone:"Phone Number", field_phone_ph:"05xxxxxxxx (required)",
+                field_address:"Address", field_address_ph:"City, Street (required)",
+                field_notes:"Notes", field_notes_ph:"Any additional notes (optional)",
+                cart_order_btn:"Order via WhatsApp",
+                alert_required:"Please enter your name, phone and address to continue",
+                default_bio:"Discover our exclusive collection of premium products.",
+                page_title_suffix:"Order Now via WhatsApp"
+            }
         };
 
         let currentLang = localStorage.getItem('storeLang') || 'ar';
@@ -610,16 +644,34 @@
                 document.documentElement.dir = 'rtl';
             }
 
+            // ترجمة النصوص الداخلية
             document.querySelectorAll('[data-t]').forEach(el => {
                 const k = el.getAttribute('data-t');
                 if (translations[lang][k]) el.innerText = translations[lang][k];
             });
 
+            // ترجمة الـ placeholders
+            document.querySelectorAll('[data-t-ph]').forEach(el => {
+                const k = el.getAttribute('data-t-ph');
+                if (translations[lang][k]) el.setAttribute('placeholder', translations[lang][k]);
+            });
+
+            // عنوان الترحيب
             const welcomeTitle = document.getElementById('welcomeTitle');
             const storeName = "{{ store.name }}";
             if (welcomeTitle) {
                 welcomeTitle.innerHTML = `${translations[lang].welcome} <span>${storeName}</span>`;
             }
+
+            // bio الافتراضي (فقط إذا ما حدد التاجر bio خاص فيه)
+            const welcomeBio = document.getElementById('welcomeBio');
+            const customBio = "{{ store.bio or '' }}";
+            if (welcomeBio && !customBio.trim()) {
+                welcomeBio.innerText = translations[lang].default_bio;
+            }
+
+            // عنوان الصفحة
+            document.title = storeName + " | " + translations[lang].page_title_suffix;
 
             const btnAr = document.getElementById('btnAr');
             const btnEn = document.getElementById('btnEn');
@@ -850,7 +902,7 @@
             let phone = document.getElementById('c_phone').value.trim();
 
             if (!name || !phone || !address) {
-                alert('يرجى كتابة الاسم ورقم الهاتف والعنوان للمتابعة');
+                alert(translations[currentLang].alert_required);
                 return;
             }
 
@@ -976,8 +1028,8 @@
             const addBtn = document.getElementById('mAdd');
             addBtn.disabled = !canAdd;
             addBtn.innerHTML = canAdd
-                ? `<i data-lucide="shopping-cart"></i><span>أضف للسلة</span>`
-                : `<i data-lucide="ban"></i><span>غير متوفر</span>`;
+                ? `<i data-lucide="shopping-cart"></i><span>${translations[currentLang].add_to_cart}</span>`
+                : `<i data-lucide="ban"></i><span>${translations[currentLang].not_available}</span>`;
 
             currentProduct = { id: Number(id), name, price: Number(price || 0), sku: sku || '', canAdd: !!canAdd };
 
