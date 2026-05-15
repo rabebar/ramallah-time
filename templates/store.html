@@ -143,21 +143,21 @@
         .cart-fab { position: fixed; bottom: 24px; left: 24px; width: 52px; height: 52px; border-radius: 50%; background: var(--brown-dark); color: var(--cream); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(44,31,14,0.2); z-index: 5000; cursor: pointer; }
         .cart-fab .count { position: absolute; top: -5px; right: -5px; background: var(--gold); color: var(--brown-dark); width: 20px; height: 20px; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
         .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: none; z-index: 4999; }
-        .cart-drawer { position: fixed; top: 0; bottom: 0; right: 0; width: min(420px, 92vw); background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.15); transform: translateX(100%); transition: transform 0.35s ease; z-index: 6000; display: flex; flex-direction: column; }
+        .cart-drawer { position: fixed; top: 0; bottom: 0; right: 0; width: min(420px, 92vw); background: #ffffff; color: #1A2238; box-shadow: -10px 0 30px rgba(0,0,0,0.15); transform: translateX(100%); transition: transform 0.35s ease; z-index: 6000; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .cart-drawer.open { transform: translateX(0); }
         .cart-header { padding: 16px 16px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
-        .cart-body { padding: 12px 16px; flex: 1; overflow-y: auto; }
+        .cart-body { padding: 12px 16px; flex: 1; overflow-y: auto; min-height: 120px; }
         .cart-line { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 10px 0; border-bottom: 1px dashed #eee; }
-        .line-title { font-weight: 700; font-size: 14px; }
+        .line-title { font-weight: 700; font-size: 14px; color: #1A2238; }
         .line-sku { color: #64748b; font-size: 11px; margin-top: 2px; }
         .qty-box { display: inline-flex; align-items: center; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
         .qty-box button { width: 30px; height: 30px; border: none; background: #f8fafc; cursor: pointer; font-weight: 800; }
         .qty-box input { width: 40px; height: 30px; border: none; text-align: center; font-weight: 700; }
         .line-right { text-align: left; }
-        .line-total { font-weight: 800; color: var(--navy-deep); }
+        .line-total { font-weight: 700; color: #1A2238; font-size: 14px; }
         .remove-btn { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; margin-top: 6px; }
 
-        .cart-footer { padding: 14px 16px; border-top: 1px solid #eee; }
+        .cart-footer { padding: 14px 16px; border-top: 1px solid #eee; overflow-y: auto; max-height: 55vh; flex-shrink: 0; }
         .cart-note { font-size: 12px; color: #64748b; margin: 6px 0 10px; }
         .field { margin-bottom: 8px; }
         .field label { display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; }
@@ -275,13 +275,14 @@
         @media (min-width: 1025px) {
             .store-top-bar {
                 background: #2C1F0E;
-                padding: 7px 32px;
+                padding: 8px 32px;
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
+                justify-content: center;
+                text-align: center;
             }
             .store-top-bar span {
-                font-size: 8px;
+                font-size: 9px;
                 letter-spacing: 3px;
                 color: #6B4F35;
                 text-transform: uppercase;
@@ -501,11 +502,13 @@
 <body>
 
     <!-- ══ DESKTOP TOP BAR ══ -->
+    {% if store.announcement %}
     <div class="store-top-bar">
-        <span>توصيل مجاني للطلبات فوق {{ store.currency or '₪' }}500</span>
-        <span>100% أصلي · مضمون</span>
-        <span>{% if store.address %}{{ store.address }}{% endif %} {% if store.display_phone %}· {{ store.display_phone }}{% endif %}</span>
+        <span></span>
+        <span style="color: #D9AE58; font-size: 9px; letter-spacing: 3px;">{{ store.announcement }}</span>
+        <span></span>
     </div>
+    {% endif %}
 
     <!-- ══ DESKTOP MAIN NAV ══ -->
     <nav class="store-main-nav" id="desktopNav">
