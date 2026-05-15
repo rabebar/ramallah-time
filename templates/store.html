@@ -1169,6 +1169,12 @@
             const mLangLabel = document.getElementById('mLangLabel');
             if (mLangLabel) mLangLabel.innerText = lang === 'ar' ? 'EN' : 'AR';
 
+            // مزامنة أزرار اللغة في الـ desktop nav
+            const dAr = document.getElementById('deskBtnAr');
+            const dEn = document.getElementById('deskBtnEn');
+            if (dAr) dAr.classList.toggle('active', lang === 'ar');
+            if (dEn) dEn.classList.toggle('active', lang === 'en');
+
             lucide.createIcons();
         }
 
@@ -1197,6 +1203,9 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            // تهيئة كل الأيقونات أولاً
+            lucide.createIcons();
+
             document.querySelectorAll('[data-social]').forEach(link => {
                 const platform = link.getAttribute('data-social');
                 const raw = link.getAttribute('data-handle');
@@ -1597,17 +1606,24 @@
         window.addEventListener('touchend', () => { isDragging = false; });
 
         function filterCategory(category, btn) {
+            // تحديث أزرار الأقسام
             document.querySelectorAll('.cat-btn').forEach(b => {
                 b.style.background = '#FAF7F2';
                 b.style.color = '#6B4F35';
                 b.style.borderColor = '#D4C0A8';
             });
-            btn.style.background = 'var(--gold)';
-            btn.style.color = '#2C1F0E';
-            btn.style.borderColor = 'var(--gold)';
+            if (btn) {
+                btn.style.background = '#C4963A';
+                btn.style.color = '#2C1F0E';
+                btn.style.borderColor = '#C4963A';
+            }
+            // إظهار/إخفاء المنتجات
+            const isDesktop = window.innerWidth >= 1025;
             document.querySelectorAll('.product-card').forEach(card => {
-                if (category === 'all' || card.getAttribute('data-category') === category) {
-                    card.style.display = 'flex';
+                const match = category === 'all' || card.getAttribute('data-category') === category;
+                if (match) {
+                    card.style.display = isDesktop ? 'block' : 'flex';
+                    card.style.visibility = 'visible';
                 } else {
                     card.style.display = 'none';
                 }
@@ -1684,15 +1700,12 @@
             });
         })();
 
-        // ── مزامنة lang buttons الجديدة ──
-        const origSetLang = setLanguage;
-        setLanguage = function(lang) {
-            origSetLang(lang);
-            const dAr = document.getElementById('deskBtnAr');
-            const dEn = document.getElementById('deskBtnEn');
-            if (dAr) dAr.classList.toggle('active', lang === 'ar');
-            if (dEn) dEn.classList.toggle('active', lang === 'en');
-        };
+        // ── مزامنة lang buttons الـ desktop ── (تعمل بعد DOMContentLoaded)
+        document.addEventListener('DOMContentLoaded', () => {
+            // مزامنة أزرار اللغة الجديدة مع كل استدعاء
+            const _orig = window._setLangOrig || setLanguage;
+            window._setLangOrig = _orig;
+        });
 
     </script>
 
