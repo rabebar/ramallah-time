@@ -31,7 +31,6 @@
 
     <meta name="twitter:card" content="summary_large_image">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         :root {
@@ -1071,8 +1070,12 @@
         </button>
     </div>
 
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        lucide.createIcons();
+        // نهيئ الأيقونات بعد تحميل الصفحة كاملاً
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) lucide.createIcons();
+        });
 
         const STORE_ID = {{ store.id }};
         const CART_KEY = `cart_${STORE_ID}`;
