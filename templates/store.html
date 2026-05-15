@@ -93,7 +93,7 @@
 
         body.ltr { direction: ltr; text-align: left; }
         body.ltr .sidebar { right: auto; left: 0; }
-        body.ltr .main-content { margin-right: 0; margin-left: var(--sidebar-w); }
+        body.ltr .main-content { margin-right: 0; margin-left: 0; }
         body.ltr .modal-close { left: auto; right: 20px; }
         body.ltr .modal-desc { border-right: none; border-left: 4px solid var(--gold-light); padding-right: 0; padding-left: 20px; text-align: left; }
         body.ltr .modal-canvas.style-modern .m-name-overlay { right: auto; left: 30px; }
@@ -434,7 +434,7 @@
                 color: #4A3828;
                 text-transform: uppercase;
             }
-            .store-footer-socials { display: flex; gap: 8px; }
+            .store-footer-socials { display: flex; gap: 6px; align-items: center; }
             .store-footer-soc {
                 font-size: 8px;
                 letter-spacing: 2px;
@@ -448,6 +448,24 @@
             }
             .store-footer-soc:hover { border-color: #C4963A; color: #C4963A; }
             .store-footer-soc.gold { color: #C4963A; border-color: #C4963A; }
+
+            .store-footer-icon {
+                width: 36px;
+                height: 36px;
+                border: 0.5px solid rgba(196,150,58,0.2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #6B4F35;
+                text-decoration: none;
+                transition: all 0.3s;
+                border-radius: 0;
+            }
+            .store-footer-icon:hover {
+                border-color: #C4963A;
+                color: #C4963A;
+            }
+
             /* section-title area */
             .products-section-wrap {
                 padding: 18px 32px 0;
@@ -505,7 +523,7 @@
         </a>
 
         <!-- Category nav — populated by JS -->
-        <div class="store-nav-cats" id="desktopCatNav"></div>
+        <div class="store-nav-cats" id="desktopCatNav" style="display:none;"></div>
 
         <!-- Actions -->
         <div class="store-nav-actions">
@@ -820,10 +838,10 @@
         }
 
 </style>
-            <button class="cat-btn active" onclick="filterCategory('all', this)" style="white-space: nowrap; padding: 8px 22px; border-radius: 50px; border: 1px solid var(--gold); background: var(--gold); color: #fff; cursor: pointer; font-weight: 700; transition: 0.3s; flex-shrink: 0;">الكل</button>
+            <button class="cat-btn active" onclick="filterCategory('all', this)" style="white-space: nowrap; padding: 7px 18px; border-radius: 0; border: 1px solid var(--gold); background: var(--gold); color: #2C1F0E; cursor: pointer; font-weight: 500; transition: 0.3s; flex-shrink: 0; font-size: 11px; letter-spacing: 1px; font-family: 'IBM Plex Sans Arabic', sans-serif;">الكل</button>
             {% for cat in categories %}
                 {% if cat != 'الكل' %}
-                <button class="cat-btn" onclick="filterCategory('{{ cat }}', this)" style="white-space: nowrap; padding: 8px 22px; border-radius: 50px; border: 1px solid #e2e8f0; background: #fff; color: var(--text-main); cursor: pointer; font-weight: 600; transition: 0.3s; flex-shrink: 0;">{{ cat }}</button>
+                <button class="cat-btn" onclick="filterCategory('{{ cat }}', this)" style="white-space: nowrap; padding: 7px 18px; border-radius: 0; border: 1px solid #D4C0A8; background: #FAF7F2; color: #6B4F35; cursor: pointer; font-weight: 400; transition: 0.3s; flex-shrink: 0; font-size: 11px; letter-spacing: 1px; font-family: 'IBM Plex Sans Arabic', sans-serif;">{{ cat }}</button>
                 {% endif %}
             {% endfor %}
         </div>
@@ -1573,12 +1591,12 @@
 
         function filterCategory(category, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => {
-                b.style.background = '#fff';
-                b.style.color = 'var(--text-main)';
-                b.style.borderColor = '#e2e8f0';
+                b.style.background = '#FAF7F2';
+                b.style.color = '#6B4F35';
+                b.style.borderColor = '#D4C0A8';
             });
             btn.style.background = 'var(--gold)';
-            btn.style.color = '#fff';
+            btn.style.color = '#2C1F0E';
             btn.style.borderColor = 'var(--gold)';
             document.querySelectorAll('.product-card').forEach(card => {
                 if (category === 'all' || card.getAttribute('data-category') === category) {
@@ -1676,10 +1694,30 @@
         <div class="store-footer-copy">Powered by RT Studio</div>
         <div style="font-size:9px;letter-spacing:4px;color:#6B4F35;text-transform:uppercase;">{{ store.name }}</div>
         <div class="store-footer-socials">
-            {% if store.facebook_handle %}<a href="#" data-social="facebook" data-handle="{{ store.facebook_handle }}" class="store-footer-soc" target="_blank" data-t="facebook">فيسبوك</a>{% endif %}
-            {% if store.instagram_handle %}<a href="#" data-social="instagram" data-handle="{{ store.instagram_handle }}" class="store-footer-soc" target="_blank">إنستغرام</a>{% endif %}
-            {% if store.tiktok_handle %}<a href="#" data-social="tiktok" data-handle="{{ store.tiktok_handle }}" class="store-footer-soc" target="_blank">تيك توك</a>{% endif %}
-            {% if store.whatsapp_phone %}<a href="https://wa.me/{{ store.whatsapp_phone }}" class="store-footer-soc gold" target="_blank" data-t="whatsapp">واتساب</a>{% endif %}
+            {% if store.whatsapp_phone %}
+            <a href="https://wa.me/{{ store.whatsapp_phone }}" class="store-footer-icon" target="_blank" title="WhatsApp">
+                <i data-lucide="message-circle" style="width:18px;height:18px;"></i>
+            </a>{% endif %}
+            {% if store.display_phone %}
+            <a href="tel:{{ store.display_phone }}" class="store-footer-icon" title="Call">
+                <i data-lucide="phone" style="width:18px;height:18px;"></i>
+            </a>{% endif %}
+            {% if store.instagram_handle %}
+            <a href="#" data-social="instagram" data-handle="{{ store.instagram_handle }}" class="store-footer-icon" target="_blank" title="Instagram">
+                <i data-lucide="instagram" style="width:18px;height:18px;"></i>
+            </a>{% endif %}
+            {% if store.facebook_handle %}
+            <a href="#" data-social="facebook" data-handle="{{ store.facebook_handle }}" class="store-footer-icon" target="_blank" title="Facebook">
+                <i data-lucide="facebook" style="width:18px;height:18px;"></i>
+            </a>{% endif %}
+            {% if store.tiktok_handle %}
+            <a href="#" data-social="tiktok" data-handle="{{ store.tiktok_handle }}" class="store-footer-icon" target="_blank" title="TikTok">
+                <i data-lucide="music" style="width:18px;height:18px;"></i>
+            </a>{% endif %}
+            {% if store.website %}
+            <a href="{{ store.website }}" class="store-footer-icon" target="_blank" title="Website">
+                <i data-lucide="globe" style="width:18px;height:18px;"></i>
+            </a>{% endif %}
         </div>
     </footer>
 
