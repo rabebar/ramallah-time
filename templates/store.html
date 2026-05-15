@@ -248,13 +248,23 @@
             .about-box { margin-bottom: 120px !important; }
             .quick-actions-fixed {
                 position: fixed; bottom: 0; left: 0; width: 100%;
-                background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-                border-top: 1px solid #eee; display: flex; justify-content: center;
-                gap: 40px; padding: 20px; z-index: 999; box-shadow: 0 -5px 15px rgba(0,0,0,0.02);
+                background: rgba(250,247,242,0.97); backdrop-filter: blur(12px);
+                border-top: 0.5px solid #E3D4C0; display: flex; justify-content: center;
+                align-items: center; gap: 8px; padding: 12px 32px;
+                z-index: 999; box-shadow: 0 -4px 20px rgba(44,31,14,0.06);
             }
-            .action-item-fixed { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-main); font-size: 14px; font-weight: 700; transition: 0.3s; }
-            .action-item-fixed:hover { color: var(--gold); transform: translateY(-2px); }
-            .action-item-fixed i { width: 20px; height: 20px; }
+            .action-item-fixed {
+                display: flex; align-items: center; justify-content: center;
+                width: 40px; height: 40px;
+                text-decoration: none;
+                color: #9A7A5A;
+                border: 0.5px solid #E3D4C0;
+                transition: all 0.3s;
+                border-radius: 0;
+            }
+            .action-item-fixed:hover { color: #C4963A; border-color: #C4963A; transform: translateY(-2px); }
+            .action-item-fixed i { width: 18px; height: 18px; }
+            .action-item-fixed span { display: none; }
             #home > .section-title[data-t="quick_links"], #home > .quick-actions { display: none; }
         }
         
@@ -953,39 +963,33 @@
 
     <div class="quick-actions-fixed">
         {% if store.whatsapp_phone %}
-        <a href="https://wa.me/{{ store.whatsapp_phone }}" class="action-item-fixed" target="_blank">
-            <i data-lucide="message-circle" style="color: #25D366;"></i>
-            <span data-t="whatsapp">واتساب</span>
+        <a href="https://wa.me/{{ store.whatsapp_phone }}" class="action-item-fixed" target="_blank" title="WhatsApp">
+            <i data-lucide="message-circle" style="color:#25D366;"></i>
         </a>
         {% endif %}
         {% if store.display_phone %}
-        <a href="tel:{{ store.display_phone }}" class="action-item-fixed">
-            <i data-lucide="phone" style="color: var(--gold);"></i>
-            <span data-t="call_us">اتصال هاتفي</span>
+        <a href="tel:{{ store.display_phone }}" class="action-item-fixed" title="Call">
+            <i data-lucide="phone"></i>
         </a>
         {% endif %}
         {% if store.instagram_handle %}
-        <a href="#" data-social="instagram" data-handle="{{ store.instagram_handle }}" class="action-item-fixed" target="_blank">
-            <i data-lucide="instagram" style="color: #E4405F;"></i>
-            <span>إنستغرام</span>
+        <a href="#" data-social="instagram" data-handle="{{ store.instagram_handle }}" class="action-item-fixed" target="_blank" title="Instagram">
+            <i data-lucide="instagram" style="color:#E4405F;"></i>
         </a>
         {% endif %}
         {% if store.facebook_handle %}
-        <a href="#" data-social="facebook" data-handle="{{ store.facebook_handle }}" class="action-item-fixed" target="_blank">
-            <i data-lucide="facebook" style="color: #1877F2;"></i>
-            <span>فيسبوك</span>
+        <a href="#" data-social="facebook" data-handle="{{ store.facebook_handle }}" class="action-item-fixed" target="_blank" title="Facebook">
+            <i data-lucide="facebook" style="color:#1877F2;"></i>
         </a>
         {% endif %}
         {% if store.tiktok_handle %}
-        <a href="#" data-social="tiktok" data-handle="{{ store.tiktok_handle }}" class="action-item-fixed" target="_blank">
-            <i data-lucide="music" style="color: #000;"></i>
-            <span>تيك توك</span>
+        <a href="#" data-social="tiktok" data-handle="{{ store.tiktok_handle }}" class="action-item-fixed" target="_blank" title="TikTok">
+            <i data-lucide="music"></i>
         </a>
         {% endif %}
         {% if store.website %}
-        <a href="{{ store.website }}" class="action-item-fixed" target="_blank">
-            <i data-lucide="globe" style="color: var(--navy-deep);"></i>
-            <span data-t="website">الموقع</span>
+        <a href="{{ store.website }}" class="action-item-fixed" target="_blank" title="Website">
+            <i data-lucide="globe"></i>
         </a>
         {% endif %}
     </div>
