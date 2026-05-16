@@ -868,8 +868,6 @@
     <script>
         
 
-        lucide.createIcons();
-
         const STORE_ID = {{ store.id or 0 }};
         const CART_KEY = `cart_${STORE_ID}`;
         const CURRENCY = "{{ store.currency or '₪' }}";
@@ -1009,6 +1007,7 @@
             });
         } catch(e) { console.error('DOMContentLoaded error:', e); }
 
+            lucide.createIcons();
             setLanguage(currentLang);
             renderCart();
             sendBeacon('page_view');
