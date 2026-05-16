@@ -113,7 +113,7 @@
 
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 32px; margin-bottom: 60px; }
 
-        .product-card { background: #F0EBE0; border-radius: 0; border: none; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: none; cursor: pointer; display: block; position: relative; }
+        .product-card { background: #F0EBE0; border-radius: 0; border: none; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: none; cursor: pointer; display: flex; flex-direction: column; position: relative; }
         .product-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(44,31,14,0.1); }
         .img-container { overflow: hidden; }
         .img-container img { object-fit: contain; transition: transform 0.5s ease; background: #fff; }
@@ -961,6 +961,12 @@
             const mLangLabel = document.getElementById('mLangLabel');
             if (mLangLabel) mLangLabel.innerText = lang === 'ar' ? 'EN' : 'AR';
 
+            // مزامنة أزرار الـ desktop
+            const dAr = document.getElementById('deskBtnAr');
+            const dEn = document.getElementById('deskBtnEn');
+            if (dAr) dAr.classList.toggle('active', lang === 'ar');
+            if (dEn) dEn.classList.toggle('active', lang === 'en');
+
             lucide.createIcons();
         }
 
@@ -1394,15 +1400,14 @@
                 b.style.color = '#6B4F35';
                 b.style.borderColor = '#D4C0A8';
             });
-            btn.style.background = 'var(--gold)';
-            btn.style.color = '#2C1F0E';
-            btn.style.borderColor = 'var(--gold)';
+            if (btn) {
+                btn.style.background = '#C4963A';
+                btn.style.color = '#2C1F0E';
+                btn.style.borderColor = '#C4963A';
+            }
             document.querySelectorAll('.product-card').forEach(card => {
-                if (category === 'all' || card.getAttribute('data-category') === category) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
+                const match = category === 'all' || card.getAttribute('data-category') === category;
+                card.style.display = match ? '' : 'none';
             });
         }
 
@@ -1476,15 +1481,7 @@
             });
         })();
 
-        // ── مزامنة lang buttons الجديدة ──
-        const origSetLang = setLanguage;
-        setLanguage = function(lang) {
-            origSetLang(lang);
-            const dAr = document.getElementById('deskBtnAr');
-            const dEn = document.getElementById('deskBtnEn');
-            if (dAr) dAr.classList.toggle('active', lang === 'ar');
-            if (dEn) dEn.classList.toggle('active', lang === 'en');
-        };
+
 
     </script>
 
