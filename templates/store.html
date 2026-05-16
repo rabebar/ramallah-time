@@ -157,7 +157,7 @@
         .qty-box input { width: 40px; height: 30px; border: none; text-align: center; font-weight: 700; }
         .line-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
         .line-total { font-weight: 700; color: #1A2238; font-size: 14px; white-space: nowrap; }
-        .remove-btn { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; white-space: nowrap; }
+        .remove-btn { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; white-space: nowrap; padding: 0; }
 
         .cart-footer { padding: 14px 16px; border-top: 1px solid #eee; overflow-y: auto; max-height: 55vh; flex-shrink: 0; }
         .cart-note { font-size: 12px; color: #64748b; margin: 6px 0 10px; }
@@ -538,7 +538,7 @@
         </a>
 
         <!-- Category nav — populated by JS -->
-        <div class="store-nav-cats" id="desktopCatNav"></div>
+        <div class="store-nav-cats" id="desktopCatNav" style="display:none;"></div>
 
         <!-- Actions -->
         <div class="store-nav-actions">
@@ -1403,16 +1403,18 @@
         window.addEventListener('touchend', () => { isDragging = false; });
 
         function filterCategory(category, btn) {
+            // تحديث أزرار الموبايل (cat-btn)
             document.querySelectorAll('.cat-btn').forEach(b => {
                 b.style.background = '#FAF7F2';
                 b.style.color = '#6B4F35';
                 b.style.borderColor = '#D4C0A8';
             });
-            if (btn) {
+            if (btn && btn.classList.contains('cat-btn')) {
                 btn.style.background = '#C4963A';
                 btn.style.color = '#2C1F0E';
                 btn.style.borderColor = '#C4963A';
             }
+            // فلترة المنتجات
             document.querySelectorAll('.product-card').forEach(card => {
                 const match = category === 'all' || card.getAttribute('data-category') === category;
                 card.style.display = match ? '' : 'none';
@@ -1458,19 +1460,27 @@
             const catNav = document.getElementById('desktopCatNav');
             if (!catNav) return;
 
-            // اجمع الأقسام من الـ data attributes على بطاقات المنتجات
+            // اجمع الأقسام — نتجاهل None وundefined والفراغ
             const cats = new Set();
             document.querySelectorAll('.product-card[data-category]').forEach(c => {
                 const cat = c.getAttribute('data-category');
-                if (cat && cat !== 'undefined') cats.add(cat);
+                if (cat && cat !== 'undefined' && cat !== 'None' && cat !== 'null' && cat.trim() !== '') {
+                    cats.add(cat.trim());
+                }
             });
+
+            // إذا ما في أقسام متعددة، أخفِ القائمة
+            if (cats.size < 2) {
+                catNav.style.display = 'none';
+                return;
+            }
 
             // زر "الكل"
             const allBtn = document.createElement('button');
             allBtn.className = 'store-nav-cat active';
             allBtn.textContent = 'الكل';
             allBtn.onclick = () => {
-                filterCategory('all', allBtn);
+                filterCategory('all', null);
                 document.querySelectorAll('.store-nav-cat').forEach(b => b.classList.remove('active'));
                 allBtn.classList.add('active');
             };
@@ -1481,18 +1491,15 @@
                 btn.className = 'store-nav-cat';
                 btn.textContent = cat;
                 btn.onclick = () => {
-                    filterCategory(cat, btn);
+                    filterCategory(cat, null);
                     document.querySelectorAll('.store-nav-cat').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                 };
                 catNav.appendChild(btn);
             });
 
-            // إظهار قائمة الأقسام فقط إذا في أقسام فعلية
-            catNav.style.display = cats.size > 0 ? 'flex' : 'none';
+            catNav.style.display = 'flex';
         })();
-
-
 
     </script>
 
