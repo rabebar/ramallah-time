@@ -147,15 +147,17 @@
         .cart-drawer.open { transform: translateX(0); }
         .cart-header { padding: 16px 16px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
         .cart-body { padding: 12px 16px; flex: 1; overflow-y: auto; min-height: 120px; }
-        .cart-line { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 12px 0; border-bottom: 1px dashed #eee; min-height: 80px; }
-        .line-title { font-weight: 700; font-size: 14px; color: #1A2238; }
+        .cart-line { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-bottom: 1px dashed #eee; }
+        .cart-line-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+        .cart-line-bottom { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .line-title { font-weight: 700; font-size: 14px; color: #1A2238; flex: 1; min-width: 0; word-break: break-word; }
         .line-sku { color: #64748b; font-size: 11px; margin-top: 2px; }
-        .qty-box { display: inline-flex; align-items: center; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
+        .qty-box { display: inline-flex; align-items: center; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
         .qty-box button { width: 30px; height: 30px; border: none; background: #f8fafc; cursor: pointer; font-weight: 800; }
         .qty-box input { width: 40px; height: 30px; border: none; text-align: center; font-weight: 700; }
-        .line-right { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-        .line-total { font-weight: 700; color: #1A2238; font-size: 14px; }
-        .remove-btn { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; margin-top: 6px; }
+        .line-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .line-total { font-weight: 700; color: #1A2238; font-size: 14px; white-space: nowrap; }
+        .remove-btn { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; white-space: nowrap; }
 
         .cart-footer { padding: 14px 16px; border-top: 1px solid #eee; overflow-y: auto; max-height: 55vh; flex-shrink: 0; }
         .cart-note { font-size: 12px; color: #64748b; margin: 6px 0 10px; }
@@ -536,7 +538,7 @@
         </a>
 
         <!-- Category nav — populated by JS -->
-        <div class="store-nav-cats" id="desktopCatNav" style="display:none;"></div>
+        <div class="store-nav-cats" id="desktopCatNav"></div>
 
         <!-- Actions -->
         <div class="store-nav-actions">
@@ -1123,20 +1125,22 @@
                 const row = document.createElement('div');
                 row.className = 'cart-line';
                 row.innerHTML = `
-                    <div>
-                        <div class="line-title">${escapeHtml(line.name || 'منتج')}</div>
-                        <div class="line-sku">${line.sku ? 'SKU: ' + escapeHtml(line.sku) : ''}</div>
-                        <div style="margin-top:6px;">
-                            <div class="qty-box">
-                                <button onclick="decQty(${line.product_id})">-</button>
-                                <input value="${line.qty}" oninput="qtyInput(${line.product_id}, this.value)">
-                                <button onclick="incQty(${line.product_id})">+</button>
-                            </div>
-                            <button class="remove-btn" onclick="removeLine(${line.product_id})">حذف</button>
+                    <div class="cart-line-top">
+                        <div style="flex:1;min-width:0;">
+                            <div class="line-title">${escapeHtml(line.name || 'منتج')}</div>
+                            <div class="line-sku">${line.sku ? 'SKU: ' + escapeHtml(line.sku) : ''}</div>
+                        </div>
+                        <div class="line-right">
+                            <div class="line-total">${CURRENCY} ${(Number(line.price || 0) * Number(line.qty || 0)).toFixed(0)}</div>
                         </div>
                     </div>
-                    <div class="line-right">
-                        <div class="line-total">${CURRENCY} ${(Number(line.price || 0) * Number(line.qty || 0)).toFixed(0)}</div>
+                    <div class="cart-line-bottom">
+                        <div class="qty-box">
+                            <button onclick="decQty(${line.product_id})">-</button>
+                            <input value="${line.qty}" oninput="qtyInput(${line.product_id}, this.value)">
+                            <button onclick="incQty(${line.product_id})">+</button>
+                        </div>
+                        <button class="remove-btn" onclick="removeLine(${line.product_id})">🗑 حذف</button>
                     </div>
                 `;
                 box.appendChild(row);
@@ -1483,6 +1487,9 @@
                 };
                 catNav.appendChild(btn);
             });
+
+            // إظهار قائمة الأقسام فقط إذا في أقسام فعلية
+            catNav.style.display = cats.size > 0 ? 'flex' : 'none';
         })();
 
 
