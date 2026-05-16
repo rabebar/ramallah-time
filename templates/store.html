@@ -864,11 +864,17 @@
     </div>
 
     <script>
-        lucide.createIcons();
+        
+        // ═══ DEBUG INFO ═══
+        console.log('Store ID:', {{ store.id or "undefined" }});
+        console.log('Store Name:', '{{ store.name or "undefined" }}');
+        console.log('Store Slug:', '{{ store.slug or "undefined" }}');
+        
+        try { lucide.createIcons(); } catch(e) { console.warn('Lucide icons failed to load'); }
 
-        const STORE_ID = {{ store.id }};
-        const CART_KEY = `cart_${STORE_ID}`;
-        const CURRENCY = "{{ store.currency or '₪' }}";
+        const STORE_ID = {{ store.id or 0 }}; // معالجة القيمة الفارغة
+        const CART_KEY = `cart_${STORE_ID || "default"}`; // معالجة القيمة الفارغة
+        const CURRENCY = "{{ store.currency or '₪' }}" || "₪"; // معالجة القيمة الفارغة
 
         const translations = {
             ar: {
@@ -967,7 +973,7 @@
             if (dAr) dAr.classList.toggle('active', lang === 'ar');
             if (dEn) dEn.classList.toggle('active', lang === 'en');
 
-            lucide.createIcons();
+            try { lucide.createIcons(); } catch(e) { console.warn('Lucide icons failed to load'); }
         }
 
         function toggleLanguage() {
@@ -995,13 +1001,15 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+        try {
             document.querySelectorAll('[data-social]').forEach(link => {
                 const platform = link.getAttribute('data-social');
                 const raw = link.getAttribute('data-handle');
                 const clean = cleanHandle(raw, platform);
                 if (clean) link.href = clean;
                 else link.style.display = 'none';
-            });
+            } catch(e) { console.error('DOMContentLoaded error:', e); }
+        }););
 
             setLanguage(currentLang);
             renderCart();
@@ -1328,7 +1336,7 @@
 
             document.getElementById('productModal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
-            lucide.createIcons();
+            try { lucide.createIcons(); } catch(e) { console.warn('Lucide icons failed to load'); }
             sendBeacon('product_view', Number(id));
         }
 
