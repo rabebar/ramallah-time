@@ -1004,8 +1004,8 @@
                 const clean = cleanHandle(raw, platform);
                 if (clean) link.href = clean;
                 else link.style.display = 'none';
-            } catch(e) { console.error('DOMContentLoaded error:', e); }
-        }););
+            });
+        } catch(e) { console.error('DOMContentLoaded error:', e); }
 
             setLanguage(currentLang);
             renderCart();
