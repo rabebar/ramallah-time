@@ -942,14 +942,14 @@
 
             // عنوان الترحيب
             const welcomeTitle = document.getElementById('welcomeTitle');
-            const storeName = "{{ store.name }}";
+            const storeName = {{ store.name | tojson }};
             if (welcomeTitle) {
                 welcomeTitle.innerHTML = `${translations[lang].welcome} <span>${storeName}</span>`;
             }
 
             // bio الافتراضي (فقط إذا ما حدد التاجر bio خاص فيه)
             const welcomeBio = document.getElementById('welcomeBio');
-            const customBio = "{{ store.bio or '' }}";
+            const customBio = {{ (store.bio or '') | tojson }};
             if (welcomeBio && !customBio.trim()) {
                 welcomeBio.innerText = translations[lang].default_bio;
             }
