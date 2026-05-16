@@ -31,6 +31,7 @@
 
     <meta name="twitter:card" content="summary_large_image">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         :root {
@@ -112,7 +113,7 @@
 
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 32px; margin-bottom: 60px; }
 
-        .product-card { background: #F0EBE0; border-radius: 0; border: none; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: none; cursor: pointer; display: flex; flex-direction: column; position: relative; }
+        .product-card { background: #F0EBE0; border-radius: 0; border: none; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: none; cursor: pointer; display: block; position: relative; }
         .product-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(44,31,14,0.1); }
         .img-container { overflow: hidden; }
         .img-container img { object-fit: contain; transition: transform 0.5s ease; background: #fff; }
@@ -641,215 +642,7 @@
 
         {% if categories|length > 1 %}
         <div id="categoryBar" class="category-bar" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 5px 25px 5px; margin: 0 -15px; padding-left: 15px; padding-right: 15px; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;">
-            <style>.category-bar::-webkit-scrollbar { display: none; }
-        /* ══ DESKTOP NAV الأفقي الجديد ══ */
-        @media (min-width: 1025px) {
-            .store-top-bar {
-                background: #2C1F0E;
-                padding: 7px 32px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            }
-            .store-top-bar span {
-                font-size: 8px;
-                letter-spacing: 3px;
-                color: #6B4F35;
-                text-transform: uppercase;
-                font-family: 'IBM Plex Sans Arabic', sans-serif;
-            }
-            .store-main-nav {
-                background: #FAF7F2;
-                border-bottom: 0.5px solid #E3D4C0;
-                padding: 0 32px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                height: 60px;
-                position: sticky;
-                top: 0;
-                z-index: 2000;
-                box-shadow: 0 2px 12px rgba(44,31,14,0.04);
-            }
-            .store-nav-logo {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                text-decoration: none;
-                flex-shrink: 0;
-            }
-            .store-nav-logo-img {
-                width: 38px;
-                height: 38px;
-                border-radius: 50%;
-                object-fit: cover;
-                border: 1px solid #D4C0A8;
-            }
-            .store-nav-logo-fallback {
-                width: 38px;
-                height: 38px;
-                border-radius: 50%;
-                background: #EDE0D0;
-                border: 1px solid #D4C0A8;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #C4963A;
-                font-size: 16px;
-                font-weight: 600;
-                font-family: 'IBM Plex Sans Arabic', sans-serif;
-            }
-            .store-nav-name {
-                font-size: 12px;
-                font-weight: 500;
-                letter-spacing: 3px;
-                color: #2C1F0E;
-                text-transform: uppercase;
-                display: block;
-                line-height: 1;
-                font-family: 'IBM Plex Sans Arabic', sans-serif;
-            }
-            .store-nav-loc {
-                font-size: 8px;
-                letter-spacing: 2px;
-                color: #9A7A5A;
-                margin-top: 3px;
-                display: block;
-            }
-            .store-nav-cats {
-                display: flex;
-                align-items: center;
-                flex: 1;
-                justify-content: center;
-                overflow: hidden;
-            }
-            .store-nav-cat {
-                padding: 0 14px;
-                height: 60px;
-                display: flex;
-                align-items: center;
-                font-size: 10px;
-                letter-spacing: 2px;
-                color: #9A7A5A;
-                text-transform: uppercase;
-                border-bottom: 2px solid transparent;
-                cursor: pointer;
-                white-space: nowrap;
-                font-family: 'IBM Plex Sans Arabic', sans-serif;
-                transition: all 0.2s;
-                border: none;
-                background: none;
-            }
-            .store-nav-cat:hover { color: #C4963A; }
-            .store-nav-cat.active {
-                color: #C4963A;
-                border-bottom: 2px solid #C4963A;
-            }
-            .store-nav-actions {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                flex-shrink: 0;
-            }
-            .store-lang-sw {
-                display: flex;
-                gap: 2px;
-                background: #EDE0D0;
-                padding: 3px;
-                border-radius: 4px;
-            }
-            .store-lang-btn {
-                padding: 5px 10px;
-                font-size: 8px;
-                font-weight: 500;
-                color: #9A7A5A;
-                letter-spacing: 2px;
-                border: none;
-                background: transparent;
-                cursor: pointer;
-                border-radius: 3px;
-                transition: all 0.2s;
-                font-family: 'IBM Plex Sans Arabic', sans-serif;
-            }
-            .store-lang-btn.active {
-                background: #2C1F0E;
-                color: #EDE0D0;
-            }
-            .store-nav-wa {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                padding: 9px 18px;
-                border: 0.5px solid #C4963A;
-                color: #C4963A;
-                font-size: 9px;
-                letter-spacing: 3px;
-                text-transform: uppercase;
-                text-decoration: none;
-                transition: all 0.3s;
-                font-family: 'IBM Plex Sans Arabic', sans-serif;
-                white-space: nowrap;
-            }
-            .store-nav-wa:hover { background: #C4963A; color: #2C1F0E; }
-            .store-footer {
-                background: #2C1F0E;
-                padding: 16px 32px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                border-top: 0.5px solid rgba(196,150,58,0.15);
-            }
-            .store-footer-copy {
-                font-size: 8px;
-                letter-spacing: 3px;
-                color: #4A3828;
-                text-transform: uppercase;
-            }
-            .store-footer-socials { display: flex; gap: 8px; }
-            .store-footer-soc {
-                font-size: 8px;
-                letter-spacing: 2px;
-                color: #6B4F35;
-                border: 0.5px solid #3A2A1A;
-                padding: 5px 10px;
-                text-transform: uppercase;
-                text-decoration: none;
-                transition: all 0.3s;
-                font-family: 'IBM Plex Sans Arabic', sans-serif;
-            }
-            .store-footer-soc:hover { border-color: #C4963A; color: #C4963A; }
-            .store-footer-soc.gold { color: #C4963A; border-color: #C4963A; }
-            /* section-title area */
-            .products-section-wrap {
-                padding: 18px 32px 0;
-            }
-            /* about box */
-            .about-box {
-                margin: 0 32px 40px !important;
-                padding: 20px 24px !important;
-                background: #EDE0D0 !important;
-                border-radius: 0 !important;
-                border-right: 2px solid #C4963A !important;
-                color: #6B4F35 !important;
-                font-size: 13px !important;
-                line-height: 1.9 !important;
-            }
-            /* p-meta جودة ممتازة تُخفى */
-            .hide-desktop { display: none !important; }
-            /* SKU صغير وخفيف */
-            .p-sku {
-                font-size: 9px;
-                color: #B4B2A9;
-                letter-spacing: 1px;
-                margin-top: 3px;
-                font-family: 'Inter', sans-serif;
-            }
-        }
-        @media (max-width: 1024px) {
-            .store-top-bar, .store-main-nav, .store-footer { display: none !important; }
-        }
-
-</style>
+            
             <button class="cat-btn active" onclick="filterCategory('all', this)" style="white-space: nowrap; padding: 7px 18px; border-radius: 0; border: 1px solid var(--gold); background: var(--gold); color: #2C1F0E; cursor: pointer; font-weight: 500; transition: 0.3s; flex-shrink: 0; font-size: 11px; letter-spacing: 1px; font-family: 'IBM Plex Sans Arabic', sans-serif;">الكل</button>
             {% for cat in categories %}
                 {% if cat != 'الكل' %}
@@ -1070,12 +863,8 @@
         </button>
     </div>
 
-    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        // نهيئ الأيقونات بعد تحميل الصفحة كاملاً
-        document.addEventListener('DOMContentLoaded', function() {
-            if (window.lucide) lucide.createIcons();
-        });
+        lucide.createIcons();
 
         const STORE_ID = {{ store.id }};
         const CART_KEY = `cart_${STORE_ID}`;
@@ -1172,12 +961,6 @@
             const mLangLabel = document.getElementById('mLangLabel');
             if (mLangLabel) mLangLabel.innerText = lang === 'ar' ? 'EN' : 'AR';
 
-            // مزامنة أزرار اللغة في الـ desktop nav
-            const dAr = document.getElementById('deskBtnAr');
-            const dEn = document.getElementById('deskBtnEn');
-            if (dAr) dAr.classList.toggle('active', lang === 'ar');
-            if (dEn) dEn.classList.toggle('active', lang === 'en');
-
             lucide.createIcons();
         }
 
@@ -1206,9 +989,6 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            // تهيئة كل الأيقونات أولاً
-            lucide.createIcons();
-
             document.querySelectorAll('[data-social]').forEach(link => {
                 const platform = link.getAttribute('data-social');
                 const raw = link.getAttribute('data-handle');
@@ -1609,24 +1389,17 @@
         window.addEventListener('touchend', () => { isDragging = false; });
 
         function filterCategory(category, btn) {
-            // تحديث أزرار الأقسام
             document.querySelectorAll('.cat-btn').forEach(b => {
                 b.style.background = '#FAF7F2';
                 b.style.color = '#6B4F35';
                 b.style.borderColor = '#D4C0A8';
             });
-            if (btn) {
-                btn.style.background = '#C4963A';
-                btn.style.color = '#2C1F0E';
-                btn.style.borderColor = '#C4963A';
-            }
-            // إظهار/إخفاء المنتجات
-            const isDesktop = window.innerWidth >= 1025;
+            btn.style.background = 'var(--gold)';
+            btn.style.color = '#2C1F0E';
+            btn.style.borderColor = 'var(--gold)';
             document.querySelectorAll('.product-card').forEach(card => {
-                const match = category === 'all' || card.getAttribute('data-category') === category;
-                if (match) {
-                    card.style.display = isDesktop ? 'block' : 'flex';
-                    card.style.visibility = 'visible';
+                if (category === 'all' || card.getAttribute('data-category') === category) {
+                    card.style.display = 'flex';
                 } else {
                     card.style.display = 'none';
                 }
@@ -1703,12 +1476,15 @@
             });
         })();
 
-        // ── مزامنة lang buttons الـ desktop ── (تعمل بعد DOMContentLoaded)
-        document.addEventListener('DOMContentLoaded', () => {
-            // مزامنة أزرار اللغة الجديدة مع كل استدعاء
-            const _orig = window._setLangOrig || setLanguage;
-            window._setLangOrig = _orig;
-        });
+        // ── مزامنة lang buttons الجديدة ──
+        const origSetLang = setLanguage;
+        setLanguage = function(lang) {
+            origSetLang(lang);
+            const dAr = document.getElementById('deskBtnAr');
+            const dEn = document.getElementById('deskBtnEn');
+            if (dAr) dAr.classList.toggle('active', lang === 'ar');
+            if (dEn) dEn.classList.toggle('active', lang === 'en');
+        };
 
     </script>
 
