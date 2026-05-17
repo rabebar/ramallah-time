@@ -278,6 +278,7 @@
 
         .category-bar { cursor: grab; user-select: none; }
         .category-bar:active { cursor: grabbing; }
+        @media (min-width: 1025px) { .category-bar { display: none !important; } }
         
         #mImg { cursor: zoom-in; transition: transform 0.2s ease; transform-origin: center center; user-select: none; -webkit-user-drag: none; }
         #mImg.zoomed { cursor: grab; }
@@ -507,7 +508,15 @@
         }
         @media (max-width: 1024px) {
             .store-top-bar, .store-main-nav, .store-footer { display: none !important; }
+            .rt-promo-banner { display: none !important; }
         }
+        .rt-promo-banner {
+            display: flex; align-items: center; justify-content: center; gap: 16px;
+            background: #2C1F0E; padding: 10px 32px; text-decoration: none; transition: background 0.3s;
+        }
+        .rt-promo-banner:hover { background: #3A2A1A; }
+        .rt-promo-text { font-size: 10px; letter-spacing: 3px; color: #9A7A5A; text-transform: uppercase; font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        .rt-promo-brand { font-size: 10px; letter-spacing: 3px; color: #C4963A; text-transform: uppercase; font-family: 'IBM Plex Sans Arabic', sans-serif; font-weight: 600; }
 
 </style>
 </head>
@@ -538,7 +547,7 @@
         </a>
 
         <!-- Category nav — populated by JS -->
-        <div class="store-nav-cats" id="desktopCatNav" style="display:none;"></div>
+        <div class="store-nav-cats" id="desktopCatNav"></div>
 
         <!-- Actions -->
         <div class="store-nav-actions">
@@ -605,6 +614,11 @@
 
     <main class="main-content" id="home">
         
+        <a href="https://ramallahtime.com" target="_blank" class="rt-promo-banner">
+            <span class="rt-promo-text">ابنِ متجرك الإلكتروني الآن</span>
+            <span class="rt-promo-brand">RT Studio &rarr;</span>
+        </a>
+
         <header class="welcome-header">
             <div class="welcome-text">
                 <h1 id="welcomeTitle">أهلاً بك في <span>{{ store.name }}</span></h1>
