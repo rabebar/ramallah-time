@@ -905,7 +905,24 @@ def admin():
         edit_product = cursor.fetchone()
 
     conn.close()
-    return render_template('admin.html', products=products, stats=stats, store=store, edit_product=edit_product, orders=orders, analytics=analytics)
+    from themes import ENHANCED_THEMES, THEME_COLLECTIONS, rgb_to_hex
+    theme_list = []
+    for coll_key, coll_data in THEME_COLLECTIONS.items():
+        themes_in_coll = []
+        for t in coll_data['themes']:
+            if t in ENHANCED_THEMES:
+                colors = ENHANCED_THEMES[t]
+                themes_in_coll.append({
+                    'name': t,
+                    'light': rgb_to_hex(colors[0]),
+                    'dark': rgb_to_hex(colors[1]),
+                })
+        theme_list.append({
+            'key': coll_key,
+            'label': coll_data['name'],
+            'themes': themes_in_coll
+        })
+    return render_template('admin.html', products=products, stats=stats, store=store, edit_product=edit_product, orders=orders, analytics=analytics, theme_list=theme_list)
 
 @app.route('/edit_product/<int:id>', methods=['POST'])
 def edit_product_route(id):
@@ -1106,7 +1123,14 @@ def view_store(slug):
         product_to_open = cursor.fetchone()
 
     conn.close()
-    return render_template('store.html', store=store, products=products, product_to_open=product_to_open)
+    from themes import ENHANCED_THEMES, rgb_to_hex
+    theme_name = store.get('store_theme') or 'gold'
+    theme_colors = ENHANCED_THEMES.get(theme_name, ENHANCED_THEMES['gold'])
+    theme_hex = {
+        'light': rgb_to_hex(theme_colors[0]),
+        'dark':  rgb_to_hex(theme_colors[1]),
+    }
+    return render_template('store.html', store=store, products=products, product_to_open=product_to_open, theme_hex=theme_hex, theme_name=theme_name)
 
 @app.route('/store/<slug>/product/<int:product_id>')
 def view_product_page(slug, product_id):
