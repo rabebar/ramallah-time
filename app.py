@@ -1017,6 +1017,7 @@ def update_store():
     website = request.form.get('website')
     inventory_enabled = True if request.form.get('inventory_enabled') in ('on', 'true', '1') else False
     currency = request.form.get('currency', '₪')
+    store_theme = request.form.get('store_theme', 'classic')
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -1026,21 +1027,21 @@ def update_store():
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s
+                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s, store_theme=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, logo_url, inventory_enabled, currency, user_id))
+                  address, website, logo_url, inventory_enabled, currency, store_theme, user_id))
         else:
             cursor.execute("""
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, inventory_enabled=%s, currency=%s
+                    address=%s, website=%s, inventory_enabled=%s, currency=%s, store_theme=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, inventory_enabled, currency, user_id))
+                  address, website, inventory_enabled, currency, store_theme, user_id))
         conn.commit()
         flash("تم تحديث الإعدادات.", "success")
     except Exception as e:

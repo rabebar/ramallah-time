@@ -67,6 +67,8 @@ def init_db():
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS next_sku_seq INTEGER DEFAULT 1001")
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS timezone TEXT")
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS currency TEXT")
+    cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_theme TEXT DEFAULT 'classic'")
+    cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS announcement TEXT")
 
     # products
     cursor.execute('''CREATE TABLE IF NOT EXISTS products (
