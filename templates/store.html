@@ -34,7 +34,99 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
+        {% set t = store.store_theme or 'classic' %}
         :root {
+            {% if t == 'noir' %}
+            --cream:        #111111;
+            --cream-2:      #1A1A1A;
+            --cream-3:      #222222;
+            --cream-4:      #2A2A2A;
+            --brown-pale:   #444444;
+            --brown-mid:    #888888;
+            --brown:        #AAAAAA;
+            --brown-dark:   #F0F0F0;
+            --gold:         #C4A03A;
+            --gold-light:   #D9B858;
+            --gold-dark:    #9A7820;
+            --navy-gradient: linear-gradient(180deg, #0A0A0A 0%, #1A1A1A 100%);
+            --navy-deep:    #0A0A0A;
+            --gray-bg:      #111111;
+            --text-main:    #E8E8E8;
+            --text-muted:   #888888;
+            --border:       rgba(196,160,58,0.15);
+            {% elif t == 'royal' %}
+            --cream:        #F5F3FF;
+            --cream-2:      #EDE9FE;
+            --cream-3:      #DDD6FE;
+            --cream-4:      #C4B5FD;
+            --brown-pale:   #A78BFA;
+            --brown-mid:    #7C3AED;
+            --brown:        #5B21B6;
+            --brown-dark:   #2E1065;
+            --gold:         #C4963A;
+            --gold-light:   #D9AE58;
+            --gold-dark:    #9A7020;
+            --navy-gradient: linear-gradient(180deg, #2E1065 0%, #1E0A4E 100%);
+            --navy-deep:    #2E1065;
+            --gray-bg:      #F5F3FF;
+            --text-main:    #2E1065;
+            --text-muted:   #7C3AED;
+            --border:       rgba(124,58,237,0.12);
+            {% elif t == 'fresh' %}
+            --cream:        #F0FDF4;
+            --cream-2:      #DCFCE7;
+            --cream-3:      #BBF7D0;
+            --cream-4:      #86EFAC;
+            --brown-pale:   #4ADE80;
+            --brown-mid:    #16A34A;
+            --brown:        #15803D;
+            --brown-dark:   #14532D;
+            --gold:         #16A34A;
+            --gold-light:   #22C55E;
+            --gold-dark:    #15803D;
+            --navy-gradient: linear-gradient(180deg, #14532D 0%, #052E16 100%);
+            --navy-deep:    #14532D;
+            --gray-bg:      #F0FDF4;
+            --text-main:    #14532D;
+            --text-muted:   #16A34A;
+            --border:       rgba(22,163,74,0.12);
+            {% elif t == 'blush' %}
+            --cream:        #FFF0F3;
+            --cream-2:      #FFE4E9;
+            --cream-3:      #FFC9D4;
+            --cream-4:      #FFA5B8;
+            --brown-pale:   #F472B6;
+            --brown-mid:    #DB2777;
+            --brown:        #BE185D;
+            --brown-dark:   #831843;
+            --gold:         #C4607A;
+            --gold-light:   #E879A0;
+            --gold-dark:    #9E3060;
+            --navy-gradient: linear-gradient(180deg, #831843 0%, #500724 100%);
+            --navy-deep:    #831843;
+            --gray-bg:      #FFF0F3;
+            --text-main:    #831843;
+            --text-muted:   #DB2777;
+            --border:       rgba(219,39,119,0.12);
+            {% elif t == 'slate' %}
+            --cream:        #F8FAFC;
+            --cream-2:      #F1F5F9;
+            --cream-3:      #E2E8F0;
+            --cream-4:      #CBD5E1;
+            --brown-pale:   #94A3B8;
+            --brown-mid:    #475569;
+            --brown:        #334155;
+            --brown-dark:   #0F172A;
+            --gold:         #334155;
+            --gold-light:   #475569;
+            --gold-dark:    #1E293B;
+            --navy-gradient: linear-gradient(180deg, #0F172A 0%, #020617 100%);
+            --navy-deep:    #0F172A;
+            --gray-bg:      #F8FAFC;
+            --text-main:    #0F172A;
+            --text-muted:   #475569;
+            --border:       rgba(51,65,85,0.12);
+            {% else %}
             --cream:        #FAF7F2;
             --cream-2:      #F0EBE0;
             --cream-3:      #EDE0D0;
@@ -46,17 +138,18 @@
             --gold:         #C4963A;
             --gold-light:   #D9AE58;
             --gold-dark:    #9A7020;
-            --white:        #FFFFFF;
             --navy-gradient: linear-gradient(180deg, #2C1F0E 0%, #1A1208 100%);
             --navy-deep:    #2C1F0E;
             --gray-bg:      #FAF7F2;
             --text-main:    #2C1F0E;
             --text-muted:   #9A7A5A;
             --border:       rgba(196,150,58,0.12);
+            {% endif %}
+            --white:        #FFFFFF;
             --sidebar-w:    0px;
             --transition:   all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            --shadow-card:  0 4px 20px rgba(44,31,14,0.06);
-            --shadow-premium: 0 12px 40px rgba(44,31,14,0.1);
+            --shadow-card:  0 4px 20px rgba(0,0,0,0.06);
+            --shadow-premium: 0 12px 40px rgba(0,0,0,0.1);
             --card-ratio:   3/4;
             --img-fit:      cover;
             --img-pad:      0px;
