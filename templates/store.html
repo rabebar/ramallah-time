@@ -219,8 +219,55 @@
                 max-width: 100vw !important;
                 padding: 0 !important;
             }
-            .products-grid { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: 12px !important; padding: 0 32px 32px !important; }
-            .product-card { border-radius: 16px; }
+            /* أسلوب Peace Pieces — بطاقات بدون إطار على الكمبيوتر فقط */
+            .products-grid { 
+                grid-template-columns: repeat(6, minmax(0, 1fr)) !important; 
+                gap: 0 !important; 
+                padding: 0 24px 32px !important; 
+            }
+            .product-card { 
+                border-radius: 0 !important; 
+                background: transparent !important; 
+                box-shadow: none !important;
+                border: none !important;
+                padding: 8px !important;
+                transition: background 0.2s !important;
+            }
+            .product-card:hover { 
+                transform: none !important; 
+                box-shadow: none !important;
+                background: rgba(0,0,0,0.02) !important;
+            }
+            .product-card:hover .img-container img { transform: scale(1.04) !important; }
+            .img-container { 
+                border-radius: 0 !important; 
+                aspect-ratio: 3/4 !important;
+            }
+            .p-info { padding: 10px 4px 12px !important; }
+            .p-info .p-name { 
+                font-size: 11px !important; 
+                font-weight: 400 !important; 
+                color: #1A1A1A !important; 
+                font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+                line-height: 1.5 !important;
+            }
+            .p-info .p-meta { 
+                font-size: 11px !important; 
+                color: #888 !important; 
+                font-weight: 300 !important; 
+            }
+            .price-sale { 
+                color: #C4963A !important; 
+                font-size: 11px !important; 
+            }
+            .price-original { 
+                font-size: 10px !important; 
+            }
+            .badge-soldout { 
+                font-size: 7px !important; 
+                letter-spacing: 1px !important;
+                border-radius: 0 !important;
+            }
         }
         
         @media (min-width: 1600px) {
