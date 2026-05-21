@@ -56,7 +56,7 @@
 
             <div class="flex flex-col items-end">
                 {% if store.logo_url %}
-                <img src="{{ store.logo_url }}" alt="{{ store.name }}" class="h-10 object-contain">
+                <img src="/static/uploads/{{ store.logo_url }}" alt="{{ store.name }}" class="h-10 object-contain">
                 {% else %}
                 <span class="text-xl font-black tracking-widest text-[#2C1A0A] uppercase">{{ store.name }}</span>
                 {% endif %}
@@ -97,11 +97,11 @@
 
                 <div class="w-full h-52 bg-[#F5F2EE] rounded-xl overflow-hidden mb-4 relative flex items-center justify-center">
                     {% if product.final_image_url %}
-                    <img src="{{ product.final_image_url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    <img src="/static/uploads/{{ product.final_image_url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     {% elif product.processed_image_url %}
-                    <img src="{{ product.processed_image_url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     {% else %}
-                    <img src="{{ product.original_image_url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    <img src="/static/uploads/{{ product.original_image_url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     {% endif %}
                     <button onclick="addToCart({{ product.id }}, '{{ product.name | replace("'", "\\'") }}', {{ product.price }})"
                             class="quick-add absolute bottom-3 left-3 right-3 bg-[#2C1A0A]/90 hover:bg-[#2C1A0A] text-white py-2 text-xs font-bold tracking-wide opacity-0 transition duration-300 rounded-xl">
