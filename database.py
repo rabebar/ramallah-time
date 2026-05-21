@@ -69,6 +69,7 @@ def init_db():
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS currency TEXT")
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_theme TEXT DEFAULT 'classic'")
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS announcement TEXT")
+    cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_template TEXT DEFAULT 'default'")
 
     # products
     cursor.execute('''CREATE TABLE IF NOT EXISTS products (

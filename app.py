@@ -1130,6 +1130,24 @@ def view_store(slug):
         'light': rgb_to_hex(theme_colors[0]),
         'dark':  rgb_to_hex(theme_colors[1]),
     }
+
+    # معاينة template مؤقت — للمختبر في الأدمن
+    preview_template = request.args.get('preview_template')
+    VALID_TEMPLATES = ['elegant', 'boutique', 'bold', 'dark', 'luxe', 'fresh']
+    if preview_template and preview_template in VALID_TEMPLATES:
+        template_file = f'store_templates/{preview_template}.html'
+        return render_template(template_file, store=store, products=products,
+                               product_to_open=product_to_open, theme_hex=theme_hex,
+                               theme_name=theme_name, is_preview=True)
+
+    # Template محفوظ للمتجر
+    store_template = store.get('store_template') or 'default'
+    if store_template and store_template != 'default' and store_template in VALID_TEMPLATES:
+        template_file = f'store_templates/{store_template}.html'
+        return render_template(template_file, store=store, products=products,
+                               product_to_open=product_to_open, theme_hex=theme_hex,
+                               theme_name=theme_name, is_preview=False)
+
     return render_template('store.html', store=store, products=products, product_to_open=product_to_open, theme_hex=theme_hex, theme_name=theme_name)
 
 @app.route('/store/<slug>/product/<int:product_id>')
