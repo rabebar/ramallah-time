@@ -223,19 +223,97 @@ footer a { color: var(--blue); text-decoration: none; }
 
 <hr>
 
-<!-- Showcase banner -->
-<div class="showcase-banner">
- <div class="showcase-inner">
-  <span> سلفانا جولري — نابلس</span>
-  <span>⌚ عياد للساعات — رام الله</span>
-  <span>🧿 Palestinian Heritage Boutique</span>
-  <span> متجر الأناقة — الخليل</span>
-  <span> سلفانا جولري — نابلس</span>
-  <span>⌚ عياد للساعات — رام الله</span>
-  <span>🧿 Palestinian Heritage Boutique</span>
-  <span> متجر الأناقة — الخليل</span>
- </div>
+<!-- Showcase banner — dynamic from API -->
+<div style="background:linear-gradient(135deg,#EEF2FF,#F0FDF4); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:20px 0; overflow:hidden;">
+  <div style="font-size:11px; letter-spacing:3px; color:#6B7280; text-transform:uppercase; text-align:center; margin-bottom:14px;">متاجر تعمل على RT Studio</div>
+  <div id="showcaseTrack" style="display:flex; gap:16px; overflow:hidden; padding:0 20px;">
+    <div style="display:flex; gap:16px; animation:scrollCards 30s linear infinite;" id="showcaseInner">
+      <!-- يتم تعبئتها من JS -->
+    </div>
+  </div>
 </div>
+
+<style>
+@keyframes scrollCards {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.showcase-card {
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #F3F4F6;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  width: 160px;
+  overflow: hidden;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: block;
+}
+.showcase-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+.showcase-card img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  display: block;
+  background: #F5F5F5;
+}
+.showcase-card-info {
+  padding: 8px 10px;
+}
+.showcase-card-store {
+  font-size: 11px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.showcase-card-product {
+  font-size: 10px;
+  color: #6B7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
+
+<script>
+(async function loadShowcase() {
+  try {
+    const res = await fetch('/api/showcase');
+    const stores = await res.json();
+    if (!stores.length) return;
+
+    const inner = document.getElementById('showcaseInner');
+    if (!inner) return;
+
+    // نولد الكروت مرتين عشان يكون التمرير لا نهائي
+    const buildCards = () => stores.map(s => {
+      const card = document.createElement('a');
+      card.className = 'showcase-card';
+      card.href = '/store/' + s.slug;
+      card.target = '_blank';
+      card.innerHTML = `
+        <img src="/static/uploads/${s.img}" alt="${s.store}" onerror="this.style.background='#EEF2FF';this.style.height='130px';">
+        <div class="showcase-card-info">
+          <div class="showcase-card-store">${s.store}</div>
+          <div class="showcase-card-product">${s.product} · ${s.currency} ${s.price}</div>
+        </div>`;
+      return card;
+    });
+
+    buildCards().forEach(c => inner.appendChild(c));
+    buildCards().forEach(c => inner.appendChild(c)); // تكرار للـ infinite scroll
+
+  } catch(e) { console.log('showcase error', e); }
+})();
+</script>
 
 <hr>
 
