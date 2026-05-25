@@ -149,11 +149,11 @@ body.ltr .wa-float { left: auto; right: 24px; }
 
 /* Mobile */
 @media (max-width: 768px) {
- .hero-section { flex-direction: column; padding: 24px 18px 32px; gap: 28px; }
+ .hero-section { flex-direction: column; padding: 18px 18px 28px; gap: 20px; }
  .hero-image { order: -1; }
  .hero-image img { border-radius: 16px; }
  .container { padding: 0 18px; }
- .section { padding: 48px 0; }
+ .section { padding: 32px 0; }
  .steps { grid-template-columns: 1fr; gap: 16px; }
  .step { padding: 16px; }
 
@@ -166,13 +166,34 @@ body.ltr .wa-float { left: auto; right: 24px; }
  .lang-toggle { padding: 6px 12px; }
 
  /* Fluid type so nothing crowds on 320–414px screens */
- .section-title { font-size: clamp(22px, 6vw, 30px); }
- .section-sub { font-size: 14px; }
- .features-grid { grid-template-columns: 1fr; gap: 14px; }
- .pricing-grid { grid-template-columns: 1fr; gap: 16px; }
- .plan { margin-top: 0 !important; }
- .testimonials { grid-template-columns: 1fr; }
- .cta-section { padding: 32px 20px; }
+ .section-label { margin-bottom: 6px; }
+ .section-title { font-size: clamp(20px, 5.5vw, 28px); margin-bottom: 8px; }
+ .section-sub { font-size: 13px; line-height: 1.6; }
+
+ /* Compact 2-column features — icon + short title, less vertical length */
+ .features-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 24px; }
+ .feature-card { padding: 16px 12px; border-radius: 12px; }
+ .feature-icon { font-size: 22px; margin-bottom: 8px; }
+ .feature-title { font-size: 13px; margin-bottom: 6px; line-height: 1.4; }
+ .feature-desc { font-size: 11px; line-height: 1.5; }
+
+ .pricing-grid { grid-template-columns: 1fr; gap: 14px; margin-top: 24px; }
+ .plan { margin-top: 0 !important; padding: 20px; }
+
+ /* Testimonials become a horizontal swipe slider — one card height only */
+ .testimonials {
+  display: flex; margin-top: 24px; gap: 12px;
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch; padding-bottom: 8px;
+ }
+ .testimonials::-webkit-scrollbar { display: none; }
+ .testimonial {
+  flex: 0 0 82%; scroll-snap-align: center; padding: 18px;
+ }
+
+ .cta-section { padding: 28px 20px; margin: 28px 0; }
+ .cta-section h2 { font-size: 22px; }
+ .cta-section p { font-size: 14px; }
 
  /* Hide desktop floating WhatsApp on mobile — replaced by bottom bar */
  .wa-float { display: none; }
