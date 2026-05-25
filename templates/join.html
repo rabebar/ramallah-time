@@ -144,18 +144,71 @@ footer a { color: var(--blue); text-decoration: none; }
 .wa-float svg { width: 22px; height: 22px; flex-shrink: 0; }
 body.ltr .wa-float { left: auto; right: 24px; }
 
+/* Bottom app-style tab bar — mobile only, hidden on desktop */
+.mobile-tabbar { display: none; }
+
 /* Mobile */
 @media (max-width: 768px) {
- .hero-section { flex-direction: column; padding: 32px 20px; }
+ .hero-section { flex-direction: column; padding: 24px 18px 32px; gap: 28px; }
  .hero-image { order: -1; }
- nav { padding: 0 20px; }
- .container { padding: 0 20px; }
- .steps { grid-template-columns: 1fr; }
+ .hero-image img { border-radius: 16px; }
+ .container { padding: 0 18px; }
+ .section { padding: 48px 0; }
+ .steps { grid-template-columns: 1fr; gap: 16px; }
+ .step { padding: 16px; }
+
+ /* Slim, uncluttered top nav: logo + lang + CTA only */
+ nav { padding: 0 16px; height: 58px; }
+ .nav-links { gap: 10px; }
+ .nav-links a[href^="#"] { display: none; } /* hide section links on mobile (they live in the bottom bar) */
+ .nav-login { display: none; }            /* declutter — login still reachable via CTA flow */
+ .nav-cta { padding: 8px 16px; font-size: 13px; white-space: nowrap; }
+ .lang-toggle { padding: 6px 12px; }
+
+ /* Fluid type so nothing crowds on 320–414px screens */
+ .section-title { font-size: clamp(22px, 6vw, 30px); }
+ .section-sub { font-size: 14px; }
+ .features-grid { grid-template-columns: 1fr; gap: 14px; }
+ .pricing-grid { grid-template-columns: 1fr; gap: 16px; }
+ .plan { margin-top: 0 !important; }
+ .testimonials { grid-template-columns: 1fr; }
+ .cta-section { padding: 32px 20px; }
+
+ /* Hide desktop floating WhatsApp on mobile — replaced by bottom bar */
+ .wa-float { display: none; }
+
+ /* Leave room so the fixed bottom bar never covers content */
+ body { padding-bottom: 76px; }
+ footer { margin-bottom: 0; }
+
+ /* The app-style bottom tab bar */
+ .mobile-tabbar {
+  display: flex;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+  background: rgba(255,255,255,0.82);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  border-top: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  justify-content: space-around; align-items: stretch;
+ }
+ .tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  text-decoration: none; color: var(--text-muted);
+  font-size: 10px; font-weight: 600; font-family: 'Cairo', sans-serif;
+  padding: 4px 2px; border-radius: 12px; transition: 0.2s; border: none; background: none; cursor: pointer;
+ }
+ .tab-item svg { width: 22px; height: 22px; }
+ .tab-item.active { color: var(--blue); }
+ .tab-item.active .tab-icon-wrap { background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(5,150,105,0.12)); }
+ .tab-icon-wrap { width: 40px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 10px; transition: 0.2s; }
+ .tab-item.wa { color: #25D366; }
 }
 </style>
 </head>
 <body>
 
+<span id="top"></span>
 <nav>
  <a href="/" class="nav-logo">
   <div class="nav-logo-icon">RT</div>
@@ -524,6 +577,25 @@ function setLang(lang) {
 }
 const savedLang = localStorage.getItem(LANG_KEY) || 'ar';
 setLang(savedLang);
+
+// Mobile tab bar: highlight active tab based on scroll position
+(function(){
+ const tabs = document.querySelectorAll('.mobile-tabbar .tab-item[data-tab]');
+ if (!tabs.length) return;
+ const sections = { top: document.getElementById('top'), features: document.getElementById('features'), pricing: document.getElementById('pricing') };
+ function setActive(name){
+  tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-tab') === name));
+ }
+ function onScroll(){
+  const y = window.scrollY + window.innerHeight * 0.35;
+  let current = 'top';
+  if (sections.features && y >= sections.features.offsetTop) current = 'features';
+  if (sections.pricing && y >= sections.pricing.offsetTop) current = 'pricing';
+  setActive(current);
+ }
+ window.addEventListener('scroll', onScroll, { passive: true });
+ onScroll();
+})();
 </script>
 
 <!-- Floating WhatsApp -->
@@ -531,6 +603,26 @@ setLang(savedLang);
  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.1 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg>
  <span data-ar="تواصل معنا" data-en="Contact us">تواصل معنا</span>
 </a>
+
+<!-- App-style bottom tab bar (mobile only) -->
+<nav class="mobile-tabbar" aria-label="Mobile navigation">
+ <a href="#top" class="tab-item active" data-tab="top">
+  <span class="tab-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/></svg></span>
+  <span data-ar="الرئيسية" data-en="Home">الرئيسية</span>
+ </a>
+ <a href="#features" class="tab-item" data-tab="features">
+  <span class="tab-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3Z"/></svg></span>
+  <span data-ar="المميزات" data-en="Features">المميزات</span>
+ </a>
+ <a href="#pricing" class="tab-item" data-tab="pricing">
+  <span class="tab-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span>
+  <span data-ar="الأسعار" data-en="Pricing">الأسعار</span>
+ </a>
+ <a href="https://wa.me/970592776784" target="_blank" rel="noopener" class="tab-item wa">
+  <span class="tab-icon-wrap"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.1 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg></span>
+  <span data-ar="واتساب" data-en="WhatsApp">واتساب</span>
+ </a>
+</nav>
 
 </body>
 </html>
