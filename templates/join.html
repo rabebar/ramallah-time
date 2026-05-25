@@ -138,6 +138,12 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
 footer { text-align: center; padding: 32px 40px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-light); }
 footer a { color: var(--blue); text-decoration: none; }
 
+/* Floating WhatsApp button */
+.wa-float { position: fixed; bottom: 24px; left: 24px; z-index: 200; display: flex; align-items: center; gap: 10px; background: #25D366; color: #fff; padding: 12px 18px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 700; box-shadow: 0 6px 20px rgba(37,211,102,0.4); font-family: 'Cairo', sans-serif; transition: 0.2s; }
+.wa-float:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(37,211,102,0.5); }
+.wa-float svg { width: 22px; height: 22px; flex-shrink: 0; }
+body.ltr .wa-float { left: auto; right: 24px; }
+
 /* Mobile */
 @media (max-width: 768px) {
  .hero-section { flex-direction: column; padding: 32px 20px; }
@@ -193,7 +199,7 @@ footer a { color: var(--blue); text-decoration: none; }
     </div>
     <button type="submit" class="btn-submit" data-ar="سجّل مجاناً الآن" data-en="Sign Up Free Now">سجّل مجاناً الآن</button>
    </form>
-   <div class="form-note" data-ar="صفر عمولة · صفر تعقيد · تجربة مجانية" data-en="Zero commission · Zero complexity · Free trial">صفر عمولة · صفر تعقيد · تجربة مجانية</div>
+   <div class="form-note" data-ar="جرّب مجاناً 7 أيام · صفر عمولة · بدون بطاقة ائتمان" data-en="Free 7-day trial · Zero commission · No credit card">جرّب مجاناً 7 أيام · صفر عمولة · بدون بطاقة ائتمان</div>
   </div>
 
   <div class="stats-grid">
@@ -405,10 +411,10 @@ footer a { color: var(--blue); text-decoration: none; }
    <div class="stars"></div>
    <div class="testimonial-text" data-ar="سلة الشراء جداً مفيدة، بتنظم الطلبات وبتغنيني عن وجع راس التعليقات والفوضى." data-en="The shopping cart is very helpful, it organizes orders and saves me from the headache of comments and chaos.">سلة الشراء جداً مفيدة، بتنظم الطلبات وبتغنيني عن وجع راس التعليقات والفوضى.</div>
    <div class="testimonial-author">
-    <div class="author-avatar">ت</div>
+    <div class="author-avatar">م</div>
     <div>
-     <div class="author-name" data-ar="تاجر فلسطيني" data-en="Palestinian Merchant">تاجر فلسطيني</div>
-     <div class="author-role" data-ar="عميل RT Studio" data-en="RT Studio Client">عميل RT Studio</div>
+     <div class="author-name" data-ar="محمد عياد" data-en="Mohammad Eyad">محمد عياد</div>
+     <div class="author-role" data-ar="تاجر على RT Studio" data-en="RT Studio Merchant">تاجر على RT Studio</div>
     </div>
    </div>
   </div>
@@ -427,10 +433,10 @@ footer a { color: var(--blue); text-decoration: none; }
    <div class="stars"></div>
    <div class="testimonial-text" data-ar="العرب بأمريكا راح ينبسطوا لما يشوفوا منتجاتي التراثية معروضة مع السعر والتفاصيل." data-en="Arabs in America will be thrilled to see my heritage products displayed with prices and details.">العرب بأمريكا راح ينبسطوا لما يشوفوا منتجاتي التراثية معروضة مع السعر والتفاصيل.</div>
    <div class="testimonial-author">
-    <div class="author-avatar">P</div>
+    <div class="author-avatar">م</div>
     <div>
-     <div class="author-name">Palestinian Heritage</div>
-     <div class="author-role" data-ar="تراث فلسطيني" data-en="Palestinian Heritage">تراث فلسطيني</div>
+     <div class="author-name" data-ar="ميساء الخليلي" data-en="Maysa Al-Khalili">ميساء الخليلي</div>
+     <div class="author-role" data-ar="تراث فلسطيني · Palestinian Heritage" data-en="Palestinian Heritage">تراث فلسطيني · Palestinian Heritage</div>
     </div>
    </div>
   </div>
@@ -445,35 +451,35 @@ footer a { color: var(--blue); text-decoration: none; }
 <section class="section" id="pricing">
  <div class="section-label" data-ar="الأسعار" data-en="Pricing">الأسعار</div>
  <h2 class="section-title" data-ar="باقات تناسب كل تاجر" data-en="Plans for Every Merchant">باقات تناسب كل تاجر</h2>
- <p class="section-sub" data-ar="أسعار شفافة بدون رسوم خفية · صفر عمولة على مبيعاتك · تجربة مجانية عند التسجيل." data-en="Transparent pricing with no hidden fees · Zero commission · Free trial on registration.">أسعار شفافة بدون رسوم خفية · صفر عمولة · تجربة مجانية عند التسجيل.</p>
+ <p class="section-sub" data-ar="جرّب مجاناً 7 أيام، وبعدها فعّل اشتراكك · أسعار شفافة بدون رسوم خفية · صفر عمولة على مبيعاتك." data-en="Try free for 7 days, then activate your subscription · Transparent pricing, no hidden fees · Zero commission.">جرّب مجاناً 7 أيام، وبعدها فعّل اشتراكك · أسعار شفافة بدون رسوم خفية · صفر عمولة على مبيعاتك.</p>
  <div class="pricing-grid">
   <div class="plan" style="border-top: 4px solid #6366F1;">
    <div class="plan-name" data-ar="شهري" data-en="Monthly" style="color:#6366F1;">شهري</div>
-   <div class="plan-price" style="color:#6366F1;">39<span>$</span></div>
-   <div class="plan-period" data-ar="شهرياً" data-en="per month">شهرياً</div>
+   <div class="plan-price" style="color:#6366F1;">100<span>₪</span></div>
+   <div class="plan-period" data-ar="شهرياً · 30$" data-en="per month · 30$">شهرياً · 30$</div>
    <div class="plan-save" style="color:#374151; font-size:12px; font-weight:500;" data-ar="مثالي لتجربة المنصة وإطلاق متجرك بدون التزامات طويلة" data-en="Perfect to try the platform with no long commitments">مثالي لتجربة المنصة وإطلاق متجرك بدون التزامات طويلة</div>
    <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
   </div>
   <div class="plan" style="border-top: 4px solid #059669;">
    <div class="plan-name" data-ar="6 أشهر" data-en="6 Months" style="color:#059669;">6 أشهر</div>
-   <div class="plan-price" style="color:#059669;">200<span>$</span></div>
-   <div class="plan-period" data-ar="كل 6 أشهر" data-en="every 6 months">كل 6 أشهر</div>
-   <div class="plan-save" data-ar="وفّر 34$ مقارنة بالشهري" data-en="Save $34 vs monthly">وفّر 34$ مقارنة بالشهري</div>
+   <div class="plan-price" style="color:#059669;">510<span>₪</span></div>
+   <div class="plan-period" data-ar="كل 6 أشهر · 150$" data-en="every 6 months · 150$">كل 6 أشهر · 150$</div>
+   <div class="plan-save" data-ar="وفّر 30$ مقارنة بالشهري" data-en="Save $30 vs monthly">وفّر 30$ مقارنة بالشهري</div>
    <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
   </div>
   <div class="plan featured" style="position:relative;margin-top:14px;border-top:4px solid #2563EB;">
    <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#2563EB,#059669);color:#fff;font-size:11px;font-weight:700;padding:4px 16px;border-radius:50px;white-space:nowrap;" data-ar=" خيار التجار المحترفين" data-en=" Pro Merchants Choice"> خيار التجار المحترفين</div>
    <div class="plan-name" data-ar="سنوي" data-en="Annual" style="color:#2563EB;margin-top:8px;">سنوي</div>
-   <div class="plan-price" style="color:#2563EB;">380<span>$</span></div>
-   <div class="plan-period" data-ar="سنوياً" data-en="per year">سنوياً</div>
-   <div class="plan-save" data-ar="وفّر 88$ — الأكثر طلباً بين التجار" data-en="Save $88 — Most popular among merchants">وفّر 88$ — الأكثر طلباً بين التجار</div>
+   <div class="plan-price" style="color:#2563EB;">960<span>₪</span></div>
+   <div class="plan-period" data-ar="سنوياً · 290$" data-en="per year · 290$">سنوياً · 290$</div>
+   <div class="plan-save" data-ar="وفّر 70$ — الأكثر طلباً بين التجار" data-en="Save $70 — Most popular among merchants">وفّر 70$ — الأكثر طلباً بين التجار</div>
    <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
   </div>
   <div class="plan" style="border:2px solid #C4963A; box-shadow:0 8px 32px rgba(196,150,58,0.15); position:relative; margin-top:14px;">
    <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#C4963A;color:#fff;font-size:11px;font-weight:700;padding:4px 16px;border-radius:50px;white-space:nowrap;" data-ar=" عرض العمر لشركات النمو" data-en=" Lifetime Deal for Growing Brands"> عرض العمر لشركات النمو</div>
    <div class="plan-name" data-ar="4 سنوات" data-en="4 Years" style="color:#C4963A;margin-top:8px;">4 سنوات</div>
-   <div class="plan-price" style="color:#C4963A;">1200<span>$</span></div>
-   <div class="plan-period" data-ar="لـ 4 سنوات" data-en="for 4 years">لـ 4 سنوات</div>
+   <div class="plan-price" style="color:#C4963A;">3200<span>₪</span></div>
+   <div class="plan-period" data-ar="لـ 4 سنوات · 950$" data-en="for 4 years · 950$">لـ 4 سنوات · 950$</div>
    <div class="plan-save" data-ar="السنة الخامسة هدية من المنصة " data-en="5th year is our gift to you ">السنة الخامسة هدية من المنصة </div>
    <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
   </div>
@@ -489,6 +495,7 @@ footer a { color: var(--blue); text-decoration: none; }
   <h2 data-ar="جاهز تطلق متجرك؟" data-en="Ready to Launch Your Store?">جاهز تطلق متجرك؟</h2>
   <p data-ar="انضم لمئات التجار الفلسطينيين الذين يبيعون أونلاين الآن." data-en="Join hundreds of Palestinian merchants selling online today.">انضم لمئات التجار الفلسطينيين الذين يبيعون أونلاين الآن.</p>
   <a href="/register" class="btn-primary" data-ar="سجّل مجاناً الآن" data-en="Sign Up Free Now">سجّل مجاناً الآن</a>
+  <a href="https://wa.me/970592776784" target="_blank" rel="noopener" class="btn-secondary" style="margin-right:8px;" data-ar="عندك سؤال؟ راسلنا واتساب" data-en="Have a question? WhatsApp us">عندك سؤال؟ راسلنا واتساب</a>
  </div>
 </div>
 
@@ -518,6 +525,12 @@ function setLang(lang) {
 const savedLang = localStorage.getItem(LANG_KEY) || 'ar';
 setLang(savedLang);
 </script>
+
+<!-- Floating WhatsApp -->
+<a href="https://wa.me/970592776784" target="_blank" rel="noopener" class="wa-float" aria-label="WhatsApp">
+ <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.1 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg>
+ <span data-ar="تواصل معنا" data-en="Contact us">تواصل معنا</span>
+</a>
 
 </body>
 </html>
