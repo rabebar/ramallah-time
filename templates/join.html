@@ -21,7 +21,8 @@
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-body { background: var(--bg); color: var(--text-dark); font-family: 'Cairo', sans-serif; overflow-x: hidden; min-height: 100vh; }
+html { overflow-x: hidden; }
+body { background: var(--bg); color: var(--text-dark); font-family: 'Cairo', sans-serif; min-height: 100vh; }
 body.ltr { direction: ltr; }
 
 /* Nav */
@@ -157,13 +158,13 @@ body.ltr .wa-float { left: auto; right: 24px; }
  .steps { grid-template-columns: 1fr; gap: 16px; }
  .step { padding: 16px; }
 
- /* Slim, uncluttered top nav: logo + lang + CTA only */
- nav { padding: 0 16px; height: 58px; }
- .nav-links { gap: 8px; display: flex; align-items: center; justify-content: flex-end; }
- .nav-links a[href^="#"] { display: none; } /* hide section links on mobile (they live in the bottom bar) */
- .nav-login { display: none; }            /* declutter — login still reachable via CTA flow */
- .nav-cta { padding: 8px 14px; font-size: 13px; white-space: nowrap; order: 2; }
- .lang-toggle { display: inline-flex !important; align-items: center; padding: 7px 14px; font-size: 13px; flex-shrink: 0; order: 1; } /* language switch first, clearly visible */
+ /* Top bar on mobile: ONLY logo + language toggle */
+ nav { padding: 0 18px; height: 56px; }
+ .nav-links { gap: 8px; display: flex; align-items: center; }
+ .nav-links a[href^="#"] { display: none; } /* section links live in the bottom bar */
+ .nav-login { display: none; }
+ .nav-cta { display: none; } /* "Start Free" lives in the hero form + bottom bar */
+ .lang-toggle { display: inline-flex !important; align-items: center; padding: 7px 16px; font-size: 13px; flex-shrink: 0; }
 
  /* Fluid type so nothing crowds on 320–414px screens */
  .section-label { margin-bottom: 6px; }
@@ -202,14 +203,16 @@ body.ltr .wa-float { left: auto; right: 24px; }
  body { padding-bottom: 76px; }
  footer { margin-bottom: 0; }
 
- /* The app-style bottom tab bar */
+ /* The app-style bottom tab bar — fixed to viewport bottom */
  .mobile-tabbar {
   display: flex;
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
-  background: rgba(255,255,255,0.82);
-  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
-  border-top: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
+  position: fixed;
+  bottom: 0; left: 0; right: 0; top: auto;
+  width: 100%;
+  z-index: 9999;
+  background: #ffffff;
+  border-top: 1px solid var(--border-mid);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.10);
   padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
   justify-content: space-around; align-items: stretch;
  }
