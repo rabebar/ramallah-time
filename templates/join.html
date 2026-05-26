@@ -159,11 +159,11 @@ body.ltr .wa-float { left: auto; right: 24px; }
 
  /* Slim, uncluttered top nav: logo + lang + CTA only */
  nav { padding: 0 16px; height: 58px; }
- .nav-links { gap: 10px; }
+ .nav-links { gap: 8px; display: flex; align-items: center; justify-content: flex-end; }
  .nav-links a[href^="#"] { display: none; } /* hide section links on mobile (they live in the bottom bar) */
  .nav-login { display: none; }            /* declutter — login still reachable via CTA flow */
- .nav-cta { padding: 8px 14px; font-size: 13px; white-space: nowrap; }
- .lang-toggle { display: inline-block !important; padding: 6px 12px; font-size: 12px; flex-shrink: 0; } /* keep language switch visible on mobile */
+ .nav-cta { padding: 8px 14px; font-size: 13px; white-space: nowrap; order: 2; }
+ .lang-toggle { display: inline-flex !important; align-items: center; padding: 7px 14px; font-size: 13px; flex-shrink: 0; order: 1; } /* language switch first, clearly visible */
 
  /* Fluid type so nothing crowds on 320–414px screens */
  .section-label { margin-bottom: 6px; }
