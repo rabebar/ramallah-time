@@ -98,8 +98,12 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
 .step-title { font-size: 15px; font-weight: 600; color: var(--text-dark); margin-bottom: 8px; }
 .step-desc { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
 
-/* Pricing */
-.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 40px; }
+/* Path Titles for Pricing */
+.path-title { font-size: 20px; font-weight: 700; color: var(--text-dark); margin: 48px 0 24px; text-align: center; position: relative; }
+.path-title::after { content: ''; display: block; width: 60px; height: 3px; background: linear-gradient(135deg, var(--blue), var(--green)); margin: 12px auto 0; border-radius: 2px; }
+
+/* Pricing Grid */
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
 .plan { background: var(--white); border-radius: 14px; padding: 24px; border: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,0.04); text-align: center; transition: 0.2s; }
 .plan:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
 .plan.featured { border: 2px solid var(--blue); box-shadow: 0 8px 32px rgba(37,99,235,0.12); }
@@ -110,6 +114,34 @@ hr { border: none; border-top: 1px solid var(--border); margin: 0; }
 .plan-save { font-size: 11px; color: var(--green); font-weight: 600; margin-bottom: 16px; min-height: 16px; }
 .plan-btn { display: block; padding: 10px; background: linear-gradient(135deg, var(--blue), var(--green)); border-radius: 8px; font-size: 13px; font-weight: 600; color: #fff; text-decoration: none; transition: 0.2s; }
 .plan-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+
+/* VIP Custom Service Card */
+.vip-card { background: #111827; border-radius: 20px; padding: 48px; color: #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.15); border: 1px solid #374151; }
+.vip-header { text-align: center; margin-bottom: 40px; }
+.vip-badge { display: inline-block; background: rgba(196,150,58,0.15); color: #FCD34D; font-size: 12px; font-weight: 700; padding: 6px 16px; border-radius: 50px; border: 1px solid rgba(196,150,58,0.3); margin-bottom: 16px; letter-spacing: 1px; }
+.vip-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 40px; }
+.vip-item { background: #1F2937; border-radius: 16px; padding: 24px; border: 1px solid #374151; transition: 0.2s; display: flex; flex-direction: column; }
+.vip-item:hover { transform: translateY(-3px); border-color: var(--gold); }
+.vip-item-title { font-size: 16px; font-weight: 700; color: #F3F4F6; margin-bottom: 8px; }
+.vip-item-price { font-size: 32px; font-weight: 800; color: #FCD34D; margin-bottom: 12px; }
+.vip-item-price span { font-size: 14px; color: #9CA3AF; font-weight: 500; }
+.vip-item-desc { font-size: 13px; color: #D1D5DB; line-height: 1.7; flex-grow: 1; }
+
+/* VIP Clarity Box */
+.vip-clarity { background: rgba(37,99,235,0.05); border: 1px solid rgba(37,99,235,0.2); border-radius: 16px; padding: 32px; }
+.vip-clarity-title { font-size: 15px; font-weight: 700; color: #93C5FD; margin-bottom: 20px; text-align: center; }
+.vip-clarity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; }
+.clarity-box { background: #1F2937; border-radius: 12px; padding: 20px; border: 1px solid #374151; }
+.clarity-box.included { border-top: 3px solid #10B981; }
+.clarity-box.excluded { border-top: 3px solid #EF4444; }
+.clarity-box h4 { font-size: 14px; font-weight: 700; margin-bottom: 12px; display:flex; align-items:center; gap:8px;}
+.clarity-box.included h4 { color: #34D399; }
+.clarity-box.excluded h4 { color: #F87171; }
+.clarity-box ul { list-style: none; padding: 0; margin: 0; }
+.clarity-box li { font-size: 13px; color: #D1D5DB; margin-bottom: 8px; display: flex; gap: 8px; align-items: flex-start; }
+.clarity-box li::before { content: '•'; color: currentColor; font-weight: bold; }
+.btn-vip-action { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #C4963A, #B48529); border-radius: 10px; font-size: 14px; font-weight: 700; color: #fff; text-decoration: none; box-shadow: 0 4px 16px rgba(196,150,58,0.3); transition: 0.2s; margin-top: 32px; }
+.btn-vip-action:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(196,150,58,0.4); }
 
 /* Testimonials */
 .testimonials { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 40px; }
@@ -145,7 +177,7 @@ footer a { color: var(--blue); text-decoration: none; }
 .wa-float svg { width: 22px; height: 22px; flex-shrink: 0; }
 body.ltr .wa-float { left: auto; right: 24px; }
 
-/* Bottom app-style tab bar — mobile only, hidden on desktop */
+/* Bottom app-style tab bar — mobile only */
 .mobile-tabbar { display: none; }
 
 /* Mobile */
@@ -158,52 +190,45 @@ body.ltr .wa-float { left: auto; right: 24px; }
  .steps { grid-template-columns: 1fr; gap: 16px; }
  .step { padding: 16px; }
 
- /* Top bar on mobile: ONLY logo + language toggle */
  nav { padding: 0 18px; height: 56px; }
  .nav-links { gap: 8px; display: flex; align-items: center; }
- .nav-links a[href^="#"] { display: none; } /* section links live in the bottom bar */
+ .nav-links a[href^="#"] { display: none; } 
  .nav-login { display: none; }
- .nav-cta { display: none; } /* "Start Free" lives in the hero form + bottom bar */
+ .nav-cta { display: none; } 
  .lang-toggle { display: inline-flex !important; align-items: center; padding: 7px 16px; font-size: 13px; flex-shrink: 0; }
 
- /* Fluid type so nothing crowds on 320–414px screens */
  .section-label { margin-bottom: 6px; }
  .section-title { font-size: clamp(20px, 5.5vw, 28px); margin-bottom: 8px; }
  .section-sub { font-size: 13px; line-height: 1.6; }
 
- /* Compact 2-column features — icon + short title, less vertical length */
  .features-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 24px; }
  .feature-card { padding: 16px 12px; border-radius: 12px; }
  .feature-icon { font-size: 22px; margin-bottom: 8px; }
  .feature-title { font-size: 13px; margin-bottom: 6px; line-height: 1.4; }
  .feature-desc { font-size: 11px; line-height: 1.5; }
 
- .pricing-grid { grid-template-columns: 1fr; gap: 14px; margin-top: 24px; }
+ .pricing-grid { grid-template-columns: 1fr; gap: 14px; }
  .plan { margin-top: 0 !important; padding: 20px; }
 
- /* Testimonials become a horizontal swipe slider — one card height only */
+ .vip-card { padding: 24px 20px; }
+ .vip-clarity { padding: 20px 16px; }
+ 
  .testimonials {
   display: flex; margin-top: 24px; gap: 12px;
   overflow-x: auto; scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch; padding-bottom: 8px;
  }
  .testimonials::-webkit-scrollbar { display: none; }
- .testimonial {
-  flex: 0 0 82%; scroll-snap-align: center; padding: 18px;
- }
+ .testimonial { flex: 0 0 82%; scroll-snap-align: center; padding: 18px; }
 
  .cta-section { padding: 28px 20px; margin: 28px 0; }
  .cta-section h2 { font-size: 22px; }
  .cta-section p { font-size: 14px; }
 
- /* Hide desktop floating WhatsApp on mobile — replaced by bottom bar */
  .wa-float { display: none; }
-
- /* Leave room so the fixed bottom bar never covers content */
  body { padding-bottom: 76px; }
  footer { margin-bottom: 0; }
 
- /* The app-style bottom tab bar — fixed to viewport bottom */
  .mobile-tabbar {
   display: flex;
   position: fixed;
@@ -241,14 +266,13 @@ body.ltr .wa-float { left: auto; right: 24px; }
  <div class="nav-links">
   <a href="#features" data-ar="المميزات" data-en="Features">المميزات</a>
   <a href="#how" data-ar="كيف يعمل؟" data-en="How it works?">كيف يعمل؟</a>
-  <a href="#pricing" data-ar="الأسعار" data-en="Pricing">الأسعار</a>
+  <a href="#pricing" data-ar="الأسعار والخدمات" data-en="Pricing & Services">الأسعار والخدمات</a>
   <button class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</button>
   <a href="/login" class="nav-login" data-ar="تسجيل الدخول" data-en="Login">تسجيل الدخول</a>
   <a href="/register" class="nav-cta" data-ar="ابدأ مجاناً" data-en="Start Free">ابدأ مجاناً</a>
  </div>
 </nav>
 
-<!-- Hero -->
 <div class="hero-section">
  <div class="hero-text">
   <div style="text-align:center; margin-bottom:28px;">
@@ -303,13 +327,11 @@ body.ltr .wa-float { left: auto; right: 24px; }
 
 <hr>
 
-<!-- Showcase banner — dynamic from API -->
 <div style="background:linear-gradient(135deg,#EEF2FF,#F0FDF4); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:20px 0; overflow:hidden;">
-  <div style="font-size:11px; letter-spacing:3px; color:#6B7280; text-transform:uppercase; text-align:center; margin-bottom:14px;">متاجر تعمل على RT Studio</div>
+  <div style="font-size:11px; letter-spacing:3px; color:#6B7280; text-transform:uppercase; text-align:center; margin-bottom:14px;" data-ar="متاجر تعمل على RT Studio" data-en="Stores running on RT Studio">متاجر تعمل على RT Studio</div>
   <div id="showcaseTrack" style="display:flex; gap:16px; overflow:hidden; padding:0 20px;">
     <div style="display:flex; gap:16px; animation:scrollCards 30s linear infinite;" id="showcaseInner">
-      <!-- يتم تعبئتها من JS -->
-    </div>
+      </div>
   </div>
 </div>
 
@@ -319,48 +341,13 @@ body.ltr .wa-float { left: auto; right: 24px; }
   100% { transform: translateX(-50%); }
 }
 .showcase-card {
-  flex-shrink: 0;
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid #F3F4F6;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  width: 160px;
-  overflow: hidden;
-  cursor: pointer;
-  text-decoration: none;
-  transition: transform 0.2s, box-shadow 0.2s;
-  display: block;
+  flex-shrink: 0; background: #fff; border-radius: 12px; border: 1px solid #F3F4F6; box-shadow: 0 2px 12px rgba(0,0,0,0.06); width: 160px; overflow: hidden; cursor: pointer; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; display: block;
 }
-.showcase-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-}
-.showcase-card img {
-  width: 100%;
-  height: 130px;
-  object-fit: cover;
-  display: block;
-  background: #F5F5F5;
-}
-.showcase-card-info {
-  padding: 8px 10px;
-}
-.showcase-card-store {
-  font-size: 11px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.showcase-card-product {
-  font-size: 10px;
-  color: #6B7280;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+.showcase-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+.showcase-card img { width: 100%; height: 130px; object-fit: cover; display: block; background: #F5F5F5; }
+.showcase-card-info { padding: 8px 10px; }
+.showcase-card-store { font-size: 11px; font-weight: 600; color: #111827; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.showcase-card-product { font-size: 10px; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>
 
 <script>
@@ -369,35 +356,22 @@ body.ltr .wa-float { left: auto; right: 24px; }
     const res = await fetch('/api/showcase');
     const stores = await res.json();
     if (!stores.length) return;
-
     const inner = document.getElementById('showcaseInner');
     if (!inner) return;
-
-    // نولد الكروت مرتين عشان يكون التمرير لا نهائي
     const buildCards = () => stores.map(s => {
       const card = document.createElement('a');
-      card.className = 'showcase-card';
-      card.href = '/store/' + s.slug;
-      card.target = '_blank';
-      card.innerHTML = `
-        <img src="/static/uploads/${s.img}" alt="${s.store}" onerror="this.style.background='#EEF2FF';this.style.height='130px';">
-        <div class="showcase-card-info">
-          <div class="showcase-card-store">${s.store}</div>
-          <div class="showcase-card-product">${s.product} · ${s.currency} ${s.price}</div>
-        </div>`;
+      card.className = 'showcase-card'; card.href = '/store/' + s.slug; card.target = '_blank';
+      card.innerHTML = `<img src="/static/uploads/${s.img}" alt="${s.store}" onerror="this.style.background='#EEF2FF';this.style.height='130px';"><div class="showcase-card-info"><div class="showcase-card-store">${s.store}</div><div class="showcase-card-product">${s.product} · ${s.currency} ${s.price}</div></div>`;
       return card;
     });
-
     buildCards().forEach(c => inner.appendChild(c));
-    buildCards().forEach(c => inner.appendChild(c)); // تكرار للـ infinite scroll
-
+    buildCards().forEach(c => inner.appendChild(c));
   } catch(e) { console.log('showcase error', e); }
 })();
 </script>
 
 <hr>
 
-<!-- Features -->
 <div class="container">
 <section class="section" id="features">
  <div class="section-label" data-ar="المميزات" data-en="Features">المميزات</div>
@@ -450,7 +424,6 @@ body.ltr .wa-float { left: auto; right: 24px; }
 
 <hr>
 
-<!-- How it works -->
 <div class="container">
 <section class="section" id="how">
  <div class="section-label" data-ar="كيف يعمل" data-en="How it works">كيف يعمل</div>
@@ -478,7 +451,105 @@ body.ltr .wa-float { left: auto; right: 24px; }
 
 <hr>
 
-<!-- Testimonials -->
+<div class="container">
+<section class="section" id="pricing">
+ <div class="section-label" data-ar="الأسعار والخدمات" data-en="Pricing & Services">الأسعار والخدمات</div>
+ <h2 class="section-title" data-ar="اختر المسار الذي يناسبك" data-en="Choose Your Path">اختر المسار الذي يناسبك</h2>
+ <p class="section-sub" data-ar="سواء كنت تفضل إدارة متجرك بنفسك أو تريد أن نقوم بكل شيء نيابة عنك، لدينا الحل المناسب لعملك." data-en="Whether you prefer to manage it yourself or want us to do everything, we have the right solution for your business.">سواء كنت تفضل إدارة متجرك بنفسك أو تريد أن نقوم بكل شيء نيابة عنك، لدينا الحل المناسب لعملك.</p>
+
+ <h3 class="path-title" data-ar="المسار الأول: اشتراك المنصة (إدارة ذاتية)" data-en="Path 1: Platform Subscription (Self-Managed)">المسار الأول: اشتراك المنصة (إدارة ذاتية)</h3>
+ <div class="pricing-grid">
+  <div class="plan" style="border-top: 4px solid #6366F1;">
+   <div class="plan-name" data-ar="شهري" data-en="Monthly" style="color:#6366F1;">شهري</div>
+   <div class="plan-price" style="color:#6366F1;">100<span>₪</span></div>
+   <div class="plan-period" data-ar="شهرياً · 30$" data-en="per month · 30$">شهرياً · 30$</div>
+   <div class="plan-save" style="color:#374151; font-size:12px; font-weight:500;" data-ar="مثالي لتجربة المنصة وإطلاق متجرك بدون التزامات طويلة" data-en="Perfect to try the platform with no long commitments">مثالي لتجربة المنصة وإطلاق متجرك بدون التزامات طويلة</div>
+   <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
+  </div>
+  <div class="plan" style="border-top: 4px solid #059669;">
+   <div class="plan-name" data-ar="6 أشهر" data-en="6 Months" style="color:#059669;">6 أشهر</div>
+   <div class="plan-price" style="color:#059669;">510<span>₪</span></div>
+   <div class="plan-period" data-ar="كل 6 أشهر · 150$" data-en="every 6 months · 150$">كل 6 أشهر · 150$</div>
+   <div class="plan-save" data-ar="وفّر 30$ مقارنة بالشهري" data-en="Save $30 vs monthly">وفّر 30$ مقارنة بالشهري</div>
+   <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
+  </div>
+  <div class="plan featured" style="position:relative;margin-top:14px;border-top:4px solid #2563EB;">
+   <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#2563EB,#059669);color:#fff;font-size:11px;font-weight:700;padding:4px 16px;border-radius:50px;white-space:nowrap;" data-ar=" خيار التجار المحترفين" data-en=" Pro Merchants Choice"> خيار التجار المحترفين</div>
+   <div class="plan-name" data-ar="سنوي" data-en="Annual" style="color:#2563EB;margin-top:8px;">سنوي</div>
+   <div class="plan-price" style="color:#2563EB;">960<span>₪</span></div>
+   <div class="plan-period" data-ar="سنوياً · 290$" data-en="per year · 290$">سنوياً · 290$</div>
+   <div class="plan-save" data-ar="وفّر 70$ — الأكثر طلباً بين التجار" data-en="Save $70 — Most popular among merchants">وفّر 70$ — الأكثر طلباً بين التجار</div>
+   <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
+  </div>
+  <div class="plan" style="border:2px solid #C4963A; box-shadow:0 8px 32px rgba(196,150,58,0.15); position:relative; margin-top:14px;">
+   <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#C4963A;color:#fff;font-size:11px;font-weight:700;padding:4px 16px;border-radius:50px;white-space:nowrap;" data-ar=" عرض العمر لشركات النمو" data-en=" Lifetime Deal for Growing Brands"> عرض العمر لشركات النمو</div>
+   <div class="plan-name" data-ar="4 سنوات" data-en="4 Years" style="color:#C4963A;margin-top:8px;">4 سنوات</div>
+   <div class="plan-price" style="color:#C4963A;">3200<span>₪</span></div>
+   <div class="plan-period" data-ar="لـ 4 سنوات · 950$" data-en="for 4 years · 950$">لـ 4 سنوات · 950$</div>
+   <div class="plan-save" data-ar="السنة الخامسة هدية من المنصة " data-en="5th year is our gift to you ">السنة الخامسة هدية من المنصة </div>
+   <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
+  </div>
+ </div>
+
+ <h3 class="path-title" style="margin-top: 80px;" data-ar="المسار الثاني: تصميم وبناء متجر خاص (VIP)" data-en="Path 2: Custom Store Design (VIP)">المسار الثاني: تصميم وبناء متجر خاص (VIP)</h3>
+ <div class="vip-card">
+    <div class="vip-header">
+        <div class="vip-badge" data-ar="خدمة الوكالة المتكاملة" data-en="Full Agency Service">خدمة الوكالة المتكاملة</div>
+        <h3 style="font-size: clamp(22px, 3vw, 28px); font-weight: 800; margin-bottom: 12px;" data-ar="دعنا نقم بالعمل الشاق عنك" data-en="Let us do the hard work for you">دعنا نقم بالعمل الشاق عنك</h3>
+        <p style="color: #9CA3AF; font-size: 15px; max-width: 600px; margin: 0 auto; line-height: 1.8;" data-ar="من التصميم والبرمجة وحتى إدخال المنتجات والمتابعة. ركز أنت على مبيعاتك واترك الجانب التقني لفريقنا المحترف." data-en="From design and coding to product entry and maintenance. Focus on your sales and leave the tech to our professional team.">من التصميم والبرمجة وحتى إدخال المنتجات والمتابعة. ركز أنت على مبيعاتك واترك الجانب التقني لفريقنا المحترف.</p>
+    </div>
+
+    <div class="vip-grid">
+        <div class="vip-item">
+            <div class="vip-item-title" data-ar="تصميم الموقع وبرمجته" data-en="Website Design & Development">تصميم الموقع وبرمجته</div>
+            <div class="vip-item-price">300$ <span data-ar="/ مرة واحدة" data-en="/ one-time">/ مرة واحدة</span></div>
+            <div class="vip-item-desc" data-ar="سعر موحّد يشمل التصميم، البرمجة، والرفع. (ملاحظة: النطاق -الدومين- تكلفته منفصلة حسب السعر الفعلي وإدارتك له)." data-en="Fixed price includes design, programming, and upload. (Note: Domain cost is separate based on actual price and your management).">سعر موحّد يشمل التصميم، البرمجة، والرفع. (ملاحظة: النطاق -الدومين- تكلفته منفصلة حسب السعر الفعلي وإدارتك له).</div>
+        </div>
+        <div class="vip-item">
+            <div class="vip-item-title" data-ar="الصيانة والاستضافة" data-en="Maintenance & Hosting">الصيانة والاستضافة</div>
+            <div class="vip-item-price">50 <span data-ar="شيكل / شهر" data-en="ILS / month">شيكل / شهر</span></div>
+            <div class="vip-item-desc" data-ar="تشمل الاستضافة السريعة، الحماية والأمان، النسخ الاحتياطي الدوري، وضمان استمرارية التشغيل." data-en="Includes fast hosting, security, regular backups, and guaranteed uptime.">تشمل الاستضافة السريعة، الحماية والأمان، النسخ الاحتياطي الدوري، وضمان استمرارية التشغيل.</div>
+        </div>
+        <div class="vip-item">
+            <div class="vip-item-title" data-ar="إدارة المحتوى" data-en="Content Management">إدارة المحتوى</div>
+            <div class="vip-item-price">150 <span data-ar="شيكل / شهر" data-en="ILS / month">شيكل / شهر</span></div>
+            <div class="vip-item-desc" data-ar="إدارة كاملة لمتجرك ومحتواه لتبقى مرتاحاً. تشمل التعديلات الروتينية بلا حدود." data-en="Full management of your store and content for your peace of mind. Includes unlimited routine updates.">إدارة كاملة لمتجرك ومحتواه لتبقى مرتاحاً. تشمل التعديلات الروتينية بلا حدود.</div>
+        </div>
+    </div>
+
+    <div class="vip-clarity">
+        <div class="vip-clarity-title" data-ar="نقطة مهمة للحماية والشفافية (الروتيني مشمول، الجديد منفصل)" data-en="Important Note for Transparency (Routine included, New separate)">نقطة مهمة للحماية والشفافية (الروتيني مشمول، الجديد منفصل)</div>
+        <div class="vip-clarity-grid">
+            <div class="clarity-box included">
+                <h4 data-ar="✅ مشمول في إدارة المحتوى:" data-en="✅ Included in Content Management:">✅ مشمول في إدارة المحتوى:</h4>
+                <ul>
+                    <li data-ar="رفع وتعديل صور المنتجات" data-en="Uploading & editing product images">رفع وتعديل صور المنتجات</li>
+                    <li data-ar="تغيير وتحديث الأسعار" data-en="Changing & updating prices">تغيير وتحديث الأسعار</li>
+                    <li data-ar="إضافة أو حذف المنتجات" data-en="Adding or deleting products">إضافة أو حذف المنتجات</li>
+                    <li data-ar="تعديل النصوص الروتينية" data-en="Editing routine texts">تعديل النصوص الروتينية</li>
+                </ul>
+            </div>
+            <div class="clarity-box excluded">
+                <h4 data-ar="❌ منفصل (بتكلفة إضافية للعمل الجديد):" data-en="❌ Separate (Extra cost for new work):">❌ منفصل (بتكلفة إضافية للعمل الجديد):</h4>
+                <ul>
+                    <li data-ar="برمجة وإضافة صفحة جديدة كاملة" data-en="Programming a completely new page">برمجة وإضافة صفحة جديدة كاملة</li>
+                    <li data-ar="تطوير ميزة جديدة (مثل نظام حجوزات)" data-en="Developing a new feature (e.g., booking system)">تطوير ميزة جديدة (مثل نظام حجوزات)</li>
+                    <li data-ar="إعادة تصميم شاملة لهوية الموقع" data-en="Complete redesign of the website identity">إعادة تصميم شاملة لهوية الموقع</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div style="text-align: center;">
+        <a href="https://wa.me/970592776784?text=مرحباً،%20أنا%20مهتم%20بخدمة%20تصميم%20المتاجر%20الخاصة%20(VIP)" target="_blank" rel="noopener" class="btn-vip-action" data-ar="احجز استشارتك لبناء متجرك الخاص" data-en="Book your consultation for a custom store">احجز استشارتك لبناء متجرك الخاص</a>
+    </div>
+ </div>
+
+</section>
+</div>
+
+<hr>
+
 <div class="container">
 <section class="section">
  <div class="section-label" data-ar="آراء التجار" data-en="Merchant Reviews">آراء التجار</div>
@@ -523,50 +594,6 @@ body.ltr .wa-float { left: auto; right: 24px; }
 
 <hr>
 
-<!-- Pricing -->
-<div class="container">
-<section class="section" id="pricing">
- <div class="section-label" data-ar="الأسعار" data-en="Pricing">الأسعار</div>
- <h2 class="section-title" data-ar="باقات تناسب كل تاجر" data-en="Plans for Every Merchant">باقات تناسب كل تاجر</h2>
- <p class="section-sub" data-ar="جرّب مجاناً 7 أيام، وبعدها فعّل اشتراكك · أسعار شفافة بدون رسوم خفية · صفر عمولة على مبيعاتك." data-en="Try free for 7 days, then activate your subscription · Transparent pricing, no hidden fees · Zero commission.">جرّب مجاناً 7 أيام، وبعدها فعّل اشتراكك · أسعار شفافة بدون رسوم خفية · صفر عمولة على مبيعاتك.</p>
- <div class="pricing-grid">
-  <div class="plan" style="border-top: 4px solid #6366F1;">
-   <div class="plan-name" data-ar="شهري" data-en="Monthly" style="color:#6366F1;">شهري</div>
-   <div class="plan-price" style="color:#6366F1;">100<span>₪</span></div>
-   <div class="plan-period" data-ar="شهرياً · 30$" data-en="per month · 30$">شهرياً · 30$</div>
-   <div class="plan-save" style="color:#374151; font-size:12px; font-weight:500;" data-ar="مثالي لتجربة المنصة وإطلاق متجرك بدون التزامات طويلة" data-en="Perfect to try the platform with no long commitments">مثالي لتجربة المنصة وإطلاق متجرك بدون التزامات طويلة</div>
-   <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
-  </div>
-  <div class="plan" style="border-top: 4px solid #059669;">
-   <div class="plan-name" data-ar="6 أشهر" data-en="6 Months" style="color:#059669;">6 أشهر</div>
-   <div class="plan-price" style="color:#059669;">510<span>₪</span></div>
-   <div class="plan-period" data-ar="كل 6 أشهر · 150$" data-en="every 6 months · 150$">كل 6 أشهر · 150$</div>
-   <div class="plan-save" data-ar="وفّر 30$ مقارنة بالشهري" data-en="Save $30 vs monthly">وفّر 30$ مقارنة بالشهري</div>
-   <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
-  </div>
-  <div class="plan featured" style="position:relative;margin-top:14px;border-top:4px solid #2563EB;">
-   <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#2563EB,#059669);color:#fff;font-size:11px;font-weight:700;padding:4px 16px;border-radius:50px;white-space:nowrap;" data-ar=" خيار التجار المحترفين" data-en=" Pro Merchants Choice"> خيار التجار المحترفين</div>
-   <div class="plan-name" data-ar="سنوي" data-en="Annual" style="color:#2563EB;margin-top:8px;">سنوي</div>
-   <div class="plan-price" style="color:#2563EB;">960<span>₪</span></div>
-   <div class="plan-period" data-ar="سنوياً · 290$" data-en="per year · 290$">سنوياً · 290$</div>
-   <div class="plan-save" data-ar="وفّر 70$ — الأكثر طلباً بين التجار" data-en="Save $70 — Most popular among merchants">وفّر 70$ — الأكثر طلباً بين التجار</div>
-   <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
-  </div>
-  <div class="plan" style="border:2px solid #C4963A; box-shadow:0 8px 32px rgba(196,150,58,0.15); position:relative; margin-top:14px;">
-   <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#C4963A;color:#fff;font-size:11px;font-weight:700;padding:4px 16px;border-radius:50px;white-space:nowrap;" data-ar=" عرض العمر لشركات النمو" data-en=" Lifetime Deal for Growing Brands"> عرض العمر لشركات النمو</div>
-   <div class="plan-name" data-ar="4 سنوات" data-en="4 Years" style="color:#C4963A;margin-top:8px;">4 سنوات</div>
-   <div class="plan-price" style="color:#C4963A;">3200<span>₪</span></div>
-   <div class="plan-period" data-ar="لـ 4 سنوات · 950$" data-en="for 4 years · 950$">لـ 4 سنوات · 950$</div>
-   <div class="plan-save" data-ar="السنة الخامسة هدية من المنصة " data-en="5th year is our gift to you ">السنة الخامسة هدية من المنصة </div>
-   <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
-  </div>
- </div>
-</section>
-</div>
-
-<hr>
-
-<!-- CTA -->
 <div class="container">
  <div class="cta-section">
   <h2 data-ar="جاهز تطلق متجرك؟" data-en="Ready to Launch Your Store?">جاهز تطلق متجرك؟</h2>
@@ -577,7 +604,7 @@ body.ltr .wa-float { left: auto; right: 24px; }
 </div>
 
 <footer>
- <p>© 2025 RT Studio · <a href="https://www.rtstudio.store">rtstudio.store</a> · <span data-ar="صُنع في فلسطين" data-en="Made in Palestine">صُنع في فلسطين</span></p>
+ <p>© 2026 RT Studio · <a href="https://www.rtstudio.store">rtstudio.store</a> · <span data-ar="صُنع في فلسطين" data-en="Made in Palestine">صُنع في فلسطين</span></p>
 </footer>
 
 <script>
@@ -602,7 +629,6 @@ function setLang(lang) {
 const savedLang = localStorage.getItem(LANG_KEY) || 'ar';
 setLang(savedLang);
 
-// Mobile tab bar: highlight active tab based on scroll position
 (function(){
  const tabs = document.querySelectorAll('.mobile-tabbar .tab-item[data-tab]');
  if (!tabs.length) return;
@@ -622,13 +648,11 @@ setLang(savedLang);
 })();
 </script>
 
-<!-- Floating WhatsApp -->
 <a href="https://wa.me/970592776784" target="_blank" rel="noopener" class="wa-float" aria-label="WhatsApp">
  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.1 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg>
  <span data-ar="تواصل معنا" data-en="Contact us">تواصل معنا</span>
 </a>
 
-<!-- App-style bottom tab bar (mobile only) -->
 <nav class="mobile-tabbar" aria-label="Mobile navigation">
  <a href="#top" class="tab-item active" data-tab="top">
   <span class="tab-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/></svg></span>
