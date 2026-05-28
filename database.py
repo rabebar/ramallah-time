@@ -125,6 +125,14 @@ def init_db():
         )''')
     print("✅ store_visits table ready.")
 
+    # join_page_visits
+    cursor.execute('''CREATE TABLE IF NOT EXISTS join_page_visits (
+            id SERIAL PRIMARY KEY,
+            source TEXT,
+            visited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )''')
+    print("✅ join_page_visits table ready.")
+
     # order_drafts
     cursor.execute('''CREATE TABLE IF NOT EXISTS order_drafts (
             id SERIAL PRIMARY KEY,
@@ -267,6 +275,47 @@ def record_store_visit(store_id):
         conn.commit()
     except Exception as e:
         print(f"Visit record error: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+
+def record_join_visit(source='join'):
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO join_page_visits (source) VALUES (%s)", (source,))
+        conn.commit()
+    except Exception as e:
+        print(f"Join visit record error: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+
+def get_join_visit_stats():
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) as total FROM join_page_visits")
+        total = cursor.fetchone()['total']
+        cursor.execute("SELECT COUNT(*) as today FROM join_page_visits WHERE visited_at::date = CURRENT_DATE")
+        today = cursor.fetchone()['today']
+        cursor.execute("SELECT COUNT(*) as week FROM join_page_visits WHERE visited_at >= NOW() - INTERVAL '7 days'")
+        week = cursor.fetchone()['week']
+        cursor.execute("""
+            SELECT COALESCE(source, 'join') as source, COUNT(*) as visits
+            FROM join_page_visits
+            GROUP BY COALESCE(source, 'join')
+            ORDER BY visits DESC
+        """)
+        sources = cursor.fetchall()
+        return {'total': total, 'today': today, 'week': week, 'sources': sources}
+    except Exception as e:
+        print(f"Join visit stats error: {e}")
+        return {'total': 0, 'today': 0, 'week': 0, 'sources': []}
     finally:
         if conn:
             conn.close()

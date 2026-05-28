@@ -646,11 +646,15 @@ def landing():
         return redirect(url_for('dashboard'))
         
     # إذا لم يكن مسجلاً، نعرض صفحة الهبوط
+    from database import record_join_visit
+    record_join_visit('home')
     return render_template('join.html')
 
 @app.route('/join')
 def join():
     # يمكن استخدام هذا الرابط أيضاً للوصول للصفحة الترويجية
+    from database import record_join_visit
+    record_join_visit('join')
     return render_template('join.html')
 
 # =========================
@@ -1413,8 +1417,9 @@ def super_admin():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    from database import get_visit_stats
+    from database import get_visit_stats, get_join_visit_stats
     visit_stats = get_visit_stats()
+    join_visit_stats = get_join_visit_stats()
 
     cursor.execute("SELECT COUNT(*) as count FROM users")
     t_users = cursor.fetchone()['count']
@@ -1434,6 +1439,7 @@ def super_admin():
                            stats={'total_users': t_users, 'total_products': t_products, 'total_credits': t_credits},
                            users=users,
                            visit_stats=visit_stats,
+                           join_visit_stats=join_visit_stats,
                            now=datetime.utcnow())  # <--- هذا هو السطر الذي كان ناقصاً
 
 @app.route('/superadmin/login', methods=['GET', 'POST'])

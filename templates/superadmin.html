@@ -132,6 +132,14 @@
             background: rgba(99, 102, 241, 0.08); padding: 4px 12px; border-radius: 50px;
         }
         .no-visits-msg { text-align: center; padding: 32px; color: var(--text-muted); font-size: 14px; }
+        .join-source-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 4px; }
+        .join-source-card {
+            background: var(--gray-bg); border: 1px solid var(--border);
+            border-radius: 16px; padding: 14px 18px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .join-source-name { font-size: 13px; font-weight: 700; color: var(--text-main); }
+        .join-source-value { font-size: 14px; font-weight: 800; color: var(--visits); }
 
         /* Table */
         .table-container { 
@@ -173,7 +181,7 @@
             .logo-text, .nav-item span { display: none; }
             .nav-item { justify-content: center; padding: 14px; }
             .main-viewport { margin-right: 80px; padding: 32px; }
-            .stats-grid, .visits-counters { grid-template-columns: 1fr; }
+            .stats-grid, .visits-counters, .join-source-list { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -237,6 +245,48 @@
                 <div class="stat-label">رصيد النظام الكلي</div>
                 <div class="stat-value">{{ stats.total_credits }}</div>
             </div>
+        </div>
+
+        <!-- إحصائيات صفحة الانضمام -->
+        <div class="visits-section">
+            <div class="visits-header">
+                <div class="visits-header-icon">
+                    <i data-lucide="mouse-pointer-click"></i>
+                </div>
+                <div>
+                    <h2>زيارات صفحة الانضمام</h2>
+                    <p>عدد الزوار الذين فتحوا صفحة join أو الصفحة الرئيسية الترويجية</p>
+                </div>
+            </div>
+
+            <div class="visits-counters">
+                <div class="visit-counter">
+                    <div class="vc-label"><i data-lucide="globe"></i> إجمالي زيارات الجوين</div>
+                    <div class="vc-value">{{ join_visit_stats.total }}</div>
+                </div>
+                <div class="visit-counter today">
+                    <div class="vc-label"><i data-lucide="sun"></i> اليوم</div>
+                    <div class="vc-value">{{ join_visit_stats.today }}</div>
+                </div>
+                <div class="visit-counter week">
+                    <div class="vc-label"><i data-lucide="trending-up"></i> آخر 7 أيام</div>
+                    <div class="vc-value">{{ join_visit_stats.week }}</div>
+                </div>
+            </div>
+
+            {% if join_visit_stats.sources %}
+                <div class="top-stores-title">مصادر الزيارات</div>
+                <div class="join-source-list">
+                    {% for source in join_visit_stats.sources %}
+                    <div class="join-source-card">
+                        <span class="join-source-name">
+                            {% if source.source == 'home' %}الصفحة الرئيسية /{% else %}صفحة /join{% endif %}
+                        </span>
+                        <span class="join-source-value">{{ source.visits }} زيارة</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
         <!-- إحصائيات زيارات المتاجر -->
