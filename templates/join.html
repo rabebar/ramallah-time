@@ -87,7 +87,7 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
 .stat-label { font-size: 10px; color: var(--text-light); }
 
 /* Hero image */
-.hero-image { flex: 1.2; min-width: 0; }
+.hero-image { flex: 1.2; min-width: 0; position: relative; }
 .hero-image img {
       width: 100%;
       border-radius: 28px;
@@ -98,6 +98,14 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
       display: block;
     }
 .hero-image-note { text-align: center; margin-top: 10px; font-size: 11px; color: var(--text-light); }
+.hero-service-badge { position: absolute; top: 18px; right: 18px; background: rgba(255,255,255,.94); border: 1px solid rgba(196,150,58,.35); border-radius: 18px; padding: 14px 18px; box-shadow: 0 18px 42px rgba(196,150,58,.18); max-width: 310px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.hero-service-badge strong { display: block; font-size: 15px; color: #9A6B12; margin-bottom: 4px; }
+.hero-service-badge span { display: block; font-size: 12px; color: #667085; line-height: 1.6; }
+.hero-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+.hero-mini-cta { display: inline-flex; align-items: center; justify-content: center; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; font-family: 'Cairo', sans-serif; transition: .2s; }
+.hero-mini-cta.primary { color: #fff; background: linear-gradient(135deg, var(--blue), var(--green)); box-shadow: 0 10px 24px rgba(37,99,235,.20); }
+.hero-mini-cta.secondary { color: #2563EB; background: rgba(255,255,255,.72); border: 1px solid rgba(37,99,235,.18); }
+.hero-mini-cta:hover { transform: translateY(-2px); }
 
 /* Divider */
 hr { border: none; border-top: 1px solid var(--border); margin: 0; }
@@ -224,6 +232,11 @@ body.ltr .wa-float { left: auto; right: 24px; }
  .hero-section { flex-direction: column; padding: 18px 18px 28px; gap: 20px; }
  .hero-image { order: -1; }
  .hero-image img { border-radius: 16px; }
+ .hero-service-badge { top: 10px; right: 10px; left: 10px; max-width: none; padding: 12px 14px; }
+ .hero-service-badge strong { font-size: 13px; }
+ .hero-service-badge span { font-size: 11px; }
+ .hero-actions { margin-top: 14px; }
+ .hero-mini-cta { width: 100%; min-height: 42px; }
  .container { padding: 0 18px; }
  .section { padding: 32px 0; }
  .steps { grid-template-columns: 1fr; gap: 16px; }
@@ -317,9 +330,13 @@ body.ltr .wa-float { left: auto; right: 24px; }
   <div style="text-align:center; margin-bottom:28px;">
     <div style="font-size:clamp(11px,1vw,13px); font-weight:600; color:#2563EB; letter-spacing:3px; text-transform:uppercase; margin-bottom:14px;" data-ar="مدعوم بالذكاء الاصطناعي" data-en="Powered by AI">مدعوم بالذكاء الاصطناعي</div>
     <div style="font-size:clamp(26px,3.2vw,40px); font-weight:800; color:#111827; line-height:1.3; margin-bottom:6px;" data-ar="افتح متجرك الاحترافي" data-en="Launch Your Professional Store">افتح متجرك الاحترافي</div>
-    <div style="font-size:clamp(18px,2.2vw,28px); font-weight:700; background:linear-gradient(135deg,#2563EB,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; margin-bottom:10px;" data-ar="في 5 دقائق فقط" data-en="In Just 5 Minutes">في 5 دقائق فقط</div>
-    <div style="font-size:clamp(13px,1.3vw,16px); color:#374151; font-weight:500; margin-bottom:4px;" data-ar="حوّل صور منتجاتك إلى صور احترافية بالذكاء الاصطناعي" data-en="Transform your product photos with AI">حوّل صور منتجاتك إلى صور احترافية بالذكاء الاصطناعي</div>
-    <div style="font-size:clamp(12px,1.1vw,14px); color:#6B7280;" data-ar="وابنِ متجرك الإلكتروني الجاهز فوراً" data-en="and launch your online store instantly">وابنِ متجرك الإلكتروني الجاهز فوراً</div>
+    <div style="font-size:clamp(18px,2.2vw,28px); font-weight:800; background:linear-gradient(135deg,#2563EB,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; margin-bottom:10px;" data-ar="أو نصمم لك موقعك الخاص" data-en="Or We Design Your Custom Website">أو نصمم لك موقعك الخاص</div>
+    <div style="font-size:clamp(13px,1.3vw,16px); color:#374151; font-weight:500; margin-bottom:4px;" data-ar="من متجر إلكتروني جاهز خلال دقائق، إلى موقع خاص يعكس هوية مشروعك" data-en="From an instant online store to a custom website that reflects your brand">من متجر إلكتروني جاهز خلال دقائق، إلى موقع خاص يعكس هوية مشروعك</div>
+    <div style="font-size:clamp(12px,1.1vw,14px); color:#6B7280;" data-ar="حوّل صور منتجاتك باحتراف، وابدأ البيع أو احجز خدمة التصميم الكامل" data-en="Enhance your product photos and start selling, or book our full design service">حوّل صور منتجاتك باحتراف، وابدأ البيع أو احجز خدمة التصميم الكامل</div>
+    <div class="hero-actions">
+     <a href="/register" class="hero-mini-cta primary" data-ar="افتح متجرك الآن" data-en="Launch Your Store">افتح متجرك الآن</a>
+     <a href="https://wa.me/970592776784?text=مرحباً،%20أنا%20مهتم%20بتصميم%20موقع%20خاص" target="_blank" rel="noopener" class="hero-mini-cta secondary" data-ar="احجز تصميم موقع خاص" data-en="Book Custom Website">احجز تصميم موقع خاص</a>
+    </div>
   </div>
 
   <div class="form-card">
@@ -359,6 +376,10 @@ body.ltr .wa-float { left: auto; right: 24px; }
  </div>
 
  <div class="hero-image">
+  <div class="hero-service-badge">
+   <strong data-ar="نصمم لك موقعك الخاص" data-en="Custom Website Design">نصمم لك موقعك الخاص</strong>
+   <span data-ar="موقع احترافي بهوية مشروعك، من التصميم حتى الإطلاق" data-en="A professional website for your brand, from design to launch">موقع احترافي بهوية مشروعك، من التصميم حتى الإطلاق</span>
+  </div>
   <img src="/static/hero_devices.png" alt="RT Studio على الأجهزة">
   <div class="hero-image-note" data-ar="متاجر حقيقية تعمل على RT Studio" data-en="Real stores running on RT Studio">متاجر حقيقية تعمل على RT Studio</div>
  </div>
