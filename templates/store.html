@@ -728,11 +728,13 @@
             }
 
             .action-card i,
-            .action-card svg {
+            .action-card svg,
+            .action-card img {
                 width: 25px !important;
                 height: 25px !important;
                 color: var(--mobile-ink) !important;
                 stroke: currentColor !important;
+                object-fit: contain !important;
             }
 
             .action-card span {
@@ -990,8 +992,8 @@
         <h2 class="section-title" data-t="quick_links">روابط سريعة</h2>
         <div class="quick-actions">
             {% if store.whatsapp_phone %}
-            <a href="https://wa.me/{{ store.whatsapp_phone }}" class="action-card" target="_blank">
-                <i data-lucide="message-circle" style="color: #25D366;"></i>
+            <a href="https://wa.me/{{ store.whatsapp_phone }}" class="action-card" target="_blank" aria-label="WhatsApp">
+                <img src="/static/icons/social/whatsapp.svg" alt="WhatsApp">
                 <span data-t="whatsapp">واتساب</span>
             </a>
             {% endif %}
@@ -1002,20 +1004,20 @@
             </a>
             {% endif %}
             {% if store.instagram_handle %}
-            <a href="#" data-social="instagram" data-handle="{{ store.instagram_handle }}" class="action-card" target="_blank">
-                <i data-lucide="instagram" style="color: #E4405F;"></i>
+            <a href="#" data-social="instagram" data-handle="{{ store.instagram_handle }}" class="action-card" target="_blank" aria-label="Instagram">
+                <img src="/static/icons/social/instagram.svg" alt="Instagram">
                 <span>إنستغرام</span>
             </a>
             {% endif %}
             {% if store.facebook_handle %}
-            <a href="#" data-social="facebook" data-handle="{{ store.facebook_handle }}" class="action-card" target="_blank">
-                <i data-lucide="facebook" style="color: #1877F2;"></i>
+            <a href="#" data-social="facebook" data-handle="{{ store.facebook_handle }}" class="action-card" target="_blank" aria-label="Facebook">
+                <img src="/static/icons/social/facebook.svg" alt="Facebook">
                 <span>فيسبوك</span>
             </a>
             {% endif %}
             {% if store.tiktok_handle %}
-            <a href="#" data-social="tiktok" data-handle="{{ store.tiktok_handle }}" class="action-card" target="_blank">
-                <i data-lucide="music" style="color: #000;"></i>
+            <a href="#" data-social="tiktok" data-handle="{{ store.tiktok_handle }}" class="action-card" target="_blank" aria-label="TikTok">
+                <img src="/static/icons/social/tiktok.svg" alt="TikTok">
                 <span>تيك توك</span>
             </a>
             {% endif %}
