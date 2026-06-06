@@ -1629,6 +1629,48 @@ def sw():
     return send_from_directory(app.root_path, 'sw.js')
 
 # =========================
+# SEO: robots.txt + sitemap
+# =========================
+@app.route('/robots.txt')
+def robots_txt():
+    content = """User-agent: *
+Allow: /
+Allow: /store/
+Allow: /join
+Disallow: /superadmin
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /api/
+Disallow: /e
+
+Sitemap: https://www.rtstudio.store/sitemap.xml
+"""
+    return content, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+@app.route('/sitemap.xml')
+def sitemap_xml():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT slug FROM stores WHERE is_active = TRUE ORDER BY id")
+        stores = cur.fetchall()
+        conn.close()
+    except:
+        stores = []
+
+    urls = ['https://www.rtstudio.store/', 'https://www.rtstudio.store/join']
+    for s in stores:
+        urls.append(f"https://www.rtstudio.store/store/{s['slug']}")
+
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for url in urls:
+        xml += f'  <url><loc>{url}</loc></url>\n'
+    xml += '</urlset>'
+    return xml, 200, {'Content-Type': 'application/xml; charset=utf-8'}
+
+# =========================
 # Entrypoint
 # =========================
 if __name__ == '__main__':
