@@ -930,20 +930,33 @@
     };
 
     // ── VARIANTS ──
-    let selectedVariant = null;
+    // الخيار الحالي المحدد — يبدأ بالمنتج الأصلي
+    let selectedVariant = {
+        name: PRODUCT_DATA.name,
+        price: Number(PRODUCT_DATA.price),
+        isOriginal: true
+    };
 
     async function loadVariants() {
         try {
             const res = await fetch(`/api/product/${PRODUCT_DATA.product_id}/variants`);
             const variants = await res.json();
-            if (!variants || variants.length === 0) return;
             const section = document.getElementById('variantsSection');
             const grid = document.getElementById('variantsGrid');
             if (!section || !grid) return;
+
+            // أضف المنتج الأصلي كأول خيار دائماً
+            const allOptions = [
+                { name: PRODUCT_DATA.name, price: Number(PRODUCT_DATA.price), image_url: null, isOriginal: true },
+                ...(variants || [])
+            ];
+
+            if (allOptions.length <= 1 && (!variants || variants.length === 0)) return;
+
             section.style.display = 'block';
-            grid.innerHTML = variants.map((v, i) => `
-                <div class="variant-card" onclick="selectVariant(${i}, this)" data-idx="${i}"
-                     data-name="${v.name}" data-price="${v.price}" data-img="${v.image_url||''}">
+            grid.innerHTML = allOptions.map((v, i) => `
+                <div class="variant-card ${i === 0 ? 'selected' : ''}" onclick="selectVariant(${i}, this)"
+                     data-name="${v.name}" data-price="${v.price}" data-img="${v.image_url || ''}" data-original="${v.isOriginal || false}">
                     ${v.image_url ? `<img src="/static/uploads/${v.image_url}" alt="${v.name}">` : ''}
                     <div class="v-name">${v.name}</div>
                     <div class="v-price">${CURRENCY} ${parseFloat(v.price).toFixed(2)}</div>
@@ -955,14 +968,27 @@
     function selectVariant(i, el) {
         document.querySelectorAll('.variant-card').forEach(c => c.classList.remove('selected'));
         el.classList.add('selected');
-        selectedVariant = {
+
+        const newVariant = {
             name: el.dataset.name,
             price: parseFloat(el.dataset.price),
-            img: el.dataset.img
+            isOriginal: el.dataset.original === 'true'
         };
+
+        // لو المنتج موجود في السلة — حدّثه مباشرة
+        let c = getCart();
+        const existingIdx = c.findIndex(x => x.product_id === PRODUCT_DATA.product_id);
+        if (existingIdx >= 0) {
+            c[existingIdx].name = newVariant.isOriginal ? PRODUCT_DATA.name : `${PRODUCT_DATA.name} - ${newVariant.name}`;
+            c[existingIdx].price = newVariant.price;
+            saveCart(c);
+        }
+
+        selectedVariant = newVariant;
+
         // حدّث السعر المعروض
         const priceEl = document.querySelector('.product-price');
-        if (priceEl) priceEl.textContent = selectedVariant.price.toFixed(2);
+        if (priceEl) priceEl.textContent = newVariant.price.toFixed(2);
     }
 
     loadVariants();
@@ -988,12 +1014,16 @@
     
     function addProductToCart() {
         let c = getCart();
-        const variantSuffix = selectedVariant ? ` - ${selectedVariant.name}` : '';
+        const isOriginal = !selectedVariant || selectedVariant.isOriginal;
+        const finalName = isOriginal ? PRODUCT_DATA.name : `${PRODUCT_DATA.name} - ${selectedVariant.name}`;
         const finalPrice = selectedVariant ? selectedVariant.price : Number(PRODUCT_DATA.price);
-        const finalName = PRODUCT_DATA.name + variantSuffix;
-        const i = c.findIndex(x => x.product_id === PRODUCT_DATA.product_id && x.name === finalName);
-        if (i >= 0) c[i].qty += 1;
-        else c.push({
+        // لو نفس المنتج موجود بأي خيار — حدّثه بدل إضافة جديد
+        const i = c.findIndex(x => x.product_id === PRODUCT_DATA.product_id);
+        if (i >= 0) {
+            c[i].name = finalName;
+            c[i].price = finalPrice;
+            c[i].qty += 1;
+        } else c.push({
             product_id: PRODUCT_DATA.product_id,
             name: finalName,
             sku: PRODUCT_DATA.sku,
