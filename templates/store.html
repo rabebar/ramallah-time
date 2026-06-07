@@ -156,7 +156,10 @@
         .ratio-auto     { }
 
         .fit-cover   { --img-fit: cover;   --img-pad: 0; }
-        .fit-contain { --img-fit: contain; --img-pad: 6px; background:#fff; }
+        .fit-contain { --img-fit: contain; --img-pad: 6px; }
+        .product-card.fit-cover .img-container { aspect-ratio: 3/4 !important; }
+        .fit-cover .img-container img { width: 100% !important; height: 100% !important; object-fit: cover !important; padding: 0 !important; }
+        .fit-contain .img-container img { object-fit: contain !important; padding: var(--img-pad); }
         .fit-auto    { }
 
         .p-info { padding: 10px 10px 12px; }
@@ -1002,7 +1005,7 @@
                     {% if product.final_image_url and product.background and product.background != 'none' %}
                     <img src="/static/uploads/{{ product.final_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover;">
                     {% else %}
-                    <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async" style="width: {{ prod_zoom }}%; height: {{ prod_zoom }}%; object-fit: contain;">{% endif %}
+                    <img src="/static/uploads/{{ product.processed_image_url }}" alt="{{ product.name }}" loading="lazy" decoding="async" style="width: {{ prod_zoom }}%; height: {{ prod_zoom }}%; object-fit: var(--img-fit);">{% endif %}
                 </div>
                 <div class="p-info">
                     <div class="p-name">{{ product.name }}</div>

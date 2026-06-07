@@ -281,6 +281,8 @@
       <form action="/save_product" method="POST" id="mainSaveForm">
         <input type="hidden" name="image_url" value="{{ filename }}">
         <input type="hidden" name="original_image_url" value="{{ original_filename }}">
+        <input type="hidden" name="card_ratio" value="{{ 'portrait' if engine_used == 'original' else 'square' }}">
+        <input type="hidden" name="fit_mode" value="{{ 'cover' if engine_used == 'original' else 'contain' }}">
         <input type="hidden" name="template_style" id="hiddenStyle" value="elegant">
         <input type="hidden" name="theme" id="hiddenTheme" value="midnight">
         <input type="hidden" name="background" id="hiddenBackground" value="none">

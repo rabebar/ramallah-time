@@ -802,6 +802,12 @@ def save_product():
     enable_glow = request.form.get('enable_glow', 'false') == 'true'
     enable_reflection = request.form.get('enable_reflection', 'false') == 'true'
     zoom = int(request.form.get('zoom', 80))
+    card_ratio = request.form.get('card_ratio', 'square')
+    fit_mode = request.form.get('fit_mode', 'contain')
+    if card_ratio not in ('square', 'portrait', 'landscape'):
+        card_ratio = 'square'
+    if fit_mode not in ('cover', 'contain'):
+        fit_mode = 'contain'
 
     # Compose final image
     final_fname = None
@@ -849,11 +855,13 @@ def save_product():
             sku = generate_sku(conn, cursor, store['id'])
 
             cursor.execute("""
-    INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_image_url, sku, stock_qty, active, zoom, variants, bundles)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE, %s, %s, %s)
+    INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_image_url, sku, stock_qty, active, zoom, variants, bundles, card_ratio, fit_mode)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE, %s, %s, %s, %s, %s)
 """, (store['id'], name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_fname, sku, stock_qty, zoom,
         request.form.get('variants', '').strip() or None,
-        request.form.get('bundles', '').strip() or None))
+        request.form.get('bundles', '').strip() or None,
+        card_ratio,
+        fit_mode))
             
             conn.commit()
             flash("تم حفظ المنتج بنجاح في متجرك!", "success")
