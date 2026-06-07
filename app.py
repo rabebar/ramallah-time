@@ -421,7 +421,7 @@ UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Migration: product_variants table + cleanup old columns
+# Migration: product_variants + store_theme column
 try:
     _mconn = get_db_connection()
     _mcur = _mconn.cursor()
@@ -438,6 +438,7 @@ try:
         )
     """)
     _mcur.execute("ALTER TABLE product_variants ADD COLUMN IF NOT EXISTS description TEXT")
+    _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_theme TEXT DEFAULT 'gold'")
     _mconn.commit()
     _mconn.close()
 except Exception as _me:
@@ -1121,7 +1122,7 @@ def update_store():
     website = request.form.get('website')
     inventory_enabled = True if request.form.get('inventory_enabled') in ('on', 'true', '1') else False
     currency = request.form.get('currency', '₪')
-    store_theme = request.form.get('store_theme', '').strip() or 'gold'
+    store_theme = request.form.get('store_theme', 'classic')
 
     conn = get_db_connection()
     cursor = conn.cursor()
