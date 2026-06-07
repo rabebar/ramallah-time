@@ -421,6 +421,17 @@ UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Migration: add variants column if not exists
+try:
+    _mconn = get_db_connection()
+    _mcur = _mconn.cursor()
+    _mcur.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS variants TEXT DEFAULT NULL")
+    _mcur.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS bundles TEXT DEFAULT NULL")
+    _mconn.commit()
+    _mconn.close()
+except Exception as _me:
+    logging.warning(f"Migration warning: {_me}")
+
 logging.basicConfig(level=logging.INFO)
 
 # =========================
@@ -818,9 +829,11 @@ def save_product():
             sku = generate_sku(conn, cursor, store['id'])
 
             cursor.execute("""
-    INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_image_url, sku, stock_qty, active, zoom)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE, %s)
-""", (store['id'], name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_fname, sku, stock_qty, zoom))
+    INSERT INTO products (store_id, name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_image_url, sku, stock_qty, active, zoom, variants, bundles)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, TRUE, %s, %s, %s)
+""", (store['id'], name, price, processed_image_url, original_image_url, template_style, theme, category, description, background, final_fname, sku, stock_qty, zoom,
+        request.form.get('variants', '').strip() or None,
+        request.form.get('bundles', '').strip() or None))
             
             conn.commit()
             flash("تم حفظ المنتج بنجاح في متجرك!", "success")
@@ -949,9 +962,12 @@ def edit_product_route(id):
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            UPDATE products SET name=%s, price=%s, original_price=%s, discount_reason=%s, description=%s, theme=%s, template_style=%s, category=%s, active=%s
+            UPDATE products SET name=%s, price=%s, original_price=%s, discount_reason=%s, description=%s, theme=%s, template_style=%s, category=%s, active=%s, variants=%s, bundles=%s
             WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)
-        """, (name, price, original_price, discount_reason, description, theme, template_style, category, active, id, user_id))
+        """, (name, price, original_price, discount_reason, description, theme, template_style, category, active,
+               request.form.get('variants', '').strip() or None,
+               request.form.get('bundles', '').strip() or None,
+               id, user_id))
         if sku and sku.strip():
             cursor.execute("""
                 UPDATE products SET sku=%s

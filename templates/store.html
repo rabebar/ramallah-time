@@ -339,6 +339,15 @@
         .modal-info h2 { font-size: 26px; font-weight: 800; margin-bottom: 8px; color: var(--text-main); }
         .modal-info .price { font-size: 22px; font-weight: 700; color: var(--gold); margin-bottom: 24px; }
         .modal-desc { font-size: 15px; color: var(--text-muted); line-height: 1.8; margin-bottom: 18px; border-right: 4px solid var(--gold-light); padding-right: 20px; text-align: right; }
+        .variants-section { margin-bottom: 16px; }
+        .variants-label { font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+        .variants-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+        .variant-btn { padding: 7px 16px; border: 1.5px solid #e2d9c8; border-radius: 20px; background: #fff; font-size: 13px; cursor: pointer; transition: all 0.2s; color: var(--text-main); font-family: inherit; }
+        .variant-btn:hover { border-color: var(--gold); background: #fdf8f0; }
+        .variant-btn.selected { border-color: var(--gold); background: var(--gold); color: #fff; font-weight: 700; }
+        .bundle-btn { padding: 7px 16px; border: 1.5px solid #bbf7d0; border-radius: 20px; background: #f0fdf4; font-size: 13px; cursor: pointer; transition: all 0.2s; color: #15803d; font-family: inherit; }
+        .bundle-btn:hover { border-color: #22c55e; background: #dcfce7; }
+        .bundle-btn.selected { border-color: #16a34a; background: #16a34a; color: #fff; font-weight: 700; }
 
         .wa-btn { display: flex; align-items: center; justify-content: center; gap: 12px; background: var(--brown-dark); color: var(--cream); padding: 14px; border-radius: 0; text-decoration: none; font-weight: 500; transition: 0.3s; font-size: 13px; cursor: pointer; border: none; letter-spacing: 2px; }
         .wa-btn:hover { background: var(--gold); color: var(--brown-dark); }
@@ -1105,6 +1114,14 @@
                 <div class="price" id="mPrice">{{ store.currency or '₪' }} 0.00</div>
                 <div class="p-meta" id="mSku" style="font-size: 12px; color:#64748b; margin-bottom:10px;"></div>
                 <div id="mDesc" class="modal-desc"></div>
+                <div id="mVariants" class="variants-section" style="display:none;">
+                    <div class="variants-label">اختر النوع:</div>
+                    <div class="variants-btns" id="variantsBtns"></div>
+                </div>
+                <div id="mBundles" class="variants-section" style="display:none;">
+                    <div class="variants-label" style="color:#15803d;">عروض خاصة:</div>
+                    <div class="variants-btns" id="bundlesBtns"></div>
+                </div>
                 <button id="mAdd" class="wa-btn">
                     <i data-lucide="shopping-cart"></i>
                     <span data-t="add_to_cart">أضف للسلة</span>
@@ -1558,7 +1575,7 @@
             mImg.style.cursor = currentZoom > 1 ? 'grab' : 'zoom-in';
         }
 
-        function openModal(id, name, price, img, desc, theme, style, category, background, sku, canAdd) {
+        function openModal(id, name, price, img, desc, theme, style, category, background, sku, canAdd, variants, bundles) {
             const newUrl = window.location.pathname + '?open_product=' + id;
             window.history.pushState({ path: newUrl }, '', newUrl);
 
@@ -1632,9 +1649,37 @@
 
             currentProduct = { id: Number(id), name, price: Number(price || 0), sku: sku || '', canAdd: !!canAdd };
 
+            // Variants
+            const vSection = document.getElementById('mVariants');
+            const bSection = document.getElementById('mBundles');
+            const vBtns = document.getElementById('variantsBtns');
+            const bBtns = document.getElementById('bundlesBtns');
+            currentProduct.selectedVariant = null;
+            currentProduct.selectedBundle = null;
+
+            if (variants && variants.trim()) {
+                const vList = variants.split(',').map(v => v.trim()).filter(Boolean);
+                vBtns.innerHTML = vList.map(v => `<button class="variant-btn" onclick="selectVariant(this, '${v.replace(/'/g,"\\'")}');">${v}</button>`).join('');
+                vSection.style.display = 'block';
+            } else {
+                vSection.style.display = 'none';
+                vBtns.innerHTML = '';
+            }
+
+            if (bundles && bundles.trim()) {
+                const bList = bundles.split(',').map(b => b.trim()).filter(Boolean);
+                bBtns.innerHTML = bList.map(b => `<button class="bundle-btn" onclick="selectBundle(this, '${b.replace(/'/g,"\\'")}');">${b}</button>`).join('');
+                bSection.style.display = 'block';
+            } else {
+                bSection.style.display = 'none';
+                bBtns.innerHTML = '';
+            }
+
             addBtn.onclick = () => {
                 if (!currentProduct || !currentProduct.canAdd) return;
-                addToCart({ product_id: currentProduct.id, name: currentProduct.name, price: currentProduct.price, sku: currentProduct.sku, qty: 1 });
+                const variantLabel = currentProduct.selectedVariant ? ` - ${currentProduct.selectedVariant}` : '';
+                const bundleLabel = currentProduct.selectedBundle ? ` (${currentProduct.selectedBundle})` : '';
+                addToCart({ product_id: currentProduct.id, name: currentProduct.name + variantLabel + bundleLabel, price: currentProduct.price, sku: currentProduct.sku, qty: 1 });
                 closeModal();
                 openCart();
             };
@@ -1643,6 +1688,17 @@
             document.body.style.overflow = 'hidden';
             lucide.createIcons();
             sendBeacon('product_view', Number(id));
+        }
+
+        function selectVariant(btn, val) {
+            document.querySelectorAll('#variantsBtns .variant-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            currentProduct.selectedVariant = val;
+        }
+        function selectBundle(btn, val) {
+            document.querySelectorAll('#bundlesBtns .bundle-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            currentProduct.selectedBundle = val;
         }
 
         function closeModal(event) {
