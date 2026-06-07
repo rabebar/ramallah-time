@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#1A2238">
+    <meta name="theme-color" content="{{ theme_hex.dark }}">
     {% if not preview_mode %}
     <link rel="manifest" href="/store-manifest/{{ store.slug }}">
     {% endif %}
@@ -34,7 +34,8 @@
     <meta name="twitter:card" content="summary_large_image">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
+    {% set dark_store_theme = theme_name == 'black' or theme_name == 'minimal_black' or theme_name == 'luxury_dark' or theme_name.startswith('dark_') %}
     <style>
         :root {
             --primary-light: {{ theme_hex.light }};
@@ -59,6 +60,27 @@
             --text-main:    #1A1A1A;
             --text-muted:   #6B7280;
             --border:       color-mix(in srgb, {{ theme_hex.dark }} 12%, transparent 88%);
+            --theme-deep:   color-mix(in srgb, {{ theme_hex.dark }} 35%, #111827 65%);
+            {% if dark_store_theme %}
+            --theme-page:   color-mix(in srgb, {{ theme_hex.light }} 82%, #05070b 18%);
+            --theme-surface:color-mix(in srgb, {{ theme_hex.light }} 62%, {{ theme_hex.dark }} 38%);
+            --theme-soft:   color-mix(in srgb, {{ theme_hex.light }} 72%, {{ theme_hex.dark }} 28%);
+            --theme-ink:    #f8fafc;
+            --theme-muted:  #cbd5e1;
+            --theme-accent: color-mix(in srgb, {{ theme_hex.dark }} 55%, #ffffff 45%);
+            --theme-line:   color-mix(in srgb, #ffffff 18%, transparent 82%);
+            --theme-on-accent:var(--theme-deep);
+            {% else %}
+            --theme-page:   color-mix(in srgb, {{ theme_hex.light }} 38%, #ffffff 62%);
+            --theme-surface:color-mix(in srgb, {{ theme_hex.light }} 16%, #ffffff 84%);
+            --theme-soft:   color-mix(in srgb, {{ theme_hex.light }} 55%, #ffffff 45%);
+            --theme-ink:    var(--theme-deep);
+            --theme-muted:  color-mix(in srgb, {{ theme_hex.dark }} 30%, #64748b 70%);
+            --theme-accent: color-mix(in srgb, {{ theme_hex.dark }} 40%, #111827 60%);
+            --theme-line:   color-mix(in srgb, {{ theme_hex.dark }} 18%, #ffffff 82%);
+            --theme-on-accent:#ffffff;
+            {% endif %}
+            --theme-on-dark:#ffffff;
             --sidebar-w:    0px;
             --transition:   all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             --shadow-card:  0 4px 20px rgba(0,0,0,0.06);
@@ -107,7 +129,7 @@
 
         .main-content { flex: 1; margin-right: 0; margin-left: 0; padding: 0; max-width: 100%; transition: var(--transition); background: var(--cream); }
 
-        .welcome-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 24px 32px 20px; background: linear-gradient(160deg, #EDE0D0 0%, #FAF7F2 100%); border-bottom: 0.5px solid #E3D4C0; margin-bottom: 0; }
+        .welcome-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 24px 32px 20px; background: linear-gradient(160deg, var(--theme-soft) 0%, var(--theme-surface) 100%); border-bottom: 0.5px solid var(--theme-line); margin-bottom: 0; }
         .welcome-text h1 { font-size: 20px; font-weight: 500; color: var(--brown-dark); margin-bottom: 6px; letter-spacing: -0.3px; font-family: 'IBM Plex Sans Arabic', sans-serif; }
         .welcome-text p { color: var(--brown-mid); font-size: 12px; line-height: 1.8; }
         .header-btns { display: flex; gap: 12px; }
@@ -119,14 +141,14 @@
 
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 32px; margin-bottom: 60px; }
 
-        .product-card { background: #F0EBE0; border-radius: 0; border: none; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: none; cursor: pointer; display: flex; flex-direction: column; position: relative; }
+        .product-card { background: var(--theme-soft); border-radius: 0; border: none; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: none; cursor: pointer; display: flex; flex-direction: column; position: relative; }
         .product-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(44,31,14,0.1); }
         .img-container { overflow: hidden; }
         .img-container img { object-fit: contain; transition: transform 0.5s ease; background: #fff; }
         .product-card:hover .img-container img { transform: scale(1.08); }
         
 
-        .img-container { width: 100%; aspect-ratio: var(--card-ratio); background: #F0EBE0; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .img-container { width: 100%; aspect-ratio: var(--card-ratio); background: var(--theme-soft); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
         /* الزووم يتحكم بحجم الصورة عبر inline style — لا تضع width/height هنا */
         .ratio-square   { --card-ratio: 1/1; }
         .ratio-portrait { --card-ratio: 4/5; }
@@ -143,7 +165,7 @@
 
         .price-original { text-decoration: line-through; color: #B4B2A9; font-size: 10px; font-weight: 400; }
         .price-sale { color: var(--gold); font-weight: 500; font-size: 13px; }
-        .badge-soldout { position: absolute; top: 10px; right: 10px; background: #6B4F35; color: #EDE0D0; font-weight: 500; padding: 4px 9px; border-radius: 0; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; z-index: 5; }
+        .badge-soldout { position: absolute; top: 10px; right: 10px; background: var(--theme-deep); color: var(--theme-on-dark); font-weight: 500; padding: 4px 9px; border-radius: 0; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; z-index: 5; }
         .card-disabled { opacity: 0.55; pointer-events: none; }
 
         .cart-fab { position: fixed; top: 80px; left: 24px; width: 52px; height: 52px; border-radius: 50%; background: #1A1A1A; color: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,0.25); z-index: 5000; cursor: pointer; border: 2px solid rgba(255,255,255,0.15); }
@@ -293,17 +315,17 @@
             .p-info .p-name { 
                 font-size: 11px !important; 
                 font-weight: 400 !important; 
-                color: #1A1A1A !important; 
+                color: var(--theme-ink) !important;
                 font-family: 'IBM Plex Sans Arabic', sans-serif !important;
                 line-height: 1.5 !important;
             }
             .p-info .p-meta { 
                 font-size: 11px !important; 
-                color: #888 !important; 
+                color: var(--theme-muted) !important;
                 font-weight: 300 !important; 
             }
             .price-sale { 
-                color: #C4963A !important; 
+                color: var(--theme-accent) !important;
                 font-size: 11px !important; 
             }
             .price-original { 
@@ -358,8 +380,8 @@
             .about-box { margin-bottom: 120px !important; }
             .quick-actions-fixed {
                 position: fixed; bottom: 0; left: 0; width: 100%;
-                background: rgba(250,247,242,0.97); backdrop-filter: blur(12px);
-                border-top: 0.5px solid #E3D4C0; display: flex; justify-content: center;
+                background: color-mix(in srgb, var(--theme-surface) 97%, transparent 3%); backdrop-filter: blur(12px);
+                border-top: 0.5px solid var(--theme-line); display: flex; justify-content: center;
                 align-items: center; gap: 8px; padding: 12px 32px;
                 z-index: 999; box-shadow: 0 -4px 20px rgba(44,31,14,0.06);
             }
@@ -367,12 +389,12 @@
                 display: flex; align-items: center; justify-content: center;
                 width: 40px; height: 40px;
                 text-decoration: none;
-                color: #9A7A5A;
-                border: 0.5px solid #E3D4C0;
+                color: var(--theme-muted);
+                border: 0.5px solid var(--theme-line);
                 transition: all 0.3s;
                 border-radius: 0;
             }
-            .action-item-fixed:hover { color: #C4963A; border-color: #C4963A; transform: translateY(-2px); }
+            .action-item-fixed:hover { color: var(--theme-accent); border-color: var(--theme-accent); transform: translateY(-2px); }
             .action-item-fixed i { width: 18px; height: 18px; }
             .action-item-fixed span { display: none; }
             #home > .section-title[data-t="quick_links"], #home > .quick-actions { display: none; }
@@ -394,7 +416,7 @@
         /* ══ DESKTOP NAV الأفقي الجديد ══ */
         @media (min-width: 1025px) {
             .store-top-bar {
-                background: #2C1F0E;
+                background: var(--theme-deep);
                 padding: 8px 32px;
                 display: flex;
                 align-items: center;
@@ -404,13 +426,13 @@
             .store-top-bar span {
                 font-size: 9px;
                 letter-spacing: 3px;
-                color: #6B4F35;
+                color: color-mix(in srgb, var(--theme-on-dark) 72%, var(--theme-accent) 28%);
                 text-transform: uppercase;
                 font-family: 'IBM Plex Sans Arabic', sans-serif;
             }
             .store-main-nav {
-                background: #FAF7F2;
-                border-bottom: 0.5px solid #E3D4C0;
+                background: var(--theme-surface);
+                border-bottom: 0.5px solid var(--theme-line);
                 padding: 0 32px;
                 display: flex;
                 align-items: center;
@@ -433,18 +455,18 @@
                 height: 38px;
                 border-radius: 50%;
                 object-fit: cover;
-                border: 1px solid #D4C0A8;
+                border: 1px solid var(--theme-line);
             }
             .store-nav-logo-fallback {
                 width: 38px;
                 height: 38px;
                 border-radius: 50%;
-                background: #EDE0D0;
-                border: 1px solid #D4C0A8;
+                background: var(--theme-soft);
+                border: 1px solid var(--theme-line);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: #C4963A;
+                color: var(--theme-accent);
                 font-size: 16px;
                 font-weight: 600;
                 font-family: 'IBM Plex Sans Arabic', sans-serif;
@@ -453,7 +475,7 @@
                 font-size: 12px;
                 font-weight: 500;
                 letter-spacing: 3px;
-                color: #2C1F0E;
+                color: var(--theme-ink);
                 text-transform: uppercase;
                 display: block;
                 line-height: 1;
@@ -462,7 +484,7 @@
             .store-nav-loc {
                 font-size: 8px;
                 letter-spacing: 2px;
-                color: #9A7A5A;
+                color: var(--theme-muted);
                 margin-top: 3px;
                 display: block;
             }
@@ -480,7 +502,7 @@
                 align-items: center;
                 font-size: 10px;
                 letter-spacing: 2px;
-                color: #9A7A5A;
+                color: var(--theme-muted);
                 text-transform: uppercase;
                 border-bottom: 2px solid transparent;
                 cursor: pointer;
@@ -490,10 +512,10 @@
                 border: none;
                 background: none;
             }
-            .store-nav-cat:hover { color: #C4963A; }
+            .store-nav-cat:hover { color: var(--theme-accent); }
             .store-nav-cat.active {
-                color: #C4963A;
-                border-bottom: 2px solid #C4963A;
+                color: var(--theme-accent);
+                border-bottom: 2px solid var(--theme-accent);
             }
             .store-nav-actions {
                 display: flex;
@@ -504,7 +526,7 @@
             .store-lang-sw {
                 display: flex;
                 gap: 2px;
-                background: #EDE0D0;
+                background: var(--theme-soft);
                 padding: 3px;
                 border-radius: 4px;
             }
@@ -512,7 +534,7 @@
                 padding: 5px 10px;
                 font-size: 8px;
                 font-weight: 500;
-                color: #9A7A5A;
+                color: var(--theme-muted);
                 letter-spacing: 2px;
                 border: none;
                 background: transparent;
@@ -522,16 +544,16 @@
                 font-family: 'IBM Plex Sans Arabic', sans-serif;
             }
             .store-lang-btn.active {
-                background: #2C1F0E;
-                color: #EDE0D0;
+                background: var(--theme-deep);
+                color: var(--theme-on-dark);
             }
             .store-nav-wa {
                 display: flex;
                 align-items: center;
                 gap: 6px;
                 padding: 9px 18px;
-                border: 0.5px solid #C4963A;
-                color: #C4963A;
+                border: 0.5px solid var(--theme-accent);
+                color: var(--theme-accent);
                 font-size: 9px;
                 letter-spacing: 3px;
                 text-transform: uppercase;
@@ -540,51 +562,51 @@
                 font-family: 'IBM Plex Sans Arabic', sans-serif;
                 white-space: nowrap;
             }
-            .store-nav-wa:hover { background: #C4963A; color: #2C1F0E; }
+            .store-nav-wa:hover { background: var(--theme-accent); color: var(--theme-on-accent); }
             .store-footer {
-                background: #2C1F0E;
+                background: var(--theme-deep);
                 padding: 16px 32px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                border-top: 0.5px solid rgba(196,150,58,0.15);
+                border-top: 0.5px solid color-mix(in srgb, var(--theme-accent) 35%, transparent 65%);
             }
             .store-footer-copy {
                 font-size: 8px;
                 letter-spacing: 3px;
-                color: #4A3828;
+                color: color-mix(in srgb, var(--theme-on-dark) 45%, var(--theme-ink) 55%);
                 text-transform: uppercase;
             }
             .store-footer-socials { display: flex; gap: 6px; align-items: center; }
             .store-footer-soc {
                 font-size: 8px;
                 letter-spacing: 2px;
-                color: #6B4F35;
-                border: 0.5px solid #3A2A1A;
+                color: color-mix(in srgb, var(--theme-on-dark) 65%, var(--theme-accent) 35%);
+                border: 0.5px solid color-mix(in srgb, var(--theme-on-dark) 20%, transparent 80%);
                 padding: 5px 10px;
                 text-transform: uppercase;
                 text-decoration: none;
                 transition: all 0.3s;
                 font-family: 'IBM Plex Sans Arabic', sans-serif;
             }
-            .store-footer-soc:hover { border-color: #C4963A; color: #C4963A; }
-            .store-footer-soc.gold { color: #C4963A; border-color: #C4963A; }
+            .store-footer-soc:hover { border-color: var(--theme-accent); color: var(--theme-accent); }
+            .store-footer-soc.gold { color: var(--theme-accent); border-color: var(--theme-accent); }
 
             .store-footer-icon {
                 width: 36px;
                 height: 36px;
-                border: 0.5px solid rgba(196,150,58,0.2);
+                border: 0.5px solid color-mix(in srgb, var(--theme-accent) 35%, transparent 65%);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: #6B4F35;
+                color: color-mix(in srgb, var(--theme-on-dark) 65%, var(--theme-accent) 35%);
                 text-decoration: none;
                 transition: all 0.3s;
                 border-radius: 0;
             }
             .store-footer-icon:hover {
-                border-color: #C4963A;
-                color: #C4963A;
+                border-color: var(--theme-accent);
+                color: var(--theme-accent);
             }
 
             /* section-title area */
@@ -595,10 +617,10 @@
             .about-box {
                 margin: 0 32px 40px !important;
                 padding: 20px 24px !important;
-                background: #EDE0D0 !important;
+                background: var(--theme-soft) !important;
                 border-radius: 0 !important;
-                border-right: 2px solid #C4963A !important;
-                color: #6B4F35 !important;
+                border-right: 2px solid var(--theme-accent) !important;
+                color: var(--theme-ink) !important;
                 font-size: 13px !important;
                 line-height: 1.9 !important;
             }
@@ -620,26 +642,26 @@
         }
         .rt-promo-banner {
             display: flex; align-items: center; gap: 20px;
-            background: #2C1F0E; padding: 14px 28px; text-decoration: none;
-            border-bottom: 0.5px solid rgba(196,150,58,0.2); direction: rtl;
+            background: var(--theme-deep); padding: 14px 28px; text-decoration: none;
+            border-bottom: 0.5px solid color-mix(in srgb, var(--theme-accent) 35%, transparent 65%); direction: rtl;
         }
-        .rt-promo-logo-box { width: 36px; height: 36px; border-radius: 6px; background: rgba(196,150,58,0.15); border: 0.5px solid rgba(196,150,58,0.4); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .rt-promo-logo-text { font-size: 13px; font-weight: 700; color: #C4963A; letter-spacing: -0.5px; font-family: 'Inter', sans-serif; }
+        .rt-promo-logo-box { width: 36px; height: 36px; border-radius: 6px; background: color-mix(in srgb, var(--theme-accent) 18%, transparent 82%); border: 0.5px solid color-mix(in srgb, var(--theme-accent) 45%, transparent 55%); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .rt-promo-logo-text { font-size: 13px; font-weight: 700; color: var(--theme-accent); letter-spacing: -0.5px; font-family: 'Inter', sans-serif; }
         .rt-promo-content { flex: 1; }
-        .rt-promo-label { font-size: 9px; letter-spacing: 4px; color: #C4963A; text-transform: uppercase; font-weight: 500; margin-bottom: 4px; font-family: 'IBM Plex Sans Arabic', sans-serif; }
-        .rt-promo-text { font-size: 13px; color: #D4C0A8; font-family: 'IBM Plex Sans Arabic', sans-serif; }
-        .rt-promo-btn { flex-shrink: 0; padding: 9px 20px; border: 0.5px solid #C4963A; color: #C4963A; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; font-family: 'IBM Plex Sans Arabic', sans-serif; transition: all 0.3s; }
-        .rt-promo-banner:hover .rt-promo-btn { background: #C4963A; color: #2C1F0E; }
+        .rt-promo-label { font-size: 9px; letter-spacing: 4px; color: var(--theme-accent); text-transform: uppercase; font-weight: 500; margin-bottom: 4px; font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        .rt-promo-text { font-size: 13px; color: color-mix(in srgb, var(--theme-on-dark) 72%, var(--theme-accent) 28%); font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        .rt-promo-btn { flex-shrink: 0; padding: 9px 20px; border: 0.5px solid var(--theme-accent); color: var(--theme-accent); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; font-family: 'IBM Plex Sans Arabic', sans-serif; transition: all 0.3s; }
+        .rt-promo-banner:hover .rt-promo-btn { background: var(--theme-accent); color: var(--theme-on-accent); }
         @media (max-width: 1024px) { .rt-promo-banner { padding: 12px 16px; } .rt-promo-text { font-size: 12px; } }
 
         @media (max-width: 1024px) {
             :root {
-                --mobile-ink: #172033;
-                --mobile-ink-soft: #46536A;
-                --mobile-surface: #FFFFFF;
-                --mobile-page: #F6F1E8;
-                --mobile-line: #E8DED0;
-                --mobile-accent: #A8873D;
+                --mobile-ink: var(--theme-ink);
+                --mobile-ink-soft: var(--theme-muted);
+                --mobile-surface: var(--theme-surface);
+                --mobile-page: var(--theme-page);
+                --mobile-line: var(--theme-line);
+                --mobile-accent: var(--theme-accent);
             }
 
             body,
@@ -728,7 +750,7 @@
                 padding: 0 !important;
                 border-radius: 18px !important;
                 background: var(--mobile-surface) !important;
-                border: 1px solid #E5D7BF !important;
+                border: 1px solid var(--mobile-line) !important;
                 color: var(--mobile-ink) !important;
                 box-shadow: 0 10px 24px rgba(23,32,51,0.10) !important;
                 display: inline-flex !important;
@@ -790,7 +812,7 @@
             }
 
             .m-nav-link {
-                color: #7B8494 !important;
+                color: var(--mobile-ink-soft) !important;
                 font-family: 'IBM Plex Sans Arabic', 'Noto Naskh Arabic', sans-serif !important;
             }
 
@@ -807,7 +829,7 @@
     {% if store.announcement %}
     <div class="store-top-bar">
         <span></span>
-        <span style="color: #D9AE58; font-size: 9px; letter-spacing: 3px;">{{ store.announcement }}</span>
+        <span style="color: var(--theme-accent); font-size: 9px; letter-spacing: 3px;">{{ store.announcement }}</span>
         <span></span>
     </div>
     {% endif %}
@@ -945,10 +967,10 @@
         {% if categories|length > 1 %}
         <div id="categoryBar" class="category-bar" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 5px 25px 5px; margin: 0 -15px; padding-left: 15px; padding-right: 15px; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;">
             
-            <button class="cat-btn active" onclick="filterCategory('all', this)" style="white-space: nowrap; padding: 7px 18px; border-radius: 0; border: 1px solid var(--gold); background: var(--gold); color: #2C1F0E; cursor: pointer; font-weight: 500; transition: 0.3s; flex-shrink: 0; font-size: 11px; letter-spacing: 1px; font-family: 'IBM Plex Sans Arabic', sans-serif;">الكل</button>
+            <button class="cat-btn active" onclick="filterCategory('all', this)" style="white-space: nowrap; padding: 7px 18px; border-radius: 0; border: 1px solid var(--theme-accent); background: var(--theme-accent); color: var(--theme-on-accent); cursor: pointer; font-weight: 500; transition: 0.3s; flex-shrink: 0; font-size: 11px; letter-spacing: 1px; font-family: 'IBM Plex Sans Arabic', sans-serif;">الكل</button>
             {% for cat in categories %}
                 {% if cat != 'الكل' %}
-                <button class="cat-btn" onclick="filterCategory('{{ cat }}', this)" style="white-space: nowrap; padding: 7px 18px; border-radius: 0; border: 1px solid #D4C0A8; background: #FAF7F2; color: #6B4F35; cursor: pointer; font-weight: 400; transition: 0.3s; flex-shrink: 0; font-size: 11px; letter-spacing: 1px; font-family: 'IBM Plex Sans Arabic', sans-serif;">{{ cat }}</button>
+                <button class="cat-btn" onclick="filterCategory('{{ cat }}', this)" style="white-space: nowrap; padding: 7px 18px; border-radius: 0; border: 1px solid var(--theme-line); background: var(--theme-surface); color: var(--theme-muted); cursor: pointer; font-weight: 400; transition: 0.3s; flex-shrink: 0; font-size: 11px; letter-spacing: 1px; font-family: 'IBM Plex Sans Arabic', sans-serif;">{{ cat }}</button>
                 {% endif %}
             {% endfor %}
         </div>
@@ -1802,16 +1824,23 @@
         window.addEventListener('touchend', () => { isDragging = false; });
 
         function filterCategory(category, btn) {
+            const themeStyles = getComputedStyle(document.documentElement);
+            const surface = themeStyles.getPropertyValue('--theme-surface').trim();
+            const muted = themeStyles.getPropertyValue('--theme-muted').trim();
+            const line = themeStyles.getPropertyValue('--theme-line').trim();
+            const accent = themeStyles.getPropertyValue('--theme-accent').trim();
+            const onAccent = themeStyles.getPropertyValue('--theme-on-accent').trim();
+
             // تحديث أزرار الموبايل (cat-btn)
             document.querySelectorAll('.cat-btn').forEach(b => {
-                b.style.background = '#FAF7F2';
-                b.style.color = '#6B4F35';
-                b.style.borderColor = '#D4C0A8';
+                b.style.background = surface;
+                b.style.color = muted;
+                b.style.borderColor = line;
             });
             if (btn && btn.classList.contains('cat-btn')) {
-                btn.style.background = '#C4963A';
-                btn.style.color = '#2C1F0E';
-                btn.style.borderColor = '#C4963A';
+                btn.style.background = accent;
+                btn.style.color = onAccent;
+                btn.style.borderColor = accent;
             }
             // فلترة المنتجات
             document.querySelectorAll('.product-card').forEach(card => {
@@ -1905,7 +1934,7 @@
     <!-- ══ DESKTOP FOOTER ══ -->
     <footer class="store-footer">
         <div class="store-footer-copy">Powered by RT Studio</div>
-        <div style="font-size:9px;letter-spacing:4px;color:#6B4F35;text-transform:uppercase;">{{ store.name }}</div>
+        <div style="font-size:9px;letter-spacing:4px;color:color-mix(in srgb, var(--theme-on-dark) 65%, var(--theme-accent) 35%);text-transform:uppercase;">{{ store.name }}</div>
         <div class="store-footer-socials">
             {% if store.whatsapp_phone %}
             <a href="https://wa.me/{{ store.whatsapp_phone }}" class="store-footer-icon" target="_blank" title="WhatsApp">
