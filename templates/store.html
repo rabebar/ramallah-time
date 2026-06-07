@@ -419,7 +419,7 @@
         /* ══ DESKTOP NAV الأفقي الجديد ══ */
         @media (min-width: 1025px) {
             .store-top-bar {
-                background: var(--theme-deep);
+                background: #111827;
                 padding: 8px 32px;
                 display: flex;
                 align-items: center;
@@ -429,7 +429,7 @@
             .store-top-bar span {
                 font-size: 9px;
                 letter-spacing: 3px;
-                color: color-mix(in srgb, var(--theme-on-dark) 72%, var(--theme-accent) 28%);
+                color: #f5c451;
                 text-transform: uppercase;
                 font-family: 'IBM Plex Sans Arabic', sans-serif;
             }
@@ -645,16 +645,16 @@
         }
         .rt-promo-banner {
             display: flex; align-items: center; gap: 20px;
-            background: var(--theme-deep); padding: 14px 28px; text-decoration: none;
-            border-bottom: 0.5px solid color-mix(in srgb, var(--theme-accent) 35%, transparent 65%); direction: rtl;
+            background: #111827; padding: 14px 28px; text-decoration: none;
+            border-bottom: 0.5px solid rgba(245,196,81,0.35); direction: rtl;
         }
-        .rt-promo-logo-box { width: 36px; height: 36px; border-radius: 6px; background: color-mix(in srgb, var(--theme-accent) 18%, transparent 82%); border: 0.5px solid color-mix(in srgb, var(--theme-accent) 45%, transparent 55%); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .rt-promo-logo-text { font-size: 13px; font-weight: 700; color: var(--theme-accent); letter-spacing: -0.5px; font-family: 'Inter', sans-serif; }
+        .rt-promo-logo-box { width: 36px; height: 36px; border-radius: 6px; background: rgba(245,196,81,0.14); border: 0.5px solid rgba(245,196,81,0.45); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .rt-promo-logo-text { font-size: 13px; font-weight: 700; color: #f5c451; letter-spacing: -0.5px; font-family: 'Inter', sans-serif; }
         .rt-promo-content { flex: 1; }
-        .rt-promo-label { font-size: 9px; letter-spacing: 4px; color: var(--theme-accent); text-transform: uppercase; font-weight: 500; margin-bottom: 4px; font-family: 'IBM Plex Sans Arabic', sans-serif; }
-        .rt-promo-text { font-size: 13px; color: color-mix(in srgb, var(--theme-on-dark) 72%, var(--theme-accent) 28%); font-family: 'IBM Plex Sans Arabic', sans-serif; }
-        .rt-promo-btn { flex-shrink: 0; padding: 9px 20px; border: 0.5px solid var(--theme-accent); color: var(--theme-accent); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; font-family: 'IBM Plex Sans Arabic', sans-serif; transition: all 0.3s; }
-        .rt-promo-banner:hover .rt-promo-btn { background: var(--theme-accent); color: var(--theme-on-accent); }
+        .rt-promo-label { font-size: 9px; letter-spacing: 4px; color: #f5c451; text-transform: uppercase; font-weight: 500; margin-bottom: 4px; font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        .rt-promo-text { font-size: 13px; color: #e5e7eb; font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        .rt-promo-btn { flex-shrink: 0; padding: 9px 20px; border: 0.5px solid #f5c451; color: #f5c451; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; font-family: 'IBM Plex Sans Arabic', sans-serif; transition: all 0.3s; }
+        .rt-promo-banner:hover .rt-promo-btn { background: #f5c451; color: #111827; }
         @media (max-width: 1024px) { .rt-promo-banner { padding: 12px 16px; } .rt-promo-text { font-size: 12px; } }
 
         @media (max-width: 1024px) {
@@ -824,15 +824,63 @@
             }
         }
 
+        {% if store_background_url %}
+        body.has-store-background {
+            background-image: linear-gradient(rgba(7, 12, 22, 0.28), rgba(7, 12, 22, 0.28)), url('{{ store_background_url }}') !important;
+            background-color: #0f172a !important;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        body.has-store-background .main-content {
+            background: transparent !important;
+        }
+        body.has-store-background .welcome-header {
+            background: rgba(15, 23, 42, 0.76) !important;
+            border-color: rgba(255,255,255,0.18) !important;
+            backdrop-filter: blur(10px);
+        }
+        body.has-store-background .welcome-text h1,
+        body.has-store-background .welcome-text h1 span,
+        body.has-store-background .welcome-text p {
+            color: #fff !important;
+        }
+        body.has-store-background .products-section-wrap {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(4px);
+        }
+        body.has-store-background .product-card {
+            background: #fff !important;
+        }
+        body.has-store-background .p-info .p-name,
+        body.has-store-background .p-info .p-meta {
+            color: #172033 !important;
+        }
+        body.has-store-background .price-sale {
+            color: #8a6a24 !important;
+        }
+        @media (max-width: 1024px) {
+            body.has-store-background {
+                background-attachment: scroll;
+            }
+            body.has-store-background .mobile-header {
+                background: rgba(255,255,255,0.96) !important;
+            }
+            body.has-store-background .welcome-header {
+                margin: 16px 12px !important;
+            }
+        }
+        {% endif %}
+
 </style>
 </head>
-<body>
+<body class="{% if store_background_url %}has-store-background{% endif %}">
 
     <!-- ══ DESKTOP TOP BAR ══ -->
     {% if store.announcement %}
     <div class="store-top-bar">
         <span></span>
-        <span style="color: var(--theme-accent); font-size: 9px; letter-spacing: 3px;">{{ store.announcement }}</span>
+        <span style="color:#f5c451;font-size:9px;letter-spacing:3px;">{{ store.announcement }}</span>
         <span></span>
     </div>
     {% endif %}
@@ -945,8 +993,8 @@
 
         {% if store.announcement %}
         <div id="announcementBar" style="
-            background: linear-gradient(135deg, #1A2238, #374773);
-            color: #F2C94C;
+            background: #111827;
+            color: #f5c451;
             padding: 12px 20px;
             border-radius: 14px;
             font-size: 14px;

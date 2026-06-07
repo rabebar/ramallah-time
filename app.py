@@ -70,6 +70,23 @@ BG_ASSETS = {
     'brushed_silver':  'static/assets/bg/brushed_silver.jpg',
     'rose_blur':       'static/assets/bg/rose_blur.jpg',
 }
+
+STORE_BACKGROUNDS = [
+    {'key': 'none', 'label': 'بدون خلفية', 'file': None},
+    {'key': 'navy_silk', 'label': 'حرير كحلي', 'file': 'navy_silk.jpg'},
+    {'key': 'dark_concrete', 'label': 'خرسانة داكنة', 'file': 'dark_concrete.jpg'},
+    {'key': 'velvet_teal', 'label': 'مخمل زمردي', 'file': 'velvet_teal.jpg'},
+]
+STORE_BACKGROUND_FILES = {item['key']: item['file'] for item in STORE_BACKGROUNDS}
+
+def normalize_store_background(value):
+    value = (value or 'none').strip()
+    return value if value in STORE_BACKGROUND_FILES else 'none'
+
+def get_store_background_url(value):
+    filename = STORE_BACKGROUND_FILES.get(normalize_store_background(value))
+    return f"/static/assets/bg/{filename}" if filename else None
+
 # Theme colors
 THEME_COLORS = {
     'gold':        ((242, 153, 74),  (242, 201, 76)),
@@ -421,7 +438,7 @@ UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Migration: product_variants + store_theme column
+# Migration: product_variants + store appearance columns
 try:
     _mconn = get_db_connection()
     _mcur = _mconn.cursor()
@@ -439,6 +456,7 @@ try:
     """)
     _mcur.execute("ALTER TABLE product_variants ADD COLUMN IF NOT EXISTS description TEXT")
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_theme TEXT DEFAULT 'gold'")
+    _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_background TEXT DEFAULT 'none'")
     _mconn.commit()
     _mconn.close()
 except Exception as _me:
@@ -967,7 +985,17 @@ def admin():
             'label': coll_data['name'],
             'themes': themes_in_coll
         })
-    return render_template('admin.html', products=products, stats=stats, store=store, edit_product=edit_product, orders=orders, analytics=analytics, theme_list=theme_list)
+    return render_template(
+        'admin.html',
+        products=products,
+        stats=stats,
+        store=store,
+        edit_product=edit_product,
+        orders=orders,
+        analytics=analytics,
+        theme_list=theme_list,
+        store_backgrounds=STORE_BACKGROUNDS
+    )
 
 @app.route('/edit_product/<int:id>', methods=['POST'])
 def edit_product_route(id):
@@ -1138,7 +1166,8 @@ def update_store():
     website = request.form.get('website')
     inventory_enabled = True if request.form.get('inventory_enabled') in ('on', 'true', '1') else False
     currency = request.form.get('currency', '₪')
-    store_theme = request.form.get('store_theme', 'classic')
+    store_theme = request.form.get('store_theme', '').strip() or 'gold'
+    store_background = normalize_store_background(request.form.get('store_background'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -1148,21 +1177,21 @@ def update_store():
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s, store_theme=%s
+                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s, store_theme=%s, store_background=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, logo_url, inventory_enabled, currency, store_theme, user_id))
+                  address, website, logo_url, inventory_enabled, currency, store_theme, store_background, user_id))
         else:
             cursor.execute("""
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, inventory_enabled=%s, currency=%s, store_theme=%s
+                    address=%s, website=%s, inventory_enabled=%s, currency=%s, store_theme=%s, store_background=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, inventory_enabled, currency, store_theme, user_id))
+                  address, website, inventory_enabled, currency, store_theme, store_background, user_id))
         conn.commit()
         flash("تم تحديث الإعدادات.", "success")
     except Exception as e:
@@ -1221,6 +1250,9 @@ def admin_store_preview():
     from themes import ENHANCED_THEMES, rgb_to_hex
     requested_theme = request.args.get('theme', '').strip()
     theme_name = requested_theme if requested_theme in ENHANCED_THEMES else (store.get('store_theme') or 'gold')
+    background_name = normalize_store_background(
+        request.args.get('background', store.get('store_background'))
+    )
     theme_colors = ENHANCED_THEMES.get(theme_name, ENHANCED_THEMES['gold'])
     theme_hex = {
         'light': rgb_to_hex(theme_colors[0]),
@@ -1233,6 +1265,8 @@ def admin_store_preview():
         product_to_open=None,
         theme_hex=theme_hex,
         theme_name=theme_name,
+        store_background=background_name,
+        store_background_url=get_store_background_url(background_name),
         preview_mode=True
     )
 
@@ -1265,6 +1299,7 @@ def view_store(slug):
     conn.close()
     from themes import ENHANCED_THEMES, rgb_to_hex
     theme_name = store.get('store_theme') or 'gold'
+    background_name = normalize_store_background(store.get('store_background'))
     theme_colors = ENHANCED_THEMES.get(theme_name, ENHANCED_THEMES['gold'])
     theme_hex = {
         'light': rgb_to_hex(theme_colors[0]),
@@ -1277,6 +1312,8 @@ def view_store(slug):
         product_to_open=product_to_open,
         theme_hex=theme_hex,
         theme_name=theme_name,
+        store_background=background_name,
+        store_background_url=get_store_background_url(background_name),
         preview_mode=False
     )
 

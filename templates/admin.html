@@ -512,7 +512,7 @@
                 <div class="form-group" style="margin-top: 20px;">
             <label class="form-label">ثيم المتجر (Store Theme)</label>
             <input type="hidden" name="store_theme" id="selectedTheme" value="{{ store.store_theme or 'gold' }}">
-            <div style="display:flex;gap:16px;margin-top:10px;">
+            <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;align-items:flex-start;">
                 <div style="width:180px;flex-shrink:0;max-height:340px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:12px;padding:10px;">
                     {% if theme_list %}{% for collection in theme_list %}
                     <div style="margin-bottom:12px;">
@@ -530,25 +530,75 @@
                     </div>
                     {% endfor %}{% endif %}
                 </div>
-                <div style="flex:1;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;min-height:520px;background:#fff;">
-                    <iframe id="themePreview"
-                            src="/admin/store-preview?theme={{ store.store_theme or 'gold' }}"
-                            title="معاينة المتجر"
-                            sandbox="allow-scripts allow-same-origin"
-                            style="display:block;width:100%;height:520px;border:0;background:#fff;"></iframe>
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;justify-content:center;gap:6px;margin-bottom:10px;">
+                        <button type="button" id="previewMobileBtn" onclick="setPreviewMode('mobile')" class="btn-small primary">هاتف</button>
+                        <button type="button" id="previewDesktopBtn" onclick="setPreviewMode('desktop')" class="btn-small">كمبيوتر</button>
+                    </div>
+                    <div id="themePreviewFrame" style="width:390px;max-width:100%;height:680px;margin:0 auto;border:8px solid #111827;border-radius:28px;overflow:hidden;background:#fff;box-shadow:0 14px 35px rgba(15,23,42,0.18);transition:width .25s ease,border-radius .25s ease;">
+                        <iframe id="themePreview"
+                                src="/admin/store-preview?theme={{ store.store_theme or 'gold' }}&background={{ store.store_background or 'none' }}"
+                                title="معاينة المتجر"
+                                sandbox="allow-scripts allow-same-origin"
+                                style="display:block;width:100%;height:100%;border:0;background:#fff;"></iframe>
+                    </div>
                 </div>
             </div>
             <small style="color:var(--text-muted);margin-top:8px;display:block;">الثيم المختار: <strong id="themeLabel">{{ store.store_theme or 'gold' }}</strong></small>
         </div>
+
+        <div class="form-group" style="margin-top:20px;">
+            <label class="form-label">خلفية المتجر الفاخرة</label>
+            <input type="hidden" name="store_background" id="selectedStoreBackground" value="{{ store.store_background or 'none' }}">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+                {% for background in store_backgrounds %}
+                <button type="button"
+                        class="store-bg-option"
+                        data-background="{{ background.key }}"
+                        onclick="selectStoreBackground('{{ background.key }}', this)"
+                        title="{{ background.label }}"
+                        style="width:112px;height:76px;border-radius:8px;overflow:hidden;cursor:pointer;padding:0;position:relative;
+                               border:3px solid {{ '#C4963A' if (store.store_background or 'none') == background.key else 'transparent' }};
+                               background:{{ '#f8fafc' if not background.file else 'url(/static/assets/bg/' ~ background.file ~ ') center/cover' }};">
+                    <span style="position:absolute;inset:auto 0 0;background:rgba(15,23,42,.78);color:#fff;padding:5px;font-size:11px;">{{ background.label }}</span>
+                </button>
+                {% endfor %}
+            </div>
+            <small style="color:var(--text-muted);margin-top:8px;display:block;">الخلفية تظهر في المساحات الخارجية، بينما تبقى بطاقات المنتجات والبانرات واضحة.</small>
+        </div>
         <script>
+        function refreshStorePreview(){
+            const theme=document.getElementById('selectedTheme')?.value||'gold';
+            const background=document.getElementById('selectedStoreBackground')?.value||'none';
+            const preview=document.getElementById('themePreview');
+            if(preview) preview.src='/admin/store-preview?theme='+encodeURIComponent(theme)+'&background='+encodeURIComponent(background)+'&_='+Date.now();
+        }
         function selectTheme(name,light,dark){
             document.getElementById('selectedTheme').value=name;
             document.getElementById('themeLabel').textContent=name;
             document.querySelectorAll('[id^="theme-"]').forEach(el=>el.style.border='3px solid transparent');
             const s=document.getElementById('theme-'+name);
             if(s)s.style.border='3px solid #C4963A';
-            const preview=document.getElementById('themePreview');
-            if(preview) preview.src='/admin/store-preview?theme='+encodeURIComponent(name)+'&_='+Date.now();
+            refreshStorePreview();
+        }
+        function selectStoreBackground(name,el){
+            document.getElementById('selectedStoreBackground').value=name;
+            document.querySelectorAll('.store-bg-option').forEach(btn=>btn.style.border='3px solid transparent');
+            el.style.border='3px solid #C4963A';
+            refreshStorePreview();
+        }
+        function setPreviewMode(mode){
+            const frame=document.getElementById('themePreviewFrame');
+            const mobile=document.getElementById('previewMobileBtn');
+            const desktop=document.getElementById('previewDesktopBtn');
+            if(!frame)return;
+            const isMobile=mode==='mobile';
+            frame.style.width=isMobile?'390px':'100%';
+            frame.style.height=isMobile?'680px':'560px';
+            frame.style.borderRadius=isMobile?'28px':'8px';
+            frame.style.borderWidth=isMobile?'8px':'1px';
+            mobile.classList.toggle('primary',isMobile);
+            desktop.classList.toggle('primary',!isMobile);
         }
         </script>
         <div class="section-header">
