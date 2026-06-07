@@ -730,7 +730,7 @@
             <div class="product-category">{{ product.category }}</div>
         {% endif %}
         
-        <h1 class="product-name">{{ product.name }}</h1>
+        <h1 class="product-name" id="productName">{{ product.name }}</h1>
         
         <div>
             {% if available %}
@@ -746,7 +746,7 @@
         </div>
         
         {% if product.description %}
-            <div class="product-desc">{{ product.description }}</div>
+            <div class="product-desc" id="productDesc">{{ product.description }}</div>
         {% endif %}
         
         {% if product.sku %}
@@ -927,7 +927,8 @@
         name: {{ product.name|tojson }},
         sku: {{ (product.sku or '')|tojson }},
         price: {{ product.price }},
-        image_url: {{ ((product.final_image_url or product.processed_image_url) or '')|tojson }}
+        image_url: {{ ((product.final_image_url or product.processed_image_url) or '')|tojson }},
+        description: {{ (product.description or '')|tojson }}
     };
 
     // ── VARIANTS ──
@@ -964,7 +965,7 @@
 
             // أضف المنتج الأصلي كأول خيار دائماً مع صورته
             const allOptions = [
-                { name: PRODUCT_DATA.name, price: Number(PRODUCT_DATA.price), image_url: PRODUCT_DATA.image_url, isOriginal: true },
+                { name: PRODUCT_DATA.name, price: Number(PRODUCT_DATA.price), image_url: PRODUCT_DATA.image_url, description: PRODUCT_DATA.description, isOriginal: true },
                 ...(variants || [])
             ];
 
@@ -974,7 +975,7 @@
             grid.innerHTML = allOptions.map((v, i) => `
                 <div class="variant-card ${i === 0 ? 'selected' : ''}" onclick="selectVariant(${i}, this)"
                      data-name="${v.name}" data-price="${v.price}" 
-                     data-img="${v.image_url || ''}" data-original="${v.isOriginal || false}">
+                     data-img="${v.image_url || ''}" data-desc="${v.description || ''}" data-original="${v.isOriginal || false}">
                     ${v.image_url 
                         ? `<img src="/static/uploads/${v.image_url}" alt="${v.name}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;margin-bottom:6px;display:block;">` 
                         : `<div style="width:56px;height:56px;background:#f3f4f6;border-radius:8px;margin:0 auto 6px;"></div>`}
@@ -1011,9 +1012,21 @@
 
         selectedVariant = newVariant;
 
-        // حدّث السعر المعروض
+        // حدّث السعر
         const priceEl = document.querySelector('.product-price');
         if (priceEl) priceEl.textContent = newVariant.price.toFixed(2);
+
+        // حدّث الاسم
+        const nameEl = document.getElementById('productName');
+        if (nameEl) nameEl.textContent = newVariant.isOriginal ? PRODUCT_DATA.name : newVariant.name;
+
+        // حدّث الوصف
+        const descEl = document.getElementById('productDesc');
+        if (descEl) {
+            const desc = el.dataset.desc || (newVariant.isOriginal ? PRODUCT_DATA.description : '');
+            descEl.textContent = desc;
+            descEl.style.display = desc ? '' : 'none';
+        }
     }
 
     loadVariants();

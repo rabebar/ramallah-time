@@ -432,27 +432,18 @@ try:
             name TEXT NOT NULL,
             price NUMERIC(10,2) NOT NULL,
             image_url TEXT,
+            description TEXT,
             sort_order INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT NOW()
         )
     """)
+    _mcur.execute("ALTER TABLE product_variants ADD COLUMN IF NOT EXISTS description TEXT")
     _mconn.commit()
     _mconn.close()
 except Exception as _me:
     logging.warning(f"Migration warning: {_me}")
 
 logging.basicConfig(level=logging.INFO)
-
-# =========================
-# Cache Control
-# =========================
-@app.after_request
-def add_cache_headers(response):
-    if request.path.startswith('/admin') or request.path.startswith('/store'):
-        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
-    return response
 
 # =========================
 # Helpers: Store/Products
@@ -1041,8 +1032,8 @@ def save_variants(product_id):
     try:
         cur.execute("DELETE FROM product_variants WHERE product_id = %s", (product_id,))
         for i, v in enumerate(variants):
-            cur.execute("INSERT INTO product_variants (product_id, name, price, image_url, sort_order) VALUES (%s, %s, %s, %s, %s)",
-                (product_id, v.get('name',''), float(v.get('price', 0)), v.get('image_url') or None, i))
+            cur.execute("INSERT INTO product_variants (product_id, name, price, image_url, description, sort_order) VALUES (%s, %s, %s, %s, %s, %s)",
+                (product_id, v.get('name',''), float(v.get('price', 0)), v.get('image_url') or None, v.get('description') or None, i))
         conn.commit()
         conn.close()
         return jsonify({'success': True, 'count': len(variants)})
