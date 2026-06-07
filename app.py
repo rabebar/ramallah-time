@@ -444,6 +444,17 @@ except Exception as _me:
 logging.basicConfig(level=logging.INFO)
 
 # =========================
+# Cache Control
+# =========================
+@app.after_request
+def add_cache_headers(response):
+    if request.path.startswith('/admin') or request.path.startswith('/store'):
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    return response
+
+# =========================
 # Helpers: Store/Products
 # =========================
 def get_store_by_user(user_id):

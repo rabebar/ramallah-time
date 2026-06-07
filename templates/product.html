@@ -1217,15 +1217,8 @@
     
     // Beacon for analytics
     try {
-        fetch('/api/beacon', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                event_name: 'product_view',
-                product_id: {{ product.id }},
-                store_id: {{ store.id }}
-            })
-        }).catch(() => {});
+        const _bid = `/e?e=product_view&store_id={{ store.id }}&product_id={{ product.id }}`;
+        navigator.sendBeacon(_bid);
     } catch(e) {}
 </script>
 
