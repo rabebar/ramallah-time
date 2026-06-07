@@ -23,6 +23,7 @@ import urllib.parse
 from datetime import datetime, timedelta
 from collections import defaultdict
 from decimal import Decimal
+from xml.sax.saxutils import escape
 
 from flask import Flask, render_template, request, redirect, session, url_for, flash, g, send_from_directory, send_file, jsonify
 import requests
@@ -1866,20 +1867,39 @@ def sitemap_xml():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("SELECT slug FROM stores WHERE is_active = TRUE ORDER BY id")
+        cur.execute("""
+            SELECT
+                s.slug,
+                GREATEST(s.created_at, MAX(p.created_at)) AS last_modified
+            FROM stores s
+            LEFT JOIN products p ON p.store_id = s.id
+            WHERE s.is_active = TRUE
+            GROUP BY s.id, s.slug, s.created_at
+            ORDER BY s.id
+        """)
         stores = cur.fetchall()
         conn.close()
-    except:
+    except Exception:
         stores = []
 
-    urls = ['https://www.rtstudio.store/', 'https://www.rtstudio.store/join']
+    urls = [
+        ('https://www.rtstudio.store/', None),
+        ('https://www.rtstudio.store/join', None),
+    ]
     for s in stores:
-        urls.append(f"https://www.rtstudio.store/store/{s['slug']}")
+        encoded_slug = urllib.parse.quote(s['slug'], safe='-')
+        urls.append((
+            f"https://www.rtstudio.store/store/{encoded_slug}",
+            s.get('last_modified')
+        ))
 
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    for url in urls:
-        xml += f'  <url><loc>{url}</loc></url>\n'
+    for url, last_modified in urls:
+        xml += f'  <url><loc>{escape(url)}</loc>'
+        if last_modified:
+            xml += f'<lastmod>{last_modified.date().isoformat()}</lastmod>'
+        xml += '</url>\n'
     xml += '</urlset>'
     return xml, 200, {'Content-Type': 'application/xml; charset=utf-8'}
 

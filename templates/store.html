@@ -9,8 +9,16 @@
     {% endif %}
     <title>{{ store.name }} | اطلب الآن عبر واتساب</title>
 
+    {% set seo_description = (store.bio or ('تسوق من ' ~ store.name ~ ' واطلب منتجاتك مباشرة عبر واتساب.')) | striptags | trim | truncate(160, true, '') %}
+    <meta name="description" content="{{ seo_description }}">
+    {% if preview_mode %}
+    <meta name="robots" content="noindex, nofollow">
+    {% else %}
+    <link rel="canonical" href="https://www.rtstudio.store/store/{{ store.slug | urlencode }}">
+    {% endif %}
+
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:url" content="https://www.rtstudio.store/store/{{ store.slug | urlencode }}">
 
     {% if product_to_open %}
         {% set og_img = product_to_open.final_image_url if product_to_open.final_image_url else product_to_open.processed_image_url %}
@@ -32,6 +40,8 @@
     {% endif %}
 
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ store.name }}">
+    <meta name="twitter:description" content="{{ seo_description }}">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 
