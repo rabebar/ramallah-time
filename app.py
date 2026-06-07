@@ -734,28 +734,17 @@ def dashboard():
             flash(f"لقد تجاوزت الحد المسموح ({RATE_LIMIT_PER_HOUR} صورة/ساعة). حاول لاحقاً.", "warning")
             return redirect(url_for('dashboard'))
 
-        # خيار الاحتفاظ بالصورة الأصلية بدون إزالة خلفية
-        keep_original = request.form.get('keep_original') == '1'
-
         try:
-            store = get_store_by_user(user_id)
+            output_data, engine_used = remove_bg_with_fallback(filepath)
+            logging.info(f"Background removed using: {engine_used}")
 
-            if keep_original:
-                # استخدم الصورة الأصلية مباشرة بدون معالجة
-                processed_filename = f"processed_{unique_id}.png"
-                output_path = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
-                from PIL import Image as PILImage
-                with PILImage.open(filepath) as img:
-                    img = img.convert('RGBA')
-                    img.thumbnail((1200, 1200), PILImage.LANCZOS)
-                    img.save(output_path, 'PNG')
-                engine_used = 'original'
-            else:
-                output_data, engine_used = remove_bg_with_fallback(filepath)
-                logging.info(f"Background removed using: {engine_used}")
-                processed_filename = f"processed_{unique_id}.png"
-                output_path = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
-                standardize_cutout(output_data, output_path, size=1200)
+            # Standardize cutout size + soft shadow
+            processed_filename = f"processed_{unique_id}.png"
+            output_path = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
+            standardize_cutout(output_data, output_path, size=1200)
+
+            # IMPORTANT: pass store to result.html so it can show stock field when inventory is enabled
+            store = get_store_by_user(user_id)
 
             return render_template(
                 'result.html',

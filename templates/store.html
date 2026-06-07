@@ -1342,24 +1342,54 @@
             }
         });
 
-        let deferredPrompt;
+        let deferredPrompt = null;
+
+        // أظهر البانر فوراً على الموبايل ثم افحص إذا مثبت
+        async function initPWA() {
+            const pwaBanner = document.getElementById('pwaBanner');
+            if (!pwaBanner || window.innerWidth > 1024) return;
+
+            // فحص إذا التطبيق مثبت مسبقاً
+            if ('getInstalledRelatedApps' in navigator) {
+                try {
+                    const apps = await navigator.getInstalledRelatedApps();
+                    if (apps && apps.length > 0) return; // مثبت — لا تظهر البانر
+                } catch(e) {}
+            }
+
+            // فحص إذا يشتغل في standalone mode (مثبت)
+            if (window.matchMedia('(display-mode: standalone)').matches) return;
+
+            // أظهر البانر فوراً
+            pwaBanner.style.display = 'flex';
+        }
+
+        initPWA();
+
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
+        });
+
+        // إخفاء البانر بعد التثبيت
+        window.addEventListener('appinstalled', () => {
             const pwaBanner = document.getElementById('pwaBanner');
-            if (pwaBanner && window.innerWidth <= 1024) {
-                pwaBanner.style.display = 'flex';
-            }
+            if (pwaBanner) pwaBanner.style.display = 'none';
+            deferredPrompt = null;
         });
 
         const installBtnElement = document.getElementById('installBtn');
         if (installBtnElement) {
             installBtnElement.addEventListener('click', async () => {
                 if (deferredPrompt) {
+                    // Chrome — استخدم الـ prompt الرسمي
                     deferredPrompt.prompt();
                     await deferredPrompt.userChoice;
                     document.getElementById('pwaBanner').style.display = 'none';
                     deferredPrompt = null;
+                } else {
+                    // Safari / غيره — وجّه المستخدم يدوياً
+                    alert('لتثبيت التطبيق: اضغط على زر المشاركة ثم "إضافة إلى الشاشة الرئيسية"');
                 }
             });
         }

@@ -456,7 +456,7 @@
 
 <!-- Tab: Settings -->
 <div id="tab-settings" class="content-section">
-    <form action="/update_store" method="POST" class="settings-form" enctype="multipart/form-data">
+    <form action="/update_store" method="POST" class="settings-form" enctype="multipart/form-data" onsubmit="ensureTheme()">
         <div class="section-header">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             Store Profile
@@ -918,6 +918,14 @@ document.addEventListener('DOMContentLoaded', () => { if (PRODUCT_ID) loadVarian
         const prevPrice = document.getElementById('prevPrice');
         if (prevName) prevName.innerText = nameVal || 'Product Name';
         if (prevPrice) prevPrice.innerText = '₪' + (priceVal || '0.00');
+    }
+
+    function ensureTheme() {
+        // تأكد إن قيمة الثيم موجودة قبل الإرسال
+        const el = document.getElementById('selectedTheme');
+        if (!el || !el.value || el.value.trim() === '') {
+            el.value = 'gold';
+        }
     }
 
     function updateEditTheme(theme, el) {
