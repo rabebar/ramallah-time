@@ -230,16 +230,18 @@
                 <small style="color:var(--text-muted)">يجب أن يكون فريداً داخل المتجر.</small>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">الخيارات / Variants</label>
-                <input type="text" name="variants" value="{{ edit_product.variants or '' }}" class="input-field" placeholder="مثال: دجاج، تونة، لحم، سمك">
-                <small style="color:var(--text-muted)">افصل بين الخيارات بفاصلة — ستظهر كأزرار للزبون.</small>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">عروض الكمية / Bundles</label>
-                <input type="text" name="bundles" value="{{ edit_product.bundles or '' }}" class="input-field" placeholder="مثال: 3 حبات بـ 10₪، 6 حبات بـ 18₪">
-                <small style="color:var(--text-muted)">افصل بين العروض بفاصلة — ستظهر كأزرار خضراء للزبون.</small>
+            <!-- ══ VARIANTS ══ -->
+            <div class="form-group" style="border:1px solid #e5e7eb; border-radius:14px; padding:20px; background:#fafafa;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                    <label class="form-label" style="margin:0; font-size:15px;">الخيارات / Variants</label>
+                    <button type="button" onclick="addVariantRow()" style="background:#111; color:#fff; border:none; padding:7px 16px; border-radius:8px; font-size:13px; cursor:pointer;">+ أضف خيار</button>
+                </div>
+                <small style="color:var(--text-muted); display:block; margin-bottom:12px;">كل خيار له اسم وسعر وصورة مستقلة (مثال: Kitten 1.5kg / Adult 5kg)</small>
+                <div id="variantsContainer"></div>
+                <button type="button" id="saveVariantsBtn" onclick="saveVariants()" 
+                    style="margin-top:12px; background:#111; color:#fff; border:none; padding:10px 24px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; width:100%; transition:0.2s;">
+                    حفظ الخيارات
+                </button>
             </div>
 
             {% if store.inventory_enabled %}
@@ -760,6 +762,103 @@
         </form>
     </div>
 </div>
+
+<script>
+// ══ VARIANTS MANAGER ══
+const PRODUCT_ID = {{ edit_product.id if edit_product else 'null' }};
+let variantsData = [];
+
+async function loadVariants() {
+    if (!PRODUCT_ID) return;
+    try {
+        const res = await fetch(`/api/product/${PRODUCT_ID}/variants`);
+        variantsData = await res.json();
+        renderVariants();
+    } catch(e) {}
+}
+
+function renderVariants() {
+    const container = document.getElementById('variantsContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    variantsData.forEach((v, i) => {
+        container.appendChild(createVariantRow(v, i));
+    });
+}
+
+function createVariantRow(v, i) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid; grid-template-columns:1fr 90px 80px 36px; gap:8px; align-items:center; margin-bottom:10px; background:#fff; padding:10px; border-radius:10px; border:1px solid #e5e7eb;';
+    row.innerHTML = `
+        <input type="text" value="${v.name||''}" placeholder="اسم الخيار (مثال: Kitten 1.5kg)" 
+            style="padding:8px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; font-family:inherit;"
+            oninput="variantsData[${i}].name=this.value">
+        <input type="number" value="${v.price||0}" placeholder="السعر ₪" step="0.01" min="0"
+            style="padding:8px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; text-align:center;"
+            oninput="variantsData[${i}].price=this.value">
+        <div style="text-align:center;">
+            ${v.image_url 
+                ? `<img src="/static/uploads/${v.image_url}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;cursor:pointer;" onclick="document.getElementById('vimg_${i}').click()">`
+                : `<button type="button" onclick="document.getElementById('vimg_${i}').click()" style="width:40px;height:40px;border:1.5px dashed #d1d5db;border-radius:6px;background:#f9fafb;cursor:pointer;font-size:18px;">📷</button>`
+            }
+            <input type="file" id="vimg_${i}" accept="image/*" style="display:none;" onchange="uploadVariantImg(this, ${i})">
+        </div>
+        <button type="button" onclick="removeVariant(${i})" style="width:36px;height:36px;background:#fee2e2;border:none;border-radius:8px;cursor:pointer;color:#ef4444;font-size:16px;">×</button>
+    `;
+    return row;
+}
+
+function addVariantRow() {
+    variantsData.push({ name: '', price: 0, image_url: null });
+    renderVariants();
+}
+
+function removeVariant(i) {
+    variantsData.splice(i, 1);
+    renderVariants();
+}
+
+async function uploadVariantImg(input, i) {
+    const file = input.files[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('image', file);
+    try {
+        const res = await fetch('/api/variant/upload-image', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+            variantsData[i].image_url = data.image_url;
+            renderVariants();
+        }
+    } catch(e) { alert('فشل رفع الصورة'); }
+}
+
+async function saveVariants() {
+    if (!PRODUCT_ID) return;
+    const btn = document.getElementById('saveVariantsBtn');
+    btn.textContent = 'جاري الحفظ...';
+    btn.disabled = true;
+    try {
+        const res = await fetch(`/api/product/${PRODUCT_ID}/variants/save`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ variants: variantsData })
+        });
+        const data = await res.json();
+        if (data.success) {
+            btn.textContent = '✓ تم الحفظ';
+            btn.style.background = '#10b981';
+            setTimeout(() => { btn.textContent = 'حفظ الخيارات'; btn.style.background = ''; btn.disabled = false; }, 2000);
+        } else {
+            btn.textContent = 'حفظ الخيارات';
+            btn.disabled = false;
+            alert('خطأ: ' + data.error);
+        }
+    } catch(e) { btn.textContent = 'حفظ الخيارات'; btn.disabled = false; }
+}
+
+document.addEventListener('DOMContentLoaded', () => { if (PRODUCT_ID) loadVariants(); });
+</script>
 
 <script>
     function activateTabFromURL() {

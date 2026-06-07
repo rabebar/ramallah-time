@@ -393,6 +393,16 @@
     }
     .share-btn.facebook:hover { background: #1877F2; border-color: #1877F2; }
     .share-btn.whatsapp:hover { background: #25D366; border-color: #25D366; }
+        .variants-section { margin: 18px 0; }
+        .variants-label { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 10px; }
+        .variants-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .variant-card { border: 2px solid #e5e7eb; border-radius: 12px; padding: 10px; cursor: pointer; transition: all 0.2s; background: #fff; text-align: center; min-width: 90px; }
+        .variant-card:hover { border-color: #b8a07a; background: #fdf8f0; }
+        .variant-card.selected { border-color: #b8a07a; background: #b8a07a; color: #fff; }
+        .variant-card img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; margin-bottom: 6px; display: block; }
+        .variant-card .v-name { font-size: 12px; font-weight: 600; }
+        .variant-card .v-price { font-size: 13px; font-weight: 700; color: #b8a07a; }
+        .variant-card.selected .v-price { color: #fff; }
     .share-btn.copy:hover { background: var(--gold); border-color: var(--gold); }
     .share-btn i { width: 16px; height: 16px; }
     
@@ -743,6 +753,12 @@
             <div class="product-sku">SKU: {{ product.sku }}</div>
         {% endif %}
         
+        <!-- Variants -->
+        <div id="variantsSection" class="variants-section" style="display:none;">
+            <div class="variants-label">اختر الخيار:</div>
+            <div class="variants-grid" id="variantsGrid"></div>
+        </div>
+
         <!-- Actions -->
         <div class="actions">
             {% if available %}
@@ -912,6 +928,44 @@
         sku: {{ (product.sku or '')|tojson }},
         price: {{ product.price }}
     };
+
+    // ── VARIANTS ──
+    let selectedVariant = null;
+
+    async function loadVariants() {
+        try {
+            const res = await fetch(`/api/product/${PRODUCT_DATA.product_id}/variants`);
+            const variants = await res.json();
+            if (!variants || variants.length === 0) return;
+            const section = document.getElementById('variantsSection');
+            const grid = document.getElementById('variantsGrid');
+            if (!section || !grid) return;
+            section.style.display = 'block';
+            grid.innerHTML = variants.map((v, i) => `
+                <div class="variant-card" onclick="selectVariant(${i}, this)" data-idx="${i}"
+                     data-name="${v.name}" data-price="${v.price}" data-img="${v.image_url||''}">
+                    ${v.image_url ? `<img src="/static/uploads/${v.image_url}" alt="${v.name}">` : ''}
+                    <div class="v-name">${v.name}</div>
+                    <div class="v-price">${CURRENCY} ${parseFloat(v.price).toFixed(2)}</div>
+                </div>
+            `).join('');
+        } catch(e) {}
+    }
+
+    function selectVariant(i, el) {
+        document.querySelectorAll('.variant-card').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedVariant = {
+            name: el.dataset.name,
+            price: parseFloat(el.dataset.price),
+            img: el.dataset.img
+        };
+        // حدّث السعر المعروض
+        const priceEl = document.querySelector('.product-price');
+        if (priceEl) priceEl.textContent = selectedVariant.price.toFixed(2);
+    }
+
+    loadVariants();
     
     // ── CART FUNCTIONS ──
     function getCart() {
@@ -934,13 +988,16 @@
     
     function addProductToCart() {
         let c = getCart();
-        const i = c.findIndex(x => x.product_id === PRODUCT_DATA.product_id);
+        const variantSuffix = selectedVariant ? ` - ${selectedVariant.name}` : '';
+        const finalPrice = selectedVariant ? selectedVariant.price : Number(PRODUCT_DATA.price);
+        const finalName = PRODUCT_DATA.name + variantSuffix;
+        const i = c.findIndex(x => x.product_id === PRODUCT_DATA.product_id && x.name === finalName);
         if (i >= 0) c[i].qty += 1;
         else c.push({
             product_id: PRODUCT_DATA.product_id,
-            name: PRODUCT_DATA.name,
+            name: finalName,
             sku: PRODUCT_DATA.sku,
-            price: Number(PRODUCT_DATA.price),
+            price: finalPrice,
             qty: 1
         });
         saveCart(c);

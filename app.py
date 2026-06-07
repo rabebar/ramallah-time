@@ -421,12 +421,21 @@ UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Migration: add variants column if not exists
+# Migration: product_variants table + cleanup old columns
 try:
     _mconn = get_db_connection()
     _mcur = _mconn.cursor()
-    _mcur.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS variants TEXT DEFAULT NULL")
-    _mcur.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS bundles TEXT DEFAULT NULL")
+    _mcur.execute("""
+        CREATE TABLE IF NOT EXISTS product_variants (
+            id SERIAL PRIMARY KEY,
+            product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+            name TEXT NOT NULL,
+            price NUMERIC(10,2) NOT NULL,
+            image_url TEXT,
+            sort_order INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    """)
     _mconn.commit()
     _mconn.close()
 except Exception as _me:
@@ -992,6 +1001,62 @@ def edit_product_route(id):
     finally:
         conn.close()
     return redirect(url_for('admin'))
+
+# =========================
+# Product Variants API
+# =========================
+@app.route('/api/product/<int:product_id>/variants', methods=['GET'])
+def get_variants(product_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM product_variants WHERE product_id = %s ORDER BY sort_order, id", (product_id,))
+    variants = cur.fetchall()
+    conn.close()
+    return jsonify([dict(v) for v in variants])
+
+@app.route('/api/product/<int:product_id>/variants/save', methods=['POST'])
+def save_variants(product_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'unauthorized'}), 401
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT p.id FROM products p JOIN stores s ON p.store_id = s.id WHERE p.id = %s AND s.user_id = %s", (product_id, user_id))
+    if not cur.fetchone():
+        conn.close()
+        return jsonify({'error': 'forbidden'}), 403
+    data = request.get_json()
+    variants = data.get('variants', [])
+    try:
+        cur.execute("DELETE FROM product_variants WHERE product_id = %s", (product_id,))
+        for i, v in enumerate(variants):
+            cur.execute("INSERT INTO product_variants (product_id, name, price, image_url, sort_order) VALUES (%s, %s, %s, %s, %s)",
+                (product_id, v.get('name',''), float(v.get('price', 0)), v.get('image_url') or None, i))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'count': len(variants)})
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        logging.error(f"Save variants error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/variant/upload-image', methods=['POST'])
+def upload_variant_image():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'unauthorized'}), 401
+    file = request.files.get('image')
+    if not file:
+        return jsonify({'error': 'no file'}), 400
+    try:
+        ext = os.path.splitext(file.filename)[1].lower() or '.jpg'
+        fname = f"variant_{uuid.uuid4().hex[:10]}{ext}"
+        fpath = os.path.join(app.config['UPLOAD_FOLDER'], fname)
+        file.save(fpath)
+        return jsonify({'success': True, 'image_url': fname})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/delete_product/<int:id>')
 def delete_product_route(id):
