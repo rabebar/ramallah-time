@@ -302,6 +302,12 @@
         // Init on load
         const savedLang = localStorage.getItem(LANG_KEY) || 'ar';
         applyLang(savedLang);
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(err => console.log('SW Failed', err));
+            });
+        }
     </script>
 </body>
 </html>

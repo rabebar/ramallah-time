@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1A2238">
+    {% if not preview_mode %}
     <link rel="manifest" href="/store-manifest/{{ store.slug }}">
+    {% endif %}
     <title>{{ store.name }} | اطلب الآن عبر واتساب</title>
 
     <meta property="og:type" content="website">
@@ -1168,6 +1170,7 @@
         </div>
     </aside>
 
+    {% if not preview_mode %}
     <div id="pwaBanner" class="pwa-banner">
         <div class="logo-box" style="width: 40px; height: 40px;"><i data-lucide="download" style="width: 20px;"></i></div>
         <div style="flex: 1;">
@@ -1179,6 +1182,7 @@
             <i data-lucide="x" style="width: 18px;"></i>
         </button>
     </div>
+    {% endif %}
 
     <script>
         
@@ -1325,11 +1329,13 @@
             lucide.createIcons();
             setLanguage(currentLang);
             renderCart();
+            {% if not preview_mode %}
             sendBeacon('page_view');
 
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js?store={{ store.slug }}', { scope: '/store/{{ store.slug }}/' }).catch(err => console.log('SW Failed', err));
+                navigator.serviceWorker.register('/sw.js?store={{ store.slug }}', { scope: '/store/{{ store.slug }}' }).catch(err => console.log('SW Failed', err));
             }
+            {% endif %}
 
             const urlParams = new URLSearchParams(window.location.search);
             const productIdToOpen = urlParams.get('open_product');
@@ -1342,26 +1348,24 @@
             }
         });
 
+        {% if not preview_mode %}
         let deferredPrompt = null;
+        const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent)
+            || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true;
 
-        // أظهر البانر فوراً على الموبايل ثم افحص إذا مثبت
         async function initPWA() {
             const pwaBanner = document.getElementById('pwaBanner');
             if (!pwaBanner || window.innerWidth > 1024) return;
 
-            // فحص إذا التطبيق مثبت مسبقاً
-            if ('getInstalledRelatedApps' in navigator) {
-                try {
-                    const apps = await navigator.getInstalledRelatedApps();
-                    if (apps && apps.length > 0) return; // مثبت — لا تظهر البانر
-                } catch(e) {}
+            if (isStandalonePWA) return;
+
+            if (isIOSDevice) {
+                pwaBanner.style.display = 'flex';
+                const installBtn = document.getElementById('installBtn');
+                if (installBtn) installBtn.textContent = currentLang === 'ar' ? 'طريقة التثبيت' : 'How to install';
             }
-
-            // فحص إذا يشتغل في standalone mode (مثبت)
-            if (window.matchMedia('(display-mode: standalone)').matches) return;
-
-            // أظهر البانر فوراً
-            pwaBanner.style.display = 'flex';
         }
 
         initPWA();
@@ -1369,9 +1373,12 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
+            const pwaBanner = document.getElementById('pwaBanner');
+            const installBtn = document.getElementById('installBtn');
+            if (pwaBanner && !isStandalonePWA) pwaBanner.style.display = 'flex';
+            if (installBtn) installBtn.textContent = currentLang === 'ar' ? 'تثبيت' : 'Install';
         });
 
-        // إخفاء البانر بعد التثبيت
         window.addEventListener('appinstalled', () => {
             const pwaBanner = document.getElementById('pwaBanner');
             if (pwaBanner) pwaBanner.style.display = 'none';
@@ -1382,17 +1389,18 @@
         if (installBtnElement) {
             installBtnElement.addEventListener('click', async () => {
                 if (deferredPrompt) {
-                    // Chrome — استخدم الـ prompt الرسمي
                     deferredPrompt.prompt();
-                    await deferredPrompt.userChoice;
-                    document.getElementById('pwaBanner').style.display = 'none';
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') document.getElementById('pwaBanner').style.display = 'none';
                     deferredPrompt = null;
-                } else {
-                    // Safari / غيره — وجّه المستخدم يدوياً
+                } else if (isIOSDevice) {
                     alert('لتثبيت التطبيق: اضغط على زر المشاركة ثم "إضافة إلى الشاشة الرئيسية"');
                 }
             });
         }
+        {% else %}
+        document.addEventListener('click', event => event.preventDefault(), true);
+        {% endif %}
 
         function sendBeacon(event, productId) {
             const url = `/e?e=${encodeURIComponent(event)}&store_id=${STORE_ID}` + (productId ? `&product_id=${productId}` : '');

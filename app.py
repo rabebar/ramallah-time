@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 from decimal import Decimal
 
-from flask import Flask, render_template, request, redirect, session, url_for, flash, g, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, session, url_for, flash, g, send_from_directory, send_file, jsonify
 import requests
 from werkzeug.security import generate_password_hash, check_password_hash
 from rembg import remove
@@ -735,16 +735,24 @@ def dashboard():
             flash(f"لقد تجاوزت الحد المسموح ({RATE_LIMIT_PER_HOUR} صورة/ساعة). حاول لاحقاً.", "warning")
             return redirect(url_for('dashboard'))
 
-        try:
-            output_data, engine_used = remove_bg_with_fallback(filepath)
-            logging.info(f"Background removed using: {engine_used}")
+        keep_original = request.form.get('keep_original') == '1'
 
-            # Standardize cutout size + soft shadow
+        try:
             processed_filename = f"processed_{unique_id}.png"
             output_path = os.path.join(app.config['UPLOAD_FOLDER'], processed_filename)
-            standardize_cutout(output_data, output_path, size=1200)
 
-            # IMPORTANT: pass store to result.html so it can show stock field when inventory is enabled
+            if keep_original:
+                with Image.open(filepath) as source:
+                    source = ImageOps.exif_transpose(source).convert('RGBA')
+                    source.thumbnail((1600, 1600), Image.LANCZOS)
+                    source.save(output_path, 'PNG', optimize=True)
+                engine_used = 'original'
+                logging.info("Keeping original image without background removal")
+            else:
+                output_data, engine_used = remove_bg_with_fallback(filepath)
+                logging.info(f"Background removed using: {engine_used}")
+                standardize_cutout(output_data, output_path, size=1200)
+
             store = get_store_by_user(user_id)
 
             return render_template(
@@ -1184,6 +1192,42 @@ def update_login_info():
 
     return redirect(url_for('admin', active_tab='settings'))
 
+@app.route('/admin/store-preview')
+def admin_store_preview():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM stores WHERE user_id = %s", (user_id,))
+    store = cursor.fetchone()
+    if not store:
+        conn.close()
+        return "المتجر غير موجود.", 404
+
+    cursor.execute("SELECT * FROM products WHERE store_id = %s AND active = TRUE ORDER BY id DESC", (store['id'],))
+    products = cursor.fetchall()
+    conn.close()
+
+    from themes import ENHANCED_THEMES, rgb_to_hex
+    requested_theme = request.args.get('theme', '').strip()
+    theme_name = requested_theme if requested_theme in ENHANCED_THEMES else (store.get('store_theme') or 'gold')
+    theme_colors = ENHANCED_THEMES.get(theme_name, ENHANCED_THEMES['gold'])
+    theme_hex = {
+        'light': rgb_to_hex(theme_colors[0]),
+        'dark': rgb_to_hex(theme_colors[1]),
+    }
+    return render_template(
+        'store.html',
+        store=store,
+        products=products,
+        product_to_open=None,
+        theme_hex=theme_hex,
+        theme_name=theme_name,
+        preview_mode=True
+    )
+
 @app.route('/store/<slug>')
 def view_store(slug):
     decoded_slug = urllib.parse.unquote(slug)
@@ -1218,7 +1262,15 @@ def view_store(slug):
         'light': rgb_to_hex(theme_colors[0]),
         'dark':  rgb_to_hex(theme_colors[1]),
     }
-    return render_template('store.html', store=store, products=products, product_to_open=product_to_open, theme_hex=theme_hex, theme_name=theme_name)
+    return render_template(
+        'store.html',
+        store=store,
+        products=products,
+        product_to_open=product_to_open,
+        theme_hex=theme_hex,
+        theme_name=theme_name,
+        preview_mode=False
+    )
 
 @app.route('/store/<slug>/product/<int:product_id>')
 def view_product_page(slug, product_id):
@@ -1646,13 +1698,13 @@ def store_manifest(slug):
         "orientation": "portrait",
         "icons": [
             {
-                "src": f"/static/uploads/{store['logo_url']}" if store.get('logo_url') else "/static/rt_logo_192.png",
+                "src": f"/store-icon/{store['slug']}/192",
                 "sizes": "192x192",
                 "type": "image/png",
                 "purpose": "any maskable"
             },
             {
-                "src": f"/static/uploads/{store['logo_url']}" if store.get('logo_url') else "/static/rt_logo_512.png",
+                "src": f"/store-icon/{store['slug']}/512",
                 "sizes": "512x512",
                 "type": "image/png",
                 "purpose": "any maskable"
@@ -1660,10 +1712,42 @@ def store_manifest(slug):
         ]
     }
     from flask import Response
-    return Response(
+    response = Response(
         _json.dumps(manifest, ensure_ascii=False),
         mimetype='application/manifest+json'
     )
+    response.headers['Cache-Control'] = 'no-cache'
+    return response
+
+@app.route('/store-icon/<slug>/<int:size>')
+def store_icon(slug, size):
+    if size not in (192, 512):
+        return "Unsupported icon size", 404
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT logo_url FROM stores WHERE LOWER(slug) = %s", (slug.lower(),))
+    store = cur.fetchone()
+    conn.close()
+
+    fallback = os.path.join(app.root_path, 'static', f'rt_logo_{size}.png')
+    source_path = fallback
+    if store and store.get('logo_url'):
+        candidate = os.path.join(app.config['UPLOAD_FOLDER'], store['logo_url'])
+        if os.path.isfile(candidate):
+            source_path = candidate
+
+    try:
+        with Image.open(source_path) as source:
+            source = ImageOps.exif_transpose(source).convert('RGBA')
+            fitted = ImageOps.fit(source, (size, size), method=Image.LANCZOS)
+            output = io.BytesIO()
+            fitted.save(output, format='PNG', optimize=True)
+            output.seek(0)
+        return send_file(output, mimetype='image/png', max_age=3600)
+    except Exception as exc:
+        logging.error(f"PWA icon generation failed: {exc}")
+        return send_file(fallback, mimetype='image/png', max_age=3600)
 
 # =========================
 # Showcase API (Landing Page)
