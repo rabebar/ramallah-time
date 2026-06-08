@@ -444,13 +444,17 @@ body.ltr .wa-float { left: auto; right: 24px; }
   100% { transform: translateX(-50%); }
 }
 .showcase-card {
-  flex-shrink: 0; background: #fff; border-radius: 12px; border: 1px solid #F3F4F6; box-shadow: 0 2px 12px rgba(0,0,0,0.06); width: 160px; overflow: hidden; cursor: pointer; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; display: block;
+  flex: 0 0 132px; min-height: 148px; background: #fff; border-radius: 12px; border: 1px solid #F3F4F6; box-shadow: 0 2px 12px rgba(0,0,0,0.06); padding: 14px 10px 12px; cursor: pointer; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
 }
 .showcase-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
-.showcase-card img { width: 100%; height: 130px; object-fit: cover; display: block; background: #F5F5F5; }
-.showcase-card-info { padding: 8px 10px; }
-.showcase-card-store { font-size: 11px; font-weight: 600; color: #111827; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.showcase-card-product { font-size: 10px; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.showcase-logo-wrap { width: 86px; height: 86px; border-radius: 50%; border: 1px solid #E5E7EB; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.showcase-logo-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; padding: 7px; }
+.showcase-card-store { width: 100%; font-size: 12px; font-weight: 700; color: #111827; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 768px) {
+  .showcase-card { flex-basis: 112px; min-height: 128px; padding: 12px 8px 10px; }
+  .showcase-logo-wrap { width: 72px; height: 72px; }
+  .showcase-card-store { font-size: 11px; }
+}
 </style>
 
 <script>
@@ -463,8 +467,25 @@ body.ltr .wa-float { left: auto; right: 24px; }
     if (!inner) return;
     const buildCards = () => stores.map(s => {
       const card = document.createElement('a');
-      card.className = 'showcase-card'; card.href = '/store/' + s.slug; card.target = '_blank';
-      card.innerHTML = `<img src="/static/uploads/${s.img}" alt="${s.store}" onerror="this.style.background='#EEF2FF';this.style.height='130px';"><div class="showcase-card-info"><div class="showcase-card-store">${s.store}</div><div class="showcase-card-product">${s.product} · ${s.currency} ${s.price}</div></div>`;
+      card.className = 'showcase-card';
+      card.href = '/store/' + encodeURIComponent(s.slug);
+      card.target = '_blank';
+      card.rel = 'noopener';
+
+      const logoWrap = document.createElement('div');
+      logoWrap.className = 'showcase-logo-wrap';
+      const logo = document.createElement('img');
+      logo.src = s.logo;
+      logo.alt = s.store;
+      logo.loading = 'lazy';
+      logoWrap.appendChild(logo);
+
+      const name = document.createElement('div');
+      name.className = 'showcase-card-store';
+      name.textContent = s.store;
+
+      card.appendChild(logoWrap);
+      card.appendChild(name);
       return card;
     });
     buildCards().forEach(c => inner.appendChild(c));

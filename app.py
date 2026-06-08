@@ -1920,36 +1920,26 @@ def store_icon(slug, size):
 # =========================
 @app.route('/api/showcase')
 def api_showcase():
-    """Return one product per store (latest) from active stores for the landing page showcase."""
+    """Return active stores for the landing page logo showcase."""
     try:
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT DISTINCT ON (s.id)
-                s.name     AS store,
-                s.slug     AS slug,
-                s.currency AS currency,
-                p.name     AS product,
-                p.price    AS price,
-                p.processed_image_url AS img
-            FROM products p
-            JOIN stores s ON p.store_id = s.id
-            WHERE p.active = TRUE
-              AND s.is_active = TRUE
-            ORDER BY s.id, p.created_at DESC
+            SELECT name AS store, slug
+            FROM stores
+            WHERE is_active = TRUE
+            ORDER BY id
         """)
         rows = cur.fetchall()
         conn.close()
-        result = []
-        for r in rows:
-            result.append({
-                'store':    r['store'],
-                'slug':     r['slug'],
-                'currency': r['currency'] or '₪',
-                'product':  r['product'],
-                'price':    str(r['price']),
-                'img':      r['img'] or ''
-            })
+        result = [
+            {
+                'store': r['store'],
+                'slug': r['slug'],
+                'logo': f"/store-icon/{urllib.parse.quote(r['slug'], safe='-')}/192",
+            }
+            for r in rows
+        ]
         return jsonify(result)
     except Exception as e:
         logging.error(f"showcase error: {e}")
