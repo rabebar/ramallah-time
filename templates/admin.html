@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Inventory - RT Studio{% endblock %}
 {% block nav_products %}active{% endblock %}
-{% block mob_products %}active{% endblock %}
+{% block mob_products %}{% if request.args.get('active_tab') != 'settings' %}active{% endif %}{% endblock %}
 
 {% block content %}
 <style>
@@ -218,7 +218,7 @@
         .settings-form { max-width: none; }
         .settings-step-body { padding: 4px 14px 20px; }
         .settings-step-toggle { padding: 12px 14px; }
-        .settings-save-bar { bottom: 82px; }
+        .settings-save-bar { bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
         #themePreviewFrame { height: 560px !important; }
     }
 
