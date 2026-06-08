@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0A192F">
+    {% if store_slug and admin_pwa_store_name %}
+    <link rel="manifest" href="/admin-manifest/{{ store_slug | urlencode }}">
+    <link rel="apple-touch-icon" href="/admin-icon/{{ store_slug | urlencode }}/192">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Admin - {{ admin_pwa_store_name }}">
+    {% else %}
     <link rel="manifest" href="/static/manifest.json">
+    {% endif %}
     <title>RT Studio | {% block title %}{% endblock %}</title>
     
     <!-- Fonts & Icons -->

@@ -598,8 +598,11 @@ def inject_global_vars():
     if 'user_id' in session:
         if not hasattr(g, 'user_stats_global'):
             g.user_stats_global = get_user_stats(session['user_id'])
-        return {'store_slug': g.user_stats_global.get('store_slug')}
-    return {'store_slug': None}
+        return {
+            'store_slug': g.user_stats_global.get('store_slug'),
+            'admin_pwa_store_name': g.user_stats_global.get('store_name'),
+        }
+    return {'store_slug': None, 'admin_pwa_store_name': None}
 
 # =========================
 # Utilities
@@ -614,7 +617,7 @@ def get_user_stats(user_id):
         cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
         user_data = cursor.fetchone()
         
-        cursor.execute("SELECT id, slug FROM stores WHERE user_id = %s", (user_id,))
+        cursor.execute("SELECT id, name, slug FROM stores WHERE user_id = %s", (user_id,))
         store = cursor.fetchone()
         
         processed_count = 0
@@ -633,11 +636,12 @@ def get_user_stats(user_id):
             'credits': user_data['credits'] if user_data else 0,
             'processed': processed_count,
             'store_slug': store['slug'] if store else None,
+            'store_name': store['name'] if store else None,
             'sub': sub_status 
         }
     except Exception as e:
         logging.error(f"Error in get_user_stats: {e}")
-        return {'credits': 0, 'processed': 0, 'store_slug': None, 'sub': {}}
+        return {'credits': 0, 'processed': 0, 'store_slug': None, 'store_name': None, 'sub': {}}
     finally:
         if conn: conn.close()
 
@@ -1751,6 +1755,89 @@ def super_admin_add_credits():
 # =========================
 # Dynamic Store Manifest (PWA)
 # =========================
+@app.route('/admin-manifest/<slug>')
+def admin_manifest(slug):
+    import json as _json
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT name, slug, bio FROM stores WHERE LOWER(slug) = %s", (slug.lower(),))
+    store = cur.fetchone()
+    conn.close()
+
+    if not store:
+        return jsonify({"error": "store not found"}), 404
+
+    app_name = f"Admin - {store['name']}"
+    manifest = {
+        "id": f"/admin-app/{store['slug']}",
+        "name": app_name,
+        "short_name": app_name,
+        "description": f"لوحة إدارة متجر {store['name']} على RT Studio",
+        "start_url": "/dashboard",
+        "scope": "/",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#0A192F",
+        "orientation": "portrait",
+        "icons": [
+            {
+                "src": f"/admin-icon/{store['slug']}/192",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any maskable"
+            },
+            {
+                "src": f"/admin-icon/{store['slug']}/512",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any maskable"
+            }
+        ]
+    }
+    from flask import Response
+    response = Response(
+        _json.dumps(manifest, ensure_ascii=False),
+        mimetype='application/manifest+json'
+    )
+    response.headers['Cache-Control'] = 'no-cache'
+    return response
+
+
+@app.route('/admin-icon/<slug>/<int:size>')
+def admin_icon(slug, size):
+    if size not in (192, 512):
+        return "Unsupported icon size", 404
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT logo_url FROM stores WHERE LOWER(slug) = %s", (slug.lower(),))
+    store = cur.fetchone()
+    conn.close()
+
+    fallback = os.path.join(app.root_path, 'static', f'rt_logo_{size}.png')
+    source_path = fallback
+    if store and store.get('logo_url'):
+        candidate = os.path.join(app.config['UPLOAD_FOLDER'], store['logo_url'])
+        if os.path.isfile(candidate):
+            source_path = candidate
+
+    try:
+        with Image.open(source_path) as source:
+            source = ImageOps.exif_transpose(source).convert('RGBA')
+            safe_size = int(size * 0.72)
+            source.thumbnail((safe_size, safe_size), Image.LANCZOS)
+            canvas = Image.new('RGBA', (size, size), '#FFFFFF')
+            offset = ((size - source.width) // 2, (size - source.height) // 2)
+            canvas.alpha_composite(source, offset)
+            output = io.BytesIO()
+            canvas.convert('RGB').save(output, format='PNG', optimize=True)
+            output.seek(0)
+        return send_file(output, mimetype='image/png', max_age=3600)
+    except Exception as exc:
+        logging.error(f"Admin PWA icon generation failed: {exc}")
+        return send_file(fallback, mimetype='image/png', max_age=3600)
+
+
 @app.route('/store-manifest/<slug>')
 def store_manifest(slug):
     import json as _json
