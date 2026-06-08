@@ -1050,7 +1050,43 @@ def edit_product_route(id):
 
     conn = get_db_connection()
     cursor = conn.cursor()
+    new_original_filename = None
+    new_processed_filename = None
     try:
+        cursor.execute("""
+            SELECT p.id
+            FROM products p
+            JOIN stores s ON s.id = p.store_id
+            WHERE p.id = %s AND s.user_id = %s
+        """, (id, user_id))
+        if not cursor.fetchone():
+            flash("المنتج غير موجود أو لا تملك صلاحية تعديله.", "error")
+            return redirect(url_for('admin'))
+
+        replacement_image = request.files.get('replacement_image')
+        if replacement_image and replacement_image.filename:
+            unique_id = uuid.uuid4().hex[:10]
+            new_original_filename = f"orig_edit_{unique_id}.png"
+            new_processed_filename = f"processed_edit_{unique_id}.png"
+            original_path = os.path.join(app.config['UPLOAD_FOLDER'], new_original_filename)
+            processed_path = os.path.join(app.config['UPLOAD_FOLDER'], new_processed_filename)
+
+            with Image.open(replacement_image.stream) as source:
+                source = ImageOps.exif_transpose(source).convert('RGBA')
+                source.thumbnail((2000, 2000), Image.LANCZOS)
+                source.save(original_path, 'PNG', optimize=True)
+
+            keep_replacement_original = request.form.get('keep_replacement_original') == '1'
+            if keep_replacement_original:
+                with Image.open(original_path) as source:
+                    source = source.convert('RGBA')
+                    source.thumbnail((1600, 1600), Image.LANCZOS)
+                    source.save(processed_path, 'PNG', optimize=True)
+            else:
+                output_data, engine_used = remove_bg_with_fallback(original_path)
+                logging.info(f"Replacement image background removed using: {engine_used}")
+                standardize_cutout(output_data, processed_path, size=1200)
+
         cursor.execute("""
             UPDATE products SET name=%s, price=%s, original_price=%s, discount_reason=%s, description=%s, theme=%s, template_style=%s, category=%s, active=%s, variants=%s, bundles=%s
             WHERE id=%s AND store_id = (SELECT id FROM stores WHERE user_id=%s)
@@ -1058,6 +1094,16 @@ def edit_product_route(id):
                request.form.get('variants', '').strip() or None,
                request.form.get('bundles', '').strip() or None,
                id, user_id))
+        if new_processed_filename:
+            cursor.execute("""
+                UPDATE products
+                SET original_image_url=%s,
+                    processed_image_url=%s,
+                    final_image_url=NULL,
+                    background='none'
+                WHERE id=%s
+                  AND store_id = (SELECT id FROM stores WHERE user_id=%s)
+            """, (new_original_filename, new_processed_filename, id, user_id))
         if sku and sku.strip():
             cursor.execute("""
                 UPDATE products SET sku=%s
@@ -1077,6 +1123,12 @@ def edit_product_route(id):
         flash("تم تحديث البيانات.", "success")
     except Exception as e:
         conn.rollback()
+        for filename in (new_original_filename, new_processed_filename):
+            if filename:
+                try:
+                    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                except OSError:
+                    pass
         logging.error(f"Edit Product Error: {e}")
         flash("تعذر حفظ التحديثات. تحقق من القيم.", "error")
     finally:
