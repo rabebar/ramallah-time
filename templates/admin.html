@@ -117,11 +117,77 @@
     .btn-save:hover { background: #000; }
     .btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
 
-    .settings-form { 
-        max-width: 900px; background: #fff; padding: 40px; 
-        border-radius: 20px; border: 1px solid rgba(0,0,0,0.02); 
-        box-shadow: var(--shadow-md);
+    .settings-form {
+        max-width: 1040px;
+        background: transparent;
     }
+    .settings-steps { display: flex; flex-direction: column; gap: 16px; }
+    .settings-step-card {
+        --step-color: #2563eb;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-inline-start: 5px solid var(--step-color);
+        border-radius: 8px;
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+    .settings-step-card[data-step="identity"] { --step-color: #2563eb; }
+    .settings-step-card[data-step="design"] { --step-color: #b7791f; }
+    .settings-step-card[data-step="contact"] { --step-color: #15803d; }
+    .settings-step-card[data-step="advanced"] { --step-color: #64748b; }
+    .settings-step-card[data-step="share"] { --step-color: #7c3aed; }
+    .settings-step-toggle {
+        width: 100%;
+        min-height: 72px;
+        padding: 14px 18px;
+        border: 0;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-align: start;
+        cursor: pointer;
+        color: var(--text-main);
+    }
+    .settings-step-toggle:hover { background: #f8fafc; }
+    .settings-step-number {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--step-color);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 36px;
+        font-size: 14px;
+        font-weight: 800;
+    }
+    .settings-step-heading { flex: 1; min-width: 0; }
+    .settings-step-title { display: block; font-size: 16px; font-weight: 800; }
+    .settings-step-summary { display: block; margin-top: 3px; color: var(--text-muted); font-size: 12px; font-weight: 500; }
+    .settings-step-chevron {
+        width: 20px;
+        height: 20px;
+        color: var(--text-muted);
+        transition: transform .2s ease;
+    }
+    .settings-step-card.open .settings-step-chevron { transform: rotate(180deg); }
+    .settings-step-body { display: none; padding: 8px 22px 24px; }
+    .settings-step-card.open .settings-step-body { display: block; }
+    .settings-save-bar {
+        position: sticky;
+        bottom: 12px;
+        z-index: 20;
+        padding: 10px;
+        margin-top: 18px;
+        background: rgba(255,255,255,.92);
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(15,23,42,.14);
+        backdrop-filter: blur(12px);
+    }
+    .settings-save-bar .btn-save { min-height: 46px; }
     .section-header { 
         display: flex; align-items: center; gap: 10px; 
         font-size: 18px; font-weight: 700; margin-bottom: 20px; margin-top: 30px; 
@@ -149,6 +215,11 @@
         .edit-preview-box { position: relative; top: 0; max-width: 300px; margin: 0 auto 30px; }
         .grid-2 { grid-template-columns: 1fr; }
         .tab-group { width: 100%; }
+        .settings-form { max-width: none; }
+        .settings-step-body { padding: 4px 14px 20px; }
+        .settings-step-toggle { padding: 12px 14px; }
+        .settings-save-bar { bottom: 82px; }
+        #themePreviewFrame { height: 560px !important; }
     }
 
     .content-section { display: none; }
@@ -457,10 +528,17 @@
 <!-- Tab: Settings -->
 <div id="tab-settings" class="content-section">
     <form action="/update_store" method="POST" class="settings-form" enctype="multipart/form-data" onsubmit="ensureTheme()">
-        <div class="section-header">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Store Profile
-        </div>
+        <div class="settings-steps">
+        <section class="settings-step-card open" data-step="identity">
+            <button type="button" class="settings-step-toggle" onclick="toggleSettingsStep(this)">
+                <span class="settings-step-number">1</span>
+                <span class="settings-step-heading">
+                    <span class="settings-step-title">معلومات المتجر</span>
+                    <span class="settings-step-summary">الشعار، الاسم، الرابط، الوصف والعملة</span>
+                </span>
+                <i data-lucide="chevron-down" class="settings-step-chevron"></i>
+            </button>
+            <div class="settings-step-body">
 
         <div class="form-group" style="margin-bottom: 25px; padding: 20px; background: #f8fafc; border-radius: 15px; border: 1px dashed #cbd5e1;">
             <label class="form-label">شعار المتجر (Logo)</label>
@@ -508,8 +586,20 @@
             </select>
             <small style="color:var(--text-muted)">ستظهر هذه العملة بجانب أسعار منتجاتك وفي رسائل الطلبات.</small>
         </div>
+            </div>
+        </section>
 
-                <div class="form-group" style="margin-top: 20px;">
+        <section class="settings-step-card" data-step="design">
+            <button type="button" class="settings-step-toggle" onclick="toggleSettingsStep(this)">
+                <span class="settings-step-number">2</span>
+                <span class="settings-step-heading">
+                    <span class="settings-step-title">تصميم المتجر</span>
+                    <span class="settings-step-summary">الثيم، الخلفية والمعاينة الحية</span>
+                </span>
+                <i data-lucide="chevron-down" class="settings-step-chevron"></i>
+            </button>
+            <div class="settings-step-body">
+        <div class="form-group" style="margin-top: 10px;">
             <label class="form-label">ثيم المتجر (Store Theme)</label>
             <input type="hidden" name="store_theme" id="selectedTheme" value="{{ store.store_theme or 'gold' }}">
             <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;align-items:flex-start;">
@@ -601,10 +691,19 @@
             desktop.classList.toggle('primary',!isMobile);
         }
         </script>
-        <div class="section-header">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            Social & Contact
-        </div>
+            </div>
+        </section>
+
+        <section class="settings-step-card" data-step="contact">
+            <button type="button" class="settings-step-toggle" onclick="toggleSettingsStep(this)">
+                <span class="settings-step-number">3</span>
+                <span class="settings-step-heading">
+                    <span class="settings-step-title">التواصل والطلبات</span>
+                    <span class="settings-step-summary">واتساب، الهاتف، الشبكات الاجتماعية والعنوان</span>
+                </span>
+                <i data-lucide="chevron-down" class="settings-step-chevron"></i>
+            </button>
+            <div class="settings-step-body">
         
         <div class="grid-2">
             <div class="form-group">
@@ -649,7 +748,19 @@
             <label class="form-label">Location / Address</label>
             <input type="text" name="address" value="{{ store.address or '' }}" placeholder="City, Street" class="input-field">
         </div>
+            </div>
+        </section>
 
+        <section class="settings-step-card" data-step="advanced">
+            <button type="button" class="settings-step-toggle" onclick="toggleSettingsStep(this)">
+                <span class="settings-step-number">4</span>
+                <span class="settings-step-heading">
+                    <span class="settings-step-title">خيارات متقدمة</span>
+                    <span class="settings-step-summary">إعدادات المخزون الاختيارية</span>
+                </span>
+                <i data-lucide="chevron-down" class="settings-step-chevron"></i>
+            </button>
+            <div class="settings-step-body">
         <div class="form-group" style="margin-top:14px; padding: 14px; background:#f8fafc; border:1px dashed #e5e7eb; border-radius:12px;">
             <label class="form-label" data-ar="المخزون" data-en="Inventory">Inventory</label>
             <label style="display:inline-flex; align-items:center; gap:8px;">
@@ -658,18 +769,28 @@
             </label>
             <div class="muted" style="margin-top:6px;">- لا تُعرض أرقام المخزون للعملاء. يظهر “غير متوفر” فقط عند 0 أو عند تعطيل المنتج.</div>
         </div>
+            </div>
+        </section>
+        </div>
 
-        <button type="submit" class="btn-action btn-save" style="width:100%; margin-top:30px;">
-            Save Settings
-        </button>
+        <div class="settings-save-bar">
+            <button type="submit" class="btn-action btn-save" style="width:100%;">
+                حفظ جميع التغييرات
+            </button>
+        </div>
     </form>
 
     <!-- ══ QR CODE SECTION ══ -->
-    <div style="margin-top: 40px; padding: 30px; background: #fff; border: 1px solid #e5e7eb; border-radius: 20px;">
-        <div class="section-header" style="margin-bottom: 6px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h1v1h-1z"/><path d="M14 18h1v1h-1z"/><path d="M18 14h1v1h-1z"/><path d="M18 18h1v1h-1z"/><path d="M16 16h1v1h-1z"/></svg>
-            رمز QR للمتجر
-        </div>
+    <section class="settings-step-card" data-step="share" style="max-width:1040px;margin-top:16px;">
+        <button type="button" class="settings-step-toggle" onclick="toggleSettingsStep(this)">
+            <span class="settings-step-number">5</span>
+            <span class="settings-step-heading">
+                <span class="settings-step-title">مشاركة المتجر</span>
+                <span class="settings-step-summary">رمز QR، تنزيل الصورة ونسخ رابط المتجر</span>
+            </span>
+            <i data-lucide="chevron-down" class="settings-step-chevron"></i>
+        </button>
+        <div class="settings-step-body">
         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">رمز QR ثابت يوصل الزبائن مباشرة لمتجرك — اطبعه أو شاركه.</p>
 
         <div style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
@@ -697,7 +818,8 @@
                 </div>
             </div>
         </div>
-    </div>
+        </div>
+    </section>
 
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <script>
@@ -936,6 +1058,34 @@ document.addEventListener('DOMContentLoaded', () => { if (PRODUCT_ID) loadVarian
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
+
+    function toggleSettingsStep(button) {
+        const card = button.closest('.settings-step-card');
+        if (!card) return;
+
+        const willOpen = !card.classList.contains('open');
+        if (willOpen && window.matchMedia('(max-width: 900px)').matches) {
+            document.querySelectorAll('.settings-step-card.open').forEach(openCard => {
+                if (openCard !== card) openCard.classList.remove('open');
+            });
+        }
+
+        card.classList.toggle('open', willOpen);
+        button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+
+        if (willOpen && window.matchMedia('(max-width: 900px)').matches) {
+            requestAnimationFrame(() => {
+                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        }
+    }
+
+    document.querySelectorAll('.settings-step-toggle').forEach(button => {
+        button.setAttribute(
+            'aria-expanded',
+            button.closest('.settings-step-card')?.classList.contains('open') ? 'true' : 'false'
+        );
+    });
 
     function checkDiscount() {
         const price = parseFloat(document.getElementById('inPrice')?.value || 0);
