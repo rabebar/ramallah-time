@@ -19,6 +19,7 @@ import uuid
 import logging
 import re
 import base64
+import hashlib
 import urllib.parse
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -434,6 +435,34 @@ app = Flask(__name__)
 
 # Config
 app.secret_key = os.environ.get('SECRET_KEY', 'rt_studio_secure_2025_palestine_#99')
+
+BOT_USER_AGENT_PATTERN = re.compile(
+    r'bot|crawler|spider|slurp|bingpreview|facebookexternalhit|'
+    r'whatsapp|telegrambot|discordbot|linkedinbot|preview',
+    re.IGNORECASE
+)
+
+
+def get_public_visitor_key(store):
+    """Return an anonymous stable browser key, or None for excluded traffic."""
+    user_agent = request.headers.get('User-Agent', '')
+    if not user_agent or BOT_USER_AGENT_PATTERN.search(user_agent):
+        return None
+
+    if session.get('is_superadmin'):
+        return None
+
+    logged_in_user_id = session.get('user_id')
+    if logged_in_user_id and logged_in_user_id == store.get('user_id'):
+        return None
+
+    visitor_id = session.get('_public_visitor_id')
+    if not visitor_id:
+        visitor_id = uuid.uuid4().hex
+        session['_public_visitor_id'] = visitor_id
+
+    digest_source = f"{app.secret_key}:{visitor_id}".encode('utf-8')
+    return hashlib.sha256(digest_source).hexdigest()
 MASTER_PASSWORD = os.environ.get('MASTER_PASSWORD', 'Ruba2025!!')
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -1281,8 +1310,10 @@ def view_store(slug):
     store = cursor.fetchone()
 
     if store:
-        from database import record_store_visit
-        record_store_visit(store['id'])
+        visitor_key = get_public_visitor_key(store)
+        if visitor_key:
+            from database import record_store_visit
+            record_store_visit(store['id'], visitor_key, 'store')
     else:
         conn.close()
         return "هذا المتجر غير موجود حالياً.", 404
@@ -1353,8 +1384,10 @@ def view_product_page(slug, product_id):
     
     # Record product view
     try:
-        from database import record_store_visit
-        record_store_visit(store['id'])
+        visitor_key = get_public_visitor_key(store)
+        if visitor_key:
+            from database import record_store_visit
+            record_store_visit(store['id'], visitor_key, 'product')
     except Exception:
         pass
     

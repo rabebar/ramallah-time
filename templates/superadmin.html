@@ -296,14 +296,14 @@
                     <i data-lucide="activity"></i>
                 </div>
                 <div>
-                    <h2>انتشار المنصة عبر المتاجر</h2>
-                    <p>عدد الزوار الذين وصلوا للمنصة عبر متاجر التجار</p>
+                    <h2>الزوار الفريدون عبر المتاجر</h2>
+                    <p>كل متصفح يُحتسب مرة واحدة، مع استبعاد البوتات وأصحاب المتاجر</p>
                 </div>
             </div>
 
             <div class="visits-counters">
                 <div class="visit-counter">
-                    <div class="vc-label"><i data-lucide="globe"></i> إجمالي الزيارات</div>
+                    <div class="vc-label"><i data-lucide="globe"></i> إجمالي الزوار الفريدين</div>
                     <div class="vc-value">{{ visit_stats.total }}</div>
                 </div>
                 <div class="visit-counter today">
@@ -316,7 +316,7 @@
                 </div>
             </div>
 
-            <div class="top-stores-title">🏆 أكثر المتاجر استقطاباً للزوار</div>
+            <div class="top-stores-title">🏆 أكثر المتاجر استقطاباً للزوار الفريدين</div>
             {% if visit_stats.top_stores %}
                 {% for store in visit_stats.top_stores %}
                 <div class="top-store-row">

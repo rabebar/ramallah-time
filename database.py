@@ -124,6 +124,29 @@ def init_db():
             visited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE
         )''')
+    cursor.execute("""
+        SELECT EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = 'store_visits'
+              AND column_name = 'visitor_key'
+        ) AS exists
+    """)
+    has_unique_visitor_tracking = cursor.fetchone()['exists']
+    cursor.execute("ALTER TABLE store_visits ADD COLUMN IF NOT EXISTS visitor_key TEXT")
+    cursor.execute("ALTER TABLE store_visits ADD COLUMN IF NOT EXISTS visit_date DATE DEFAULT CURRENT_DATE")
+    cursor.execute("ALTER TABLE store_visits ADD COLUMN IF NOT EXISTS page_type TEXT DEFAULT 'store'")
+
+    # Reset inflated legacy counts once when unique visitor tracking is installed.
+    if not has_unique_visitor_tracking:
+        cursor.execute("DELETE FROM store_visits")
+
+    cursor.execute("ALTER TABLE store_visits ALTER COLUMN visitor_key SET NOT NULL")
+    cursor.execute("ALTER TABLE store_visits ALTER COLUMN visit_date SET NOT NULL")
+    cursor.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS ux_store_visits_daily_visitor
+        ON store_visits(store_id, visitor_key, visit_date)
+    """)
     print("✅ store_visits table ready.")
 
     # join_page_visits
@@ -267,12 +290,16 @@ def toggle_freeze(user_id, freeze: bool):
         conn.close()
 
 
-def record_store_visit(store_id):
+def record_store_visit(store_id, visitor_key, page_type='store'):
     conn = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO store_visits (store_id) VALUES (%s)", (store_id,))
+        cursor.execute("""
+            INSERT INTO store_visits (store_id, visitor_key, page_type)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (store_id, visitor_key, visit_date) DO NOTHING
+        """, (store_id, visitor_key, page_type))
         conn.commit()
     except Exception as e:
         print(f"Visit record error: {e}")
@@ -327,14 +354,22 @@ def get_visit_stats():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) as total FROM store_visits")
+        cursor.execute("SELECT COUNT(DISTINCT visitor_key) as total FROM store_visits")
         total = cursor.fetchone()['total']
-        cursor.execute("SELECT COUNT(*) as today FROM store_visits WHERE visited_at::date = CURRENT_DATE")
+        cursor.execute("""
+            SELECT COUNT(DISTINCT visitor_key) as today
+            FROM store_visits
+            WHERE visit_date = CURRENT_DATE
+        """)
         today = cursor.fetchone()['today']
-        cursor.execute("SELECT COUNT(*) as week FROM store_visits WHERE visited_at >= NOW() - INTERVAL '7 days'")
+        cursor.execute("""
+            SELECT COUNT(DISTINCT visitor_key) as week
+            FROM store_visits
+            WHERE visit_date >= CURRENT_DATE - INTERVAL '6 days'
+        """)
         week = cursor.fetchone()['week']
         cursor.execute("""
-            SELECT s.name, s.slug, COUNT(sv.id) as visits
+            SELECT s.name, s.slug, COUNT(DISTINCT sv.visitor_key) as visits
             FROM store_visits sv JOIN stores s ON sv.store_id = s.id
             GROUP BY s.id, s.name, s.slug ORDER BY visits DESC LIMIT 5
         """)
