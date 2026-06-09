@@ -139,7 +139,11 @@ def clean_phone_number(prefix, phone):
     """تنظيف ذكي: يمنع تكرار مفتاح الدولة ويحذف الرموز"""
     if not phone:
         return None
-    
+
+    digit_map = str.maketrans('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹', '01234567890123456789')
+    phone = str(phone).translate(digit_map)
+    prefix = str(prefix).translate(digit_map)
+
     # 1. تنظيف الرقم والمفتاح من أي رموز (+ - _ مسافات)
     phone_digits = re.sub(r'\D', '', str(phone))
     prefix_digits = re.sub(r'\D', '', str(prefix))
@@ -153,6 +157,30 @@ def clean_phone_number(prefix, phone):
     
     # 4. الدمج النهائي الصحيح
     return f"{prefix_digits}{phone_digits}"
+
+
+def normalize_customer_phone(prefix, phone):
+    digit_map = str.maketrans('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹', '01234567890123456789')
+    if not prefix:
+        legacy_phone = re.sub(r'\D', '', str(phone or '').translate(digit_map))
+        if legacy_phone.startswith('00'):
+            legacy_phone = legacy_phone[2:]
+        return legacy_phone if 8 <= len(legacy_phone) <= 15 else None
+
+    allowed_prefixes = {
+        '970', '972', '962', '966', '971', '965', '974', '973', '968',
+        '964', '963', '961', '20', '212', '213', '216', '218', '249',
+        '90', '44', '49', '1'
+    }
+    prefix_digits = re.sub(r'\D', '', str(prefix or ''))
+    if prefix_digits not in allowed_prefixes:
+        return None
+
+    normalized = clean_phone_number(prefix_digits, phone)
+    local_digits = normalized[len(prefix_digits):] if normalized else ''
+    if not 7 <= len(local_digits) <= 12 or not 8 <= len(normalized) <= 15:
+        return None
+    return normalized
 
 def check_rate_limit(user_id):
     now = datetime.utcnow()
@@ -1529,14 +1557,20 @@ def place_order():
     if not isinstance(cart, list) or not cart:
         return jsonify({"error": "السلة فارغة"}), 400
 
+    customer_phone = normalize_customer_phone(
+        data.get("customer_phone_prefix"),
+        data.get("customer_phone")
+    )
     customer = {
         "name": data.get("customer_name"),
-        "phone": data.get("customer_phone"),
+        "phone": customer_phone,
         "address": data.get("customer_address"),
         "notes": data.get("customer_notes"),
     }
     # صمام أمان السيرفر: منع تسجيل الطلب إذا كانت البيانات الأساسية مفقودة
     if not customer["name"] or not customer["phone"] or not customer["address"]:
+        if not customer_phone and data.get("customer_phone"):
+            return jsonify({"error": "رقم الهاتف غير صحيح. اختر مفتاح الدولة واكتب الرقم المحلي دون مفتاح مكرر."}), 400
         return jsonify({"error": "الاسم، الهاتف، والعنوان حقول إجبارية"}), 400
 
     conn = get_db_connection()
