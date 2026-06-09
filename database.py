@@ -204,10 +204,53 @@ def init_db():
                       ON analytics_events(store_id, event_name, created_at)""")
     print("✅ analytics_events table and index ready.")
 
-   
+    # Global application settings controlled by the super admin.
+    cursor.execute('''CREATE TABLE IF NOT EXISTS app_settings (
+            setting_key TEXT PRIMARY KEY,
+            setting_value TEXT NOT NULL,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )''')
+    cursor.execute("""
+        INSERT INTO app_settings (setting_key, setting_value)
+        VALUES ('removebg_enabled', 'true')
+        ON CONFLICT (setting_key) DO NOTHING
+    """)
+
     conn.commit()
     cursor.close()
     conn.close()
+
+
+def get_app_setting(setting_key, default=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "SELECT setting_value FROM app_settings WHERE setting_key = %s",
+            (setting_key,)
+        )
+        row = cursor.fetchone()
+        return row['setting_value'] if row else default
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def set_app_setting(setting_key, setting_value):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            INSERT INTO app_settings (setting_key, setting_value, updated_at)
+            VALUES (%s, %s, CURRENT_TIMESTAMP)
+            ON CONFLICT (setting_key)
+            DO UPDATE SET setting_value = EXCLUDED.setting_value,
+                          updated_at = CURRENT_TIMESTAMP
+        """, (setting_key, str(setting_value)))
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def get_subscription_status(user):

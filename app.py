@@ -186,12 +186,17 @@ def remove_bg_removebg(filepath):
 
 def remove_bg_with_fallback(filepath):
     """remove.bg (if key) -> rembg fallback."""
-    if REMOVEBG_API_KEY:
+    from database import get_app_setting
+
+    removebg_enabled = get_app_setting('removebg_enabled', 'true') == 'true'
+    if removebg_enabled and REMOVEBG_API_KEY:
         logging.info("Trying remove.bg API...")
         result = remove_bg_removebg(filepath)
         if result:
             return result, 'remove.bg'
         logging.warning("⚠️ remove.bg failed, falling back to rembg")
+    elif not removebg_enabled:
+        logging.info("remove.bg is disabled by the super admin; using rembg directly")
     logging.info("Using rembg fallback...")
     with open(filepath, 'rb') as f:
         input_data = f.read()
@@ -1688,9 +1693,10 @@ def super_admin():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    from database import get_visit_stats, get_join_visit_stats
+    from database import get_visit_stats, get_join_visit_stats, get_app_setting
     visit_stats = get_visit_stats()
     join_visit_stats = get_join_visit_stats()
+    removebg_enabled = get_app_setting('removebg_enabled', 'true') == 'true'
 
     cursor.execute("SELECT COUNT(*) as count FROM users")
     t_users = cursor.fetchone()['count']
@@ -1711,7 +1717,24 @@ def super_admin():
                            users=users,
                            visit_stats=visit_stats,
                            join_visit_stats=join_visit_stats,
+                           removebg_enabled=removebg_enabled,
+                           removebg_configured=bool(REMOVEBG_API_KEY),
                            now=datetime.utcnow())  # <--- هذا هو السطر الذي كان ناقصاً
+
+@app.route('/superadmin/toggle-removebg', methods=['POST'])
+def super_admin_toggle_removebg():
+    if not session.get('is_superadmin'):
+        return redirect(url_for('super_admin_login'))
+
+    from database import set_app_setting
+    enabled = request.form.get('enabled') == 'true'
+    set_app_setting('removebg_enabled', 'true' if enabled else 'false')
+
+    if enabled:
+        flash("تم تفعيل remove.bg لجميع المتاجر.", "success")
+    else:
+        flash("تم إيقاف remove.bg. ستستخدم معالجة rembg المحلية مباشرة دون طلب الخدمة المدفوعة.", "success")
+    return redirect(url_for('super_admin'))
 
 @app.route('/superadmin/login', methods=['GET', 'POST'])
 def super_admin_login():
