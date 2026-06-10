@@ -591,12 +591,24 @@ def format_money(v):
     v = to_number(v)
     return str(int(v)) if abs(v - int(v)) < 1e-9 else f"{v:.2f}"
 
+
+def format_customer_phone_for_message(phone):
+    """Show Palestinian numbers locally and other numbers internationally."""
+    digits = re.sub(r'\D', '', str(phone or ''))
+    if digits.startswith('970'):
+        return f"0{digits[3:]}"
+    if digits.startswith('972'):
+        return f"0{digits[3:]}"
+    return f"+{digits}" if digits else '-'
+
+
 def build_wa_text(store, lines, subtotal, customer):
     """
     Build WhatsApp message text only. No links inside the text.
     lines: list of dict(name, sku, qty, line_total)
     """
     dt_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+    display_phone = format_customer_phone_for_message(customer.get('phone'))
 
     parts = []
     parts.append(f"🛍️ طلب جديد — {store['name']}")
@@ -609,7 +621,7 @@ def build_wa_text(store, lines, subtotal, customer):
     parts.append(f"المجموع: {store.get('currency', '₪')}{format_money(subtotal)}")
     parts.append("⚠️ لا تشمل رسوم التوصيل")
     parts.append("─────────────────")
-    parts.append(f"👤 {customer.get('name') or '-'} | 📞 {customer.get('phone') or '-'}")
+    parts.append(f"👤 {customer.get('name') or '-'} | 📞 {display_phone}")
     parts.append(f"📍 {customer.get('address') or '-'}")
     parts.append(f"📝 {customer.get('notes') or '-'}")
 
@@ -620,7 +632,7 @@ def build_wa_text(store, lines, subtotal, customer):
         msg = "\n".join(parts)
         if len(msg) > 2000:
             count_items = sum(1 for p in parts if ' | ' in p)
-            msg = f"🛍️ طلب جديد — {store['name']}\n📅 {dt_str}\nعدد العناصر: {count_items}\nالمجموع: ₪{format_money(subtotal)}\n👤 {customer.get('name') or '-'} | 📞 {customer.get('phone') or '-'}"
+            msg = f"🛍️ طلب جديد — {store['name']}\n📅 {dt_str}\nعدد العناصر: {count_items}\nالمجموع: ₪{format_money(subtotal)}\n👤 {customer.get('name') or '-'} | 📞 {display_phone}"
     return msg
 
 # =========================
