@@ -21,6 +21,7 @@ import re
 import base64
 import hashlib
 import urllib.parse
+import json
 from datetime import datetime, timedelta
 from collections import defaultdict
 from decimal import Decimal
@@ -33,9 +34,23 @@ from rembg import remove
 from PIL import Image, ImageOps, ImageDraw, ImageFont, ImageFilter
 
 from database import get_db_connection
+from shipping import ShiplyClient, ShiplyError, decrypt_api_key, encrypt_api_key
 
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 REMOVEBG_API_KEY = os.environ.get('REMOVEBG_API_KEY', '')
+
+SHIPLY_STATUS_NAMES = {
+    1: 'مسودة',
+    2: 'جاهز للإرسال',
+    3: 'مشحون',
+    4: 'محاولة تسليم',
+    5: 'عالق',
+    6: 'واصل',
+    7: 'راجع',
+    8: 'منتهي',
+    9: 'تم التبديل',
+    10: 'تمت المعالجة',
+}
 
 # Local background assets (ensure these files exist under static/assets/bg/)
 BG_ASSETS = {
@@ -602,6 +617,30 @@ def format_customer_phone_for_message(phone):
     return f"+{digits}" if digits else '-'
 
 
+def get_shiply_integration(store_id, require_enabled=True):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT * FROM shipping_integrations
+            WHERE store_id = %s AND provider = 'shiply'
+        """, (store_id,))
+        integration = cursor.fetchone()
+    finally:
+        conn.close()
+
+    if not integration or (require_enabled and not integration.get('enabled')):
+        raise ShiplyError('تكامل Shiply غير مفعّل لهذا المتجر')
+    api_key = decrypt_api_key(integration.get('api_key_encrypted'))
+    if not api_key:
+        raise ShiplyError('مفتاح Shiply غير محفوظ')
+    return integration, ShiplyClient(
+        api_key,
+        integration.get('country') or 'palestine',
+        integration.get('environment') or 'testing',
+    )
+
+
 def build_wa_text(store, lines, subtotal, customer):
     """
     Build WhatsApp message text only. No links inside the text.
@@ -987,6 +1026,7 @@ def admin():
     products = []
     orders = []
     analytics = {}
+    shipping_integration = None
     if store:
                 # جلب المنتجات النشطة فقط (التي لم يتم إخفاؤها)
                 # التاجر يرى جميع المنتجات (المخفي والمتوفر)
@@ -995,11 +1035,34 @@ def admin():
         products = cursor.fetchall()
 
         cursor.execute("""
-            SELECT * FROM order_drafts
-            WHERE store_id = %s
-            ORDER BY created_at DESC
+            SELECT od.*,
+                   ss.parcel_code,
+                   ss.qr_code,
+                   ss.shipping_status_id,
+                   ss.shipping_status_name,
+                   ss.shipping_position_id,
+                   ss.shipping_cost,
+                   ss.city_id AS shipping_city_id,
+                   ss.village_id AS shipping_village_id,
+                   ss.street_name AS shipping_street_name,
+                   ss.last_error AS shipping_last_error
+            FROM order_drafts od
+            LEFT JOIN shipping_shipments ss
+              ON ss.order_id = od.id AND ss.provider = 'shiply'
+            WHERE od.store_id = %s
+            ORDER BY od.created_at DESC
         """, (store['id'],))
         orders = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT enabled, environment, country,
+                   (api_key_encrypted IS NOT NULL) AS has_api_key,
+                   webhook_configured,
+                   last_tested_at, last_test_success, last_error
+            FROM shipping_integrations
+            WHERE store_id = %s AND provider = 'shiply'
+        """, (store['id'],))
+        shipping_integration = cursor.fetchone()
 
         cursor.execute("""
             SELECT COUNT(*) AS c FROM analytics_events 
@@ -1072,6 +1135,7 @@ def admin():
         edit_product=edit_product,
         orders=orders,
         analytics=analytics,
+        shipping_integration=shipping_integration,
         theme_list=theme_list,
         store_backgrounds=STORE_BACKGROUNDS
     )
@@ -1634,9 +1698,15 @@ def place_order():
         wa_text = build_wa_text(store, lines, subtotal, customer)
 
         cur.execute("""
-            INSERT INTO order_drafts (store_id, subtotal, grand_total, customer_name, customer_phone, customer_notes, wa_text, status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, 'sent') RETURNING id
-        """, (store_id, subtotal, subtotal, customer.get('name'), customer.get('phone'), customer.get('notes'), wa_text))
+            INSERT INTO order_drafts (
+                store_id, subtotal, grand_total, customer_name, customer_phone,
+                customer_address, customer_notes, wa_text, status
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'sent') RETURNING id
+        """, (
+            store_id, subtotal, subtotal, customer.get('name'), customer.get('phone'),
+            customer.get('address'), customer.get('notes'), wa_text
+        ))
         order_id = cur.fetchone()['id']
         for l in lines:
             cur.execute("""
@@ -1727,6 +1797,439 @@ def cancel_order(order_id):
         conn.rollback()
         logging.error(f"cancel_order error: {e}")
         return jsonify({"error": "تعذر إلغاء الطلب"}), 500
+    finally:
+        conn.close()
+
+
+# =========================
+# Optional Shipping Integrations
+# =========================
+@app.post("/admin/shipping/shiply/settings")
+def save_shiply_settings():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    store = get_store_by_user(user_id)
+    if not store:
+        flash("لا يوجد متجر مرتبط بهذا الحساب.", "error")
+        return redirect(url_for('admin', active_tab='settings'))
+
+    enabled = request.form.get('enabled') in ('on', 'true', '1')
+    environment = request.form.get('environment', 'testing')
+    country = request.form.get('country', 'palestine')
+    api_key = (request.form.get('api_key') or '').strip()
+    if environment not in ('testing', 'production'):
+        environment = 'testing'
+    if country not in ('palestine', 'jordan'):
+        country = 'palestine'
+
+    try:
+        encrypted_key = encrypt_api_key(api_key) if api_key else None
+    except Exception as exc:
+        logging.error(f"encrypt shipping key error: {exc}")
+        flash("تعذر تشفير مفتاح Shiply. تحقق من إعداد مفتاح التشفير في الخادم.", "error")
+        return redirect(url_for('admin', active_tab='settings'))
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        if enabled and not encrypted_key:
+            cursor.execute("""
+                SELECT api_key_encrypted FROM shipping_integrations
+                WHERE store_id = %s AND provider = 'shiply'
+            """, (store['id'],))
+            existing = cursor.fetchone()
+            if not existing or not existing.get('api_key_encrypted'):
+                flash("أدخل مفتاح Shiply قبل تفعيل الربط.", "error")
+                return redirect(url_for('admin', active_tab='settings'))
+
+        cursor.execute("""
+            INSERT INTO shipping_integrations (
+                store_id, provider, enabled, environment, country, api_key_encrypted, updated_at
+            )
+            VALUES (%s, 'shiply', %s, %s, %s, %s, CURRENT_TIMESTAMP)
+            ON CONFLICT (store_id, provider)
+            DO UPDATE SET
+                enabled = EXCLUDED.enabled,
+                environment = EXCLUDED.environment,
+                country = EXCLUDED.country,
+                api_key_encrypted = COALESCE(
+                    EXCLUDED.api_key_encrypted,
+                    shipping_integrations.api_key_encrypted
+                ),
+                updated_at = CURRENT_TIMESTAMP
+        """, (store['id'], enabled, environment, country, encrypted_key))
+        conn.commit()
+        flash("تم حفظ إعدادات Shiply. اختبر الاتصال قبل استخدامها.", "success")
+    except Exception as exc:
+        conn.rollback()
+        logging.error(f"save_shiply_settings error: {exc}")
+        flash("تعذر حفظ إعدادات Shiply.", "error")
+    finally:
+        conn.close()
+    return redirect(url_for('admin', active_tab='settings'))
+
+
+@app.post("/admin/shipping/shiply/test")
+def test_shiply_connection():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "غير مصرّح"}), 401
+    store = get_store_by_user(user_id)
+    if not store:
+        return jsonify({"error": "لا يوجد متجر مرتبط"}), 400
+
+    success = False
+    error = None
+    try:
+        _, client = get_shiply_integration(store['id'], require_enabled=False)
+        cities = client.cities()
+        success = isinstance(cities, list)
+        if not success:
+            error = "لم تعد Shiply قائمة مدن صالحة"
+        else:
+            webhook_conn = get_db_connection()
+            webhook_cursor = webhook_conn.cursor()
+            try:
+                webhook_cursor.execute("""
+                    SELECT webhook_token FROM shipping_integrations
+                    WHERE store_id = %s AND provider = 'shiply'
+                """, (store['id'],))
+                row = webhook_cursor.fetchone()
+                webhook_token = row.get('webhook_token') if row else None
+                if not webhook_token:
+                    webhook_token = uuid.uuid4().hex + uuid.uuid4().hex
+                    webhook_cursor.execute("""
+                        UPDATE shipping_integrations
+                        SET webhook_token = %s, updated_at = CURRENT_TIMESTAMP
+                        WHERE store_id = %s AND provider = 'shiply'
+                    """, (webhook_token, store['id']))
+                    webhook_conn.commit()
+            finally:
+                webhook_conn.close()
+            client.update_webhook(
+                url_for('shiply_webhook', token=webhook_token, _external=True)
+            )
+    except Exception as exc:
+        error = str(exc)
+        success = False
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            UPDATE shipping_integrations
+            SET last_tested_at = CURRENT_TIMESTAMP,
+                last_test_success = %s,
+                last_error = %s,
+                webhook_configured = %s,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE store_id = %s AND provider = 'shiply'
+        """, (success, error, success, store['id']))
+        conn.commit()
+    finally:
+        conn.close()
+
+    if not success:
+        return jsonify({"error": error or "فشل اختبار الاتصال"}), 400
+    return jsonify({"ok": True, "message": "تم الاتصال بـ Shiply بنجاح"})
+
+
+@app.get("/admin/shipping/shiply/cities")
+def shiply_cities():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "غير مصرّح"}), 401
+    store = get_store_by_user(user_id)
+    if not store:
+        return jsonify({"error": "لا يوجد متجر مرتبط"}), 400
+    try:
+        _, client = get_shiply_integration(store['id'])
+        return jsonify({"ok": True, "cities": client.cities()})
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 400
+
+
+@app.post("/admin/shipping/shiply/fees")
+def shiply_fees():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "غير مصرّح"}), 401
+    store = get_store_by_user(user_id)
+    if not store:
+        return jsonify({"error": "لا يوجد متجر مرتبط"}), 400
+    data = request.get_json(silent=True) or {}
+    try:
+        village_id = int(data.get('village_id'))
+        price = float(data.get('price') or 0)
+        _, client = get_shiply_integration(store['id'])
+        return jsonify({"ok": True, **client.fees(village_id, price)})
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 400
+
+
+@app.post("/admin/orders/<int:order_id>/shiply/create")
+def create_shiply_shipment(order_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "غير مصرّح"}), 401
+    store = get_store_by_user(user_id)
+    if not store:
+        return jsonify({"error": "لا يوجد متجر مرتبط"}), 400
+    data = request.get_json(silent=True) or {}
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT pg_advisory_xact_lock(%s)", (order_id,))
+        cursor.execute("""
+            SELECT od.*,
+                   COALESCE(
+                       string_agg(ol.name_snapshot || ' x' || ol.qty::text, ', ' ORDER BY ol.id),
+                       'طلب متجر'
+                   ) AS contents_description
+            FROM order_drafts od
+            LEFT JOIN order_lines ol ON ol.order_id = od.id
+            WHERE od.id = %s AND od.store_id = %s
+            GROUP BY od.id
+        """, (order_id, store['id']))
+        order = cursor.fetchone()
+        if not order:
+            return jsonify({"error": "الطلب غير موجود"}), 404
+        if order.get('status') != 'confirmed':
+            return jsonify({"error": "يجب تأكيد الطلب قبل إرساله للشحن"}), 400
+
+        cursor.execute("""
+            SELECT parcel_code FROM shipping_shipments
+            WHERE order_id = %s AND provider = 'shiply'
+        """, (order_id,))
+        existing = cursor.fetchone()
+        if existing and existing.get('parcel_code'):
+            return jsonify({"error": "تم إنشاء شحنة Shiply لهذا الطلب مسبقًا"}), 409
+
+        city_id = int(data.get('city_id'))
+        village_id = int(data.get('village_id'))
+        street_name = (data.get('street_name') or order.get('customer_address') or '').strip()
+        description = (data.get('description') or order.get('contents_description') or 'طلب متجر').strip()[:255]
+        if not street_name:
+            return jsonify({"error": "العنوان التفصيلي مطلوب"}), 400
+        if len(description) < 3:
+            return jsonify({"error": "وصف الطرد يجب أن يكون 3 أحرف على الأقل"}), 400
+
+        integration, client = get_shiply_integration(store['id'])
+        fee_data = client.fees(village_id, float(order.get('subtotal') or 0))
+        shipping_cost = float(fee_data.get('delivery_cost') or 0)
+        if shipping_cost <= 0:
+            raise ShiplyError('تعذر اعتماد تكلفة شحن صالحة لهذه المنطقة')
+        actual_price = float(order.get('subtotal') or 0)
+        total_price = actual_price + shipping_cost
+        if integration.get('country') == 'palestine':
+            actual_price = int(round(actual_price))
+            total_price = int(round(total_price))
+
+        payload = {
+            'recipient': {
+                'first_name': order.get('customer_name') or 'مستلم',
+                'phone': format_customer_phone_for_message(order.get('customer_phone')),
+            },
+            'address': {
+                'city_id': city_id,
+                'village_id': village_id,
+                'street_name': street_name,
+            },
+            'total_price': total_price,
+            'actual_price': actual_price,
+            'description': description,
+            'note': (order.get('customer_notes') or '')[:1023],
+            'reference_number': str(order_id),
+            'parcel_type': 1,
+        }
+        result = client.create_parcel(payload)
+        parcel_code = result.get('parcel_code')
+        if not parcel_code:
+            raise ShiplyError('لم ترجع Shiply رقم شحنة')
+
+        cursor.execute("""
+            INSERT INTO shipping_shipments (
+                order_id, store_id, provider, parcel_code, shipping_status_id,
+                shipping_status_name, shipping_cost, city_id, village_id,
+                street_name, description, provider_response, updated_at
+            )
+            VALUES (%s, %s, 'shiply', %s, 1, 'مسودة', %s, %s, %s, %s, %s, %s::jsonb, CURRENT_TIMESTAMP)
+            ON CONFLICT (order_id, provider)
+            DO UPDATE SET
+                parcel_code = EXCLUDED.parcel_code,
+                shipping_status_id = EXCLUDED.shipping_status_id,
+                shipping_status_name = EXCLUDED.shipping_status_name,
+                shipping_cost = EXCLUDED.shipping_cost,
+                city_id = EXCLUDED.city_id,
+                village_id = EXCLUDED.village_id,
+                street_name = EXCLUDED.street_name,
+                description = EXCLUDED.description,
+                provider_response = EXCLUDED.provider_response,
+                last_error = NULL,
+                updated_at = CURRENT_TIMESTAMP
+        """, (
+            order_id, store['id'], parcel_code, shipping_cost, city_id, village_id,
+            street_name, description, json.dumps(result)
+        ))
+        conn.commit()
+        return jsonify({
+            "ok": True,
+            "parcel_code": parcel_code,
+            "shipping_cost": shipping_cost,
+            "status_id": 1,
+            "status_name": "مسودة",
+        })
+    except (ValueError, TypeError):
+        conn.rollback()
+        return jsonify({"error": "اختر المدينة والمنطقة بصورة صحيحة"}), 400
+    except Exception as exc:
+        conn.rollback()
+        logging.error(f"create_shiply_shipment error: {exc}")
+        return jsonify({"error": str(exc)}), 400
+    finally:
+        conn.close()
+
+
+def _shiply_parcel_action(order_id, action):
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "غير مصرّح"}), 401
+    store = get_store_by_user(user_id)
+    if not store:
+        return jsonify({"error": "لا يوجد متجر مرتبط"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    shipment = None
+    try:
+        cursor.execute("""
+            SELECT * FROM shipping_shipments
+            WHERE order_id = %s AND store_id = %s AND provider = 'shiply'
+        """, (order_id, store['id']))
+        shipment = cursor.fetchone()
+        if not shipment or not shipment.get('parcel_code'):
+            return jsonify({"error": "لا توجد شحنة Shiply لهذا الطلب"}), 404
+
+        _, client = get_shiply_integration(store['id'])
+        if action == 'submit':
+            result = client.submit_parcel(shipment['parcel_code'])
+            status_id = result.get('status_id', 2)
+            status_name = 'جاهز للإرسال'
+            qr_code = result.get('qr_code')
+        elif action == 'cancel':
+            result = client.cancel_parcel(shipment['parcel_code'])
+            status_id = result.get('parcel_status_id', 1)
+            status_name = 'مسودة'
+            qr_code = result.get('qr_code') or shipment.get('qr_code')
+        else:
+            result = client.get_parcel(shipment['parcel_code'])
+            status = result.get('parcel_status') or {}
+            status_id = result.get('parcel_status_id')
+            status_name = status.get('ar_aliase') or status.get('en_aliase') or status.get('name')
+            qr_code = result.get('qr_code')
+
+        cursor.execute("""
+            UPDATE shipping_shipments
+            SET qr_code = COALESCE(%s, qr_code),
+                shipping_status_id = %s,
+                shipping_status_name = %s,
+                shipping_position_id = %s,
+                shipping_cost = COALESCE(%s, shipping_cost),
+                provider_response = %s::jsonb,
+                last_error = NULL,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """, (
+            qr_code, status_id, status_name, result.get('parcel_position_id'),
+            result.get('parcel_delivery_cost'), json.dumps(result), shipment['id']
+        ))
+        conn.commit()
+        return jsonify({
+            "ok": True,
+            "parcel_code": shipment['parcel_code'],
+            "qr_code": qr_code,
+            "status_id": status_id,
+            "status_name": status_name,
+        })
+    except Exception as exc:
+        conn.rollback()
+        if shipment:
+            try:
+                cursor.execute("""
+                    UPDATE shipping_shipments
+                    SET last_error = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (str(exc)[:1000], shipment['id']))
+                conn.commit()
+            except Exception:
+                conn.rollback()
+        logging.error(f"shiply parcel {action} error: {exc}")
+        return jsonify({"error": str(exc)}), 400
+    finally:
+        conn.close()
+
+
+@app.post("/admin/orders/<int:order_id>/shiply/submit")
+def submit_shiply_shipment(order_id):
+    return _shiply_parcel_action(order_id, 'submit')
+
+
+@app.post("/admin/orders/<int:order_id>/shiply/cancel")
+def cancel_shiply_shipment(order_id):
+    return _shiply_parcel_action(order_id, 'cancel')
+
+
+@app.post("/admin/orders/<int:order_id>/shiply/refresh")
+def refresh_shiply_shipment(order_id):
+    return _shiply_parcel_action(order_id, 'refresh')
+
+
+@app.post("/webhooks/shiply/<token>")
+def shiply_webhook(token):
+    data = request.get_json(silent=True) or {}
+    if data.get('event') != 'parcel' or not data.get('parcel_code'):
+        return jsonify({"ok": True}), 200
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT store_id
+            FROM shipping_integrations
+            WHERE provider = 'shiply'
+              AND enabled = TRUE
+              AND webhook_token = %s
+        """, (token,))
+        integration = cursor.fetchone()
+        if not integration:
+            return jsonify({"error": "not found"}), 404
+
+        cursor.execute("""
+            UPDATE shipping_shipments
+            SET shipping_status_id = %s,
+                shipping_status_name = %s,
+                shipping_position_id = %s,
+                last_error = NULL,
+                provider_response = %s::jsonb,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE store_id = %s
+              AND provider = 'shiply'
+              AND parcel_code = %s
+        """, (
+            data.get('parcel_status_id'),
+            SHIPLY_STATUS_NAMES.get(data.get('parcel_status_id'), 'تم تحديث الحالة'),
+            data.get('parcel_position_id'),
+            json.dumps(data),
+            integration['store_id'],
+            data.get('parcel_code'),
+        ))
+        conn.commit()
+        return jsonify({"ok": True}), 200
+    except Exception as exc:
+        conn.rollback()
+        logging.error(f"shiply_webhook error: {exc}")
+        return jsonify({"error": "failed"}), 500
     finally:
         conn.close()
 

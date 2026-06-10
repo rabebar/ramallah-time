@@ -135,6 +135,7 @@
     .settings-step-card[data-step="design"] { --step-color: #b7791f; }
     .settings-step-card[data-step="contact"] { --step-color: #15803d; }
     .settings-step-card[data-step="advanced"] { --step-color: #64748b; }
+    .settings-step-card[data-step="shipping"] { --step-color: #0284c7; }
     .settings-step-card[data-step="share"] { --step-color: #7c3aed; }
     .settings-step-toggle {
         width: 100%;
@@ -208,7 +209,25 @@
     .btn-small { padding:7px 10px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; font-weight:700; font-size:12px }
     .btn-small.primary { background:#111827; color:#fff; border-color:#111827 }
     .btn-small.danger { background:#fee2e2; color:#991b1b; border-color:#fecaca }
+    .btn-small.shipping { background:#e0f2fe; color:#075985; border-color:#bae6fd }
     .muted { color:#6b7280; font-size:13px }
+    .shipping-state { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:#075985; margin-top:5px; }
+    .shipping-modal {
+        position: fixed; inset: 0; z-index: 9000; display: none;
+        align-items: center; justify-content: center; padding: 18px;
+        background: rgba(15,23,42,.58);
+    }
+    .shipping-modal.open { display: flex; }
+    .shipping-dialog {
+        width: min(560px, 100%); max-height: 90vh; overflow-y: auto;
+        background: #fff; border-radius: 12px; padding: 22px;
+        box-shadow: 0 24px 70px rgba(15,23,42,.28);
+    }
+    .shipping-dialog-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+    .shipping-dialog-header h3 { font-size:18px; margin:0; }
+    .shipping-close { border:0; background:#f1f5f9; width:34px; height:34px; border-radius:8px; cursor:pointer; font-size:20px; }
+    .shipping-cost-box { padding:12px; border:1px solid #bae6fd; background:#f0f9ff; border-radius:8px; color:#075985; font-weight:700; }
+    .connection-status { padding:12px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; font-size:13px; }
     
     @media (max-width: 900px) {
         .edit-container { grid-template-columns: 1fr; padding: 24px; }
@@ -447,6 +466,7 @@
                     <th>التاريخ</th>
                     <th>الإجمالي</th>
                     <th>الحالة</th>
+                    <th>الشحن</th>
                     <th style="text-align:left">إجراءات</th>
                 </tr>
             </thead>
@@ -467,17 +487,46 @@
                             {% elif o.status == 'canceled' %}<span class="tag" style="border-color:#ef4444; color:#ef4444;">ملغي</span>
                             {% else %}<span class="tag">{{ o.status }}</span>{% endif %}
                         </td>
+                        <td>
+                            {% if o.parcel_code %}
+                                <div class="shipping-state">{{ o.shipping_status_name or 'تم إنشاء الشحنة' }}</div>
+                                <div style="font-size:11px;color:#64748b;direction:ltr;text-align:right;">{{ o.parcel_code }}</div>
+                                {% if o.shipping_last_error %}
+                                <div style="font-size:10px;color:#b91c1c;margin-top:3px;">{{ o.shipping_last_error }}</div>
+                                {% endif %}
+                            {% elif shipping_integration and shipping_integration.enabled and o.status == 'confirmed' %}
+                                <span class="muted">جاهز للشحن</span>
+                            {% else %}
+                                <span class="muted">—</span>
+                            {% endif %}
+                        </td>
                         <td style="text-align:left">
                             <button class="btn-small" onclick="viewOrder({{ o.id }}, `{{ o.wa_text | replace('`', '\\`') }}`)">عرض التفاصيل</button>
                             {% if o.status == 'sent' %}
                             <button class="btn-small primary" onclick="confirmOrder({{ o.id }})">تأكيد</button>
                             <button class="btn-small danger" onclick="cancelOrder({{ o.id }})">رفض</button>
                             {% endif %}
+                            {% if shipping_integration and shipping_integration.enabled and o.status == 'confirmed' %}
+                                {% if not o.parcel_code %}
+                                <button class="btn-small shipping"
+                                        data-order-id="{{ o.id }}"
+                                        data-subtotal="{{ o.subtotal }}"
+                                        data-address="{{ (o.customer_address or '')|e }}"
+                                        onclick="openShiplyModal(this)">إرسال إلى Shiply</button>
+                                {% else %}
+                                <button class="btn-small shipping" onclick="shiplyAction({{ o.id }}, 'refresh')">تحديث الشحنة</button>
+                                    {% if o.shipping_status_id == 1 %}
+                                    <button class="btn-small primary" onclick="shiplyAction({{ o.id }}, 'submit')">تقديم للشحن</button>
+                                    {% elif o.shipping_status_id == 2 %}
+                                    <button class="btn-small danger" onclick="shiplyAction({{ o.id }}, 'cancel')">إرجاع لمسودة</button>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
                 {% else %}
-                    <tr><td colspan="6" class="muted" style="padding:10px">لا توجد طلبات بعد.</td></tr>
+                    <tr><td colspan="7" class="muted" style="padding:10px">لا توجد طلبات بعد.</td></tr>
                 {% endif %}
             </tbody>
         </table>
@@ -790,10 +839,74 @@
         </div>
     </form>
 
+    <section class="settings-step-card" data-step="shipping" style="max-width:1040px;margin-top:16px;">
+        <button type="button" class="settings-step-toggle" onclick="toggleSettingsStep(this)">
+            <span class="settings-step-number">5</span>
+            <span class="settings-step-heading">
+                <span class="settings-step-title">الشحن والتوصيل</span>
+                <span class="settings-step-summary">ربط حساب Shiply الخاص بالمتجر وإدارة الشحنات</span>
+            </span>
+            <i data-lucide="chevron-down" class="settings-step-chevron"></i>
+        </button>
+        <div class="settings-step-body">
+            <form action="/admin/shipping/shiply/settings" method="POST">
+                <div class="connection-status" style="margin-bottom:16px;">
+                    {% if shipping_integration and shipping_integration.last_test_success %}
+                        الاتصال: <strong style="color:#047857;">ناجح</strong>
+                        {% if shipping_integration.webhook_configured %}
+                            <div class="muted">التحديث التلقائي لحالات الشحن مفعّل.</div>
+                        {% endif %}
+                    {% elif shipping_integration and shipping_integration.last_tested_at %}
+                        الاتصال: <strong style="color:#b91c1c;">فشل آخر اختبار</strong>
+                        {% if shipping_integration.last_error %}<div class="muted">{{ shipping_integration.last_error }}</div>{% endif %}
+                    {% else %}
+                        الاتصال: <strong>لم يتم اختباره بعد</strong>
+                    {% endif %}
+                </div>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label style="display:flex;align-items:center;gap:8px;font-weight:700;">
+                        <input type="checkbox" name="enabled" {{ 'checked' if shipping_integration and shipping_integration.enabled else '' }}>
+                        تفعيل Shiply لهذا المتجر
+                    </label>
+                    <small class="muted">عند إيقافه تختفي أدوات Shiply وتبقى الطلبات الحالية دون تغيير.</small>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">الدولة</label>
+                        <select name="country" class="input-field">
+                            <option value="palestine" {{ 'selected' if not shipping_integration or shipping_integration.country == 'palestine' else '' }}>فلسطين</option>
+                            <option value="jordan" {{ 'selected' if shipping_integration and shipping_integration.country == 'jordan' else '' }}>الأردن</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">بيئة الربط</label>
+                        <select name="environment" class="input-field">
+                            <option value="testing" {{ 'selected' if not shipping_integration or shipping_integration.environment == 'testing' else '' }}>اختبار</option>
+                            <option value="production" {{ 'selected' if shipping_integration and shipping_integration.environment == 'production' else '' }}>تشغيل فعلي</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:16px;">
+                    <label class="form-label">مفتاح Shiply API</label>
+                    <input type="password" name="api_key" class="input-field"
+                           autocomplete="new-password"
+                           placeholder="{{ 'المفتاح محفوظ - اترك الحقل فارغًا للإبقاء عليه' if shipping_integration and shipping_integration.has_api_key else 'ألصق المفتاح الذي حصل عليه التاجر من Shiply' }}">
+                    <small class="muted">يُشفّر المفتاح قبل حفظه ولا يظهر مرة أخرى في لوحة التحكم.</small>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;">
+                    <button type="submit" class="btn-small primary">حفظ إعدادات الشحن</button>
+                    {% if shipping_integration and shipping_integration.has_api_key %}
+                    <button type="button" class="btn-small shipping" onclick="testShiplyConnection(this)">اختبار الاتصال</button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </section>
+
     <!-- ══ QR CODE SECTION ══ -->
     <section class="settings-step-card" data-step="share" style="max-width:1040px;margin-top:16px;">
         <button type="button" class="settings-step-toggle" onclick="toggleSettingsStep(this)">
-            <span class="settings-step-number">5</span>
+            <span class="settings-step-number">6</span>
             <span class="settings-step-heading">
                 <span class="settings-step-title">مشاركة المتجر</span>
                 <span class="settings-step-summary">رمز QR، تنزيل الصورة ونسخ رابط المتجر</span>
@@ -932,6 +1045,44 @@
                 تحديث بيانات الأمان
             </button>
         </form>
+    </div>
+</div>
+
+<div id="shiplyModal" class="shipping-modal" onclick="if(event.target===this) closeShiplyModal()">
+    <div class="shipping-dialog">
+        <div class="shipping-dialog-header">
+            <h3>إنشاء شحنة Shiply للطلب <span id="shiplyOrderLabel"></span></h3>
+            <button type="button" class="shipping-close" onclick="closeShiplyModal()" aria-label="إغلاق">×</button>
+        </div>
+        <input type="hidden" id="shiplyOrderId">
+        <input type="hidden" id="shiplyOrderSubtotal">
+        <div class="grid-2">
+            <div class="form-group">
+                <label class="form-label">المدينة</label>
+                <select id="shiplyCity" class="input-field" onchange="populateShiplyVillages()">
+                    <option value="">اختر المدينة</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">المنطقة</label>
+                <select id="shiplyVillage" class="input-field" onchange="calculateShiplyFee()">
+                    <option value="">اختر المنطقة</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group" style="margin-top:14px;">
+            <label class="form-label">الشارع والعنوان التفصيلي</label>
+            <input id="shiplyStreet" type="text" class="input-field">
+        </div>
+        <div class="form-group" style="margin-top:14px;">
+            <label class="form-label">وصف الطرد</label>
+            <input id="shiplyDescription" type="text" class="input-field" value="طلب متجر RT Studio" maxlength="255">
+        </div>
+        <div id="shiplyCostBox" class="shipping-cost-box" style="margin-top:16px;">اختر المنطقة لحساب تكلفة الشحن.</div>
+        <div style="display:flex;gap:10px;margin-top:18px;">
+            <button id="createShiplyBtn" type="button" class="btn-small primary" onclick="createShiplyShipment()">إنشاء الشحنة كمسودة</button>
+            <button type="button" class="btn-small" onclick="closeShiplyModal()">إلغاء</button>
+        </div>
     </div>
 </div>
 
@@ -1170,6 +1321,155 @@ document.addEventListener('DOMContentLoaded', () => { if (PRODUCT_ID) loadVarian
 
     function viewOrder(id, text) {
         alert("تفاصيل الطلب #" + id + "\n\n" + text);
+    }
+
+    let shiplyCitiesCache = null;
+
+    async function testShiplyConnection(button) {
+        const original = button.textContent;
+        button.disabled = true;
+        button.textContent = 'جاري الاختبار...';
+        try {
+            const res = await fetch('/admin/shipping/shiply/test', {method: 'POST'});
+            const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error || 'فشل اختبار الاتصال');
+            alert(data.message);
+            location.reload();
+        } catch (error) {
+            alert(error.message);
+            button.disabled = false;
+            button.textContent = original;
+        }
+    }
+
+    async function loadShiplyCities() {
+        if (shiplyCitiesCache) return shiplyCitiesCache;
+        const res = await fetch('/admin/shipping/shiply/cities');
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'تعذر تحميل مناطق Shiply');
+        shiplyCitiesCache = data.cities || [];
+        return shiplyCitiesCache;
+    }
+
+    async function openShiplyModal(button) {
+        const modal = document.getElementById('shiplyModal');
+        document.getElementById('shiplyOrderId').value = button.dataset.orderId;
+        document.getElementById('shiplyOrderSubtotal').value = button.dataset.subtotal;
+        document.getElementById('shiplyOrderLabel').textContent = '#' + button.dataset.orderId;
+        document.getElementById('shiplyStreet').value = button.dataset.address || '';
+        document.getElementById('shiplyCostBox').textContent = 'جاري تحميل المدن والمناطق...';
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        try {
+            const cities = await loadShiplyCities();
+            const citySelect = document.getElementById('shiplyCity');
+            citySelect.innerHTML = '<option value="">اختر المدينة</option>';
+            cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.id;
+                option.textContent = city.name;
+                citySelect.appendChild(option);
+            });
+            document.getElementById('shiplyVillage').innerHTML = '<option value="">اختر المنطقة</option>';
+            document.getElementById('shiplyCostBox').textContent = 'اختر المنطقة لحساب تكلفة الشحن.';
+        } catch (error) {
+            document.getElementById('shiplyCostBox').textContent = error.message;
+        }
+    }
+
+    function closeShiplyModal() {
+        document.getElementById('shiplyModal').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function populateShiplyVillages() {
+        const cityId = document.getElementById('shiplyCity').value;
+        const villageSelect = document.getElementById('shiplyVillage');
+        villageSelect.innerHTML = '<option value="">اختر المنطقة</option>';
+        const city = (shiplyCitiesCache || []).find(item => String(item.id) === String(cityId));
+        (city?.villages || []).forEach(village => {
+            const option = document.createElement('option');
+            option.value = village.id;
+            option.textContent = village.name + (village.note ? ' - ' + village.note : '');
+            option.disabled = Number(village.is_closed) === 1;
+            villageSelect.appendChild(option);
+        });
+        document.getElementById('shiplyCostBox').textContent = 'اختر المنطقة لحساب تكلفة الشحن.';
+    }
+
+    async function calculateShiplyFee() {
+        const villageId = document.getElementById('shiplyVillage').value;
+        if (!villageId) return;
+        const box = document.getElementById('shiplyCostBox');
+        box.textContent = 'جاري حساب تكلفة الشحن...';
+        try {
+            const res = await fetch('/admin/shipping/shiply/fees', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    village_id: villageId,
+                    price: document.getElementById('shiplyOrderSubtotal').value
+                })
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error || 'تعذر حساب التكلفة');
+            box.textContent = 'تكلفة الشحن: ' + data.delivery_cost;
+            box.dataset.cost = data.delivery_cost;
+        } catch (error) {
+            box.textContent = error.message;
+            delete box.dataset.cost;
+        }
+    }
+
+    async function createShiplyShipment() {
+        const orderId = document.getElementById('shiplyOrderId').value;
+        const cityId = document.getElementById('shiplyCity').value;
+        const villageId = document.getElementById('shiplyVillage').value;
+        const street = document.getElementById('shiplyStreet').value.trim();
+        if (!cityId || !villageId || !street) {
+            alert('اختر المدينة والمنطقة واكتب العنوان التفصيلي.');
+            return;
+        }
+        const button = document.getElementById('createShiplyBtn');
+        button.disabled = true;
+        button.textContent = 'جاري إنشاء الشحنة...';
+        try {
+            const res = await fetch(`/admin/orders/${orderId}/shiply/create`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    city_id: cityId,
+                    village_id: villageId,
+                    street_name: street,
+                    description: document.getElementById('shiplyDescription').value.trim()
+                })
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error || 'تعذر إنشاء الشحنة');
+            alert('تم إنشاء الشحنة كمسودة. رقم الشحنة: ' + data.parcel_code);
+            location.reload();
+        } catch (error) {
+            alert(error.message);
+            button.disabled = false;
+            button.textContent = 'إنشاء الشحنة كمسودة';
+        }
+    }
+
+    async function shiplyAction(orderId, action) {
+        const labels = {
+            submit: 'تقديم هذه الشحنة إلى Shiply؟',
+            cancel: 'إرجاع هذه الشحنة إلى حالة المسودة؟',
+            refresh: null
+        };
+        if (labels[action] && !confirm(labels[action])) return;
+        try {
+            const res = await fetch(`/admin/orders/${orderId}/shiply/${action}`, {method: 'POST'});
+            const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error || 'تعذر تنفيذ العملية');
+            location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
     }
 
     function shareOnFacebook(slug, productId) {

@@ -171,6 +171,7 @@ def init_db():
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE
         )''')
+    cursor.execute("ALTER TABLE order_drafts ADD COLUMN IF NOT EXISTS customer_address TEXT")
     print("✅ order_drafts table ready.")
 
     # order_lines
@@ -189,6 +190,65 @@ def init_db():
     cursor.execute("CREATE INDEX IF NOT EXISTS ix_order_lines_order ON order_lines(order_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS ix_order_lines_product ON order_lines(product_id)")
     print("✅ order_lines table and indexes ready.")
+
+    # Optional shipping integrations, isolated per store and order.
+    cursor.execute('''CREATE TABLE IF NOT EXISTS shipping_integrations (
+            id SERIAL PRIMARY KEY,
+            store_id INTEGER NOT NULL,
+            provider TEXT NOT NULL,
+            enabled BOOLEAN NOT NULL DEFAULT FALSE,
+            environment TEXT NOT NULL DEFAULT 'testing',
+            country TEXT NOT NULL DEFAULT 'palestine',
+            api_key_encrypted TEXT,
+            webhook_token TEXT,
+            webhook_configured BOOLEAN NOT NULL DEFAULT FALSE,
+            last_tested_at TIMESTAMP,
+            last_test_success BOOLEAN,
+            last_error TEXT,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE,
+            UNIQUE(store_id, provider)
+        )''')
+    cursor.execute("ALTER TABLE shipping_integrations ADD COLUMN IF NOT EXISTS webhook_token TEXT")
+    cursor.execute("ALTER TABLE shipping_integrations ADD COLUMN IF NOT EXISTS webhook_configured BOOLEAN NOT NULL DEFAULT FALSE")
+    cursor.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS ux_shipping_integrations_webhook_token
+        ON shipping_integrations(webhook_token)
+        WHERE webhook_token IS NOT NULL
+    """)
+    cursor.execute('''CREATE TABLE IF NOT EXISTS shipping_shipments (
+            id SERIAL PRIMARY KEY,
+            order_id INTEGER NOT NULL,
+            store_id INTEGER NOT NULL,
+            provider TEXT NOT NULL,
+            parcel_code TEXT,
+            qr_code TEXT,
+            shipping_status_id INTEGER,
+            shipping_status_name TEXT,
+            shipping_position_id INTEGER,
+            shipping_cost NUMERIC(12,2),
+            city_id INTEGER,
+            village_id INTEGER,
+            street_name TEXT,
+            description TEXT,
+            last_error TEXT,
+            provider_response JSONB,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(order_id) REFERENCES order_drafts(id) ON DELETE CASCADE,
+            FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE,
+            UNIQUE(order_id, provider)
+        )''')
+    cursor.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS ux_shipping_shipments_provider_code
+        ON shipping_shipments(provider, parcel_code)
+        WHERE parcel_code IS NOT NULL
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS ix_shipping_shipments_store_status
+        ON shipping_shipments(store_id, shipping_status_id)
+    """)
 
     # analytics_events
     cursor.execute('''CREATE TABLE IF NOT EXISTS analytics_events (
