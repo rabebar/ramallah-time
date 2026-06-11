@@ -130,6 +130,54 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
 .hero-benefit span { display: block; color: #667085; font-size: 12px; line-height: 1.6; }
 .hero-signup-shell { max-width: 620px; margin: 0 auto 54px; padding: 0 20px; }
 
+/* Featured value */
+.value-showcase { max-width: 1220px; margin: 8px auto 46px; padding: 0 26px; }
+.value-showcase-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 18px; }
+.value-showcase-kicker { color: #0F766E; font-size: 12px; font-weight: 800; margin-bottom: 6px; }
+.value-showcase-title { color: #111827; font-size: clamp(22px, 2.6vw, 34px); line-height: 1.35; font-weight: 800; }
+.value-showcase-link { color: #0F766E; font-size: 13px; font-weight: 800; text-decoration: none; white-space: nowrap; padding: 9px 0; border-bottom: 2px solid #99F6E4; }
+.value-grid { display: grid; grid-template-columns: 1.45fr repeat(3, minmax(0, 1fr)); gap: 12px; }
+.value-card {
+ min-height: 210px; padding: 22px; border: 1px solid #E5E7EB; border-radius: 8px;
+ background: #FFFFFF; box-shadow: 0 12px 30px rgba(17,24,39,.06);
+ opacity: 0; transform: translateY(14px);
+ transition: transform .45s ease, opacity .45s ease, box-shadow .25s ease;
+}
+.value-showcase.is-visible .value-card { opacity: 1; transform: translateY(0); }
+.value-showcase.is-visible .value-card:nth-child(2) { transition-delay: .06s; }
+.value-showcase.is-visible .value-card:nth-child(3) { transition-delay: .12s; }
+.value-showcase.is-visible .value-card:nth-child(4) { transition-delay: .18s; }
+.value-card:hover { box-shadow: 0 18px 38px rgba(17,24,39,.10); }
+.value-card.featured {
+ display: grid; grid-template-columns: minmax(0, 1fr) 108px; align-items: center; gap: 16px;
+ color: #FFFFFF; background: #0F766E; border-color: #0F766E; overflow: hidden;
+}
+.value-card-icon {
+ width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
+ color: #0F766E; background: #CCFBF1; border-radius: 8px; margin-bottom: 20px;
+}
+.value-card-icon svg { width: 23px; height: 23px; }
+.value-card.featured .value-card-icon { color: #0F766E; background: #FFFFFF; margin-bottom: 14px; }
+.value-card-title { color: #111827; font-size: 16px; font-weight: 800; line-height: 1.55; margin-bottom: 8px; }
+.value-card-desc { color: #667085; font-size: 12px; line-height: 1.75; }
+.value-card.featured .value-card-title { color: #FFFFFF; font-size: 19px; }
+.value-card.featured .value-card-desc { color: #D1FAE5; }
+.value-card.cart .value-card-icon { color: #1D4ED8; background: #DBEAFE; }
+.value-card.manage .value-card-icon { color: #B45309; background: #FEF3C7; }
+.value-card.commission .value-card-icon { color: #BE123C; background: #FFE4E6; }
+.mini-phone {
+ width: 96px; height: 174px; justify-self: end; background: #111827; border: 5px solid #111827;
+ border-radius: 22px; box-shadow: 0 18px 34px rgba(0,0,0,.22); overflow: hidden; transform: rotate(-3deg);
+}
+.mini-phone-screen { height: 100%; background: #F8FAFC; border-radius: 16px; overflow: hidden; }
+.mini-phone-bar { height: 24px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: #0B3B38; font-size: 7px; font-weight: 800; }
+.mini-phone-products { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 7px; }
+.mini-product { height: 54px; border-radius: 5px; background: #FFFFFF; border: 1px solid #E5E7EB; overflow: hidden; }
+.mini-product::before { content: ''; display: block; height: 35px; background: #DDE7E4 url('/static/hero_devices.png') center / cover no-repeat; }
+.mini-product::after { content: ''; display: block; width: 70%; height: 3px; margin: 6px auto 0; background: #94A3B8; border-radius: 2px; }
+.mini-phone-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin: 3px 7px 0; }
+.mini-phone-nav span { height: 4px; background: #CBD5E1; border-radius: 2px; }
+
 /* Divider */
 hr { border: none; border-top: 1px solid var(--border); margin: 0; }
 
@@ -269,6 +317,19 @@ body.ltr .wa-float { left: auto; right: 24px; }
  .hero-benefits { grid-template-columns: 1fr; margin: 4px 18px 28px; padding: 10px 18px; border-radius: 18px; }
  .hero-benefit { justify-content: flex-start; border-left: 0; border-bottom: 1px solid #E5EAF3; padding: 14px 0; }
  .hero-benefit:last-child { border-bottom: 0; }
+ .value-showcase { margin: 0 auto 30px; padding: 0 18px; }
+ .value-showcase-head { align-items: flex-start; margin-bottom: 14px; }
+ .value-showcase-title { font-size: 22px; }
+ .value-showcase-link { font-size: 11px; }
+ .value-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+ .value-card { min-height: 174px; padding: 16px 14px; }
+ .value-card.featured { grid-column: 1 / -1; min-height: 204px; grid-template-columns: minmax(0, 1fr) 94px; }
+ .value-card.featured .value-card-title { font-size: 17px; }
+ .value-card-icon { width: 38px; height: 38px; margin-bottom: 14px; }
+ .value-card-title { font-size: 13px; }
+ .value-card-desc { font-size: 10px; line-height: 1.65; }
+ .mini-phone { width: 84px; height: 154px; border-radius: 19px; }
+ .value-card.commission { grid-column: 1 / -1; min-height: 142px; }
  .hero-signup-shell { margin-bottom: 34px; padding: 0 18px; }
  .container { padding: 0 18px; }
  .section { padding: 32px 0; }
@@ -338,6 +399,9 @@ body.ltr .wa-float { left: auto; right: 24px; }
  .tab-icon-wrap { width: 40px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 10px; transition: 0.2s; }
  .tab-item.wa { color: #25D366; }
 }
+@media (prefers-reduced-motion: reduce) {
+ .value-card { opacity: 1; transform: none; transition: none; }
+}
 </style>
 </head>
 <body>
@@ -405,6 +469,58 @@ body.ltr .wa-float { left: auto; right: 24px; }
   </div>
  </div>
 </div>
+
+<section class="value-showcase" id="featuredBenefits" aria-labelledby="featuredBenefitsTitle">
+ <div class="value-showcase-head">
+  <div>
+   <div class="value-showcase-kicker" data-ar="مصمم للبيع من الهاتف" data-en="Built for mobile selling">مصمم للبيع من الهاتف</div>
+   <h2 class="value-showcase-title" id="featuredBenefitsTitle" data-ar="أهم أدوات متجرك أمام الزبون من أول لحظة" data-en="Your store's strongest tools, visible from the first moment">أهم أدوات متجرك أمام الزبون من أول لحظة</h2>
+  </div>
+  <a class="value-showcase-link" href="#features" data-ar="استكشف جميع الميزات" data-en="Explore all features">استكشف جميع الميزات</a>
+ </div>
+ <div class="value-grid">
+  <article class="value-card featured">
+   <div>
+    <div class="value-card-icon" aria-hidden="true">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg>
+    </div>
+    <h3 class="value-card-title" data-ar="تطبيق ويب باسم متجرك وأيقونته" data-en="A web app with your store name and icon">تطبيق ويب باسم متجرك وأيقونته</h3>
+    <p class="value-card-desc" data-ar="يثبّته الزبون على هاتفه ويفتح متجرك مباشرة بتجربة سريعة ومناسبة لمختلف الأجهزة." data-en="Customers install it on their phones and open your store directly through a fast experience built for different devices.">يثبّته الزبون على هاتفه ويفتح متجرك مباشرة بتجربة سريعة ومناسبة لمختلف الأجهزة.</p>
+   </div>
+   <div class="mini-phone" aria-hidden="true">
+    <div class="mini-phone-screen">
+     <div class="mini-phone-bar">RT STORE</div>
+     <div class="mini-phone-products">
+      <span class="mini-product"></span><span class="mini-product"></span>
+      <span class="mini-product"></span><span class="mini-product"></span>
+     </div>
+     <div class="mini-phone-nav"><span></span><span></span><span></span></div>
+    </div>
+   </div>
+  </article>
+  <article class="value-card cart">
+   <div class="value-card-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h7.78a2 2 0 0 0 1.95-1.57L20.5 7H5.12"/></svg>
+   </div>
+   <h3 class="value-card-title" data-ar="سلة وطلبات واتساب" data-en="Cart and WhatsApp orders">سلة وطلبات واتساب</h3>
+   <p class="value-card-desc" data-ar="عدة منتجات في طلب واحد، تصل تفاصيله إلى التاجر برسالة منظمة." data-en="Multiple products in one order, delivered to the merchant in one organized message.">عدة منتجات في طلب واحد، تصل تفاصيله إلى التاجر برسالة منظمة.</p>
+  </article>
+  <article class="value-card manage">
+   <div class="value-card-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.4 2.6a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
+   </div>
+   <h3 class="value-card-title" data-ar="إدارة سهلة للمنتجات" data-en="Easy product management">إدارة سهلة للمنتجات</h3>
+   <p class="value-card-desc" data-ar="أضف الصور والأسعار وعدّل المنتجات من لوحة تحكم واضحة." data-en="Add photos and prices, and update products from a clear dashboard.">أضف الصور والأسعار وعدّل المنتجات من لوحة تحكم واضحة.</p>
+  </article>
+  <article class="value-card commission">
+   <div class="value-card-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+   </div>
+   <h3 class="value-card-title" data-ar="صفر عمولة على المبيعات" data-en="Zero sales commission">صفر عمولة على المبيعات</h3>
+   <p class="value-card-desc" data-ar="أرباح مبيعاتك تبقى لك مقابل اشتراك واضح وثابت." data-en="Your sales revenue stays yours with one clear fixed subscription.">أرباح مبيعاتك تبقى لك مقابل اشتراك واضح وثابت.</p>
+  </article>
+ </div>
+</section>
 
 <div class="hero-signup-shell">
  <div class="form-card">
@@ -762,6 +878,23 @@ function setLang(lang) {
 }
 const savedLang = localStorage.getItem(LANG_KEY) || 'ar';
 setLang(savedLang);
+
+const featuredBenefits = document.getElementById('featuredBenefits');
+if (featuredBenefits) {
+  if ('IntersectionObserver' in window) {
+    const benefitsObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.16 });
+    benefitsObserver.observe(featuredBenefits);
+  } else {
+    featuredBenefits.classList.add('is-visible');
+  }
+}
 
 // واتساب — الرقم مخزن هنا فقط
 const _WA = atob('OTcwNTkyNzc2Nzg0');
