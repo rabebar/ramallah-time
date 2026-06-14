@@ -70,6 +70,7 @@ def init_db():
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_theme TEXT DEFAULT 'classic'")
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_background TEXT DEFAULT 'none'")
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS announcement TEXT")
+    cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS product_gallery_enabled BOOLEAN DEFAULT FALSE")
 
     # products
     cursor.execute('''CREATE TABLE IF NOT EXISTS products (
@@ -99,6 +100,19 @@ def init_db():
     cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS card_ratio TEXT DEFAULT 'square'")
     cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS original_price DECIMAL DEFAULT NULL")
     cursor.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS fit_mode TEXT DEFAULT 'contain'")
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS product_images (
+            id SERIAL PRIMARY KEY,
+            product_id INTEGER NOT NULL,
+            image_url TEXT NOT NULL,
+            sort_order INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
+        )''')
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS ix_product_images_product_sort
+        ON product_images(product_id, sort_order, id)
+    """)
 
     cursor.execute("""
         CREATE UNIQUE INDEX IF NOT EXISTS ux_products_store_sku

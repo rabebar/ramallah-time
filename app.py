@@ -535,6 +535,26 @@ try:
     _mcur.execute("ALTER TABLE product_variants ADD COLUMN IF NOT EXISTS description TEXT")
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_theme TEXT DEFAULT 'gold'")
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_background TEXT DEFAULT 'none'")
+    _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS product_gallery_enabled BOOLEAN DEFAULT FALSE")
+    _mcur.execute("""
+        CREATE TABLE IF NOT EXISTS product_images (
+            id SERIAL PRIMARY KEY,
+            product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+            image_url TEXT NOT NULL,
+            sort_order INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    """)
+    _mcur.execute("""
+        CREATE INDEX IF NOT EXISTS ix_product_images_product_sort
+        ON product_images(product_id, sort_order, id)
+    """)
+    _mcur.execute("""
+        UPDATE stores
+        SET product_gallery_enabled = TRUE
+        WHERE LOWER(slug) = 'chrono-watches'
+          AND product_gallery_enabled = FALSE
+    """)
     _mconn.commit()
     _mconn.close()
 except Exception as _me:
@@ -1104,10 +1124,19 @@ def admin():
         }
 
     edit_product = None
+    edit_product_images = []
     edit_id = request.args.get('edit')
     if edit_id and store:
         cursor.execute("SELECT * FROM products WHERE id = %s AND store_id = %s", (edit_id, store['id']))
         edit_product = cursor.fetchone()
+        if edit_product and store.get('product_gallery_enabled'):
+            cursor.execute("""
+                SELECT id, image_url, sort_order
+                FROM product_images
+                WHERE product_id = %s
+                ORDER BY sort_order, id
+            """, (edit_product['id'],))
+            edit_product_images = cursor.fetchall()
 
     conn.close()
     from themes import ENHANCED_THEMES, THEME_COLLECTIONS, rgb_to_hex
@@ -1133,6 +1162,7 @@ def admin():
         stats=stats,
         store=store,
         edit_product=edit_product,
+        edit_product_images=edit_product_images,
         orders=orders,
         analytics=analytics,
         shipping_integration=shipping_integration,
@@ -1161,14 +1191,16 @@ def edit_product_route(id):
     cursor = conn.cursor()
     new_original_filename = None
     new_processed_filename = None
+    new_gallery_filenames = []
     try:
         cursor.execute("""
-            SELECT p.id
+            SELECT p.id, s.product_gallery_enabled
             FROM products p
             JOIN stores s ON s.id = p.store_id
             WHERE p.id = %s AND s.user_id = %s
         """, (id, user_id))
-        if not cursor.fetchone():
+        owned_product = cursor.fetchone()
+        if not owned_product:
             flash("المنتج غير موجود أو لا تملك صلاحية تعديله.", "error")
             return redirect(url_for('admin'))
 
@@ -1195,6 +1227,39 @@ def edit_product_route(id):
                 output_data, engine_used = remove_bg_with_fallback(original_path)
                 logging.info(f"Replacement image background removed using: {engine_used}")
                 standardize_cutout(output_data, processed_path, size=1200)
+
+        gallery_uploads = [
+            image for image in request.files.getlist('gallery_images')
+            if image and image.filename
+        ]
+        if gallery_uploads:
+            if not owned_product.get('product_gallery_enabled'):
+                raise ValueError("معرض الصور غير مفعل لهذا المتجر.")
+
+            cursor.execute("SELECT COUNT(*) AS count FROM product_images WHERE product_id = %s", (id,))
+            gallery_count = cursor.fetchone()['count']
+            available_slots = max(0, 5 - gallery_count)
+            if len(gallery_uploads) > available_slots:
+                raise ValueError(f"يمكن إضافة {available_slots} صور إضافية فقط لهذا المنتج.")
+
+            cursor.execute(
+                "SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM product_images WHERE product_id = %s",
+                (id,)
+            )
+            next_sort_order = cursor.fetchone()['max_order'] + 1
+
+            for offset, gallery_upload in enumerate(gallery_uploads):
+                gallery_filename = f"gallery_{id}_{uuid.uuid4().hex[:10]}.jpg"
+                gallery_path = os.path.join(app.config['UPLOAD_FOLDER'], gallery_filename)
+                with Image.open(gallery_upload.stream) as source:
+                    source = ImageOps.exif_transpose(source).convert('RGB')
+                    source.thumbnail((1800, 1800), Image.LANCZOS)
+                    source.save(gallery_path, 'JPEG', quality=88, optimize=True)
+                new_gallery_filenames.append(gallery_filename)
+                cursor.execute("""
+                    INSERT INTO product_images (product_id, image_url, sort_order)
+                    VALUES (%s, %s, %s)
+                """, (id, gallery_filename, next_sort_order + offset))
 
         cursor.execute("""
             UPDATE products SET name=%s, price=%s, original_price=%s, discount_reason=%s, description=%s, theme=%s, template_style=%s, category=%s, active=%s, variants=%s, bundles=%s
@@ -1232,14 +1297,14 @@ def edit_product_route(id):
         flash("تم تحديث البيانات.", "success")
     except Exception as e:
         conn.rollback()
-        for filename in (new_original_filename, new_processed_filename):
+        for filename in (new_original_filename, new_processed_filename, *new_gallery_filenames):
             if filename:
                 try:
                     os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 except OSError:
                     pass
         logging.error(f"Edit Product Error: {e}")
-        flash("تعذر حفظ التحديثات. تحقق من القيم.", "error")
+        flash(str(e) if isinstance(e, ValueError) else "تعذر حفظ التحديثات. تحقق من القيم.", "error")
     finally:
         conn.close()
     return redirect(url_for('admin'))
@@ -1299,6 +1364,139 @@ def upload_variant_image():
         return jsonify({'success': True, 'image_url': fname})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# =========================
+# Product Gallery API
+# =========================
+@app.route('/api/product/<int:product_id>/gallery/<int:image_id>/delete', methods=['POST'])
+def delete_product_gallery_image(product_id, image_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'unauthorized'}), 401
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT pi.image_url
+        FROM product_images pi
+        JOIN products p ON p.id = pi.product_id
+        JOIN stores s ON s.id = p.store_id
+        WHERE pi.id = %s AND pi.product_id = %s AND s.user_id = %s
+    """, (image_id, product_id, user_id))
+    image = cur.fetchone()
+    if not image:
+        conn.close()
+        return jsonify({'error': 'not found'}), 404
+
+    cur.execute("DELETE FROM product_images WHERE id = %s", (image_id,))
+    cur.execute("""
+        WITH ordered AS (
+            SELECT id, ROW_NUMBER() OVER (ORDER BY sort_order, id) - 1 AS new_order
+            FROM product_images WHERE product_id = %s
+        )
+        UPDATE product_images pi
+        SET sort_order = ordered.new_order
+        FROM ordered
+        WHERE pi.id = ordered.id
+    """, (product_id,))
+    conn.commit()
+    conn.close()
+
+    try:
+        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], image['image_url']))
+    except OSError:
+        pass
+    return jsonify({'success': True})
+
+
+@app.route('/api/product/<int:product_id>/gallery/<int:image_id>/move', methods=['POST'])
+def move_product_gallery_image(product_id, image_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'unauthorized'}), 401
+    direction = (request.get_json(silent=True) or {}).get('direction')
+    if direction not in ('up', 'down'):
+        return jsonify({'error': 'invalid direction'}), 400
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT pi.id, pi.sort_order
+        FROM product_images pi
+        JOIN products p ON p.id = pi.product_id
+        JOIN stores s ON s.id = p.store_id
+        WHERE pi.id = %s AND pi.product_id = %s AND s.user_id = %s
+    """, (image_id, product_id, user_id))
+    current = cur.fetchone()
+    if not current:
+        conn.close()
+        return jsonify({'error': 'not found'}), 404
+
+    operator = '<' if direction == 'up' else '>'
+    ordering = 'DESC' if direction == 'up' else 'ASC'
+    cur.execute(f"""
+        SELECT id, sort_order
+        FROM product_images
+        WHERE product_id = %s AND sort_order {operator} %s
+        ORDER BY sort_order {ordering}, id {ordering}
+        LIMIT 1
+    """, (product_id, current['sort_order']))
+    neighbour = cur.fetchone()
+    if neighbour:
+        temporary_order = -1000000 - image_id
+        cur.execute("UPDATE product_images SET sort_order = %s WHERE id = %s", (temporary_order, current['id']))
+        cur.execute("UPDATE product_images SET sort_order = %s WHERE id = %s", (current['sort_order'], neighbour['id']))
+        cur.execute("UPDATE product_images SET sort_order = %s WHERE id = %s", (neighbour['sort_order'], current['id']))
+        conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
+
+@app.route('/api/product/<int:product_id>/gallery/<int:image_id>/primary', methods=['POST'])
+def set_product_gallery_primary(product_id, image_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'unauthorized'}), 401
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT pi.image_url,
+                   COALESCE(p.final_image_url, p.processed_image_url) AS current_main
+            FROM product_images pi
+            JOIN products p ON p.id = pi.product_id
+            JOIN stores s ON s.id = p.store_id
+            WHERE pi.id = %s AND pi.product_id = %s AND s.user_id = %s
+              AND s.product_gallery_enabled = TRUE
+            FOR UPDATE
+        """, (image_id, product_id, user_id))
+        selected = cur.fetchone()
+        if not selected:
+            return jsonify({'error': 'not found'}), 404
+        if not selected.get('current_main'):
+            return jsonify({'error': 'main image missing'}), 409
+
+        cur.execute("""
+            UPDATE products
+            SET original_image_url = %s,
+                processed_image_url = %s,
+                final_image_url = NULL,
+                background = 'none'
+            WHERE id = %s
+        """, (selected['image_url'], selected['image_url'], product_id))
+        cur.execute(
+            "UPDATE product_images SET image_url = %s WHERE id = %s",
+            (selected['current_main'], image_id)
+        )
+        conn.commit()
+        return jsonify({'success': True})
+    except Exception as exc:
+        conn.rollback()
+        logging.error(f"Set gallery primary error: {exc}")
+        return jsonify({'error': 'تعذر تغيير الصورة الرئيسية'}), 500
+    finally:
+        conn.close()
 
 @app.route('/delete_product/<int:id>')
 def delete_product_route(id):
@@ -1546,6 +1744,16 @@ def view_product_page(slug, product_id):
         ORDER BY id DESC LIMIT 12
     """, (store['id'], product_id))
     related_products = cursor.fetchall()
+
+    product_images = []
+    if store.get('product_gallery_enabled'):
+        cursor.execute("""
+            SELECT id, image_url, sort_order
+            FROM product_images
+            WHERE product_id = %s
+            ORDER BY sort_order, id
+        """, (product_id,))
+        product_images = cursor.fetchall()
     
     # Record product view
     try:
@@ -1562,6 +1770,7 @@ def view_product_page(slug, product_id):
     return render_template('product.html', 
                           store=store, 
                           product=product, 
+                          product_images=product_images,
                           related_products=related_products,
                           available=available)
 

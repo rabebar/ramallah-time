@@ -156,6 +156,9 @@
     }
     
     /* Image */
+    .product-media {
+        min-width: 0;
+    }
     .product-image-wrap {
         background: var(--white);
         border-radius: 24px;
@@ -230,6 +233,79 @@
         box-shadow: var(--shadow-sm);
     }
     .product-image-wrap.zoomed .image-badge { display: none; }
+    .gallery-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 42px;
+        height: 42px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.92);
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 3;
+        box-shadow: var(--shadow-sm);
+    }
+    .gallery-nav.prev { right: 14px; }
+    .gallery-nav.next { left: 14px; }
+    .gallery-nav i { width: 20px; height: 20px; }
+    .gallery-count {
+        position: absolute;
+        left: 16px;
+        top: 16px;
+        border-radius: 50px;
+        padding: 6px 10px;
+        background: rgba(15, 23, 42, 0.78);
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 700;
+        z-index: 2;
+        direction: ltr;
+    }
+    .gallery-thumbnails {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 12px 2px 4px;
+        scrollbar-width: thin;
+        scroll-snap-type: x proximity;
+    }
+    .gallery-thumb {
+        width: 78px;
+        height: 78px;
+        flex: 0 0 78px;
+        padding: 4px;
+        border: 2px solid transparent;
+        border-radius: 10px;
+        background: var(--white);
+        cursor: pointer;
+        scroll-snap-align: start;
+    }
+    .gallery-thumb.active {
+        border-color: var(--text);
+    }
+    .gallery-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 6px;
+        display: block;
+    }
+    @media (max-width: 767px) {
+        .gallery-nav {
+            width: 38px;
+            height: 38px;
+        }
+        .gallery-thumb {
+            width: 68px;
+            height: 68px;
+            flex-basis: 68px;
+        }
+    }
     
     /* Info */
     .product-info {
@@ -716,16 +792,39 @@
 <!-- PRODUCT MAIN -->
 <main class="product-main">
     
-    <!-- Image -->
+    <!-- Image gallery -->
+    {% set image_src = product.final_image_url or product.processed_image_url %}
+    <div class="product-media">
     <div class="product-image-wrap" id="productImage" onclick="toggleZoom()">
-        {% set image_src = product.final_image_url or product.processed_image_url %}
         {% if image_src %}
-            <img src="/static/uploads/{{ image_src }}" alt="{{ product.name }}">
+            <img id="mainProductImage" src="/static/uploads/{{ image_src }}" alt="{{ product.name }}">
         {% endif %}
         {% if product.category and product.category != 'other' %}
             <div class="image-badge">{{ product.category }}</div>
         {% endif %}
+        {% if product_images %}
+            <div class="gallery-count"><span id="galleryCurrent">1</span> / {{ 1 + (product_images|length) }}</div>
+            <button type="button" class="gallery-nav prev" onclick="event.stopPropagation(); changeGalleryImage(-1)" aria-label="الصورة السابقة">
+                <i data-lucide="chevron-right"></i>
+            </button>
+            <button type="button" class="gallery-nav next" onclick="event.stopPropagation(); changeGalleryImage(1)" aria-label="الصورة التالية">
+                <i data-lucide="chevron-left"></i>
+            </button>
+        {% endif %}
         <div class="zoom-hint" id="zoomHint">اضغط للتكبير 🔍</div>
+    </div>
+    {% if product_images %}
+    <div class="gallery-thumbnails" id="galleryThumbnails" aria-label="صور المنتج">
+        <button type="button" class="gallery-thumb active" data-src="/static/uploads/{{ image_src }}" onclick="selectGalleryImage(0)">
+            <img src="/static/uploads/{{ image_src }}" alt="{{ product.name }} - الصورة الرئيسية">
+        </button>
+        {% for gallery_image in product_images %}
+        <button type="button" class="gallery-thumb" data-src="/static/uploads/{{ gallery_image.image_url }}" onclick="selectGalleryImage({{ loop.index }})">
+            <img src="/static/uploads/{{ gallery_image.image_url }}" alt="{{ product.name }} - صورة {{ loop.index + 1 }}" loading="lazy">
+        </button>
+        {% endfor %}
+    </div>
+    {% endif %}
     </div>
     
     <!-- Info -->
@@ -1258,7 +1357,33 @@
     // Initialize cart
     renderCart();
     
+    let currentGalleryIndex = 0;
+    let gallerySwiped = false;
+
+    function selectGalleryImage(index) {
+        const thumbnails = [...document.querySelectorAll('.gallery-thumb')];
+        if (!thumbnails.length) return;
+        currentGalleryIndex = (index + thumbnails.length) % thumbnails.length;
+        const selected = thumbnails[currentGalleryIndex];
+        const mainImage = document.getElementById('mainProductImage');
+        if (mainImage) mainImage.src = selected.dataset.src;
+        thumbnails.forEach((thumb, thumbIndex) => {
+            thumb.classList.toggle('active', thumbIndex === currentGalleryIndex);
+        });
+        selected.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        const counter = document.getElementById('galleryCurrent');
+        if (counter) counter.textContent = currentGalleryIndex + 1;
+    }
+
+    function changeGalleryImage(step) {
+        selectGalleryImage(currentGalleryIndex + step);
+    }
+
     function toggleZoom() {
+        if (gallerySwiped) {
+            gallerySwiped = false;
+            return;
+        }
         const img = document.getElementById('productImage');
         const hint = document.getElementById('zoomHint');
         img.classList.toggle('zoomed');
@@ -1269,6 +1394,20 @@
             hint.textContent = 'اضغط للتكبير 🔍';
             document.body.style.overflow = '';
         }
+    }
+
+    const galleryTouchTarget = document.getElementById('productImage');
+    if (galleryTouchTarget && document.querySelectorAll('.gallery-thumb').length > 1) {
+        let galleryTouchStartX = 0;
+        galleryTouchTarget.addEventListener('touchstart', event => {
+            galleryTouchStartX = event.changedTouches[0].clientX;
+        }, { passive: true });
+        galleryTouchTarget.addEventListener('touchend', event => {
+            const deltaX = event.changedTouches[0].clientX - galleryTouchStartX;
+            if (Math.abs(deltaX) < 45) return;
+            gallerySwiped = true;
+            changeGalleryImage(deltaX > 0 ? -1 : 1);
+        }, { passive: true });
     }
     
     // Close zoom on Escape

@@ -297,6 +297,71 @@
                 </label>
                 <small style="color:var(--text-muted)">اترك الحقل فارغًا للاحتفاظ بالصورة الحالية.</small>
             </div>
+
+            {% if store.product_gallery_enabled %}
+            <div class="form-group" style="padding:18px; border:1px solid #dbe3ea; border-radius:12px; background:#fff;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;">
+                    <div>
+                        <label class="form-label" style="margin:0;">معرض صور المنتج</label>
+                        <small style="display:block;color:var(--text-muted);margin-top:4px;">
+                            الصورة الرئيسية مع خمس صور إضافية كحد أقصى. الصور الإضافية تبقى بخلفيتها الأصلية.
+                        </small>
+                    </div>
+                    <span style="font-size:12px;font-weight:700;color:#475569;white-space:nowrap;">
+                        {{ 1 + (edit_product_images|length) }} / 6
+                    </span>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px;margin-bottom:14px;">
+                    <div style="border:2px solid #0f172a;border-radius:10px;padding:8px;background:#f8fafc;">
+                        <div style="aspect-ratio:1;overflow:hidden;border-radius:7px;background:#fff;">
+                            <img src="/static/uploads/{{ edit_product.final_image_url or edit_product.processed_image_url }}"
+                                 alt="الصورة الرئيسية"
+                                 style="width:100%;height:100%;object-fit:contain;">
+                        </div>
+                        <div style="font-size:11px;font-weight:800;text-align:center;margin-top:7px;color:#0f172a;">الصورة الرئيسية</div>
+                    </div>
+
+                    {% for gallery_image in edit_product_images %}
+                    <div style="border:1px solid #dbe3ea;border-radius:10px;padding:8px;background:#fff;">
+                        <div style="aspect-ratio:1;overflow:hidden;border-radius:7px;background:#f8fafc;">
+                            <img src="/static/uploads/{{ gallery_image.image_url }}"
+                                 alt="صورة إضافية"
+                                 style="width:100%;height:100%;object-fit:cover;">
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-top:7px;">
+                            <button type="button" title="تحريك للأمام"
+                                    onclick="moveGalleryImage({{ gallery_image.id }}, 'up')"
+                                    style="border:1px solid #dbe3ea;background:#f8fafc;border-radius:6px;padding:5px;cursor:pointer;">→</button>
+                            <button type="button" title="تحريك للخلف"
+                                    onclick="moveGalleryImage({{ gallery_image.id }}, 'down')"
+                                    style="border:1px solid #dbe3ea;background:#f8fafc;border-radius:6px;padding:5px;cursor:pointer;">←</button>
+                            <button type="button" onclick="setGalleryPrimary({{ gallery_image.id }})"
+                                    style="grid-column:1/-1;border:none;background:#0f172a;color:#fff;border-radius:6px;padding:6px;font-size:11px;font-weight:700;cursor:pointer;">
+                                جعلها رئيسية
+                            </button>
+                            <button type="button" onclick="deleteGalleryImage({{ gallery_image.id }})"
+                                    style="grid-column:1/-1;border:1px solid #fecaca;background:#fff1f2;color:#be123c;border-radius:6px;padding:6px;font-size:11px;font-weight:700;cursor:pointer;">
+                                حذف
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% set gallery_slots = 5 - (edit_product_images|length) %}
+                {% if gallery_slots > 0 %}
+                <input type="file" name="gallery_images" id="galleryImages" accept="image/*" multiple
+                       class="input-field" style="padding:8px;"
+                       onchange="validateGallerySelection(this, {{ gallery_slots }})">
+                <small id="gallerySelectionHelp" style="display:block;color:var(--text-muted);margin-top:6px;">
+                    يمكنك اختيار {{ gallery_slots }} صورة إضافية الآن.
+                </small>
+                {% else %}
+                <small style="display:block;color:#0f766e;font-weight:700;">اكتمل الحد الأقصى للصور.</small>
+                {% endif %}
+            </div>
+            {% endif %}
             
             <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
                 <div class="form-group">
@@ -1090,6 +1155,57 @@
 // ══ VARIANTS MANAGER ══
 const PRODUCT_ID = {{ edit_product.id if edit_product else 'null' }};
 let variantsData = [];
+
+function validateGallerySelection(input, availableSlots) {
+    if (input.files.length > availableSlots) {
+        alert(`يمكنك اختيار ${availableSlots} صورة فقط.`);
+        input.value = '';
+        return;
+    }
+    const help = document.getElementById('gallerySelectionHelp');
+    if (help) help.textContent = input.files.length
+        ? `تم اختيار ${input.files.length} صورة. اضغط حفظ التغييرات لرفعها.`
+        : `يمكنك اختيار ${availableSlots} صورة إضافية الآن.`;
+}
+
+async function galleryAction(url, options, confirmation) {
+    if (confirmation && !confirm(confirmation)) return;
+    try {
+        const response = await fetch(url, options || { method: 'POST' });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.error || 'تعذر تنفيذ العملية');
+        window.location.reload();
+    } catch (error) {
+        alert(error.message || 'تعذر تنفيذ العملية');
+    }
+}
+
+function deleteGalleryImage(imageId) {
+    galleryAction(
+        `/api/product/${PRODUCT_ID}/gallery/${imageId}/delete`,
+        { method: 'POST' },
+        'حذف هذه الصورة من معرض المنتج؟'
+    );
+}
+
+function setGalleryPrimary(imageId) {
+    galleryAction(
+        `/api/product/${PRODUCT_ID}/gallery/${imageId}/primary`,
+        { method: 'POST' },
+        'جعل هذه الصورة هي الصورة الرئيسية للمنتج؟'
+    );
+}
+
+function moveGalleryImage(imageId, direction) {
+    galleryAction(
+        `/api/product/${PRODUCT_ID}/gallery/${imageId}/move`,
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ direction })
+        }
+    );
+}
 
 async function loadVariants() {
     if (!PRODUCT_ID) return;
