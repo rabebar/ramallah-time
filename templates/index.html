@@ -432,47 +432,60 @@
 
     lucide.createIcons();
     // --- منطق تثبيت التطبيق للتاجر (PWA Dashboard) ---
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isSamsungBrowser = /SamsungBrowser/i.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+    const merchantBanner = document.getElementById('pwaMerchantBanner');
+    const merchantInstallBtn = document.getElementById('installMerchantBtn');
+    const iosInstallInfo = document.getElementById('iosInstallInfo');
+    let deferredPromptMerchant = null;
 
-    // لا تظهر البانر إذا كان التطبيق مثبتاً بالفعل
-    if (!isStandalone) {
-        const merchantBanner = document.getElementById('pwaMerchantBanner');
-        
+    if (!isStandalone && merchantBanner) {
+        merchantBanner.style.display = 'flex';
         if (isIOS) {
-            // مستخدم آيفون: أظهر النص الإرشادي فقط
-            if (merchantBanner) {
-                merchantBanner.style.display = 'flex';
-                document.getElementById('iosInstallInfo').style.display = 'block';
-                document.getElementById('installMerchantBtn').style.display = 'none';
-            }
+            if (iosInstallInfo) iosInstallInfo.style.display = 'block';
+            if (merchantInstallBtn) merchantInstallBtn.style.display = 'none';
         } else {
-            // مستخدم أندرويد/كروم: التعامل مع حدث التثبيت المباشر
-            let deferredPromptMerchant;
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPromptMerchant = e;
-                if (merchantBanner) {
-                    merchantBanner.style.display = 'flex';
-                    document.getElementById('installMerchantBtn').style.display = 'block';
-                    document.getElementById('iosInstallInfo').style.display = 'none';
-                }
-            });
-
-            const merchantInstallBtn = document.getElementById('installMerchantBtn');
-            if (merchantInstallBtn) {
-                merchantInstallBtn.addEventListener('click', async () => {
-                    if (deferredPromptMerchant) {
-                        deferredPromptMerchant.prompt();
-                        const { outcome } = await deferredPromptMerchant.userChoice;
-                        if (outcome === 'accepted') {
-                            merchantBanner.style.display = 'none';
-                        }
-                        deferredPromptMerchant = null;
-                    }
-                });
-            }
+            if (iosInstallInfo) iosInstallInfo.style.display = 'none';
+            if (merchantInstallBtn) merchantInstallBtn.style.display = 'block';
         }
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPromptMerchant = e;
+        if (merchantBanner && !isStandalone) merchantBanner.style.display = 'flex';
+        if (merchantInstallBtn) merchantInstallBtn.style.display = 'block';
+        if (iosInstallInfo) iosInstallInfo.style.display = 'none';
+    });
+
+    window.addEventListener('appinstalled', () => {
+        if (merchantBanner) merchantBanner.style.display = 'none';
+        deferredPromptMerchant = null;
+    });
+
+    if (merchantInstallBtn) {
+        merchantInstallBtn.addEventListener('click', async () => {
+            if (deferredPromptMerchant) {
+                deferredPromptMerchant.prompt();
+                const { outcome } = await deferredPromptMerchant.userChoice;
+                if (outcome === 'accepted' && merchantBanner) {
+                    merchantBanner.style.display = 'none';
+                }
+                deferredPromptMerchant = null;
+                return;
+            }
+            if (isSamsungBrowser) {
+                alert('\u0644\u0644\u062a\u062b\u0628\u064a\u062a \u0641\u064a \u0645\u062a\u0635\u0641\u062d \u0633\u0627\u0645\u0633\u0648\u0646\u062c: \u0627\u0636\u063a\u0637 \u0632\u0631 \u0627\u0644\u0642\u0627\u0626\u0645\u0629\u060c \u062b\u0645 "\u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u0635\u0641\u062d\u0629 \u0625\u0644\u0649"\u060c \u062b\u0645 "\u0627\u0644\u0634\u0627\u0634\u0629 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629".');
+            } else if (isAndroid) {
+                alert('\u0627\u0641\u062a\u062d \u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0645\u062a\u0635\u0641\u062d\u060c \u062b\u0645 \u0627\u062e\u062a\u0631 "\u062a\u062b\u0628\u064a\u062a \u0627\u0644\u062a\u0637\u0628\u064a\u0642" \u0623\u0648 "\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0627\u0644\u0634\u0627\u0634\u0629 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629".');
+            } else {
+                alert('\u0627\u0641\u062a\u062d \u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0645\u062a\u0635\u0641\u062d\u060c \u062b\u0645 \u0627\u062e\u062a\u0631 "\u062a\u062b\u0628\u064a\u062a \u0627\u0644\u062a\u0637\u0628\u064a\u0642".');
+            }
+        });
     }
 </script>
 {% endblock %}

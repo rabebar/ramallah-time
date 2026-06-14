@@ -1464,19 +1464,25 @@
         let deferredPrompt = null;
         const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent)
             || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const isAndroidDevice = /Android/i.test(navigator.userAgent);
+        const isSamsungBrowser = /SamsungBrowser/i.test(navigator.userAgent);
         const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches
             || window.navigator.standalone === true;
 
         async function initPWA() {
             const pwaBanner = document.getElementById('pwaBanner');
-            if (!pwaBanner || window.innerWidth > 1024) return;
+            const installBtn = document.getElementById('installBtn');
+            if (!pwaBanner) return;
 
             if (isStandalonePWA) return;
 
-            if (isIOSDevice) {
+            if (window.innerWidth <= 1024 || isIOSDevice || isAndroidDevice) {
                 pwaBanner.style.display = 'flex';
-                const installBtn = document.getElementById('installBtn');
-                if (installBtn) installBtn.textContent = currentLang === 'ar' ? 'طريقة التثبيت' : 'How to install';
+                if (installBtn && isIOSDevice) {
+                    installBtn.textContent = currentLang === 'ar'
+                        ? '\u0637\u0631\u064a\u0642\u0629 \u0627\u0644\u062a\u062b\u0628\u064a\u062a'
+                        : 'How to install';
+                }
             }
         }
 
@@ -1497,6 +1503,18 @@
             deferredPrompt = null;
         });
 
+        function showManualInstallHelp() {
+            if (isIOSDevice) {
+                alert('\u0644\u062a\u062b\u0628\u064a\u062a \u0627\u0644\u062a\u0637\u0628\u064a\u0642: \u0627\u0636\u063a\u0637 \u0632\u0631 \u0627\u0644\u0645\u0634\u0627\u0631\u0643\u0629\u060c \u062b\u0645 \u0627\u062e\u062a\u0631 "\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0627\u0644\u0634\u0627\u0634\u0629 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629".');
+            } else if (isSamsungBrowser) {
+                alert('\u0644\u0644\u062a\u062b\u0628\u064a\u062a \u0641\u064a \u0645\u062a\u0635\u0641\u062d \u0633\u0627\u0645\u0633\u0648\u0646\u062c: \u0627\u0636\u063a\u0637 \u0632\u0631 \u0627\u0644\u0642\u0627\u0626\u0645\u0629\u060c \u062b\u0645 "\u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u0635\u0641\u062d\u0629 \u0625\u0644\u0649"\u060c \u062b\u0645 "\u0627\u0644\u0634\u0627\u0634\u0629 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629".');
+            } else if (isAndroidDevice) {
+                alert('\u0627\u0641\u062a\u062d \u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0645\u062a\u0635\u0641\u062d\u060c \u062b\u0645 \u0627\u062e\u062a\u0631 "\u062a\u062b\u0628\u064a\u062a \u0627\u0644\u062a\u0637\u0628\u064a\u0642" \u0623\u0648 "\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0627\u0644\u0634\u0627\u0634\u0629 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629".');
+            } else {
+                alert('\u0627\u0641\u062a\u062d \u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0645\u062a\u0635\u0641\u062d\u060c \u062b\u0645 \u0627\u062e\u062a\u0631 "\u062a\u062b\u0628\u064a\u062a \u0627\u0644\u062a\u0637\u0628\u064a\u0642".');
+            }
+        }
+
         const installBtnElement = document.getElementById('installBtn');
         if (installBtnElement) {
             installBtnElement.addEventListener('click', async () => {
@@ -1505,8 +1523,8 @@
                     const { outcome } = await deferredPrompt.userChoice;
                     if (outcome === 'accepted') document.getElementById('pwaBanner').style.display = 'none';
                     deferredPrompt = null;
-                } else if (isIOSDevice) {
-                    alert('لتثبيت التطبيق: اضغط على زر المشاركة ثم "إضافة إلى الشاشة الرئيسية"');
+                } else {
+                    showManualInstallHelp();
                 }
             });
         }
