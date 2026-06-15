@@ -22,6 +22,7 @@ import base64
 import hashlib
 import urllib.parse
 import json
+import threading
 from datetime import datetime, timedelta
 from collections import defaultdict
 from decimal import Decimal
@@ -38,6 +39,9 @@ from shipping import ShiplyClient, ShiplyError, decrypt_api_key, encrypt_api_key
 
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 REMOVEBG_API_KEY = os.environ.get('REMOVEBG_API_KEY', '')
+VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY', '').strip()
+VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY', '').replace('\\n', '\n').strip()
+VAPID_SUBJECT = os.environ.get('VAPID_SUBJECT', 'mailto:admin@rtstudio.store').strip()
 
 SHIPLY_STATUS_NAMES = {
     1: 'مسودة',
@@ -555,6 +559,22 @@ try:
         WHERE LOWER(slug) = 'chrono-watches'
           AND product_gallery_enabled = FALSE
     """)
+    _mcur.execute("""
+        CREATE TABLE IF NOT EXISTS push_subscriptions (
+            id SERIAL PRIMARY KEY,
+            store_id INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+            endpoint TEXT NOT NULL UNIQUE,
+            p256dh TEXT NOT NULL,
+            auth TEXT NOT NULL,
+            user_agent TEXT,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        )
+    """)
+    _mcur.execute("""
+        CREATE INDEX IF NOT EXISTS ix_push_subscriptions_store
+        ON push_subscriptions(store_id)
+    """)
     _mconn.commit()
     _mconn.close()
 except Exception as _me:
@@ -572,6 +592,77 @@ def get_store_by_user(user_id):
     store = cur.fetchone()
     conn.close()
     return store
+
+
+def send_order_push_notifications(store_id, store_name, store_slug, order_id, total, currency):
+    """Best-effort push delivery. Notification failures never affect the order."""
+    if not (VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY):
+        return
+
+    try:
+        from pywebpush import webpush, WebPushException
+    except ImportError:
+        logging.warning("Push notifications disabled: pywebpush is not installed")
+        return
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT id, endpoint, p256dh, auth
+            FROM push_subscriptions
+            WHERE store_id = %s
+        """, (store_id,))
+        subscriptions = cur.fetchall()
+    finally:
+        conn.close()
+
+    payload = json.dumps({
+        "title": f"طلب جديد في {store_name}",
+        "body": f"الطلب #{order_id} بقيمة {currency} {float(total):.2f}",
+        "tag": f"store-{store_id}-order-{order_id}",
+        "url": f"/admin?active_tab=orders&order_id={order_id}",
+        "icon": f"/admin-icon/{urllib.parse.quote(str(store_slug), safe='')}/192",
+        "badge": "/static/rt_logo_192.png",
+        "order_id": order_id,
+    }, ensure_ascii=False)
+
+    expired_ids = []
+    for subscription in subscriptions:
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": subscription['endpoint'],
+                    "keys": {
+                        "p256dh": subscription['p256dh'],
+                        "auth": subscription['auth'],
+                    },
+                },
+                data=payload,
+                vapid_private_key=VAPID_PRIVATE_KEY,
+                vapid_claims={"sub": VAPID_SUBJECT},
+                timeout=5,
+            )
+        except WebPushException as exc:
+            status_code = getattr(getattr(exc, 'response', None), 'status_code', None)
+            if status_code in (404, 410):
+                expired_ids.append(subscription['id'])
+            else:
+                logging.warning(f"Push delivery failed for store {store_id}: {exc}")
+        except Exception as exc:
+            logging.warning(f"Push delivery error for store {store_id}: {exc}")
+
+    if expired_ids:
+        cleanup_conn = get_db_connection()
+        cleanup_cur = cleanup_conn.cursor()
+        try:
+            cleanup_cur.execute(
+                "DELETE FROM push_subscriptions WHERE id = ANY(%s)",
+                (expired_ids,)
+            )
+            cleanup_conn.commit()
+        finally:
+            cleanup_conn.close()
 
 def get_store_by_id(store_id):
     conn = get_db_connection()
@@ -1047,6 +1138,8 @@ def admin():
     orders = []
     analytics = {}
     shipping_integration = None
+    latest_order_id = 0
+    pending_order_count = 0
     if store:
                 # جلب المنتجات النشطة فقط (التي لم يتم إخفاؤها)
                 # التاجر يرى جميع المنتجات (المخفي والمتوفر)
@@ -1073,6 +1166,9 @@ def admin():
             ORDER BY od.created_at DESC
         """, (store['id'],))
         orders = cursor.fetchall()
+        if orders:
+            latest_order_id = max(order['id'] for order in orders)
+            pending_order_count = sum(1 for order in orders if order['status'] == 'sent')
 
         cursor.execute("""
             SELECT enabled, environment, country,
@@ -1166,6 +1262,10 @@ def admin():
         orders=orders,
         analytics=analytics,
         shipping_integration=shipping_integration,
+        latest_order_id=latest_order_id,
+        pending_order_count=pending_order_count,
+        push_configured=bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY),
+        vapid_public_key=VAPID_PUBLIC_KEY,
         theme_list=theme_list,
         store_backgrounds=STORE_BACKGROUNDS
     )
@@ -1926,6 +2026,23 @@ def place_order():
         cur.execute("INSERT INTO analytics_events(store_id, event_name) VALUES (%s, 'whatsapp_sent')", (store_id,))
         conn.commit()
 
+        try:
+            threading.Thread(
+                target=send_order_push_notifications,
+                args=(
+                    store['id'],
+                    store['name'],
+                    store['slug'],
+                    order_id,
+                    subtotal,
+                    store.get('currency') or '₪',
+                ),
+                daemon=True,
+                name=f"order-push-{order_id}",
+            ).start()
+        except Exception as push_error:
+            logging.warning(f"Order {order_id} saved, but push dispatch failed: {push_error}")
+
         phone = (store.get('whatsapp_phone') or '').strip()
         encoded = urllib.parse.quote(wa_text)
         wa_link = f"https://wa.me/{phone}?text={encoded}" if phone else None
@@ -2006,6 +2123,118 @@ def cancel_order(order_id):
         conn.rollback()
         logging.error(f"cancel_order error: {e}")
         return jsonify({"error": "تعذر إلغاء الطلب"}), 500
+    finally:
+        conn.close()
+
+
+@app.get("/admin/orders/notification-state")
+def admin_order_notification_state():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "غير مصرّح"}), 401
+    store = get_store_by_user(user_id)
+    if not store:
+        return jsonify({"error": "لا يوجد متجر مرتبط"}), 404
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT
+                COALESCE(MAX(id), 0) AS latest_order_id,
+                COUNT(*) FILTER (WHERE status = 'sent') AS pending_count
+            FROM order_drafts
+            WHERE store_id = %s
+        """, (store['id'],))
+        state = cur.fetchone()
+        cur.execute("""
+            SELECT id, grand_total, created_at
+            FROM order_drafts
+            WHERE store_id = %s
+            ORDER BY id DESC
+            LIMIT 1
+        """, (store['id'],))
+        latest = cur.fetchone()
+        return jsonify({
+            "latest_order_id": state['latest_order_id'] or 0,
+            "pending_count": state['pending_count'] or 0,
+            "latest_total": float(latest['grand_total']) if latest else 0,
+            "currency": store.get('currency') or '₪',
+        })
+    finally:
+        conn.close()
+
+
+@app.post("/admin/push/subscribe")
+def subscribe_admin_push():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "غير مصرّح"}), 401
+    if not (VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY):
+        return jsonify({"error": "خدمة إشعارات الهاتف غير مضبوطة بعد"}), 503
+
+    store = get_store_by_user(user_id)
+    if not store:
+        return jsonify({"error": "لا يوجد متجر مرتبط"}), 404
+
+    data = request.get_json(silent=True) or {}
+    endpoint = str(data.get('endpoint') or '').strip()
+    keys = data.get('keys') or {}
+    p256dh = str(keys.get('p256dh') or '').strip()
+    auth = str(keys.get('auth') or '').strip()
+    if not endpoint.startswith('https://') or not p256dh or not auth:
+        return jsonify({"error": "بيانات اشتراك الإشعارات غير صالحة"}), 400
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            INSERT INTO push_subscriptions (
+                store_id, endpoint, p256dh, auth, user_agent, updated_at
+            )
+            VALUES (%s, %s, %s, %s, %s, NOW())
+            ON CONFLICT (endpoint) DO UPDATE SET
+                store_id = EXCLUDED.store_id,
+                p256dh = EXCLUDED.p256dh,
+                auth = EXCLUDED.auth,
+                user_agent = EXCLUDED.user_agent,
+                updated_at = NOW()
+        """, (
+            store['id'], endpoint, p256dh, auth,
+            request.headers.get('User-Agent', '')[:500],
+        ))
+        conn.commit()
+        return jsonify({"ok": True})
+    except Exception:
+        conn.rollback()
+        logging.exception("Failed to save push subscription")
+        return jsonify({"error": "تعذر حفظ اشتراك الإشعارات"}), 500
+    finally:
+        conn.close()
+
+
+@app.post("/admin/push/unsubscribe")
+def unsubscribe_admin_push():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "غير مصرّح"}), 401
+    store = get_store_by_user(user_id)
+    if not store:
+        return jsonify({"error": "لا يوجد متجر مرتبط"}), 404
+
+    endpoint = str((request.get_json(silent=True) or {}).get('endpoint') or '').strip()
+    if not endpoint:
+        return jsonify({"error": "اشتراك غير صالح"}), 400
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            "DELETE FROM push_subscriptions WHERE store_id = %s AND endpoint = %s",
+            (store['id'], endpoint)
+        )
+        conn.commit()
+        return jsonify({"ok": True})
     finally:
         conn.close()
 

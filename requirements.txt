@@ -6,3 +6,4 @@ Werkzeug
 gunicorn
 cryptography
 requests
+pywebpush

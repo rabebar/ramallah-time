@@ -188,6 +188,24 @@ def init_db():
     cursor.execute("ALTER TABLE order_drafts ADD COLUMN IF NOT EXISTS customer_address TEXT")
     print("✅ order_drafts table ready.")
 
+    # Browser push subscriptions for merchant admin PWAs.
+    cursor.execute('''CREATE TABLE IF NOT EXISTS push_subscriptions (
+            id SERIAL PRIMARY KEY,
+            store_id INTEGER NOT NULL,
+            endpoint TEXT NOT NULL UNIQUE,
+            p256dh TEXT NOT NULL,
+            auth TEXT NOT NULL,
+            user_agent TEXT,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE CASCADE
+        )''')
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS ix_push_subscriptions_store
+        ON push_subscriptions(store_id)
+    """)
+    print("✅ push_subscriptions table ready.")
+
     # order_lines
     cursor.execute('''CREATE TABLE IF NOT EXISTS order_lines (
             id SERIAL PRIMARY KEY,
