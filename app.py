@@ -2462,6 +2462,80 @@ def super_admin():
     t_products = cursor.fetchone()['count']
     cursor.execute("SELECT SUM(credits) as sum_c FROM users")
     t_credits = cursor.fetchone()['sum_c'] or 0
+
+    order_period = request.args.get('order_period', '30')
+    if order_period not in {'today', '7', '30', 'all'}:
+        order_period = '30'
+    try:
+        order_store_id = int(request.args.get('order_store_id', '') or 0)
+    except (TypeError, ValueError):
+        order_store_id = 0
+
+    order_filters = []
+    order_params = []
+    if order_period == 'today':
+        order_filters.append("od.created_at >= CURRENT_DATE")
+    elif order_period in {'7', '30'}:
+        order_filters.append(f"od.created_at >= NOW() - INTERVAL '{int(order_period)} days'")
+    if order_store_id:
+        order_filters.append("od.store_id = %s")
+        order_params.append(order_store_id)
+    order_where = f"WHERE {' AND '.join(order_filters)}" if order_filters else ""
+
+    cursor.execute(f"""
+        SELECT
+            COUNT(*) AS total,
+            COUNT(*) FILTER (WHERE od.status = 'sent') AS new_count,
+            COUNT(*) FILTER (WHERE od.status = 'confirmed') AS confirmed_count,
+            COUNT(*) FILTER (WHERE od.status = 'canceled') AS canceled_count
+        FROM order_drafts od
+        {order_where}
+    """, tuple(order_params))
+    order_summary = cursor.fetchone()
+    total_orders = order_summary['total'] or 0
+    confirmed_orders = order_summary['confirmed_count'] or 0
+    order_stats = {
+        'total': total_orders,
+        'new': order_summary['new_count'] or 0,
+        'confirmed': confirmed_orders,
+        'canceled': order_summary['canceled_count'] or 0,
+        'confirmation_rate': round((confirmed_orders / total_orders) * 100, 1) if total_orders else 0,
+    }
+
+    cursor.execute(f"""
+        SELECT
+            COALESCE(NULLIF(s.currency, ''), '₪') AS currency,
+            COALESCE(SUM(od.grand_total), 0) AS confirmed_value
+        FROM order_drafts od
+        JOIN stores s ON s.id = od.store_id
+        {order_where}{' AND' if order_where else ' WHERE'} od.status = 'confirmed'
+        GROUP BY COALESCE(NULLIF(s.currency, ''), '₪')
+        ORDER BY currency
+    """, tuple(order_params))
+    order_values_by_currency = cursor.fetchall()
+
+    cursor.execute(f"""
+        SELECT
+            s.id,
+            s.name,
+            s.slug,
+            COALESCE(NULLIF(s.currency, ''), '₪') AS currency,
+            COUNT(od.id) AS total_orders,
+            COUNT(od.id) FILTER (WHERE od.status = 'confirmed') AS confirmed_orders,
+            COUNT(od.id) FILTER (WHERE od.status = 'canceled') AS canceled_orders,
+            COALESCE(SUM(od.grand_total) FILTER (WHERE od.status = 'confirmed'), 0) AS confirmed_value
+        FROM order_drafts od
+        JOIN stores s ON s.id = od.store_id
+        {order_where}
+        GROUP BY s.id, s.name, s.slug
+        ORDER BY total_orders DESC, confirmed_orders DESC, s.name
+        LIMIT 20
+    """, tuple(order_params))
+    order_store_rows = cursor.fetchall()
+
+    cursor.execute("SELECT id, name, slug FROM stores ORDER BY name")
+    order_store_options = cursor.fetchall()
+
     cursor.execute("""
         SELECT users.*, stores.name as store_name, stores.slug as store_slug
         FROM users LEFT JOIN stores ON users.id = stores.user_id 
@@ -2475,6 +2549,12 @@ def super_admin():
                            users=users,
                            visit_stats=visit_stats,
                            join_visit_stats=join_visit_stats,
+                           order_stats=order_stats,
+                           order_values_by_currency=order_values_by_currency,
+                           order_store_rows=order_store_rows,
+                           order_store_options=order_store_options,
+                           order_period=order_period,
+                           order_store_id=order_store_id,
                            removebg_enabled=removebg_enabled,
                            removebg_configured=bool(REMOVEBG_API_KEY),
                            now=datetime.utcnow())  # <--- هذا هو السطر الذي كان ناقصاً
