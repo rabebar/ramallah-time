@@ -136,7 +136,7 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
 .value-showcase-kicker { color: #0F766E; font-size: 12px; font-weight: 800; margin-bottom: 6px; }
 .value-showcase-title { color: #111827; font-size: clamp(22px, 2.6vw, 34px); line-height: 1.35; font-weight: 800; }
 .value-showcase-link { color: #0F766E; font-size: 13px; font-weight: 800; text-decoration: none; white-space: nowrap; padding: 9px 0; border-bottom: 2px solid #99F6E4; }
-.value-grid { display: grid; grid-template-columns: 1.45fr repeat(3, minmax(0, 1fr)); gap: 12px; }
+.value-grid { display: grid; grid-template-columns: 1.35fr repeat(2, minmax(0, 1fr)); gap: 12px; }
 .value-card {
  min-height: 210px; padding: 22px; border: 1px solid #E5E7EB; border-radius: 8px;
  background: #FFFFFF; box-shadow: 0 12px 30px rgba(17,24,39,.06);
@@ -147,9 +147,10 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
 .value-showcase.is-visible .value-card:nth-child(2) { transition-delay: .06s; }
 .value-showcase.is-visible .value-card:nth-child(3) { transition-delay: .12s; }
 .value-showcase.is-visible .value-card:nth-child(4) { transition-delay: .18s; }
+.value-showcase.is-visible .value-card:nth-child(5) { transition-delay: .24s; }
 .value-card:hover { box-shadow: 0 18px 38px rgba(17,24,39,.10); }
 .value-card.featured {
- display: grid; grid-template-columns: minmax(0, 1fr) 108px; align-items: center; gap: 16px;
+ display: grid; grid-template-columns: minmax(0, 1fr) 108px; align-items: center; gap: 16px; grid-row: span 2;
  color: #FFFFFF; background: #0F766E; border-color: #0F766E; overflow: hidden;
 }
 .value-card-icon {
@@ -165,6 +166,10 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
 .value-card.cart .value-card-icon { color: #1D4ED8; background: #DBEAFE; }
 .value-card.manage .value-card-icon { color: #B45309; background: #FEF3C7; }
 .value-card.commission .value-card-icon { color: #BE123C; background: #FFE4E6; }
+.value-card.notifications .value-card-icon { color: #BE123C; background: #FFE4E6; }
+.value-card.shipping .value-card-icon { color: #0369A1; background: #E0F2FE; }
+.value-card.gallery .value-card-icon { color: #B45309; background: #FEF3C7; }
+.value-card.variants .value-card-icon { color: #6D28D9; background: #EDE9FE; }
 .mini-phone {
  width: 96px; height: 174px; justify-self: end; background: #111827; border: 5px solid #111827;
  border-radius: 22px; box-shadow: 0 18px 34px rgba(0,0,0,.22); overflow: hidden; transform: rotate(-3deg);
@@ -323,13 +328,12 @@ body.ltr .wa-float { left: auto; right: 24px; }
  .value-showcase-link { font-size: 11px; }
  .value-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
  .value-card { min-height: 174px; padding: 16px 14px; }
- .value-card.featured { grid-column: 1 / -1; min-height: 204px; grid-template-columns: minmax(0, 1fr) 94px; }
+ .value-card.featured { grid-column: 1 / -1; grid-row: auto; min-height: 204px; grid-template-columns: minmax(0, 1fr) 94px; }
  .value-card.featured .value-card-title { font-size: 17px; }
  .value-card-icon { width: 38px; height: 38px; margin-bottom: 14px; }
  .value-card-title { font-size: 13px; }
  .value-card-desc { font-size: 10px; line-height: 1.65; }
  .mini-phone { width: 84px; height: 154px; border-radius: 19px; }
- .value-card.commission { grid-column: 1 / -1; min-height: 142px; }
  .hero-signup-shell { margin-bottom: 34px; padding: 0 18px; }
  .container { padding: 0 18px; }
  .section { padding: 32px 0; }
@@ -473,8 +477,8 @@ body.ltr .wa-float { left: auto; right: 24px; }
 <section class="value-showcase" id="featuredBenefits" aria-labelledby="featuredBenefitsTitle">
  <div class="value-showcase-head">
   <div>
-   <div class="value-showcase-kicker" data-ar="مصمم للبيع من الهاتف" data-en="Built for mobile selling">مصمم للبيع من الهاتف</div>
-   <h2 class="value-showcase-title" id="featuredBenefitsTitle" data-ar="أهم أدوات متجرك أمام الزبون من أول لحظة" data-en="Your store's strongest tools, visible from the first moment">أهم أدوات متجرك أمام الزبون من أول لحظة</h2>
+   <div class="value-showcase-kicker" data-ar="من الطلب إلى الشحن" data-en="From order to delivery">من الطلب إلى الشحن</div>
+   <h2 class="value-showcase-title" id="featuredBenefitsTitle" data-ar="ميزات تشغيلية تجعل المتجر أقرب لتطبيق حقيقي" data-en="Operational tools that make the store feel like a real app">ميزات تشغيلية تجعل المتجر أقرب لتطبيق حقيقي</h2>
   </div>
   <a class="value-showcase-link" href="#features" data-ar="استكشف جميع الميزات" data-en="Explore all features">استكشف جميع الميزات</a>
  </div>
@@ -485,7 +489,7 @@ body.ltr .wa-float { left: auto; right: 24px; }
      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg>
     </div>
     <h3 class="value-card-title" data-ar="تطبيق ويب باسم متجرك وأيقونته" data-en="A web app with your store name and icon">تطبيق ويب باسم متجرك وأيقونته</h3>
-    <p class="value-card-desc" data-ar="يثبّته الزبون على هاتفه ويفتح متجرك مباشرة بتجربة سريعة ومناسبة لمختلف الأجهزة." data-en="Customers install it on their phones and open your store directly through a fast experience built for different devices.">يثبّته الزبون على هاتفه ويفتح متجرك مباشرة بتجربة سريعة ومناسبة لمختلف الأجهزة.</p>
+    <p class="value-card-desc" data-ar="يثبّته الزبون على هاتفه، ومعه تطبيق إدارة خاص بالتاجر لمتابعة الطلبات والمنتجات بسرعة." data-en="Customers install your store on their phones, while merchants get their own admin app for fast order and product management.">يثبّته الزبون على هاتفه، ومعه تطبيق إدارة خاص بالتاجر لمتابعة الطلبات والمنتجات بسرعة.</p>
    </div>
    <div class="mini-phone" aria-hidden="true">
     <div class="mini-phone-screen">
@@ -498,26 +502,33 @@ body.ltr .wa-float { left: auto; right: 24px; }
     </div>
    </div>
   </article>
-  <article class="value-card cart">
+  <article class="value-card notifications">
    <div class="value-card-icon" aria-hidden="true">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h7.78a2 2 0 0 0 1.95-1.57L20.5 7H5.12"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 21a2 2 0 0 0 3.4 0"/><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M4 2C2.8 3 2 4.4 2 6"/><path d="M22 6c0-1.6-.8-3-2-4"/></svg>
    </div>
-   <h3 class="value-card-title" data-ar="سلة وطلبات واتساب" data-en="Cart and WhatsApp orders">سلة وطلبات واتساب</h3>
-   <p class="value-card-desc" data-ar="عدة منتجات في طلب واحد، تصل تفاصيله إلى التاجر برسالة منظمة." data-en="Multiple products in one order, delivered to the merchant in one organized message.">عدة منتجات في طلب واحد، تصل تفاصيله إلى التاجر برسالة منظمة.</p>
+   <h3 class="value-card-title" data-ar="إشعار فوري لكل طلب" data-en="Instant order alerts">إشعار فوري لكل طلب</h3>
+   <p class="value-card-desc" data-ar="تنبيه على هاتف التاجر عند وصول طلب جديد، مع صوت داخل لوحة الإدارة عند فتحها." data-en="A phone alert when a new order arrives, plus an in-dashboard sound while the admin panel is open.">تنبيه على هاتف التاجر عند وصول طلب جديد، مع صوت داخل لوحة الإدارة عند فتحها.</p>
   </article>
-  <article class="value-card manage">
+  <article class="value-card shipping">
    <div class="value-card-icon" aria-hidden="true">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.4 2.6a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.7a1 1 0 0 0-.3-.7L19 10h-5"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
    </div>
-   <h3 class="value-card-title" data-ar="إدارة سهلة للمنتجات" data-en="Easy product management">إدارة سهلة للمنتجات</h3>
-   <p class="value-card-desc" data-ar="أضف الصور والأسعار وعدّل المنتجات من لوحة تحكم واضحة." data-en="Add photos and prices, and update products from a clear dashboard.">أضف الصور والأسعار وعدّل المنتجات من لوحة تحكم واضحة.</p>
+   <h3 class="value-card-title" data-ar="طلب شحن من لوحة الإدارة" data-en="Request shipping from the dashboard">طلب شحن من لوحة الإدارة</h3>
+   <p class="value-card-desc" data-ar="اربط حساب شركة الشحن، أنشئ الشحنة، واحسب الرسوم من داخل الطلب." data-en="Connect a shipping provider, create the shipment, and calculate fees from inside the order.">اربط حساب شركة الشحن، أنشئ الشحنة، واحسب الرسوم من داخل الطلب.</p>
   </article>
-  <article class="value-card commission">
+  <article class="value-card gallery">
    <div class="value-card-icon" aria-hidden="true">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
    </div>
-   <h3 class="value-card-title" data-ar="صفر عمولة على المبيعات" data-en="Zero sales commission">صفر عمولة على المبيعات</h3>
-   <p class="value-card-desc" data-ar="أرباح مبيعاتك تبقى لك مقابل اشتراك واضح وثابت." data-en="Your sales revenue stays yours with one clear fixed subscription.">أرباح مبيعاتك تبقى لك مقابل اشتراك واضح وثابت.</p>
+   <h3 class="value-card-title" data-ar="أكثر من صورة لنفس المنتج" data-en="Multiple images per product">أكثر من صورة لنفس المنتج</h3>
+   <p class="value-card-desc" data-ar="اعرض المنتج من عدة زوايا بصورة رئيسية ومعرض واضح يناسب الهاتف." data-en="Show the product from several angles with a main image and a mobile-friendly gallery.">اعرض المنتج من عدة زوايا بصورة رئيسية ومعرض واضح يناسب الهاتف.</p>
+  </article>
+  <article class="value-card variants">
+   <div class="value-card-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+   </div>
+   <h3 class="value-card-title" data-ar="خيارات للنوع أو الطعم أو الحجم" data-en="Options for type, flavor, or size">خيارات للنوع أو الطعم أو الحجم</h3>
+   <p class="value-card-desc" data-ar="لكل خيار سعر وصورة ووصف مستقل، مناسب للساعات، العطور، الطعام والملابس." data-en="Each option can have its own price, image, and description for watches, perfumes, food, and fashion.">لكل خيار سعر وصورة ووصف مستقل، مناسب للساعات، العطور، الطعام والملابس.</p>
   </article>
  </div>
 </section>
@@ -639,14 +650,19 @@ body.ltr .wa-float { left: auto; right: 24px; }
    <div class="feature-desc" data-ar="الزبون يطلب مباشرة عبر واتساب بدون بوابة دفع أو تعقيد." data-en="Customers order directly via WhatsApp without payment gateways or complexity.">الزبون يطلب مباشرة عبر واتساب بدون بوابة دفع أو تعقيد.</div>
   </div>
   <div class="feature-card">
+   <div class="feature-icon">🔔</div>
+   <div class="feature-title" data-ar="إشعارات فورية للطلبات الجديدة" data-en="Instant New Order Notifications">إشعارات فورية للطلبات الجديدة</div>
+   <div class="feature-desc" data-ar="يصلك تنبيه عند وصول طلب جديد، مع صوت داخل لوحة الإدارة حتى لا تضيع الطلبات أثناء الانشغال." data-en="Get notified when a new order arrives, with an admin-panel sound so orders are not missed during busy moments.">يصلك تنبيه عند وصول طلب جديد، مع صوت داخل لوحة الإدارة حتى لا تضيع الطلبات أثناء الانشغال.</div>
+  </div>
+  <div class="feature-card">
    <div class="feature-icon"></div>
    <div class="feature-title" data-ar="إحصائيات المتجر" data-en="Store Analytics">إحصائيات المتجر</div>
    <div class="feature-desc" data-ar="تابع زيارات متجرك ومشاهدات منتجاتك وأداء مبيعاتك." data-en="Track your store visits, product views, and sales performance.">تابع زيارات متجرك ومشاهدات منتجاتك وأداء مبيعاتك.</div>
   </div>
   <div class="feature-card">
    <div class="feature-icon"></div>
-   <div class="feature-title" data-ar="تطبيق ويب خاص بكل متجر" data-en="A Web App for Every Store">تطبيق ويب خاص بكل متجر</div>
-   <div class="feature-desc" data-ar="يُثبّت على هاتف الزبون باسم متجرك وأيقونته، ويعمل بسلاسة على مختلف الأجهزة." data-en="Installable on customers' phones with your store name and icon, designed to work smoothly across devices.">يُثبّت على هاتف الزبون باسم متجرك وأيقونته، ويعمل بسلاسة على مختلف الأجهزة.</div>
+   <div class="feature-title" data-ar="تطبيق ويب للمتجر والإدارة" data-en="Web Apps for Store and Admin">تطبيق ويب للمتجر والإدارة</div>
+   <div class="feature-desc" data-ar="يُثبّت باسم المتجر وأيقونته، مع تطبيق إدارة خاص بالتاجر للوصول السريع للطلبات والمنتجات." data-en="Installable with the store name and icon, plus a dedicated merchant admin app for fast access to orders and products.">يُثبّت باسم المتجر وأيقونته، مع تطبيق إدارة خاص بالتاجر للوصول السريع للطلبات والمنتجات.</div>
   </div>
   <div class="feature-card">
    <div class="feature-icon"></div>
@@ -664,9 +680,19 @@ body.ltr .wa-float { left: auto; right: 24px; }
    <div class="feature-desc" data-ar="أضف منتجاتك وصورها وأسعارها وعدّل تفاصيلها بسهولة من لوحة تحكم واحدة." data-en="Add products, photos, and prices, and update their details easily from one dashboard.">أضف منتجاتك وصورها وأسعارها وعدّل تفاصيلها بسهولة من لوحة تحكم واحدة.</div>
   </div>
   <div class="feature-card">
+   <div class="feature-icon">🖼️</div>
+   <div class="feature-title" data-ar="صور متعددة لكل منتج" data-en="Multiple Product Images">صور متعددة لكل منتج</div>
+   <div class="feature-desc" data-ar="أضف صورة رئيسية وصوراً إضافية لنفس المنتج لعرض الزوايا والتفاصيل بشكل أجمل." data-en="Add a main image and extra images for the same product to show angles and details more clearly.">أضف صورة رئيسية وصوراً إضافية لنفس المنتج لعرض الزوايا والتفاصيل بشكل أجمل.</div>
+  </div>
+  <div class="feature-card">
+   <div class="feature-icon">⚙️</div>
+   <div class="feature-title" data-ar="خيارات وأنواع للمنتج" data-en="Product Options and Variants">خيارات وأنواع للمنتج</div>
+   <div class="feature-desc" data-ar="أضف أكثر من نوع أو طعم أو حجم أو لون، مع سعر وصورة ووصف خاص لكل خيار." data-en="Add several types, flavors, sizes, or colors with a dedicated price, image, and description for each option.">أضف أكثر من نوع أو طعم أو حجم أو لون، مع سعر وصورة ووصف خاص لكل خيار.</div>
+  </div>
+  <div class="feature-card">
    <div class="feature-icon"></div>
-   <div class="feature-title" data-ar="جاهز للربط مع شركات الشحن" data-en="Ready for Shipping Integrations">جاهز للربط مع شركات الشحن</div>
-   <div class="feature-desc" data-ar="بيئة مهيأة لإنشاء الشحنات وحساب الرسوم ومتابعة حالة التوصيل عند ربط شركة الشحن." data-en="A ready environment for creating shipments, calculating fees, and tracking delivery once a shipping provider is connected.">بيئة مهيأة لإنشاء الشحنات وحساب الرسوم ومتابعة حالة التوصيل عند ربط شركة الشحن.</div>
+   <div class="feature-title" data-ar="ربط المتجر بشركات الشحن" data-en="Shipping Company Integration">ربط المتجر بشركات الشحن</div>
+   <div class="feature-desc" data-ar="أنشئ طلب الشحن واحسب الرسوم وتابع الحالة من لوحة الإدارة عند ربط حساب شركة الشحن." data-en="Create shipment requests, calculate fees, and track status from the admin panel when a shipping account is connected.">أنشئ طلب الشحن واحسب الرسوم وتابع الحالة من لوحة الإدارة عند ربط حساب شركة الشحن.</div>
   </div>
  </div>
 </section>
@@ -824,6 +850,17 @@ body.ltr .wa-float { left: auto; right: 24px; }
     <div>
      <div class="author-name">عياد</div>
      <div class="author-role" data-ar="عياد للساعات" data-en="Eyad Watches">عياد للساعات</div>
+    </div>
+   </div>
+  </div>
+  <div class="testimonial">
+   <div class="stars"></div>
+   <div class="testimonial-text" data-ar="شكراً كثير على جهودكم. التطبيق رائع جداً وسهل ومتطور، وساهم كثير في تنظيم شغلي. جرّبت تطبيقات، لكن متجر CHRONO WATCHES على RT Studio أبهرني." data-en="Thank you so much for your efforts. The app is excellent, easy, and advanced, and it helped me organize my work. I tried other apps, but the CHRONO WATCHES store on RT Studio impressed me.">شكراً كثير على جهودكم. التطبيق رائع جداً وسهل ومتطور، وساهم كثير في تنظيم شغلي. جرّبت تطبيقات، لكن متجر CHRONO WATCHES على RT Studio أبهرني.</div>
+   <div class="testimonial-author">
+    <div class="author-avatar">C</div>
+    <div>
+     <div class="author-name" data-ar="صاحب متجر CHRONO WATCHES" data-en="CHRONO WATCHES Owner">صاحب متجر CHRONO WATCHES</div>
+     <div class="author-role" data-ar="متجر ساعات على RT Studio" data-en="Watches Store on RT Studio">متجر ساعات على RT Studio</div>
     </div>
    </div>
   </div>
