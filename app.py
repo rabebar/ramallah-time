@@ -3220,13 +3220,14 @@ def admin_manifest(slug):
         return jsonify({"error": "store not found"}), 404
 
     app_name = f"Admin - {store['name']}"
+    admin_start_url = f"/admin?app={urllib.parse.quote(store['slug'], safe='')}"
     manifest = {
         "id": f"/admin-app/{store['slug']}",
         "name": app_name,
         "short_name": app_name,
         "description": f"لوحة إدارة متجر {store['name']} على RT Studio",
-        "start_url": "/dashboard",
-        "scope": "/",
+        "start_url": admin_start_url,
+        "scope": "/admin",
         "display": "standalone",
         "background_color": "#ffffff",
         "theme_color": "#0A192F",

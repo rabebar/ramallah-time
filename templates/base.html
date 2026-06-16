@@ -340,7 +340,9 @@
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(err => console.log('SW Failed', err));
+                const manifestHref = document.querySelector('link[rel="manifest"]')?.getAttribute('href') || '';
+                const swScope = manifestHref.startsWith('/admin-manifest/') ? '/admin' : '/';
+                navigator.serviceWorker.register('/sw.js', { scope: swScope }).catch(err => console.log('SW Failed', err));
             });
         }
     </script>
