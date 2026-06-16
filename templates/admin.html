@@ -74,6 +74,81 @@
     }
     .input-field:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
 
+    .payment-gateway {
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid #dbe7e3;
+        background: linear-gradient(180deg, #ffffff, #f8fffc);
+        box-shadow: 0 18px 45px rgba(15, 118, 110, .08);
+    }
+    .payment-gateway-head {
+        background: linear-gradient(135deg, #0f172a, #0f766e);
+        color: #fff;
+        padding: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .payment-gateway-title { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
+    .payment-gateway-sub { color: rgba(255,255,255,.76); font-size: 12px; line-height: 1.7; }
+    .payment-secure-badge {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 8px 12px; border-radius: 999px;
+        background: rgba(255,255,255,.14); color: #d1fae5;
+        font-size: 12px; font-weight: 800;
+    }
+    .payment-gateway-body { padding: 22px; }
+    .invoice-summary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+    .invoice-box {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 14px;
+        background: #fff;
+    }
+    .invoice-label { color: #64748b; font-size: 11px; font-weight: 800; margin-bottom: 5px; }
+    .invoice-value { color: #0f172a; font-size: 15px; font-weight: 900; }
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin: 16px 0;
+    }
+    .payment-method-card {
+        border: 1px solid #dbe3ea;
+        border-radius: 14px;
+        padding: 14px;
+        background: #fff;
+        min-height: 126px;
+    }
+    .payment-method-card strong { display: block; color: #0f172a; margin-bottom: 8px; }
+    .payment-method-card span { display: block; color: #475569; font-size: 12px; line-height: 1.7; word-break: break-word; }
+    .payment-method-card.is-empty { opacity: .58; background: #f8fafc; }
+    .payment-history { margin-top: 22px; border-top: 1px dashed #cbd5e1; padding-top: 16px; }
+    .payment-history-row {
+        display: grid;
+        grid-template-columns: 1.2fr .7fr .8fr .8fr;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 12px;
+    }
+    .payment-status {
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 999px; padding: 5px 9px;
+        font-size: 11px; font-weight: 800;
+    }
+    .payment-status.pending { color: #92400e; background: #fef3c7; }
+    .payment-status.approved { color: #047857; background: #d1fae5; }
+    .payment-status.rejected { color: #b91c1c; background: #fee2e2; }
+
     .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
     .theme-opt { 
         padding: 12px; border-radius: 10px; border: 1px solid var(--border); 
@@ -135,6 +210,7 @@
     .settings-step-card[data-step="design"] { --step-color: #b7791f; }
     .settings-step-card[data-step="contact"] { --step-color: #15803d; }
     .settings-step-card[data-step="advanced"] { --step-color: #64748b; }
+    .settings-step-card[data-step="billing"] { --step-color: #0f766e; }
     .settings-step-card[data-step="shipping"] { --step-color: #0284c7; }
     .settings-step-card[data-step="share"] { --step-color: #7c3aed; }
     .settings-step-toggle {
@@ -269,6 +345,11 @@
         .settings-step-toggle { padding: 12px 14px; }
         .settings-save-bar { bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
         #themePreviewFrame { height: 560px !important; }
+        .invoice-summary,
+        .payment-methods,
+        .payment-history-row { grid-template-columns: 1fr; }
+        .payment-gateway-head,
+        .payment-gateway-body { padding: 16px; }
     }
 
     .content-section { display: none; }
@@ -944,9 +1025,140 @@
         </div>
     </form>
 
-    <section class="settings-step-card" data-step="shipping" style="max-width:1040px;margin-top:16px;">
+    <section class="settings-step-card" data-step="billing" style="max-width:1040px;margin-top:16px;">
         <button type="button" class="settings-step-toggle" onclick="toggleSettingsStep(this)">
             <span class="settings-step-number">5</span>
+            <span class="settings-step-heading">
+                <span class="settings-step-title">مركز دفع الاشتراك</span>
+                <span class="settings-step-summary">صفحة دفع منظمة للتحويل عبر المحفظة أو براق أو الإيبان</span>
+            </span>
+            <i data-lucide="chevron-down" class="settings-step-chevron"></i>
+        </button>
+        <div class="settings-step-body">
+            <div class="payment-gateway">
+                <div class="payment-gateway-head">
+                    <div>
+                        <div class="payment-gateway-title">دفع اشتراك RT Studio</div>
+                        <div class="payment-gateway-sub">هذه ليست بوابة بنكية آلية؛ الدفع يتم عبر تحويل مباشر ويتم تفعيل الاشتراك بعد مراجعة الإدارة.</div>
+                    </div>
+                    <div class="payment-secure-badge">
+                        <i data-lucide="shield-check" style="width:16px;height:16px;"></i>
+                        مراجعة آمنة
+                    </div>
+                </div>
+                <div class="payment-gateway-body">
+                    <form action="/admin/subscription-payment" method="POST" enctype="multipart/form-data">
+                        <div class="invoice-summary">
+                            <div class="invoice-box">
+                                <div class="invoice-label">المتجر</div>
+                                <div class="invoice-value">{{ store.name }}</div>
+                            </div>
+                            <div class="invoice-box">
+                                <div class="invoice-label">حالة الاشتراك</div>
+                                <div class="invoice-value">
+                                    {% if stats.sub.days_left is defined and stats.sub.days_left > 0 %}
+                                        متبقّي {{ stats.sub.days_left }} يوم
+                                    {% else %}
+                                        يحتاج تفعيل أو تجديد
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="invoice-box">
+                                <div class="invoice-label">الحساب المستفيد</div>
+                                <div class="invoice-value">{{ payment_settings.payment_account_name or 'RT Studio' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label class="form-label">اختر الباقة</label>
+                                <select name="plan_type" class="input-field">
+                                    {% for plan_key, plan in subscription_plans.items() %}
+                                    <option value="{{ plan_key }}">
+                                        {{ plan.label }} - {{ plan.currency }} {{ '%.0f'|format(plan.amount) }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">طريقة الدفع</label>
+                                <select name="payment_method" class="input-field">
+                                    {% for method_key, method_label in payment_methods.items() %}
+                                    <option value="{{ method_key }}">{{ method_label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="payment-methods">
+                            <div class="payment-method-card {% if not payment_settings.payment_wallet_number %}is-empty{% endif %}">
+                                <strong>المحفظة الإلكترونية</strong>
+                                <span>الاسم: {{ payment_settings.payment_wallet_name or payment_settings.payment_account_name or 'غير مضبوط' }}</span>
+                                <span>الرقم: {{ payment_settings.payment_wallet_number or 'أضفه من السوبر أدمن' }}</span>
+                            </div>
+                            <div class="payment-method-card {% if not payment_settings.payment_wallet_number %}is-empty{% endif %}">
+                                <strong>تحويل براق</strong>
+                                <span>حوّل إلى رقم المحفظة ثم أدخل رقم العملية في الأسفل.</span>
+                                <span>{{ payment_settings.payment_wallet_number or 'رقم براق غير مضبوط' }}</span>
+                            </div>
+                            <div class="payment-method-card {% if not payment_settings.payment_iban %}is-empty{% endif %}">
+                                <strong>تحويل إلى الإيبان</strong>
+                                <span>البنك: {{ payment_settings.payment_bank_name or 'غير مضبوط' }}</span>
+                                <span>{{ payment_settings.payment_iban or 'الإيبان غير مضبوط' }}</span>
+                            </div>
+                        </div>
+
+                        <div style="padding:12px 14px;border-radius:12px;background:#ecfdf5;color:#065f46;font-size:12px;line-height:1.8;margin-bottom:16px;">
+                            {{ payment_settings.payment_note }}
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label class="form-label">رقم العملية أو مرجع التحويل</label>
+                                <input type="text" name="transaction_ref" class="input-field" placeholder="مثال: رقم عملية براق أو رقم التحويل">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">إرفاق صورة الإيصال</label>
+                                <input type="file" name="receipt" class="input-field" accept=".jpg,.jpeg,.png,.webp,.pdf">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top:14px;">
+                            <label class="form-label">ملاحظات اختيارية</label>
+                            <textarea name="notes" class="input-field" rows="2" placeholder="مثلاً: دفعت من محفظة باسم..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-action btn-save" style="margin-top:14px;max-width:260px;">
+                            إرسال إثبات الدفع
+                        </button>
+                    </form>
+
+                    <div class="payment-history">
+                        <strong style="display:block;margin-bottom:8px;color:#0f172a;">آخر عمليات الدفع</strong>
+                        {% for payment in subscription_payments %}
+                        <div class="payment-history-row">
+                            <div>
+                                <strong>{{ payment.invoice_code }}</strong>
+                                <div class="muted">{{ payment.created_at.strftime('%Y-%m-%d %H:%M') if payment.created_at else '' }}</div>
+                            </div>
+                            <div>{{ subscription_plans.get(payment.plan_type, subscription_plans.monthly).label }}</div>
+                            <div>{{ payment.currency }} {{ '%.2f'|format(payment.amount) }}</div>
+                            <div>
+                                <span class="payment-status {{ payment.status }}">
+                                    {% if payment.status == 'approved' %}مقبولة{% elif payment.status == 'rejected' %}مرفوضة{% else %}قيد المراجعة{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div style="color:#64748b;font-size:12px;padding:10px 0;">لا توجد دفعات مرسلة بعد.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="settings-step-card" data-step="shipping" style="max-width:1040px;margin-top:16px;">
+        <button type="button" class="settings-step-toggle" onclick="toggleSettingsStep(this)">
+            <span class="settings-step-number">6</span>
             <span class="settings-step-heading">
                 <span class="settings-step-title">الشحن والتوصيل</span>
                 <span class="settings-step-summary">ربط حساب Shiply الخاص بالمتجر وإدارة الشحنات</span>
@@ -1011,7 +1223,7 @@
     <!-- ══ QR CODE SECTION ══ -->
     <section class="settings-step-card" data-step="share" style="max-width:1040px;margin-top:16px;">
         <button type="button" class="settings-step-toggle" onclick="toggleSettingsStep(this)">
-            <span class="settings-step-number">6</span>
+            <span class="settings-step-number">7</span>
             <span class="settings-step-heading">
                 <span class="settings-step-title">مشاركة المتجر</span>
                 <span class="settings-step-summary">رمز QR، تنزيل الصورة ونسخ رابط المتجر</span>

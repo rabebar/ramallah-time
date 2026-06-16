@@ -31,6 +31,7 @@ from xml.sax.saxutils import escape
 from flask import Flask, render_template, request, redirect, session, url_for, flash, g, send_from_directory, send_file, jsonify
 import requests
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from rembg import remove
 from PIL import Image, ImageOps, ImageDraw, ImageFont, ImageFilter
 
@@ -520,6 +521,54 @@ UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+SUBSCRIPTION_PLANS = {
+    'monthly': {'label': 'اشتراك شهري', 'days': 30, 'amount': Decimal('100.00'), 'currency': '₪'},
+    'biannual': {'label': 'اشتراك 6 أشهر', 'days': 180, 'amount': Decimal('510.00'), 'currency': '₪'},
+    'annual': {'label': 'اشتراك سنوي', 'days': 365, 'amount': Decimal('960.00'), 'currency': '₪'},
+}
+
+PAYMENT_METHOD_LABELS = {
+    'wallet': 'محفظة إلكترونية',
+    'buraq': 'تحويل براق',
+    'iban': 'تحويل إلى الإيبان',
+}
+
+PAYMENT_SETTING_KEYS = [
+    'payment_account_name',
+    'payment_wallet_name',
+    'payment_wallet_number',
+    'payment_bank_name',
+    'payment_iban',
+    'payment_note',
+]
+
+RECEIPT_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'pdf'}
+
+
+def get_subscription_plan(plan_type):
+    return SUBSCRIPTION_PLANS.get(plan_type, SUBSCRIPTION_PLANS['monthly'])
+
+
+def get_payment_settings():
+    from database import get_app_setting
+    defaults = {
+        'payment_account_name': 'RT Studio',
+        'payment_wallet_name': '',
+        'payment_wallet_number': '',
+        'payment_bank_name': '',
+        'payment_iban': '',
+        'payment_note': 'بعد التحويل، أرسل رقم العملية أو صورة الإيصال وسيتم تفعيل الاشتراك بعد المراجعة.',
+    }
+    return {key: get_app_setting(key, defaults[key]) for key in PAYMENT_SETTING_KEYS}
+
+
+def allowed_receipt_file(filename):
+    return bool(filename and '.' in filename and filename.rsplit('.', 1)[1].lower() in RECEIPT_EXTENSIONS)
+
+
+def make_invoice_code(user_id):
+    return f"RT-{datetime.utcnow().strftime('%Y%m%d')}-{user_id}-{uuid.uuid4().hex[:6].upper()}"
+
 # Migration: product_variants + store appearance columns
 try:
     _mconn = get_db_connection()
@@ -575,6 +624,52 @@ try:
         CREATE INDEX IF NOT EXISTS ix_push_subscriptions_store
         ON push_subscriptions(store_id)
     """)
+    _mcur.execute("""
+        CREATE TABLE IF NOT EXISTS subscription_payments (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            store_id INTEGER REFERENCES stores(id) ON DELETE SET NULL,
+            invoice_code TEXT NOT NULL UNIQUE,
+            plan_type TEXT NOT NULL DEFAULT 'monthly',
+            amount NUMERIC(12,2) NOT NULL,
+            currency TEXT NOT NULL DEFAULT '₪',
+            payment_method TEXT NOT NULL,
+            transaction_ref TEXT,
+            receipt_url TEXT,
+            notes TEXT,
+            status TEXT NOT NULL DEFAULT 'pending',
+            admin_note TEXT,
+            reviewed_at TIMESTAMP,
+            reviewed_by TEXT,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        )
+    """)
+    _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS store_id INTEGER")
+    _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS admin_note TEXT")
+    _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP")
+    _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS reviewed_by TEXT")
+    _mcur.execute("""
+        CREATE INDEX IF NOT EXISTS ix_subscription_payments_status_created
+        ON subscription_payments(status, created_at DESC)
+    """)
+    _mcur.execute("""
+        CREATE INDEX IF NOT EXISTS ix_subscription_payments_user_created
+        ON subscription_payments(user_id, created_at DESC)
+    """)
+    for _key, _value in {
+        'payment_account_name': 'RT Studio',
+        'payment_wallet_name': '',
+        'payment_wallet_number': '',
+        'payment_bank_name': '',
+        'payment_iban': '',
+        'payment_note': 'بعد التحويل، أرسل رقم العملية أو صورة الإيصال وسيتم تفعيل الاشتراك بعد المراجعة.',
+    }.items():
+        _mcur.execute("""
+            INSERT INTO app_settings (setting_key, setting_value)
+            VALUES (%s, %s)
+            ON CONFLICT (setting_key) DO NOTHING
+        """, (_key, _value))
     _mconn.commit()
     _mconn.close()
 except Exception as _me:
@@ -1138,6 +1233,7 @@ def admin():
     orders = []
     analytics = {}
     shipping_integration = None
+    subscription_payments = []
     latest_order_id = 0
     pending_order_count = 0
     if store:
@@ -1179,6 +1275,15 @@ def admin():
             WHERE store_id = %s AND provider = 'shiply'
         """, (store['id'],))
         shipping_integration = cursor.fetchone()
+
+        cursor.execute("""
+            SELECT *
+            FROM subscription_payments
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+            LIMIT 8
+        """, (user_id,))
+        subscription_payments = cursor.fetchall()
 
         cursor.execute("""
             SELECT COUNT(*) AS c FROM analytics_events 
@@ -1262,6 +1367,10 @@ def admin():
         orders=orders,
         analytics=analytics,
         shipping_integration=shipping_integration,
+        subscription_payments=subscription_payments,
+        subscription_plans=SUBSCRIPTION_PLANS,
+        payment_methods=PAYMENT_METHOD_LABELS,
+        payment_settings=get_payment_settings(),
         latest_order_id=latest_order_id,
         pending_order_count=pending_order_count,
         push_configured=bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY),
@@ -1269,6 +1378,74 @@ def admin():
         theme_list=theme_list,
         store_backgrounds=STORE_BACKGROUNDS
     )
+
+@app.route('/admin/subscription-payment', methods=['POST'])
+def admin_subscription_payment():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT * FROM stores WHERE user_id = %s", (user_id,))
+        store = cursor.fetchone()
+        if not store:
+            flash("لا يوجد متجر مرتبط بالحساب.", "error")
+            return redirect(url_for('admin', active_tab='settings'))
+
+        plan_type = request.form.get('plan_type', 'monthly')
+        if plan_type not in SUBSCRIPTION_PLANS:
+            flash("الباقة المختارة غير صحيحة.", "error")
+            return redirect(url_for('admin', active_tab='settings'))
+
+        payment_method = request.form.get('payment_method', 'wallet')
+        if payment_method not in PAYMENT_METHOD_LABELS:
+            flash("طريقة الدفع غير صحيحة.", "error")
+            return redirect(url_for('admin', active_tab='settings'))
+
+        transaction_ref = (request.form.get('transaction_ref') or '').strip()
+        notes = (request.form.get('notes') or '').strip()
+        receipt = request.files.get('receipt')
+        receipt_url = None
+
+        if receipt and receipt.filename:
+            if not allowed_receipt_file(receipt.filename):
+                flash("صيغة الإيصال غير مدعومة. استخدم صورة أو PDF.", "error")
+                return redirect(url_for('admin', active_tab='settings'))
+            receipt_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'payment_receipts')
+            os.makedirs(receipt_dir, exist_ok=True)
+            ext = secure_filename(receipt.filename).rsplit('.', 1)[1].lower()
+            receipt_filename = f"receipt_{user_id}_{uuid.uuid4().hex[:10]}.{ext}"
+            receipt.save(os.path.join(receipt_dir, receipt_filename))
+            receipt_url = f"payment_receipts/{receipt_filename}"
+
+        if not transaction_ref and not receipt_url:
+            flash("أدخل رقم العملية أو ارفع صورة الإيصال حتى نتمكن من مراجعة الدفع.", "error")
+            return redirect(url_for('admin', active_tab='settings'))
+
+        plan = get_subscription_plan(plan_type)
+        invoice_code = make_invoice_code(user_id)
+        cursor.execute("""
+            INSERT INTO subscription_payments (
+                user_id, store_id, invoice_code, plan_type, amount, currency,
+                payment_method, transaction_ref, receipt_url, notes
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            user_id, store['id'], invoice_code, plan_type, plan['amount'], plan['currency'],
+            payment_method, transaction_ref or None, receipt_url, notes or None
+        ))
+        conn.commit()
+        flash(f"تم إرسال إثبات الدفع بنجاح. رقم الفاتورة: {invoice_code}", "success")
+    except Exception as exc:
+        conn.rollback()
+        logging.exception("Subscription payment proof failed")
+        flash("تعذر إرسال إثبات الدفع حالياً. حاول مرة أخرى.", "error")
+    finally:
+        conn.close()
+
+    return redirect(url_for('admin', active_tab='settings'))
 
 @app.route('/edit_product/<int:id>', methods=['POST'])
 def edit_product_route(id):
@@ -2771,6 +2948,21 @@ def super_admin():
         ORDER BY users.created_at DESC
     """)
     users = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT sp.*,
+               users.phone AS user_phone,
+               stores.name AS store_name,
+               stores.slug AS store_slug
+        FROM subscription_payments sp
+        JOIN users ON users.id = sp.user_id
+        LEFT JOIN stores ON stores.id = sp.store_id
+        ORDER BY
+            CASE WHEN sp.status = 'pending' THEN 0 ELSE 1 END,
+            sp.created_at DESC
+        LIMIT 30
+    """)
+    subscription_payments = cursor.fetchall()
     conn.close()
 
     return render_template('superadmin.html',
@@ -2784,6 +2976,10 @@ def super_admin():
                            order_store_options=order_store_options,
                            order_period=order_period,
                            order_store_id=order_store_id,
+                           subscription_payments=subscription_payments,
+                           subscription_plans=SUBSCRIPTION_PLANS,
+                           payment_methods=PAYMENT_METHOD_LABELS,
+                           payment_settings=get_payment_settings(),
                            removebg_enabled=removebg_enabled,
                            removebg_configured=bool(REMOVEBG_API_KEY),
                            now=datetime.utcnow())  # <--- هذا هو السطر الذي كان ناقصاً
@@ -2801,6 +2997,66 @@ def super_admin_toggle_removebg():
         flash("تم تفعيل remove.bg لجميع المتاجر.", "success")
     else:
         flash("تم إيقاف remove.bg. ستستخدم معالجة rembg المحلية مباشرة دون طلب الخدمة المدفوعة.", "success")
+    return redirect(url_for('super_admin'))
+
+@app.route('/superadmin/payment-settings', methods=['POST'])
+def super_admin_payment_settings():
+    if not session.get('is_superadmin'):
+        return redirect(url_for('super_admin_login'))
+
+    from database import set_app_setting
+    for key in PAYMENT_SETTING_KEYS:
+        set_app_setting(key, (request.form.get(key) or '').strip())
+    flash("تم حفظ إعدادات مركز الدفع.", "success")
+    return redirect(url_for('super_admin'))
+
+@app.route('/superadmin/subscription-payment/<int:payment_id>/<action>', methods=['POST'])
+def super_admin_review_subscription_payment(payment_id, action):
+    if not session.get('is_superadmin'):
+        return redirect(url_for('super_admin_login'))
+    if action not in {'approve', 'reject'}:
+        flash("إجراء غير معروف.", "error")
+        return redirect(url_for('super_admin'))
+
+    admin_note = (request.form.get('admin_note') or '').strip()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT * FROM subscription_payments WHERE id = %s", (payment_id,))
+        payment = cursor.fetchone()
+        if not payment:
+            flash("دفعة الاشتراك غير موجودة.", "error")
+            return redirect(url_for('super_admin'))
+        if payment['status'] != 'pending':
+            flash("تمت مراجعة هذه الدفعة سابقاً.", "error")
+            return redirect(url_for('super_admin'))
+
+        new_status = 'approved' if action == 'approve' else 'rejected'
+        cursor.execute("""
+            UPDATE subscription_payments
+            SET status = %s,
+                admin_note = %s,
+                reviewed_at = NOW(),
+                reviewed_by = %s,
+                updated_at = NOW()
+            WHERE id = %s
+        """, (new_status, admin_note or None, 'superadmin', payment_id))
+        conn.commit()
+
+        if action == 'approve':
+            from database import set_subscription
+            sub_end = set_subscription(payment['user_id'], payment['plan_type'])
+            plan_label = get_subscription_plan(payment['plan_type'])['label']
+            flash(f"تم تأكيد الدفع وتفعيل {plan_label} حتى {sub_end.strftime('%Y-%m-%d')}.", "success")
+        else:
+            flash("تم رفض إثبات الدفع وتسجيل الملاحظة.", "success")
+    except Exception as exc:
+        conn.rollback()
+        logging.exception("Payment review failed")
+        flash("حدث خطأ أثناء مراجعة الدفعة.", "error")
+    finally:
+        conn.close()
+
     return redirect(url_for('super_admin'))
 
 @app.route('/superadmin/login', methods=['GET', 'POST'])

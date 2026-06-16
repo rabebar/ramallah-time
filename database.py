@@ -131,6 +131,42 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         )''')
 
+    # Manual subscription payment proofs. This keeps wallet/Buraq/IBAN transfers
+    # separate from the existing subscription logic until the super admin approves.
+    cursor.execute('''CREATE TABLE IF NOT EXISTS subscription_payments (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            store_id INTEGER,
+            invoice_code TEXT NOT NULL UNIQUE,
+            plan_type TEXT NOT NULL DEFAULT 'monthly',
+            amount NUMERIC(12,2) NOT NULL,
+            currency TEXT NOT NULL DEFAULT '₪',
+            payment_method TEXT NOT NULL,
+            transaction_ref TEXT,
+            receipt_url TEXT,
+            notes TEXT,
+            status TEXT NOT NULL DEFAULT 'pending',
+            admin_note TEXT,
+            reviewed_at TIMESTAMP,
+            reviewed_by TEXT,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(store_id) REFERENCES stores(id) ON DELETE SET NULL
+        )''')
+    cursor.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS store_id INTEGER")
+    cursor.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS admin_note TEXT")
+    cursor.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP")
+    cursor.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS reviewed_by TEXT")
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS ix_subscription_payments_status_created
+        ON subscription_payments(status, created_at DESC)
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS ix_subscription_payments_user_created
+        ON subscription_payments(user_id, created_at DESC)
+    """)
+
     # store_visits
     cursor.execute('''CREATE TABLE IF NOT EXISTS store_visits (
             id SERIAL PRIMARY KEY,
@@ -307,6 +343,19 @@ def init_db():
         VALUES ('removebg_enabled', 'true')
         ON CONFLICT (setting_key) DO NOTHING
     """)
+    for key, value in {
+        'payment_account_name': 'RT Studio',
+        'payment_wallet_name': '',
+        'payment_wallet_number': '',
+        'payment_bank_name': '',
+        'payment_iban': '',
+        'payment_note': 'بعد التحويل، أرسل رقم العملية أو صورة الإيصال وسيتم تفعيل الاشتراك بعد المراجعة.',
+    }.items():
+        cursor.execute("""
+            INSERT INTO app_settings (setting_key, setting_value)
+            VALUES (%s, %s)
+            ON CONFLICT (setting_key) DO NOTHING
+        """, (key, value))
 
     conn.commit()
     cursor.close()

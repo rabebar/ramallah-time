@@ -233,6 +233,52 @@
         .order-status-number.confirmed { color: var(--success); }
         .order-status-number.canceled { color: var(--danger); }
 
+        .payments-section {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 28px; padding: 32px; margin-bottom: 32px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+        .payments-grid {
+            display: grid;
+            grid-template-columns: minmax(0, .9fr) minmax(0, 1.3fr);
+            gap: 20px;
+        }
+        .payment-settings-form {
+            display: grid;
+            gap: 10px;
+        }
+        .payment-settings-form label {
+            font-size: 11px; color: var(--text-muted); font-weight: 800;
+        }
+        .payment-settings-form input,
+        .payment-settings-form textarea {
+            width: 100%; border: 1px solid #dbe3ea; border-radius: 12px;
+            padding: 11px 12px; font: inherit; font-size: 12px; background: #fff;
+        }
+        .payment-review-card {
+            border: 1px solid #e5e7eb; border-radius: 18px;
+            padding: 16px; background: var(--gray-bg); margin-bottom: 12px;
+        }
+        .payment-review-head {
+            display: flex; align-items: flex-start; justify-content: space-between;
+            gap: 12px; margin-bottom: 10px;
+        }
+        .payment-invoice { font-size: 14px; font-weight: 900; color: var(--navy); }
+        .payment-meta { color: var(--text-muted); font-size: 12px; line-height: 1.7; }
+        .payment-status {
+            border-radius: 999px; padding: 5px 10px; font-size: 11px; font-weight: 800;
+        }
+        .payment-status.pending { background: #fef3c7; color: #92400e; }
+        .payment-status.approved { background: #d1fae5; color: #047857; }
+        .payment-status.rejected { background: #fee2e2; color: #b91c1c; }
+        .payment-actions {
+            display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px;
+        }
+        .payment-actions input {
+            min-width: 180px; flex: 1; border: 1px solid #dbe3ea;
+            border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 12px;
+        }
+
         /* Table */
         .table-container { 
             background: var(--white); border: 1px solid var(--border); 
@@ -277,6 +323,7 @@
             .processing-control { align-items: stretch; flex-direction: column; }
             .processing-toggle { width: 100%; justify-content: center; }
             .orders-filter, .orders-filter select, .orders-filter button { width: 100%; }
+            .payments-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -368,6 +415,109 @@
                     </button>
                 {% endif %}
             </form>
+        </section>
+
+        <section class="payments-section">
+            <div class="orders-header">
+                <div class="orders-heading">
+                    <div class="orders-heading-icon" style="background:rgba(15,118,110,.1);color:#0f766e;">
+                        <i data-lucide="credit-card"></i>
+                    </div>
+                    <div>
+                        <h2>مركز دفع الاشتراكات</h2>
+                        <p>إعداد بيانات التحويل ومراجعة إثباتات الدفع القادمة من التجار.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="payments-grid">
+                <form method="POST" action="/superadmin/payment-settings" class="payment-settings-form">
+                    <div style="font-weight:800;color:var(--navy);margin-bottom:4px;">بيانات استقبال الدفعات</div>
+                    <div>
+                        <label>اسم الحساب المستفيد</label>
+                        <input type="text" name="payment_account_name" value="{{ payment_settings.payment_account_name or '' }}" placeholder="RT Studio">
+                    </div>
+                    <div>
+                        <label>اسم المحفظة</label>
+                        <input type="text" name="payment_wallet_name" value="{{ payment_settings.payment_wallet_name or '' }}" placeholder="اسم المحفظة أو صاحبها">
+                    </div>
+                    <div>
+                        <label>رقم المحفظة / براق</label>
+                        <input type="text" name="payment_wallet_number" value="{{ payment_settings.payment_wallet_number or '' }}" placeholder="05xxxxxxxx">
+                    </div>
+                    <div>
+                        <label>اسم البنك</label>
+                        <input type="text" name="payment_bank_name" value="{{ payment_settings.payment_bank_name or '' }}" placeholder="اسم البنك">
+                    </div>
+                    <div>
+                        <label>الإيبان</label>
+                        <input type="text" name="payment_iban" value="{{ payment_settings.payment_iban or '' }}" placeholder="PS...">
+                    </div>
+                    <div>
+                        <label>ملاحظة تظهر للتاجر</label>
+                        <textarea name="payment_note" rows="3">{{ payment_settings.payment_note or '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn-sm btn-approve" style="justify-content:center;margin-top:6px;">
+                        <i data-lucide="save"></i>
+                        حفظ بيانات الدفع
+                    </button>
+                </form>
+
+                <div>
+                    <div style="font-weight:800;color:var(--navy);margin-bottom:10px;">آخر إثباتات الدفع</div>
+                    {% for payment in subscription_payments %}
+                    <div class="payment-review-card">
+                        <div class="payment-review-head">
+                            <div>
+                                <div class="payment-invoice">{{ payment.invoice_code }}</div>
+                                <div class="payment-meta">
+                                    {{ payment.store_name or 'متجر غير معروف' }} · {{ payment.user_phone }}
+                                    <br>
+                                    {{ subscription_plans.get(payment.plan_type, subscription_plans.monthly).label }}
+                                    · {{ payment.currency }} {{ '%.2f'|format(payment.amount) }}
+                                    · {{ payment_methods.get(payment.payment_method, payment.payment_method) }}
+                                </div>
+                            </div>
+                            <span class="payment-status {{ payment.status }}">
+                                {% if payment.status == 'approved' %}مقبولة{% elif payment.status == 'rejected' %}مرفوضة{% else %}قيد المراجعة{% endif %}
+                            </span>
+                        </div>
+                        <div class="payment-meta">
+                            رقم العملية: <strong>{{ payment.transaction_ref or 'غير مدخل' }}</strong>
+                            {% if payment.receipt_url %}
+                                · <a href="/static/uploads/{{ payment.receipt_url }}" target="_blank" style="color:var(--gold);font-weight:800;">فتح الإيصال</a>
+                            {% endif %}
+                            {% if payment.notes %}
+                                <br>ملاحظة التاجر: {{ payment.notes }}
+                            {% endif %}
+                            {% if payment.admin_note %}
+                                <br>ملاحظة الإدارة: {{ payment.admin_note }}
+                            {% endif %}
+                        </div>
+                        {% if payment.status == 'pending' %}
+                        <div class="payment-actions">
+                            <form method="POST" action="/superadmin/subscription-payment/{{ payment.id }}/approve" style="display:flex;gap:8px;flex:1;">
+                                <input type="text" name="admin_note" placeholder="ملاحظة اختيارية">
+                                <button type="submit" class="btn-sm btn-approve" onclick="return confirm('تأكيد الدفع وتمديد الاشتراك؟')">
+                                    <i data-lucide="check"></i>
+                                    تأكيد
+                                </button>
+                            </form>
+                            <form method="POST" action="/superadmin/subscription-payment/{{ payment.id }}/reject" style="display:flex;gap:8px;flex:1;">
+                                <input type="text" name="admin_note" placeholder="سبب الرفض">
+                                <button type="submit" class="btn-sm btn-reject" onclick="return confirm('رفض إثبات الدفع؟')">
+                                    <i data-lucide="x"></i>
+                                    رفض
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="no-visits-msg">لا توجد إثباتات دفع حتى الآن.</div>
+                    {% endfor %}
+                </div>
+            </div>
         </section>
 
         <!-- إحصائيات عامة -->
