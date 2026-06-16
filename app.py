@@ -91,13 +91,26 @@ BG_ASSETS = {
     'navy_silk':       'static/assets/bg/navy_silk.jpg',
     'brushed_silver':  'static/assets/bg/brushed_silver.jpg',
     'rose_blur':       'static/assets/bg/rose_blur.jpg',
+    'luxury_lilac_marble':      'static/assets/bg/luxury_lilac_marble.png',
+    'luxury_champagne_silk':    'static/assets/bg/luxury_champagne_silk.png',
+    'luxury_sky_stone':         'static/assets/bg/luxury_sky_stone.png',
+    'luxury_dusty_pink_velvet': 'static/assets/bg/luxury_dusty_pink_velvet.png',
 }
 
 STORE_BACKGROUNDS = [
     {'key': 'none', 'label': 'بدون خلفية', 'file': None},
-    {'key': 'navy_silk', 'label': 'حرير كحلي', 'file': 'navy_silk.jpg'},
-    {'key': 'dark_concrete', 'label': 'خرسانة داكنة', 'file': 'dark_concrete.jpg'},
+    {'key': 'luxury_lilac_marble', 'label': 'رخام ليلكي', 'file': 'luxury_lilac_marble.png'},
+    {'key': 'luxury_champagne_silk', 'label': 'حرير شمبانيا', 'file': 'luxury_champagne_silk.png'},
+    {'key': 'luxury_sky_stone', 'label': 'حجر سماوي', 'file': 'luxury_sky_stone.png'},
+    {'key': 'luxury_dusty_pink_velvet', 'label': 'مخمل وردي', 'file': 'luxury_dusty_pink_velvet.png'},
+    {'key': 'rose_blur', 'label': 'وردي ضبابي', 'file': 'rose_blur.jpg'},
+    {'key': 'grey_marble', 'label': 'رخام رمادي', 'file': 'grey_marble.jpg'},
+    {'key': 'brushed_silver', 'label': 'فضي ناعم', 'file': 'brushed_silver.jpg'},
+    {'key': 'velvet_red', 'label': 'مخمل نبيذي', 'file': 'velvet_red.jpg'},
     {'key': 'velvet_teal', 'label': 'مخمل زمردي', 'file': 'velvet_teal.jpg'},
+    {'key': 'navy_silk', 'label': 'حرير كحلي', 'file': 'navy_silk.jpg'},
+    {'key': 'black_marble', 'label': 'رخام أسود', 'file': 'black_marble.jpg'},
+    {'key': 'dark_concrete', 'label': 'خرسانة داكنة', 'file': 'dark_concrete.jpg'},
 ]
 STORE_BACKGROUND_FILES = {item['key']: item['file'] for item in STORE_BACKGROUNDS}
 
@@ -1341,6 +1354,46 @@ def admin():
 
     conn.close()
     from themes import ENHANCED_THEMES, THEME_COLLECTIONS, rgb_to_hex
+    theme_labels = {
+        'gold': 'ذهبي دافئ',
+        'black': 'أسود كلاسيكي',
+        'ocean': 'أزرق بحري',
+        'royal': 'ملكي بنفسجي',
+        'earth': 'أرضي طبيعي',
+        'minimal_light': 'فاتح بسيط',
+        'minimal_black': 'أسود بسيط',
+        'minimal_gray': 'رمادي هادئ',
+        'minimal_sage': 'أخضر سيج',
+        'minimal_stone': 'حجري ناعم',
+        'luxury_dark': 'داكن فاخر',
+        'luxury_pearl': 'لؤلؤي راقي',
+        'luxury_rose_gold': 'وردي ذهبي',
+        'luxury_champagne': 'شمبانيا فاخر',
+        'luxury_emerald': 'زمردي فاخر',
+        'luxury_sapphire': 'ياقوت أزرق',
+        'vibrant_red': 'أحمر جريء',
+        'vibrant_pink': 'وردي حيوي',
+        'vibrant_orange': 'برتقالي مشرق',
+        'vibrant_green': 'أخضر حيوي',
+        'vibrant_purple': 'بنفسجي حيوي',
+        'dark_elegant': 'كحلي أنيق',
+        'dark_smoke': 'دخاني داكن',
+        'dark_carbon': 'كربون داكن',
+        'dark_midnight': 'منتصف الليل',
+        'dark_slate': 'رصاصي داكن',
+        'soft_blush': 'خدود وردية',
+        'soft_sage': 'سيج ناعم',
+        'soft_lavender': 'لافندر ناعم',
+        'soft_peach': 'خوخي ناعم',
+        'soft_mint': 'نعناع ناعم',
+        'industrial_steel': 'فولاذي',
+        'industrial_copper': 'نحاسي',
+        'industrial_bronze': 'برونزي',
+        'industrial_gunmetal': 'معدني داكن',
+        'neon_cyan': 'نيون سماوي',
+        'neon_magenta': 'نيون وردي',
+        'neon_lime': 'نيون أخضر',
+    }
     theme_list = []
     for coll_key, coll_data in THEME_COLLECTIONS.items():
         themes_in_coll = []
@@ -1349,6 +1402,7 @@ def admin():
                 colors = ENHANCED_THEMES[t]
                 themes_in_coll.append({
                     'name': t,
+                    'label': theme_labels.get(t, t.replace('_', ' ')),
                     'light': rgb_to_hex(colors[0]),
                     'dark': rgb_to_hex(colors[1]),
                 })
