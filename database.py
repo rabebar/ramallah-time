@@ -186,6 +186,8 @@ def init_db():
     cursor.execute("ALTER TABLE store_visits ADD COLUMN IF NOT EXISTS visitor_key TEXT")
     cursor.execute("ALTER TABLE store_visits ADD COLUMN IF NOT EXISTS visit_date DATE DEFAULT CURRENT_DATE")
     cursor.execute("ALTER TABLE store_visits ADD COLUMN IF NOT EXISTS page_type TEXT DEFAULT 'store'")
+    cursor.execute("ALTER TABLE store_visits ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'unknown'")
+    cursor.execute("ALTER TABLE store_visits ADD COLUMN IF NOT EXISTS source_url TEXT")
 
     # Reset inflated legacy counts once when unique visitor tracking is installed.
     if not has_unique_visitor_tracking:
@@ -196,6 +198,10 @@ def init_db():
     cursor.execute("""
         CREATE UNIQUE INDEX IF NOT EXISTS ux_store_visits_daily_visitor
         ON store_visits(store_id, visitor_key, visit_date)
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS ix_store_visits_source_date
+        ON store_visits(source, visit_date)
     """)
     print("✅ store_visits table ready.")
 
@@ -474,16 +480,23 @@ def toggle_freeze(user_id, freeze: bool):
         conn.close()
 
 
-def record_store_visit(store_id, visitor_key, page_type='store'):
+def record_store_visit(store_id, visitor_key, page_type='store', source='unknown', source_url=None):
     conn = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO store_visits (store_id, visitor_key, page_type)
-            VALUES (%s, %s, %s)
-            ON CONFLICT (store_id, visitor_key, visit_date) DO NOTHING
-        """, (store_id, visitor_key, page_type))
+            INSERT INTO store_visits (store_id, visitor_key, page_type, source, source_url)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (store_id, visitor_key, visit_date) DO UPDATE SET
+                page_type = COALESCE(EXCLUDED.page_type, store_visits.page_type),
+                source = CASE
+                    WHEN store_visits.source IS NULL OR store_visits.source IN ('unknown', 'direct')
+                    THEN COALESCE(EXCLUDED.source, store_visits.source)
+                    ELSE store_visits.source
+                END,
+                source_url = COALESCE(store_visits.source_url, EXCLUDED.source_url)
+        """, (store_id, visitor_key, page_type, source or 'unknown', source_url))
         conn.commit()
     except Exception as e:
         print(f"Visit record error: {e}")
@@ -553,15 +566,43 @@ def get_visit_stats():
         """)
         week = cursor.fetchone()['week']
         cursor.execute("""
-            SELECT s.name, s.slug, COUNT(DISTINCT sv.visitor_key) as visits
+            SELECT COUNT(DISTINCT visitor_key) as month
+            FROM store_visits
+            WHERE visit_date >= CURRENT_DATE - INTERVAL '29 days'
+        """)
+        month = cursor.fetchone()['month']
+        cursor.execute("""
+            SELECT
+                s.name,
+                s.slug,
+                COUNT(DISTINCT sv.visitor_key) as visits,
+                COUNT(DISTINCT sv.visitor_key) FILTER (WHERE sv.visit_date = CURRENT_DATE) as today_visits,
+                COUNT(DISTINCT sv.visitor_key) FILTER (WHERE sv.visit_date >= CURRENT_DATE - INTERVAL '6 days') as week_visits,
+                COUNT(DISTINCT sv.visitor_key) FILTER (WHERE sv.visit_date >= CURRENT_DATE - INTERVAL '29 days') as month_visits
             FROM store_visits sv JOIN stores s ON sv.store_id = s.id
             GROUP BY s.id, s.name, s.slug ORDER BY visits DESC LIMIT 5
         """)
         top_stores = cursor.fetchall()
-        return {'total': total, 'today': today, 'week': week, 'top_stores': top_stores}
+        cursor.execute("""
+            SELECT COALESCE(source, 'unknown') as source, COUNT(DISTINCT visitor_key) as visits
+            FROM store_visits
+            WHERE visit_date >= CURRENT_DATE - INTERVAL '29 days'
+            GROUP BY COALESCE(source, 'unknown')
+            ORDER BY visits DESC
+            LIMIT 8
+        """)
+        sources_30d = cursor.fetchall()
+        return {
+            'total': total,
+            'today': today,
+            'week': week,
+            'month': month,
+            'top_stores': top_stores,
+            'sources_30d': sources_30d,
+        }
     except Exception as e:
         print(f"Visit stats error: {e}")
-        return {'total': 0, 'today': 0, 'week': 0, 'top_stores': []}
+        return {'total': 0, 'today': 0, 'week': 0, 'month': 0, 'top_stores': [], 'sources_30d': []}
     finally:
         if conn:
             conn.close()

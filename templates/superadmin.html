@@ -705,7 +705,23 @@
                     <div class="vc-label"><i data-lucide="trending-up"></i> آخر 7 أيام</div>
                     <div class="vc-value">{{ visit_stats.week }}</div>
                 </div>
+                <div class="visit-counter">
+                    <div class="vc-label"><i data-lucide="calendar-days"></i> آخر 30 يوماً</div>
+                    <div class="vc-value">{{ visit_stats.month }}</div>
+                </div>
             </div>
+
+            {% if visit_stats.sources_30d %}
+            <div class="top-stores-title">مصادر زيارات المتاجر آخر 30 يوم</div>
+            <div class="join-source-list">
+                {% for source in visit_stats.sources_30d %}
+                <div class="join-source-card">
+                    <span class="join-source-name">{{ source.label }}</span>
+                    <span class="join-source-value">{{ source.visits }} زيارة</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
             <div class="top-stores-title">🏆 أكثر المتاجر استقطاباً للزوار الفريدين</div>
             {% if visit_stats.top_stores %}
@@ -714,7 +730,9 @@
                     <div class="top-store-rank {% if loop.index == 1 %}gold{% endif %}">{{ loop.index }}</div>
                     <div style="flex: 1;">
                         <div class="top-store-name">{{ store.name }}</div>
-                        <div class="top-store-slug">/store/{{ store.slug }}</div>
+                        <div class="top-store-slug">
+                            /store/{{ store.slug }} · اليوم {{ store.today_visits }} · 7 أيام {{ store.week_visits }} · 30 يوم {{ store.month_visits }}
+                        </div>
                     </div>
                     <div class="top-store-visits">{{ store.visits }} زيارة</div>
                 </div>

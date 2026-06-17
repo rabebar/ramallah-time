@@ -529,6 +529,65 @@ def get_public_visitor_key(store):
 
     digest_source = f"{app.secret_key}:{visitor_id}".encode('utf-8')
     return hashlib.sha256(digest_source).hexdigest()
+
+
+TRAFFIC_SOURCE_LABELS = {
+    'facebook': 'فيسبوك',
+    'instagram': 'إنستغرام',
+    'whatsapp': 'واتساب',
+    'google': 'جوجل',
+    'tiktok': 'تيك توك',
+    'youtube': 'يوتيوب',
+    'telegram': 'تلغرام',
+    'twitter': 'إكس / تويتر',
+    'direct': 'رابط مباشر',
+    'other': 'مصدر آخر',
+    'unknown': 'غير معروف',
+}
+
+
+def detect_traffic_source():
+    """Classify the public visit source using campaign params and referrer."""
+    args_text = ' '.join(
+        str(request.args.get(key, '')).lower()
+        for key in ('utm_source', 'source', 'ref')
+    )
+    referrer = request.referrer or ''
+    referrer_host = urllib.parse.urlparse(referrer).netloc.lower()
+    combined = f"{args_text} {referrer_host}".lower()
+
+    if request.args.get('fbclid') or 'facebook' in combined or 'fb.com' in combined:
+        return 'facebook', referrer or None
+    if request.args.get('igshid') or 'instagram' in combined:
+        return 'instagram', referrer or None
+    if 'whatsapp' in combined or 'wa.me' in combined:
+        return 'whatsapp', referrer or None
+    if 'google' in combined:
+        return 'google', referrer or None
+    if 'tiktok' in combined:
+        return 'tiktok', referrer or None
+    if 'youtube' in combined or 'youtu.be' in combined:
+        return 'youtube', referrer or None
+    if 'telegram' in combined or 't.me' in combined:
+        return 'telegram', referrer or None
+    if 'twitter' in combined or 'x.com' in combined or 't.co' in combined:
+        return 'twitter', referrer or None
+    if referrer_host:
+        return 'other', referrer
+    return 'direct', None
+
+
+def attach_traffic_labels(rows):
+    labeled = []
+    for row in rows or []:
+        item = dict(row)
+        source = item.get('source') or 'unknown'
+        item['source'] = source
+        item['label'] = TRAFFIC_SOURCE_LABELS.get(source, source)
+        labeled.append(item)
+    return labeled
+
+
 MASTER_PASSWORD = os.environ.get('MASTER_PASSWORD', 'Ruba2025!!')
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -1329,12 +1388,56 @@ def admin():
         """, (store['id'],))
         ws = cursor.fetchone()['ws']
 
+        analytics_periods = []
+        period_defs = [
+            ('today', 'اليوم', "sv.visit_date = CURRENT_DATE", "od.created_at::date = CURRENT_DATE"),
+            ('week', 'آخر 7 أيام', "sv.visit_date >= CURRENT_DATE - INTERVAL '6 days'", "od.created_at >= NOW() - INTERVAL '7 days'"),
+            ('month', 'آخر 30 يوم', "sv.visit_date >= CURRENT_DATE - INTERVAL '29 days'", "od.created_at >= NOW() - INTERVAL '30 days'"),
+            ('all', 'كل الوقت', "TRUE", "TRUE"),
+        ]
+        for period_key, period_label, visit_where, order_where in period_defs:
+            cursor.execute(f"""
+                SELECT COUNT(DISTINCT sv.visitor_key) AS visits
+                FROM store_visits sv
+                WHERE sv.store_id = %s AND {visit_where}
+            """, (store['id'],))
+            visits = cursor.fetchone()['visits'] or 0
+            cursor.execute(f"""
+                SELECT
+                    COUNT(*) AS total_orders,
+                    COUNT(*) FILTER (WHERE od.status = 'confirmed') AS confirmed_orders,
+                    COALESCE(SUM(od.grand_total) FILTER (WHERE od.status = 'confirmed'), 0) AS confirmed_value
+                FROM order_drafts od
+                WHERE od.store_id = %s AND {order_where}
+            """, (store['id'],))
+            order_row = cursor.fetchone()
+            analytics_periods.append({
+                'key': period_key,
+                'label': period_label,
+                'visits': visits,
+                'total_orders': order_row['total_orders'] or 0,
+                'confirmed_orders': order_row['confirmed_orders'] or 0,
+                'confirmed_value': order_row['confirmed_value'] or 0,
+            })
+
+        cursor.execute("""
+            SELECT COALESCE(source, 'unknown') AS source, COUNT(DISTINCT visitor_key) AS visits
+            FROM store_visits
+            WHERE store_id = %s AND visit_date >= CURRENT_DATE - INTERVAL '29 days'
+            GROUP BY COALESCE(source, 'unknown')
+            ORDER BY visits DESC
+            LIMIT 8
+        """, (store['id'],))
+        traffic_sources = attach_traffic_labels(cursor.fetchall())
+
         analytics = {
             'page_views_7d': last7,
             'page_views_30d': last30,
             'top_products_30d': top5,
             'add_to_cart_30d': adds,
             'whatsapp_30d': ws,
+            'periods': analytics_periods,
+            'traffic_sources_30d': traffic_sources,
         }
 
     edit_product = None
@@ -2007,7 +2110,8 @@ def view_store(slug):
         visitor_key = get_public_visitor_key(store)
         if visitor_key:
             from database import record_store_visit
-            record_store_visit(store['id'], visitor_key, 'store')
+            traffic_source, traffic_source_url = detect_traffic_source()
+            record_store_visit(store['id'], visitor_key, 'store', traffic_source, traffic_source_url)
     else:
         conn.close()
         return "هذا المتجر غير موجود حالياً.", 404
@@ -2091,7 +2195,8 @@ def view_product_page(slug, product_id):
         visitor_key = get_public_visitor_key(store)
         if visitor_key:
             from database import record_store_visit
-            record_store_visit(store['id'], visitor_key, 'product')
+            traffic_source, traffic_source_url = detect_traffic_source()
+            record_store_visit(store['id'], visitor_key, 'product', traffic_source, traffic_source_url)
     except Exception:
         pass
     
@@ -2913,6 +3018,7 @@ def super_admin():
     cursor = conn.cursor()
     from database import get_visit_stats, get_join_visit_stats, get_app_setting
     visit_stats = get_visit_stats()
+    visit_stats['sources_30d'] = attach_traffic_labels(visit_stats.get('sources_30d', []))
     join_visit_stats = get_join_visit_stats()
     removebg_enabled = get_app_setting('removebg_enabled', 'true') == 'true'
 
