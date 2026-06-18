@@ -928,7 +928,9 @@
             <select name="hero_product_id" id="selectedHeroProduct" class="input-field" onchange="refreshStorePreview()">
                 <option value="">تلقائي: أحدث منتج</option>
                 {% for product in products %}
+                {% if product.active %}
                 <option value="{{ product.id }}" {% if store.hero_product_id == product.id %}selected{% endif %}>{{ product.name }}</option>
+                {% endif %}
                 {% endfor %}
             </select>
             <small style="color:var(--text-muted);margin-top:8px;display:block;">يظهر هذا المنتج كصورة رئيسية داخل الهيدر في الهويات الجاهزة فقط.</small>

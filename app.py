@@ -2080,6 +2080,16 @@ def update_store():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
+        if hero_product_id:
+            cursor.execute("""
+                SELECT p.id
+                FROM products p
+                JOIN stores s ON s.id = p.store_id
+                WHERE p.id = %s AND s.user_id = %s AND p.active = TRUE
+            """, (hero_product_id, user_id))
+            if not cursor.fetchone():
+                hero_product_id = None
+
         if logo_url:
             cursor.execute("""
                 UPDATE stores SET 
