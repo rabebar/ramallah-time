@@ -136,6 +136,16 @@ VISUAL_IDENTITIES = [
         'ink': '#f8fafc',
     },
     {
+        'key': 'jewelry_luxury',
+        'label': 'قالب المجوهرات الفاخر',
+        'description': 'قالب مدفوع 150 شيكل لمتاجر الفضة والمجوهرات مع هيدر منتج وبطاقات بوتيك.',
+        'theme': 'industrial_steel',
+        'background': 'velvet_teal',
+        'accent': '#e8edf2',
+        'surface': '#070b10',
+        'ink': '#f8fafc',
+    },
+    {
         'key': 'gold_luxury',
         'label': 'ذهبي فاخر',
         'description': 'مناسب للساعات والإكسسوارات الراقية مع حضور ذهبي واضح.',
