@@ -925,6 +925,7 @@
             position: relative;
             overflow: hidden;
             align-items: center;
+            isolation: isolate;
         }
         body.identity-soft_marble .welcome-header {
             background:
@@ -938,6 +939,7 @@
             position: relative;
             overflow: hidden;
             align-items: center;
+            isolation: isolate;
         }
         body.identity-silver_velvet .welcome-header::before,
         body.identity-gold_luxury .welcome-header::before,
@@ -962,6 +964,44 @@
             top: -120px;
             background: radial-gradient(circle, color-mix(in srgb, var(--identity-accent) 26%, transparent 74%), transparent 68%);
             pointer-events: none;
+        }
+        body.identity-silver_velvet .identity-hero-product,
+        body.identity-gold_luxury .identity-hero-product,
+        body.identity-soft_marble .identity-hero-product,
+        body.identity-rose_velvet .identity-hero-product {
+            display: block;
+            position: absolute;
+            inset: 0;
+            z-index: -2;
+            overflow: hidden;
+        }
+        body.identity-silver_velvet .identity-hero-product img,
+        body.identity-gold_luxury .identity-hero-product img,
+        body.identity-soft_marble .identity-hero-product img,
+        body.identity-rose_velvet .identity-hero-product img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.04);
+            filter: saturate(0.92) contrast(1.03);
+        }
+        body.identity-silver_velvet .identity-hero-product::after,
+        body.identity-gold_luxury .identity-hero-product::after,
+        body.identity-rose_velvet .identity-hero-product::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(5,8,14,0.38), rgba(5,8,14,0.84) 58%, rgba(5,8,14,0.92)),
+                radial-gradient(circle at 22% 24%, rgba(255,255,255,0.10), transparent 34%);
+        }
+        body.identity-soft_marble .identity-hero-product::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(255,255,255,0.18), rgba(255,255,255,0.76) 58%, rgba(255,255,255,0.88)),
+                radial-gradient(circle at 22% 24%, rgba(255,255,255,0.34), transparent 34%);
         }
         body.identity-silver_velvet .identity-hero-mark,
         body.identity-gold_luxury .identity-hero-mark,
@@ -1035,6 +1075,12 @@
             font-size: clamp(30px, 5vw, 56px) !important;
             line-height: 1.15 !important;
             margin-bottom: 14px !important;
+        }
+        body.identity-silver_velvet .welcome-prefix,
+        body.identity-gold_luxury .welcome-prefix,
+        body.identity-soft_marble .welcome-prefix,
+        body.identity-rose_velvet .welcome-prefix {
+            display: none;
         }
         body.identity-silver_velvet .welcome-text p,
         body.identity-gold_luxury .welcome-text p,
@@ -1113,6 +1159,18 @@
                 align-items: center !important;
                 text-align: center !important;
                 gap: 16px;
+            }
+            body.identity-silver_velvet .identity-hero-product::after,
+            body.identity-gold_luxury .identity-hero-product::after,
+            body.identity-rose_velvet .identity-hero-product::after {
+                background:
+                    linear-gradient(180deg, rgba(5,8,14,0.30), rgba(5,8,14,0.82) 62%, rgba(5,8,14,0.92)),
+                    radial-gradient(circle at 50% 20%, rgba(255,255,255,0.10), transparent 42%);
+            }
+            body.identity-soft_marble .identity-hero-product::after {
+                background:
+                    linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.78) 62%, rgba(255,255,255,0.92)),
+                    radial-gradient(circle at 50% 20%, rgba(255,255,255,0.28), transparent 42%);
             }
             body.identity-silver_velvet .identity-hero-mark,
             body.identity-gold_luxury .identity-hero-mark,
@@ -1243,6 +1301,13 @@
         </a>
 
         <header class="welcome-header">
+            {% if products and products|length %}
+            {% set hero_product = products[0] %}
+            {% set hero_image = hero_product.final_image_url if hero_product.final_image_url else hero_product.processed_image_url %}
+            <div class="identity-hero-product">
+                <img src="/static/uploads/{{ hero_image }}" alt="{{ hero_product.name }}">
+            </div>
+            {% endif %}
             <div class="identity-hero-mark">
                 {% if store.logo_url %}
                 <img src="/static/uploads/{{ store.logo_url }}" alt="{{ store.name }}">
@@ -1252,7 +1317,7 @@
             </div>
             <div class="welcome-text">
                 <span class="identity-hero-kicker">PREMIUM WEB APP</span>
-                <h1 id="welcomeTitle">أهلاً بك في <span>{{ store.name }}</span></h1>
+                <h1 id="welcomeTitle"><span class="welcome-prefix">أهلاً بك في </span><span>{{ store.name }}</span></h1>
                 <p id="welcomeBio">{{ store.bio or 'اكتشف مجموعتنا الحصرية من المنتجات الفاخرة.' }}</p>
             </div>
             <div class="header-btns">
