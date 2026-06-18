@@ -1301,8 +1301,7 @@
         </a>
 
         <header class="welcome-header">
-            {% if products and products|length %}
-            {% set hero_product = products[0] %}
+            {% if hero_product %}
             {% set hero_image = hero_product.final_image_url if hero_product.final_image_url else hero_product.processed_image_url %}
             <div class="identity-hero-product">
                 <img src="/static/uploads/{{ hero_image }}" alt="{{ hero_product.name }}">

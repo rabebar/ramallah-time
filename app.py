@@ -183,6 +183,16 @@ def normalize_visual_identity(value):
 def get_visual_identity(value):
     return VISUAL_IDENTITY_MAP[normalize_visual_identity(value)]
 
+def pick_hero_product(store, products):
+    if not products:
+        return None
+    selected_id = store.get('hero_product_id') if store else None
+    if selected_id:
+        for product in products:
+            if product.get('id') == selected_id:
+                return product
+    return products[0]
+
 # Theme colors
 THEME_COLORS = {
     'gold':        ((242, 153, 74),  (242, 201, 76)),
@@ -722,6 +732,7 @@ try:
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_theme TEXT DEFAULT 'gold'")
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_background TEXT DEFAULT 'none'")
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS visual_identity TEXT DEFAULT 'current'")
+    _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS hero_product_id INTEGER")
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS product_gallery_enabled BOOLEAN DEFAULT FALSE")
     _mcur.execute("""
         CREATE TABLE IF NOT EXISTS product_images (
@@ -2059,6 +2070,8 @@ def update_store():
     store_theme = request.form.get('store_theme', '').strip() or 'gold'
     store_background = normalize_store_background(request.form.get('store_background'))
     visual_identity = normalize_visual_identity(request.form.get('visual_identity'))
+    hero_product_raw = (request.form.get('hero_product_id') or '').strip()
+    hero_product_id = int(hero_product_raw) if hero_product_raw.isdigit() else None
     identity_preset = get_visual_identity(visual_identity)
     if visual_identity != 'current':
         store_theme = identity_preset.get('theme') or store_theme
@@ -2073,24 +2086,24 @@ def update_store():
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
                     address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s,
-                    store_theme=%s, store_background=%s, visual_identity=%s
+                    store_theme=%s, store_background=%s, visual_identity=%s, hero_product_id=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
                   address, website, logo_url, inventory_enabled, currency, store_theme,
-                  store_background, visual_identity, user_id))
+                  store_background, visual_identity, hero_product_id, user_id))
         else:
             cursor.execute("""
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
                     address=%s, website=%s, inventory_enabled=%s, currency=%s,
-                    store_theme=%s, store_background=%s, visual_identity=%s
+                    store_theme=%s, store_background=%s, visual_identity=%s, hero_product_id=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
                   address, website, inventory_enabled, currency, store_theme,
-                  store_background, visual_identity, user_id))
+                  store_background, visual_identity, hero_product_id, user_id))
         conn.commit()
         flash("تم تحديث الإعدادات.", "success")
     except Exception as e:
@@ -2144,6 +2157,11 @@ def admin_store_preview():
 
     cursor.execute("SELECT * FROM products WHERE store_id = %s AND active = TRUE ORDER BY id DESC", (store['id'],))
     products = cursor.fetchall()
+    preview_hero_raw = (request.args.get('hero_product_id') or '').strip()
+    if preview_hero_raw.isdigit():
+        store = dict(store)
+        store['hero_product_id'] = int(preview_hero_raw)
+    hero_product = pick_hero_product(store, products)
     conn.close()
 
     from themes import ENHANCED_THEMES, rgb_to_hex
@@ -2165,6 +2183,7 @@ def admin_store_preview():
         'store.html',
         store=store,
         products=products,
+        hero_product=hero_product,
         product_to_open=None,
         theme_hex=theme_hex,
         theme_name=theme_name,
@@ -2197,6 +2216,7 @@ def view_store(slug):
         # جلب المنتجات النشطة فقط (المخفية لا تظهر أبداً)
     cursor.execute("SELECT * FROM products WHERE store_id = %s AND active = TRUE ORDER BY id DESC", (store['id'],))
     products = cursor.fetchall()
+    hero_product = pick_hero_product(store, products)
 
     open_id = request.args.get('open_product')
     product_to_open = None
@@ -2219,6 +2239,7 @@ def view_store(slug):
         'store.html',
         store=store,
         products=products,
+        hero_product=hero_product,
         product_to_open=product_to_open,
         theme_hex=theme_hex,
         theme_name=theme_name,
