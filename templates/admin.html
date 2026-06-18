@@ -102,7 +102,7 @@
     .payment-gateway-body { padding: 22px; }
     .invoice-summary {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 12px;
         margin-bottom: 18px;
     }
@@ -114,6 +114,26 @@
     }
     .invoice-label { color: #64748b; font-size: 11px; font-weight: 800; margin-bottom: 5px; }
     .invoice-value { color: #0f172a; font-size: 15px; font-weight: 900; }
+    .invoice-box.is-premium-addon {
+        border-color: rgba(196,150,58,.42);
+        background: linear-gradient(135deg, #fffaf0, #ffffff);
+    }
+    .invoice-box.is-total {
+        border-color: rgba(15,23,42,.16);
+        background: #0f172a;
+    }
+    .invoice-box.is-total .invoice-label { color: rgba(255,255,255,.72); }
+    .invoice-box.is-total .invoice-value { color: #fff; }
+    .premium-payment-note {
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: #fffbeb;
+        color: #92400e;
+        border: 1px solid #fde68a;
+        font-size: 12px;
+        line-height: 1.8;
+        margin: 12px 0 16px;
+    }
     .payment-methods {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1203,14 +1223,26 @@
                                 <div class="invoice-label">الحساب المستفيد</div>
                                 <div class="invoice-value">{{ payment_settings.payment_account_name or 'RT Studio' }}</div>
                             </div>
+                            {% if store_template_fee and store_template_fee > 0 %}
+                            <div class="invoice-box is-premium-addon">
+                                <div class="invoice-label">رسم القالب الفاخر</div>
+                                <div class="invoice-value">{{ subscription_plans.monthly.currency }} {{ '%.0f'|format(store_template_fee) }}</div>
+                            </div>
+                            {% endif %}
+                            <div class="invoice-box is-total">
+                                <div class="invoice-label">الإجمالي المطلوب</div>
+                                <div class="invoice-value" id="paymentTotalValue">
+                                    {{ subscription_plans.monthly.currency }} {{ '%.0f'|format(subscription_plans.monthly.amount + store_template_fee) }}
+                                </div>
+                            </div>
                         </div>
 
                         <div class="grid-2">
                             <div class="form-group">
                                 <label class="form-label">اختر الباقة</label>
-                                <select name="plan_type" class="input-field">
+                                <select name="plan_type" class="input-field" id="paymentPlanSelect">
                                     {% for plan_key, plan in subscription_plans.items() %}
-                                    <option value="{{ plan_key }}">
+                                    <option value="{{ plan_key }}" data-amount="{{ '%.2f'|format(plan.amount) }}" data-currency="{{ plan.currency }}">
                                         {{ plan.label }} - {{ plan.currency }} {{ '%.0f'|format(plan.amount) }}
                                     </option>
                                     {% endfor %}
@@ -1225,6 +1257,12 @@
                                 </select>
                             </div>
                         </div>
+
+                        {% if store_template_fee and store_template_fee > 0 %}
+                        <div class="premium-payment-note">
+                            هذا المتجر يستخدم قالب المجوهرات الفاخر، لذلك يتم إضافة {{ subscription_plans.monthly.currency }} {{ '%.0f'|format(store_template_fee) }} على مبلغ الباقة المختارة.
+                        </div>
+                        {% endif %}
 
                         <div class="payment-methods">
                             <div class="payment-method-card {% if not payment_settings.payment_wallet_number %}is-empty{% endif %}">
@@ -1953,8 +1991,21 @@ document.addEventListener('DOMContentLoaded', () => { if (PRODUCT_ID) loadVarian
         );
     });
 
+    const luxuryTemplateFee = Number('{{ "%.2f"|format(store_template_fee or 0) }}');
+    function updatePaymentTotal() {
+        const planSelect = document.getElementById('paymentPlanSelect');
+        const totalBox = document.getElementById('paymentTotalValue');
+        if (!planSelect || !totalBox) return;
+        const selected = planSelect.options[planSelect.selectedIndex];
+        const amount = Number(selected?.dataset.amount || 0);
+        const currency = selected?.dataset.currency || '₪';
+        totalBox.textContent = `${currency} ${Math.round(amount + luxuryTemplateFee)}`;
+    }
+    document.getElementById('paymentPlanSelect')?.addEventListener('change', updatePaymentTotal);
+
     document.addEventListener('pointerdown', unlockOrderSound, { once: true });
     window.addEventListener('load', () => {
+        updatePaymentTotal();
         updatePendingOrderBadge({{ pending_order_count or 0 }});
         refreshPushSubscriptionState();
         window.setInterval(pollOrderNotifications, 15000);

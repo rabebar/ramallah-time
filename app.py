@@ -679,6 +679,7 @@ SUBSCRIPTION_PLANS = {
     'biannual': {'label': 'اشتراك 6 أشهر', 'days': 180, 'amount': Decimal('510.00'), 'currency': '₪'},
     'annual': {'label': 'اشتراك سنوي', 'days': 365, 'amount': Decimal('960.00'), 'currency': '₪'},
 }
+LUXURY_JEWELRY_TEMPLATE_FEE = Decimal('150.00')
 
 PAYMENT_METHOD_LABELS = {
     'wallet': 'محفظة إلكترونية',
@@ -700,6 +701,21 @@ RECEIPT_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'pdf'}
 
 def get_subscription_plan(plan_type):
     return SUBSCRIPTION_PLANS.get(plan_type, SUBSCRIPTION_PLANS['monthly'])
+
+
+def get_store_template_fee(store):
+    visual_identity = None
+    if store:
+        try:
+            visual_identity = store.get('visual_identity')
+        except AttributeError:
+            try:
+                visual_identity = store['visual_identity']
+            except (KeyError, IndexError, TypeError):
+                visual_identity = None
+    if visual_identity == 'jewelry_luxury':
+        return LUXURY_JEWELRY_TEMPLATE_FEE
+    return Decimal('0.00')
 
 
 def get_payment_settings():
@@ -1609,6 +1625,8 @@ def admin():
         shipping_integration=shipping_integration,
         subscription_payments=subscription_payments,
         subscription_plans=SUBSCRIPTION_PLANS,
+        luxury_template_fee=LUXURY_JEWELRY_TEMPLATE_FEE,
+        store_template_fee=get_store_template_fee(store),
         payment_methods=PAYMENT_METHOD_LABELS,
         payment_settings=get_payment_settings(),
         latest_order_id=latest_order_id,
@@ -1666,6 +1684,10 @@ def admin_subscription_payment():
             return redirect(url_for('admin', active_tab='settings'))
 
         plan = get_subscription_plan(plan_type)
+        template_fee = get_store_template_fee(store)
+        payment_amount = plan['amount'] + template_fee
+        if template_fee:
+            notes = (notes + "\n" if notes else "") + f"يتضمن رسم قالب المجوهرات الفاخر: {template_fee} {plan['currency']}"
         invoice_code = make_invoice_code(user_id)
         cursor.execute("""
             INSERT INTO subscription_payments (
@@ -1674,7 +1696,7 @@ def admin_subscription_payment():
             )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            user_id, store['id'], invoice_code, plan_type, plan['amount'], plan['currency'],
+            user_id, store['id'], invoice_code, plan_type, payment_amount, plan['currency'],
             payment_method, transaction_ref or None, receipt_url, notes or None
         ))
         conn.commit()
@@ -3151,6 +3173,8 @@ def super_admin():
     t_products = cursor.fetchone()['count']
     cursor.execute("SELECT SUM(credits) as sum_c FROM users")
     t_credits = cursor.fetchone()['sum_c'] or 0
+    cursor.execute("SELECT COUNT(*) as count FROM stores WHERE visual_identity = 'jewelry_luxury'")
+    t_luxury_jewelry_stores = cursor.fetchone()['count']
 
     order_period = request.args.get('order_period', '30')
     if order_period not in {'today', '7', '30', 'all'}:
@@ -3226,7 +3250,7 @@ def super_admin():
     order_store_options = cursor.fetchall()
 
     cursor.execute("""
-        SELECT users.*, stores.name as store_name, stores.slug as store_slug
+        SELECT users.*, stores.name as store_name, stores.slug as store_slug, stores.visual_identity as store_visual_identity
         FROM users LEFT JOIN stores ON users.id = stores.user_id 
         ORDER BY users.created_at DESC
     """)
@@ -3249,7 +3273,7 @@ def super_admin():
     conn.close()
 
     return render_template('superadmin.html',
-                           stats={'total_users': t_users, 'total_products': t_products, 'total_credits': t_credits},
+                           stats={'total_users': t_users, 'total_products': t_products, 'total_credits': t_credits, 'luxury_jewelry_stores': t_luxury_jewelry_stores},
                            users=users,
                            visit_stats=visit_stats,
                            join_visit_stats=join_visit_stats,
