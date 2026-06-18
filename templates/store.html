@@ -221,6 +221,8 @@
         .m-nav-link.active { color: var(--gold-light); }
         .m-nav-link i { width: 22px; height: 22px; }
         .m-nav-link span { font-size: 9px; font-weight: 600; }
+        .identity-hero-mark { display: none; }
+        .identity-hero-kicker { display: none; }
 
         .pwa-banner { position: fixed; bottom: 100px; left: 15px; right: 15px; background: #fff; padding: 16px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); display: none; align-items: center; gap: 12px; z-index: 5000; border: 1px solid var(--border); animation: slideUp 0.6s cubic-bezier(0.2, 1, 0.3, 1); }
 
@@ -914,9 +916,15 @@
                 radial-gradient(circle at 12% 12%, color-mix(in srgb, var(--identity-accent) 22%, transparent 78%), transparent 28%),
                 linear-gradient(145deg, rgba(7, 12, 22, 0.86), rgba(7, 12, 22, 0.62)) !important;
             border: 1px solid var(--identity-border) !important;
-            border-radius: 0 0 26px 26px;
+            border-radius: 0 0 34px 34px;
             box-shadow: var(--identity-shadow);
             backdrop-filter: blur(14px);
+            min-height: 260px;
+            margin: 0 24px 30px !important;
+            padding: 42px 44px !important;
+            position: relative;
+            overflow: hidden;
+            align-items: center;
         }
         body.identity-soft_marble .welcome-header {
             background:
@@ -924,6 +932,88 @@
                 linear-gradient(145deg, rgba(255,255,255,0.86), rgba(245,238,250,0.72)) !important;
             border: 1px solid var(--identity-border) !important;
             box-shadow: 0 18px 48px rgba(91,67,113,0.12);
+            min-height: 260px;
+            margin: 0 24px 30px !important;
+            padding: 42px 44px !important;
+            position: relative;
+            overflow: hidden;
+            align-items: center;
+        }
+        body.identity-silver_velvet .welcome-header::before,
+        body.identity-gold_luxury .welcome-header::before,
+        body.identity-soft_marble .welcome-header::before,
+        body.identity-rose_velvet .welcome-header::before {
+            content: '';
+            position: absolute;
+            inset: 22px;
+            border: 1px solid color-mix(in srgb, var(--identity-accent) 28%, transparent 72%);
+            border-radius: 28px;
+            pointer-events: none;
+        }
+        body.identity-silver_velvet .welcome-header::after,
+        body.identity-gold_luxury .welcome-header::after,
+        body.identity-soft_marble .welcome-header::after,
+        body.identity-rose_velvet .welcome-header::after {
+            content: '';
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            left: -90px;
+            top: -120px;
+            background: radial-gradient(circle, color-mix(in srgb, var(--identity-accent) 26%, transparent 74%), transparent 68%);
+            pointer-events: none;
+        }
+        body.identity-silver_velvet .identity-hero-mark,
+        body.identity-gold_luxury .identity-hero-mark,
+        body.identity-soft_marble .identity-hero-mark,
+        body.identity-rose_velvet .identity-hero-mark {
+            display: flex;
+            width: 102px;
+            height: 102px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: rgba(255,255,255,0.92);
+            border: 1px solid color-mix(in srgb, var(--identity-accent) 58%, #ffffff 42%);
+            box-shadow: 0 18px 46px rgba(0,0,0,0.20), inset 0 0 0 6px rgba(255,255,255,0.32);
+            flex: 0 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        body.identity-silver_velvet .identity-hero-mark img,
+        body.identity-gold_luxury .identity-hero-mark img,
+        body.identity-soft_marble .identity-hero-mark img,
+        body.identity-rose_velvet .identity-hero-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        body.identity-silver_velvet .identity-hero-mark i,
+        body.identity-gold_luxury .identity-hero-mark i,
+        body.identity-soft_marble .identity-hero-mark i,
+        body.identity-rose_velvet .identity-hero-mark i {
+            color: color-mix(in srgb, var(--identity-accent) 72%, #111827 28%);
+        }
+        body.identity-silver_velvet .welcome-text,
+        body.identity-gold_luxury .welcome-text,
+        body.identity-soft_marble .welcome-text,
+        body.identity-rose_velvet .welcome-text {
+            position: relative;
+            z-index: 1;
+            max-width: 620px;
+        }
+        body.identity-silver_velvet .identity-hero-kicker,
+        body.identity-gold_luxury .identity-hero-kicker,
+        body.identity-soft_marble .identity-hero-kicker,
+        body.identity-rose_velvet .identity-hero-kicker {
+            display: inline-flex;
+            margin-bottom: 10px;
+            color: var(--identity-accent);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
         }
         body.identity-silver_velvet .welcome-text h1,
         body.identity-silver_velvet .welcome-text h1 span,
@@ -942,6 +1032,16 @@
         body.identity-rose_velvet .welcome-text h1 {
             font-family: 'Noto Naskh Arabic', 'Playfair Display', serif !important;
             letter-spacing: 0 !important;
+            font-size: clamp(30px, 5vw, 56px) !important;
+            line-height: 1.15 !important;
+            margin-bottom: 14px !important;
+        }
+        body.identity-silver_velvet .welcome-text p,
+        body.identity-gold_luxury .welcome-text p,
+        body.identity-soft_marble .welcome-text p,
+        body.identity-rose_velvet .welcome-text p {
+            font-size: 15px !important;
+            max-width: 520px;
         }
         body.identity-silver_velvet .btn-premium,
         body.identity-gold_luxury .btn-premium,
@@ -1000,6 +1100,41 @@
             box-shadow: 0 18px 42px rgba(91,67,113,0.14) !important;
         }
         body.identity-soft_marble .m-nav-link.active { color: var(--identity-accent) !important; }
+        @media (max-width: 1024px) {
+            body.identity-silver_velvet .welcome-header,
+            body.identity-gold_luxury .welcome-header,
+            body.identity-soft_marble .welcome-header,
+            body.identity-rose_velvet .welcome-header {
+                min-height: 250px;
+                margin: 14px 0 22px !important;
+                padding: 28px 22px !important;
+                border-radius: 28px !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                gap: 16px;
+            }
+            body.identity-silver_velvet .identity-hero-mark,
+            body.identity-gold_luxury .identity-hero-mark,
+            body.identity-soft_marble .identity-hero-mark,
+            body.identity-rose_velvet .identity-hero-mark {
+                width: 92px;
+                height: 92px;
+            }
+            body.identity-silver_velvet .welcome-text h1,
+            body.identity-gold_luxury .welcome-text h1,
+            body.identity-soft_marble .welcome-text h1,
+            body.identity-rose_velvet .welcome-text h1 {
+                font-size: 30px !important;
+            }
+            body.identity-silver_velvet .header-btns,
+            body.identity-gold_luxury .header-btns,
+            body.identity-soft_marble .header-btns,
+            body.identity-rose_velvet .header-btns {
+                position: relative;
+                z-index: 1;
+            }
+        }
 
 </style>
 </head>
@@ -1108,7 +1243,15 @@
         </a>
 
         <header class="welcome-header">
+            <div class="identity-hero-mark">
+                {% if store.logo_url %}
+                <img src="/static/uploads/{{ store.logo_url }}" alt="{{ store.name }}">
+                {% else %}
+                <i data-lucide="gem" style="width:42px;height:42px;"></i>
+                {% endif %}
+            </div>
             <div class="welcome-text">
+                <span class="identity-hero-kicker">PREMIUM WEB APP</span>
                 <h1 id="welcomeTitle">أهلاً بك في <span>{{ store.name }}</span></h1>
                 <p id="welcomeBio">{{ store.bio or 'اكتشف مجموعتنا الحصرية من المنتجات الفاخرة.' }}</p>
             </div>
