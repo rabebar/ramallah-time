@@ -114,6 +114,60 @@ STORE_BACKGROUNDS = [
 ]
 STORE_BACKGROUND_FILES = {item['key']: item['file'] for item in STORE_BACKGROUNDS}
 
+VISUAL_IDENTITIES = [
+    {
+        'key': 'current',
+        'label': 'الشكل الحالي',
+        'description': 'يحافظ على إعدادات المتجر كما هي بدون أي تغيير مفاجئ.',
+        'theme': None,
+        'background': None,
+        'accent': '#C4963A',
+        'surface': '#ffffff',
+        'ink': '#111827',
+    },
+    {
+        'key': 'silver_velvet',
+        'label': 'مخملي فضي',
+        'description': 'واجهة فاخرة للفضة والمجوهرات بخلفية داكنة ولمعة فضية.',
+        'theme': 'industrial_steel',
+        'background': 'velvet_teal',
+        'accent': '#d8e2ea',
+        'surface': '#101820',
+        'ink': '#f8fafc',
+    },
+    {
+        'key': 'gold_luxury',
+        'label': 'ذهبي فاخر',
+        'description': 'مناسب للساعات والإكسسوارات الراقية مع حضور ذهبي واضح.',
+        'theme': 'luxury_champagne',
+        'background': 'navy_silk',
+        'accent': '#f5c451',
+        'surface': '#0b1020',
+        'ink': '#fff7df',
+    },
+    {
+        'key': 'soft_marble',
+        'label': 'رخامي ناعم',
+        'description': 'مظهر هادئ للعطور والهدايا والمنتجات الناعمة.',
+        'theme': 'soft_lavender',
+        'background': 'luxury_lilac_marble',
+        'accent': '#9b7bb0',
+        'surface': '#fbf7ff',
+        'ink': '#272136',
+    },
+    {
+        'key': 'rose_velvet',
+        'label': 'وردي مخملي',
+        'description': 'إحساس أنثوي دافئ مناسب للعطور والاكسسوارات والهدايا.',
+        'theme': 'luxury_rose_gold',
+        'background': 'luxury_dusty_pink_velvet',
+        'accent': '#c98b7b',
+        'surface': '#24151b',
+        'ink': '#fff3ef',
+    },
+]
+VISUAL_IDENTITY_MAP = {item['key']: item for item in VISUAL_IDENTITIES}
+
 def normalize_store_background(value):
     value = (value or 'none').strip()
     return value if value in STORE_BACKGROUND_FILES else 'none'
@@ -121,6 +175,13 @@ def normalize_store_background(value):
 def get_store_background_url(value):
     filename = STORE_BACKGROUND_FILES.get(normalize_store_background(value))
     return f"/static/assets/bg/{filename}" if filename else None
+
+def normalize_visual_identity(value):
+    value = (value or 'current').strip()
+    return value if value in VISUAL_IDENTITY_MAP else 'current'
+
+def get_visual_identity(value):
+    return VISUAL_IDENTITY_MAP[normalize_visual_identity(value)]
 
 # Theme colors
 THEME_COLORS = {
@@ -660,6 +721,7 @@ try:
     _mcur.execute("ALTER TABLE product_variants ADD COLUMN IF NOT EXISTS description TEXT")
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_theme TEXT DEFAULT 'gold'")
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_background TEXT DEFAULT 'none'")
+    _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS visual_identity TEXT DEFAULT 'current'")
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS product_gallery_enabled BOOLEAN DEFAULT FALSE")
     _mcur.execute("""
         CREATE TABLE IF NOT EXISTS product_images (
@@ -1533,7 +1595,8 @@ def admin():
         push_configured=bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY),
         vapid_public_key=VAPID_PUBLIC_KEY,
         theme_list=theme_list,
-        store_backgrounds=STORE_BACKGROUNDS
+        store_backgrounds=STORE_BACKGROUNDS,
+        visual_identities=VISUAL_IDENTITIES
     )
 
 @app.route('/admin/subscription-payment', methods=['POST'])
@@ -1995,6 +2058,11 @@ def update_store():
     currency = request.form.get('currency', '₪')
     store_theme = request.form.get('store_theme', '').strip() or 'gold'
     store_background = normalize_store_background(request.form.get('store_background'))
+    visual_identity = normalize_visual_identity(request.form.get('visual_identity'))
+    identity_preset = get_visual_identity(visual_identity)
+    if visual_identity != 'current':
+        store_theme = identity_preset.get('theme') or store_theme
+        store_background = normalize_store_background(identity_preset.get('background') or store_background)
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -2004,21 +2072,25 @@ def update_store():
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s, store_theme=%s, store_background=%s
+                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s,
+                    store_theme=%s, store_background=%s, visual_identity=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, logo_url, inventory_enabled, currency, store_theme, store_background, user_id))
+                  address, website, logo_url, inventory_enabled, currency, store_theme,
+                  store_background, visual_identity, user_id))
         else:
             cursor.execute("""
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, inventory_enabled=%s, currency=%s, store_theme=%s, store_background=%s
+                    address=%s, website=%s, inventory_enabled=%s, currency=%s,
+                    store_theme=%s, store_background=%s, visual_identity=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, inventory_enabled, currency, store_theme, store_background, user_id))
+                  address, website, inventory_enabled, currency, store_theme,
+                  store_background, visual_identity, user_id))
         conn.commit()
         flash("تم تحديث الإعدادات.", "success")
     except Exception as e:
@@ -2077,8 +2149,12 @@ def admin_store_preview():
     from themes import ENHANCED_THEMES, rgb_to_hex
     requested_theme = request.args.get('theme', '').strip()
     theme_name = requested_theme if requested_theme in ENHANCED_THEMES else (store.get('store_theme') or 'gold')
+    visual_identity = normalize_visual_identity(request.args.get('identity', store.get('visual_identity')))
+    identity_preset = get_visual_identity(visual_identity)
+    if visual_identity != 'current':
+        theme_name = identity_preset.get('theme') or theme_name
     background_name = normalize_store_background(
-        request.args.get('background', store.get('store_background'))
+        request.args.get('background', identity_preset.get('background') or store.get('store_background'))
     )
     theme_colors = ENHANCED_THEMES.get(theme_name, ENHANCED_THEMES['gold'])
     theme_hex = {
@@ -2092,6 +2168,8 @@ def admin_store_preview():
         product_to_open=None,
         theme_hex=theme_hex,
         theme_name=theme_name,
+        visual_identity=visual_identity,
+        visual_identity_data=identity_preset,
         store_background=background_name,
         store_background_url=get_store_background_url(background_name),
         preview_mode=True
@@ -2129,6 +2207,8 @@ def view_store(slug):
     conn.close()
     from themes import ENHANCED_THEMES, rgb_to_hex
     theme_name = store.get('store_theme') or 'gold'
+    visual_identity = normalize_visual_identity(store.get('visual_identity'))
+    identity_preset = get_visual_identity(visual_identity)
     background_name = normalize_store_background(store.get('store_background'))
     theme_colors = ENHANCED_THEMES.get(theme_name, ENHANCED_THEMES['gold'])
     theme_hex = {
@@ -2142,6 +2222,8 @@ def view_store(slug):
         product_to_open=product_to_open,
         theme_hex=theme_hex,
         theme_name=theme_name,
+        visual_identity=visual_identity,
+        visual_identity_data=identity_preset,
         store_background=background_name,
         store_background_url=get_store_background_url(background_name),
         preview_mode=False

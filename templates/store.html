@@ -885,9 +885,125 @@
         }
         {% endif %}
 
+        body.identity-silver_velvet,
+        body.identity-gold_luxury,
+        body.identity-soft_marble,
+        body.identity-rose_velvet {
+            --identity-panel: rgba(255,255,255,0.88);
+            --identity-panel-dark: rgba(10, 14, 22, 0.76);
+            --identity-border: rgba(255,255,255,0.24);
+            --identity-shadow: 0 24px 70px rgba(0,0,0,0.22);
+        }
+        body.identity-silver_velvet { --identity-accent: #d8e2ea; --identity-ink: #f8fafc; --identity-deep: #071018; }
+        body.identity-gold_luxury { --identity-accent: #f5c451; --identity-ink: #fff7df; --identity-deep: #080d1a; }
+        body.identity-soft_marble { --identity-accent: #9b7bb0; --identity-ink: #272136; --identity-deep: #fbf7ff; --identity-panel-dark: rgba(255,255,255,0.82); --identity-border: rgba(91,67,113,0.18); }
+        body.identity-rose_velvet { --identity-accent: #e5b0a4; --identity-ink: #fff3ef; --identity-deep: #201017; }
+
+        body.identity-silver_velvet .store-main-nav,
+        body.identity-gold_luxury .store-main-nav,
+        body.identity-soft_marble .store-main-nav,
+        body.identity-rose_velvet .store-main-nav {
+            background: color-mix(in srgb, var(--identity-deep) 86%, transparent 14%) !important;
+            border-bottom: 1px solid color-mix(in srgb, var(--identity-accent) 34%, transparent 66%) !important;
+            backdrop-filter: blur(18px);
+        }
+        body.identity-silver_velvet .welcome-header,
+        body.identity-gold_luxury .welcome-header,
+        body.identity-rose_velvet .welcome-header {
+            background:
+                radial-gradient(circle at 12% 12%, color-mix(in srgb, var(--identity-accent) 22%, transparent 78%), transparent 28%),
+                linear-gradient(145deg, rgba(7, 12, 22, 0.86), rgba(7, 12, 22, 0.62)) !important;
+            border: 1px solid var(--identity-border) !important;
+            border-radius: 0 0 26px 26px;
+            box-shadow: var(--identity-shadow);
+            backdrop-filter: blur(14px);
+        }
+        body.identity-soft_marble .welcome-header {
+            background:
+                radial-gradient(circle at 15% 15%, rgba(255,255,255,0.82), transparent 34%),
+                linear-gradient(145deg, rgba(255,255,255,0.86), rgba(245,238,250,0.72)) !important;
+            border: 1px solid var(--identity-border) !important;
+            box-shadow: 0 18px 48px rgba(91,67,113,0.12);
+        }
+        body.identity-silver_velvet .welcome-text h1,
+        body.identity-silver_velvet .welcome-text h1 span,
+        body.identity-silver_velvet .welcome-text p,
+        body.identity-gold_luxury .welcome-text h1,
+        body.identity-gold_luxury .welcome-text h1 span,
+        body.identity-gold_luxury .welcome-text p,
+        body.identity-rose_velvet .welcome-text h1,
+        body.identity-rose_velvet .welcome-text h1 span,
+        body.identity-rose_velvet .welcome-text p {
+            color: var(--identity-ink) !important;
+        }
+        body.identity-silver_velvet .welcome-text h1,
+        body.identity-gold_luxury .welcome-text h1,
+        body.identity-soft_marble .welcome-text h1,
+        body.identity-rose_velvet .welcome-text h1 {
+            font-family: 'Noto Naskh Arabic', 'Playfair Display', serif !important;
+            letter-spacing: 0 !important;
+        }
+        body.identity-silver_velvet .btn-premium,
+        body.identity-gold_luxury .btn-premium,
+        body.identity-soft_marble .btn-premium,
+        body.identity-rose_velvet .btn-premium {
+            background: var(--identity-accent) !important;
+            color: #0b1020 !important;
+            border-color: transparent !important;
+            border-radius: 999px !important;
+            letter-spacing: 0 !important;
+            font-weight: 800 !important;
+        }
+        body.identity-silver_velvet .product-card,
+        body.identity-gold_luxury .product-card,
+        body.identity-soft_marble .product-card,
+        body.identity-rose_velvet .product-card {
+            background: var(--identity-panel) !important;
+            border: 1px solid color-mix(in srgb, var(--identity-accent) 22%, transparent 78%) !important;
+            box-shadow: 0 14px 34px rgba(0,0,0,0.10) !important;
+            border-radius: 14px !important;
+            overflow: hidden !important;
+        }
+        body.identity-silver_velvet .img-container,
+        body.identity-gold_luxury .img-container,
+        body.identity-soft_marble .img-container,
+        body.identity-rose_velvet .img-container {
+            background: color-mix(in srgb, var(--identity-accent) 8%, #ffffff 92%) !important;
+        }
+        body.identity-silver_velvet .price-sale,
+        body.identity-gold_luxury .price-sale,
+        body.identity-soft_marble .price-sale,
+        body.identity-rose_velvet .price-sale {
+            color: color-mix(in srgb, var(--identity-accent) 70%, #111827 30%) !important;
+            font-weight: 800 !important;
+        }
+        body.identity-silver_velvet .mobile-nav,
+        body.identity-gold_luxury .mobile-nav,
+        body.identity-rose_velvet .mobile-nav {
+            background: rgba(7, 12, 22, 0.88) !important;
+            border: 1px solid color-mix(in srgb, var(--identity-accent) 34%, transparent 66%) !important;
+            box-shadow: 0 18px 46px rgba(0,0,0,0.28) !important;
+        }
+        body.identity-silver_velvet .m-nav-link,
+        body.identity-gold_luxury .m-nav-link,
+        body.identity-rose_velvet .m-nav-link {
+            color: rgba(255,255,255,0.68) !important;
+        }
+        body.identity-silver_velvet .m-nav-link.active,
+        body.identity-gold_luxury .m-nav-link.active,
+        body.identity-rose_velvet .m-nav-link.active {
+            color: var(--identity-accent) !important;
+        }
+        body.identity-soft_marble .mobile-nav {
+            background: rgba(255,255,255,0.88) !important;
+            border: 1px solid var(--identity-border) !important;
+            box-shadow: 0 18px 42px rgba(91,67,113,0.14) !important;
+        }
+        body.identity-soft_marble .m-nav-link.active { color: var(--identity-accent) !important; }
+
 </style>
 </head>
-<body class="{% if store_background_url %}has-store-background{% endif %}">
+<body class="{% if store_background_url %}has-store-background{% endif %} identity-{{ visual_identity|default('current') }}">
 
     <!-- ══ DESKTOP TOP BAR ══ -->
     {% if store.announcement %}

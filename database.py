@@ -69,6 +69,7 @@ def init_db():
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS currency TEXT")
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_theme TEXT DEFAULT 'classic'")
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_background TEXT DEFAULT 'none'")
+    cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS visual_identity TEXT DEFAULT 'current'")
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS announcement TEXT")
     cursor.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS product_gallery_enabled BOOLEAN DEFAULT FALSE")
 

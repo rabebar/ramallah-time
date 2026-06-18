@@ -900,7 +900,31 @@
             </button>
             <div class="settings-step-body">
         <div class="form-group" style="margin-top:10px;">
-            <label class="form-label">خلفية المتجر الفاخرة</label>
+            <label class="form-label">اختر هوية المتجر الجاهزة</label>
+            <input type="hidden" name="visual_identity" id="selectedVisualIdentity" value="{{ store.visual_identity or 'current' }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:10px;">
+                {% for identity in visual_identities %}
+                <button type="button"
+                        class="identity-option"
+                        id="identity-{{ identity.key }}"
+                        data-identity="{{ identity.key }}"
+                        data-theme="{{ identity.theme or '' }}"
+                        data-background="{{ identity.background or '' }}"
+                        onclick="selectVisualIdentity(this)"
+                        style="text-align:right;border:2px solid {{ '#C4963A' if (store.visual_identity or 'current') == identity.key else '#e5e7eb' }};border-radius:14px;background:#fff;padding:12px;cursor:pointer;box-shadow:0 8px 22px rgba(15,23,42,0.06);transition:all .2s;">
+                    <span style="display:block;height:78px;border-radius:10px;margin-bottom:10px;background:
+                        radial-gradient(circle at 22% 18%, rgba(255,255,255,.55), transparent 24%),
+                        linear-gradient(135deg, {{ identity.surface }}, {{ identity.accent }} 55%, {{ identity.ink }});"></span>
+                    <span style="display:block;font-size:14px;font-weight:900;color:#111827;margin-bottom:4px;">{{ identity.label }}</span>
+                    <span style="display:block;font-size:11px;line-height:1.7;color:#64748b;">{{ identity.description }}</span>
+                </button>
+                {% endfor %}
+            </div>
+            <small style="color:var(--text-muted);margin-top:8px;display:block;">اختيار هوية جاهزة يضبط الشكل العام تلقائياً. اختر "الشكل الحالي" للحفاظ على التصميم كما هو.</small>
+        </div>
+
+        <div class="form-group" style="margin-top:10px;">
+            <label class="form-label">تخصيص متقدم: خلفية المتجر الفاخرة</label>
             <input type="hidden" name="store_background" id="selectedStoreBackground" value="{{ store.store_background or 'none' }}">
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
                 {% for background in store_backgrounds %}
@@ -920,7 +944,7 @@
         </div>
 
         <div class="form-group" style="margin-top: 10px;">
-            <label class="form-label">ثيم المتجر (Store Theme)</label>
+            <label class="form-label">تخصيص متقدم: ثيم المتجر</label>
             <input type="hidden" name="store_theme" id="selectedTheme" value="{{ store.store_theme or 'gold' }}">
             <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;align-items:flex-start;">
                 <div style="width:260px;flex-shrink:0;max-height:340px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:12px;padding:10px;">
@@ -951,7 +975,7 @@
                     </div>
                     <div id="themePreviewFrame" style="width:390px;max-width:100%;height:680px;margin:0 auto;border:8px solid #111827;border-radius:28px;overflow:hidden;background:#fff;box-shadow:0 14px 35px rgba(15,23,42,0.18);transition:width .25s ease,border-radius .25s ease;">
                         <iframe id="themePreview"
-                                src="/admin/store-preview?theme={{ store.store_theme or 'gold' }}&background={{ store.store_background or 'none' }}"
+                                src="/admin/store-preview?theme={{ store.store_theme or 'gold' }}&background={{ store.store_background or 'none' }}&identity={{ store.visual_identity or 'current' }}"
                                 title="معاينة المتجر"
                                 sandbox="allow-scripts allow-same-origin"
                                 style="display:block;width:100%;height:100%;border:0;background:#fff;"></iframe>
@@ -962,24 +986,62 @@
         </div>
 
         <script>
-        function refreshStorePreview(){
-            const theme=document.getElementById('selectedTheme')?.value||'gold';
-            const background=document.getElementById('selectedStoreBackground')?.value||'none';
-            const preview=document.getElementById('themePreview');
-            if(preview) preview.src='/admin/store-preview?theme='+encodeURIComponent(theme)+'&background='+encodeURIComponent(background)+'&_='+Date.now();
+        const initialStoreTheme = '{{ store.store_theme or "gold" }}';
+        const initialStoreBackground = '{{ store.store_background or "none" }}';
+
+        function markVisualIdentity(name){
+            const input=document.getElementById('selectedVisualIdentity');
+            if(input) input.value=name;
+            document.querySelectorAll('.identity-option').forEach(btn=>btn.style.border='2px solid #e5e7eb');
+            const selected=document.getElementById('identity-'+name);
+            if(selected) selected.style.border='2px solid #C4963A';
         }
-        function selectTheme(name,light,dark){
-            document.getElementById('selectedTheme').value=name;
-            document.getElementById('themeLabel').textContent=name;
+
+        function setThemeSelection(name){
+            const input=document.getElementById('selectedTheme');
+            const label=document.getElementById('themeLabel');
+            if(input) input.value=name;
+            if(label) label.textContent=name;
             document.querySelectorAll('[id^="theme-"]').forEach(el=>el.style.border='3px solid transparent');
             const s=document.getElementById('theme-'+name);
             if(s)s.style.border='3px solid #C4963A';
+        }
+
+        function setBackgroundSelection(name){
+            const input=document.getElementById('selectedStoreBackground');
+            if(input) input.value=name;
+            document.querySelectorAll('.store-bg-option').forEach(btn=>btn.style.border='3px solid transparent');
+            const selected=document.querySelector('.store-bg-option[data-background="'+CSS.escape(name)+'"]');
+            if(selected) selected.style.border='3px solid #C4963A';
+        }
+
+        function refreshStorePreview(){
+            const theme=document.getElementById('selectedTheme')?.value||'gold';
+            const background=document.getElementById('selectedStoreBackground')?.value||'none';
+            const identity=document.getElementById('selectedVisualIdentity')?.value||'current';
+            const preview=document.getElementById('themePreview');
+            if(preview) preview.src='/admin/store-preview?theme='+encodeURIComponent(theme)+'&background='+encodeURIComponent(background)+'&identity='+encodeURIComponent(identity)+'&_='+Date.now();
+        }
+        function selectVisualIdentity(el){
+            const identity=el.dataset.identity||'current';
+            markVisualIdentity(identity);
+            if(identity==='current'){
+                setThemeSelection(initialStoreTheme);
+                setBackgroundSelection(initialStoreBackground);
+            } else {
+                if(el.dataset.theme) setThemeSelection(el.dataset.theme);
+                if(el.dataset.background) setBackgroundSelection(el.dataset.background);
+            }
+            refreshStorePreview();
+        }
+        function selectTheme(name,light,dark){
+            markVisualIdentity('current');
+            setThemeSelection(name);
             refreshStorePreview();
         }
         function selectStoreBackground(name,el){
-            document.getElementById('selectedStoreBackground').value=name;
-            document.querySelectorAll('.store-bg-option').forEach(btn=>btn.style.border='3px solid transparent');
-            el.style.border='3px solid #C4963A';
+            markVisualIdentity('current');
+            setBackgroundSelection(name);
             refreshStorePreview();
         }
         function setPreviewMode(mode){
