@@ -922,8 +922,41 @@
         <div class="form-group" style="margin-top:10px;">
             <label class="form-label">اختر هوية المتجر الجاهزة</label>
             <input type="hidden" name="visual_identity" id="selectedVisualIdentity" value="{{ store.visual_identity or 'current' }}">
+            <div style="margin:10px 0 16px;padding:16px;border:1px solid rgba(196,150,58,.35);border-radius:18px;background:linear-gradient(135deg,#090b10,#1f2937);box-shadow:0 16px 38px rgba(15,23,42,.16);">
+                <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+                    <div>
+                        <div style="display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:999px;background:rgba(196,150,58,.16);color:#f8e7c3;font-size:11px;font-weight:900;margin-bottom:10px;">
+                            <i data-lucide="gem" style="width:13px;height:13px;"></i>
+                            قالب مدفوع
+                        </div>
+                        <div style="color:#fff;font-size:18px;font-weight:900;margin-bottom:6px;">قالب المجوهرات الفاخر</div>
+                        <div style="color:rgba(255,255,255,.72);font-size:12px;line-height:1.8;max-width:620px;">
+                            تصميم بوتيك مستقل لمتاجر الفضة والمجوهرات: هيدر منتج فاخر، شريط مزايا، بطاقات منتجات راقية، ومظهر مخصص للموبايل والكمبيوتر.
+                        </div>
+                    </div>
+                    <div style="text-align:left;color:#f8e7c3;font-size:12px;font-weight:900;">
+                        + 150 شيكل
+                    </div>
+                </div>
+                <button type="button"
+                        class="identity-option"
+                        id="identity-jewelry_luxury"
+                        data-identity="jewelry_luxury"
+                        data-theme="industrial_steel"
+                        data-background="none"
+                        onclick="selectVisualIdentity(this)"
+                        style="margin-top:14px;width:100%;border:2px solid {{ '#C4963A' if (store.visual_identity or 'current') == 'jewelry_luxury' else 'rgba(255,255,255,.18)' }};border-radius:14px;background:rgba(255,255,255,.07);padding:12px;cursor:pointer;color:#fff;text-align:right;">
+                    <span style="display:block;height:92px;border-radius:12px;margin-bottom:10px;background:
+                        radial-gradient(circle at 18% 18%, rgba(255,255,255,.30), transparent 18%),
+                        radial-gradient(circle at 72% 42%, rgba(232,237,242,.18), transparent 22%),
+                        linear-gradient(135deg,#030405,#111827 54%,#d8c19b);"></span>
+                    <span style="font-size:13px;font-weight:900;">تفعيل قالب المجوهرات الفاخر</span>
+                    <span style="display:block;color:rgba(255,255,255,.64);font-size:11px;margin-top:5px;">يظهر كقالب مدفوع في السوبر أدمن ويضاف رسمه إلى مركز الدفع.</span>
+                </button>
+            </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:10px;">
                 {% for identity in visual_identities %}
+                {% if identity.key != 'jewelry_luxury' %}
                 <button type="button"
                         class="identity-option"
                         id="identity-{{ identity.key }}"
@@ -938,6 +971,7 @@
                     <span style="display:block;font-size:14px;font-weight:900;color:#111827;margin-bottom:4px;">{{ identity.label }}</span>
                     <span style="display:block;font-size:11px;line-height:1.7;color:#64748b;">{{ identity.description }}</span>
                 </button>
+                {% endif %}
                 {% endfor %}
             </div>
             <small style="color:var(--text-muted);margin-top:8px;display:block;">اختيار هوية جاهزة يضبط الشكل العام تلقائياً. اختر "الشكل الحالي" للحفاظ على التصميم كما هو.</small>

@@ -140,7 +140,7 @@ VISUAL_IDENTITIES = [
         'label': 'قالب المجوهرات الفاخر',
         'description': 'قالب مدفوع 150 شيكل لمتاجر الفضة والمجوهرات مع هيدر منتج وبطاقات بوتيك.',
         'theme': 'industrial_steel',
-        'background': 'velvet_teal',
+        'background': 'none',
         'accent': '#e8edf2',
         'surface': '#070b10',
         'ink': '#f8fafc',

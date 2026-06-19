@@ -1411,6 +1411,576 @@
             }
         }
 
+        body.identity-jewelry_luxury {
+            --jewelry-gold: #d9b77f;
+            --jewelry-silver: #f4f7fb;
+            --jewelry-muted: rgba(244,247,251,0.68);
+            --jewelry-border: rgba(244,247,251,0.18);
+            --jewelry-panel: rgba(9, 11, 15, 0.78);
+            overflow-x: hidden;
+            background:
+                radial-gradient(circle at 12% 8%, rgba(255,255,255,0.14), transparent 18%),
+                radial-gradient(circle at 88% 16%, rgba(217,183,127,0.16), transparent 22%),
+                linear-gradient(135deg, rgba(255,255,255,0.05) 0 8%, transparent 8% 18%, rgba(255,255,255,0.035) 18% 28%, transparent 28%),
+                linear-gradient(160deg, #020304 0%, #07090d 48%, #000 100%) !important;
+            background-attachment: fixed !important;
+            color: var(--jewelry-silver);
+        }
+        body.identity-jewelry_luxury.has-store-background {
+            background:
+                radial-gradient(circle at 12% 8%, rgba(255,255,255,0.14), transparent 18%),
+                radial-gradient(circle at 88% 16%, rgba(217,183,127,0.16), transparent 22%),
+                linear-gradient(135deg, rgba(255,255,255,0.05) 0 8%, transparent 8% 18%, rgba(255,255,255,0.035) 18% 28%, transparent 28%),
+                linear-gradient(160deg, #020304 0%, #07090d 48%, #000 100%) !important;
+        }
+        body.identity-jewelry_luxury .rt-promo-banner {
+            display: none !important;
+        }
+        body.identity-jewelry_luxury .mobile-header {
+            background: rgba(255,255,255,0.96) !important;
+            border-bottom: 1px solid rgba(15,23,42,0.06) !important;
+        }
+        body.identity-jewelry_luxury .main-content {
+            background: transparent !important;
+        }
+        body.identity-jewelry_luxury .welcome-header {
+            min-height: clamp(560px, 76vh, 760px);
+            margin: 0 28px 22px !important;
+            padding: 46px 52px 42px !important;
+            border: 1px solid var(--jewelry-border) !important;
+            border-radius: 0 0 46px 46px !important;
+            background:
+                radial-gradient(circle at 14% 14%, rgba(255,255,255,0.18), transparent 24%),
+                radial-gradient(circle at 78% 20%, rgba(217,183,127,0.12), transparent 22%),
+                linear-gradient(145deg, rgba(9,11,15,0.68), rgba(0,0,0,0.94)) !important;
+            box-shadow: 0 38px 95px rgba(0,0,0,0.46);
+            display: grid !important;
+            grid-template-columns: minmax(280px, 0.82fr) minmax(360px, 1fr);
+            grid-template-areas:
+                "logo text"
+                "cta product";
+            align-items: center;
+            gap: 24px 34px;
+            overflow: hidden;
+            isolation: isolate;
+        }
+        body.identity-jewelry_luxury .welcome-header::before {
+            inset: 28px;
+            border: 1px solid rgba(244,247,251,0.18);
+            border-radius: 36px;
+            z-index: 2;
+        }
+        body.identity-jewelry_luxury .welcome-header::after {
+            content: '';
+            position: absolute;
+            inset: auto -8% -32% -8%;
+            height: 68%;
+            background:
+                radial-gradient(ellipse at 50% 42%, rgba(255,255,255,0.14), transparent 18%),
+                repeating-linear-gradient(165deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 18px);
+            opacity: 0.42;
+            transform: rotate(-2deg);
+            pointer-events: none;
+            z-index: -1;
+        }
+        body.identity-jewelry_luxury .identity-hero-product {
+            grid-area: product;
+            display: flex;
+            position: relative;
+            inset: auto;
+            height: min(390px, 42vw);
+            z-index: 1;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+            align-self: end;
+        }
+        body.identity-jewelry_luxury .identity-hero-product::before {
+            content: '';
+            position: absolute;
+            width: 82%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(244,247,251,0.22), rgba(217,183,127,0.10) 32%, transparent 68%);
+            filter: blur(6px);
+            z-index: -1;
+        }
+        body.identity-jewelry_luxury .identity-hero-product::after {
+            background: none !important;
+        }
+        body.identity-jewelry_luxury .identity-hero-product img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transform: none;
+            filter: drop-shadow(0 32px 46px rgba(0,0,0,0.62)) saturate(0.96) contrast(1.08);
+        }
+        body.identity-jewelry_luxury .identity-hero-mark {
+            grid-area: logo;
+            width: 132px;
+            height: 132px;
+            justify-self: start;
+            align-self: start;
+            z-index: 3;
+            border: 2px solid rgba(255,255,255,0.86);
+            background: rgba(255,255,255,0.98);
+            box-shadow: 0 26px 64px rgba(0,0,0,0.46), 0 0 0 8px rgba(255,255,255,0.08);
+        }
+        body.identity-jewelry_luxury .welcome-text {
+            grid-area: text;
+            z-index: 3;
+            max-width: 720px;
+            justify-self: start;
+        }
+        body.identity-jewelry_luxury .identity-hero-kicker {
+            color: var(--jewelry-gold);
+            font-size: 11px;
+            letter-spacing: 5px;
+            margin-bottom: 12px;
+        }
+        body.identity-jewelry_luxury .welcome-text h1 {
+            color: #fff !important;
+            font-size: clamp(42px, 5.4vw, 82px) !important;
+            line-height: 1.08 !important;
+            margin: 0 0 10px !important;
+            text-shadow: 0 22px 48px rgba(0,0,0,0.52);
+        }
+        body.identity-jewelry_luxury .welcome-text h1 span {
+            color: #fff !important;
+        }
+        body.identity-jewelry_luxury .welcome-text p {
+            color: rgba(244,247,251,0.78) !important;
+            font-size: clamp(15px, 1.6vw, 21px) !important;
+            line-height: 2.05 !important;
+            max-width: 760px;
+        }
+        body.identity-jewelry_luxury .header-btns {
+            grid-area: cta;
+            z-index: 3;
+            align-self: end;
+            justify-self: start;
+        }
+        body.identity-jewelry_luxury .btn-premium {
+            min-width: 220px;
+            justify-content: center;
+            background: rgba(255,255,255,0.96) !important;
+            color: #08090d !important;
+            border: 1px solid rgba(255,255,255,0.72) !important;
+            box-shadow: 0 22px 48px rgba(0,0,0,0.28) !important;
+        }
+        body.identity-jewelry_luxury .btn-premium span {
+            font-size: 14px !important;
+            font-weight: 900 !important;
+        }
+        body.identity-jewelry_luxury .jewelry-trust-strip {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0;
+            margin: 0 28px 34px;
+            padding: 20px 18px;
+            border-radius: 28px;
+            border: 1px solid var(--jewelry-border);
+            background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.035));
+            box-shadow: 0 22px 58px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.08);
+            backdrop-filter: blur(16px);
+        }
+        body.identity-jewelry_luxury .jewelry-trust-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 86px;
+            gap: 7px;
+            color: rgba(244,247,251,0.82);
+            text-align: center;
+            border-left: 1px solid rgba(244,247,251,0.16);
+        }
+        body.identity-jewelry_luxury .jewelry-trust-item:last-child {
+            border-left: none;
+        }
+        body.identity-jewelry_luxury .jewelry-trust-item i {
+            width: 28px;
+            height: 28px;
+            color: var(--jewelry-gold);
+            filter: drop-shadow(0 0 8px rgba(217,183,127,0.32));
+        }
+        body.identity-jewelry_luxury .jewelry-trust-title {
+            font-size: 15px;
+            font-weight: 900;
+            color: #fff;
+        }
+        body.identity-jewelry_luxury .jewelry-trust-sub {
+            font-size: 12px;
+            color: rgba(244,247,251,0.58);
+        }
+        body.identity-jewelry_luxury .section-title {
+            display: flex !important;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            color: #fff !important;
+            font-size: clamp(22px, 3vw, 36px) !important;
+            font-weight: 800 !important;
+            margin: 22px 28px 26px !important;
+            letter-spacing: 0 !important;
+            text-transform: none !important;
+        }
+        body.identity-jewelry_luxury .section-title::before {
+            content: '✦';
+            position: static;
+            width: auto;
+            height: auto;
+            background: transparent !important;
+            color: var(--jewelry-gold);
+            font-size: 28px;
+        }
+        body.identity-jewelry_luxury .products-grid {
+            padding: 0 28px 36px !important;
+            gap: 22px !important;
+        }
+        body.identity-jewelry_luxury .product-card {
+            position: relative;
+            background: rgba(255,255,255,0.97) !important;
+            border: 2px solid rgba(255,255,255,0.88) !important;
+            border-radius: 24px !important;
+            box-shadow: 0 24px 58px rgba(0,0,0,0.30) !important;
+            overflow: hidden !important;
+        }
+        body.identity-jewelry_luxury .product-card::before {
+            content: 'جديد';
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 2;
+            padding: 6px 12px;
+            border-radius: 10px;
+            background: #f5eadb;
+            color: #8b6a3d;
+            font-size: 12px;
+            font-weight: 900;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+        }
+        body.identity-jewelry_luxury .product-card::after {
+            content: 'اطلب عبر واتساب';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 18px 18px;
+            min-height: 42px;
+            border-radius: 12px;
+            border: 1px solid rgba(34,197,94,0.48);
+            color: #16a34a;
+            font-size: 14px;
+            font-weight: 900;
+        }
+        body.identity-jewelry_luxury .img-container {
+            background:
+                radial-gradient(circle at 50% 36%, rgba(255,255,255,0.92), rgba(244,247,251,0.56) 44%, rgba(8,9,13,0.08)) !important;
+        }
+        body.identity-jewelry_luxury .img-container img {
+            filter: drop-shadow(0 22px 28px rgba(0,0,0,0.22));
+        }
+        body.identity-jewelry_luxury .p-info {
+            padding: 18px 18px 10px !important;
+            text-align: center;
+        }
+        body.identity-jewelry_luxury .p-name {
+            color: #111827 !important;
+            font-size: 19px !important;
+            font-weight: 900 !important;
+            line-height: 1.45 !important;
+        }
+        body.identity-jewelry_luxury .p-meta,
+        body.identity-jewelry_luxury .price-sale {
+            color: #9d7b4b !important;
+            font-size: 18px !important;
+            font-weight: 900 !important;
+        }
+        body.identity-jewelry_luxury .mobile-nav {
+            background: rgba(5, 6, 9, 0.92) !important;
+            border: 1px solid rgba(244,247,251,0.20) !important;
+            border-radius: 26px !important;
+            box-shadow: 0 24px 62px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+            backdrop-filter: blur(18px);
+        }
+        body.identity-jewelry_luxury .m-nav-link {
+            color: rgba(255,255,255,0.72) !important;
+        }
+        body.identity-jewelry_luxury .m-nav-link.active {
+            color: var(--jewelry-gold) !important;
+        }
+        body.identity-jewelry_luxury .m-nav-link i {
+            width: 24px !important;
+            height: 24px !important;
+        }
+        @media (min-width: 1025px) {
+            body.identity-jewelry_luxury .main-content {
+                max-width: 1480px;
+                margin-inline: auto;
+            }
+            body.identity-jewelry_luxury .products-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            }
+        }
+        @media (max-width: 1024px) {
+            body.identity-jewelry_luxury {
+                background-attachment: scroll !important;
+            }
+            body.identity-jewelry_luxury .welcome-header {
+                min-height: 570px;
+                margin: 0 14px 18px !important;
+                padding: 28px 26px 30px !important;
+                border-radius: 0 0 38px 38px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                text-align: center !important;
+                gap: 16px;
+            }
+            body.identity-jewelry_luxury .welcome-header::before {
+                inset: 18px;
+                border-radius: 30px;
+            }
+            body.identity-jewelry_luxury .identity-hero-mark {
+                width: 102px;
+                height: 102px;
+                align-self: center;
+            }
+            body.identity-jewelry_luxury .welcome-text {
+                order: 2;
+            }
+            body.identity-jewelry_luxury .identity-hero-product {
+                order: 3;
+                width: 100%;
+                height: 270px;
+                margin-top: -4px;
+            }
+            body.identity-jewelry_luxury .identity-hero-product img {
+                transform: scale(1.16);
+            }
+            body.identity-jewelry_luxury .header-btns {
+                order: 4;
+                align-self: center;
+            }
+            body.identity-jewelry_luxury .welcome-text h1 {
+                font-size: 40px !important;
+            }
+            body.identity-jewelry_luxury .welcome-text p {
+                font-size: 15px !important;
+                line-height: 1.9 !important;
+            }
+            body.identity-jewelry_luxury .jewelry-trust-strip {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                margin: 0 14px 26px;
+                padding: 13px 8px;
+                border-radius: 24px;
+            }
+            body.identity-jewelry_luxury .jewelry-trust-item {
+                min-height: 74px;
+                padding: 0 5px;
+            }
+            body.identity-jewelry_luxury .jewelry-trust-item i {
+                width: 22px;
+                height: 22px;
+            }
+            body.identity-jewelry_luxury .jewelry-trust-title {
+                font-size: 12px;
+            }
+            body.identity-jewelry_luxury .jewelry-trust-sub {
+                display: none;
+            }
+            body.identity-jewelry_luxury .products-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                padding: 0 14px 36px !important;
+                gap: 14px !important;
+            }
+            body.identity-jewelry_luxury .product-card {
+                border-radius: 20px !important;
+            }
+            body.identity-jewelry_luxury .p-name {
+                font-size: 15px !important;
+            }
+            body.identity-jewelry_luxury .p-meta,
+            body.identity-jewelry_luxury .price-sale {
+                font-size: 15px !important;
+            }
+            body.identity-jewelry_luxury .product-card::after {
+                margin: 0 12px 14px;
+                min-height: 38px;
+                font-size: 12px;
+            }
+        }
+
+        /* Jewelry luxury v2: match product-led boutique reference instead of a centered dark card. */
+        body.identity-jewelry_luxury .welcome-header {
+            display: block !important;
+            min-height: clamp(520px, 66vh, 680px) !important;
+            margin: 0 28px 28px !important;
+            padding: 0 !important;
+            border-radius: 0 0 34px 34px !important;
+            background: #030405 !important;
+        }
+        body.identity-jewelry_luxury .welcome-header::before {
+            inset: 24px !important;
+            border-radius: 30px !important;
+            z-index: 3 !important;
+            border-color: rgba(255,255,255,0.18) !important;
+        }
+        body.identity-jewelry_luxury .welcome-header::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            width: auto;
+            height: auto;
+            left: auto;
+            top: auto;
+            background:
+                linear-gradient(180deg, rgba(0,0,0,0.10), rgba(0,0,0,0.18) 34%, rgba(0,0,0,0.88) 100%),
+                linear-gradient(90deg, rgba(0,0,0,0.30), rgba(0,0,0,0.05) 44%, rgba(0,0,0,0.52)) !important;
+            z-index: 1;
+            opacity: 1;
+            pointer-events: none;
+        }
+        body.identity-jewelry_luxury .identity-hero-product {
+            position: absolute !important;
+            inset: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            display: block !important;
+            z-index: 0 !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+        }
+        body.identity-jewelry_luxury .identity-hero-product::before,
+        body.identity-jewelry_luxury .identity-hero-product::after {
+            display: none !important;
+        }
+        body.identity-jewelry_luxury .identity-hero-product img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            transform: scale(1.06) !important;
+            filter: brightness(0.72) contrast(1.12) saturate(0.88) !important;
+        }
+        body.identity-jewelry_luxury .identity-hero-mark {
+            position: absolute !important;
+            top: 48px !important;
+            left: 48px !important;
+            width: 132px !important;
+            height: 132px !important;
+            z-index: 4 !important;
+            align-self: auto !important;
+            justify-self: auto !important;
+        }
+        body.identity-jewelry_luxury .welcome-text {
+            position: absolute !important;
+            top: 64px !important;
+            right: 54px !important;
+            left: 220px !important;
+            z-index: 4 !important;
+            max-width: none !important;
+            text-align: right !important;
+            order: initial !important;
+        }
+        body.identity-jewelry_luxury .identity-hero-kicker {
+            display: none !important;
+        }
+        body.identity-jewelry_luxury .welcome-text h1 {
+            font-size: clamp(44px, 6vw, 86px) !important;
+            line-height: 1.05 !important;
+            margin-bottom: 8px !important;
+        }
+        body.identity-jewelry_luxury .welcome-text p {
+            max-width: 900px !important;
+            color: rgba(244,247,251,0.82) !important;
+            font-size: clamp(16px, 1.7vw, 24px) !important;
+            line-height: 1.75 !important;
+        }
+        body.identity-jewelry_luxury .header-btns {
+            display: none !important;
+        }
+        @media (max-width: 1024px) {
+            body.identity-jewelry_luxury,
+            body.identity-jewelry_luxury * {
+                box-sizing: border-box;
+            }
+            body.identity-jewelry_luxury .main-content {
+                padding: 0 0 120px 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-x: hidden;
+            }
+            body.identity-jewelry_luxury .mobile-header {
+                height: 58px !important;
+            }
+            body.identity-jewelry_luxury .welcome-header {
+                min-height: 500px !important;
+                margin: 0 0 18px !important;
+                border-radius: 0 0 28px 28px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            body.identity-jewelry_luxury .welcome-header::before {
+                inset: 18px !important;
+                border-radius: 26px !important;
+            }
+            body.identity-jewelry_luxury .welcome-header::after {
+                background:
+                    linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0.22) 44%, rgba(0,0,0,0.90) 100%),
+                    linear-gradient(90deg, rgba(0,0,0,0.16), rgba(0,0,0,0.02) 46%, rgba(0,0,0,0.42)) !important;
+            }
+            body.identity-jewelry_luxury .identity-hero-product img {
+                transform: scale(1.12) !important;
+            }
+            body.identity-jewelry_luxury .identity-hero-mark {
+                top: 32px !important;
+                left: 30px !important;
+                width: 96px !important;
+                height: 96px !important;
+            }
+            body.identity-jewelry_luxury .welcome-text {
+                top: 122px !important;
+                right: 24px !important;
+                left: 24px !important;
+                text-align: center !important;
+            }
+            body.identity-jewelry_luxury .welcome-text h1 {
+                font-size: 40px !important;
+                margin-bottom: 6px !important;
+                white-space: normal !important;
+            }
+            body.identity-jewelry_luxury .welcome-text p {
+                display: block !important;
+                width: 100% !important;
+                padding: 0 18px !important;
+                font-size: 12.5px !important;
+                line-height: 1.75 !important;
+                max-width: none !important;
+                white-space: normal !important;
+                overflow-wrap: anywhere;
+            }
+            body.identity-jewelry_luxury .jewelry-trust-strip {
+                margin: 0 14px 24px !important;
+                transform: translateY(-6px);
+                box-sizing: border-box !important;
+                width: calc(100vw - 28px);
+                padding: 11px 6px !important;
+            }
+            body.identity-jewelry_luxury .jewelry-trust-title {
+                font-size: 10px !important;
+                line-height: 1.25;
+            }
+            body.identity-jewelry_luxury .jewelry-trust-item {
+                min-width: 0;
+                padding: 0 3px !important;
+            }
+            body.identity-jewelry_luxury .jewelry-trust-item i {
+                width: 20px !important;
+                height: 20px !important;
+            }
+        }
+
 </style>
 </head>
 <body class="{% if store_background_url %}has-store-background{% endif %} identity-{{ visual_identity|default('current') }}">
@@ -1543,6 +2113,31 @@
                 </a>
             </div>
         </header>
+
+        {% if visual_identity == 'jewelry_luxury' %}
+        <section class="jewelry-trust-strip" aria-label="مزايا المتجر">
+            <div class="jewelry-trust-item">
+                <i data-lucide="gem"></i>
+                <span class="jewelry-trust-title">فضة 925</span>
+                <span class="jewelry-trust-sub">جودة عالية</span>
+            </div>
+            <div class="jewelry-trust-item">
+                <i data-lucide="shield-check"></i>
+                <span class="jewelry-trust-title">ضمان الجودة</span>
+                <span class="jewelry-trust-sub">ثقة تدوم</span>
+            </div>
+            <div class="jewelry-trust-item">
+                <i data-lucide="truck"></i>
+                <span class="jewelry-trust-title">توصيل سريع</span>
+                <span class="jewelry-trust-sub">لكل فلسطين</span>
+            </div>
+            <div class="jewelry-trust-item">
+                <i data-lucide="headphones"></i>
+                <span class="jewelry-trust-title">خدمة عملاء</span>
+                <span class="jewelry-trust-sub">دعم دائم</span>
+            </div>
+        </section>
+        {% endif %}
 
         {% if store.announcement %}
         <div id="announcementBar" style="
@@ -1842,6 +2437,7 @@
         const STORE_ID = {{ store.id or 0 }};
         const CART_KEY = `cart_${STORE_ID}`;
         const CURRENCY = "{{ store.currency or '₪' }}";
+        const IS_JEWELRY_LUXURY = {{ (visual_identity == 'jewelry_luxury') | tojson }};
 
         const translations = {
             ar: {
@@ -1913,7 +2509,7 @@
             const welcomeTitle = document.getElementById('welcomeTitle');
             const storeName = {{ store.name | tojson }};
             if (welcomeTitle) {
-                welcomeTitle.innerHTML = `${translations[lang].welcome} <span>${storeName}</span>`;
+                welcomeTitle.innerHTML = IS_JEWELRY_LUXURY ? `<span>${storeName}</span>` : `${translations[lang].welcome} <span>${storeName}</span>`;
             }
 
             // bio الافتراضي (فقط إذا ما حدد التاجر bio خاص فيه)
