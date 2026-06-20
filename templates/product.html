@@ -762,6 +762,33 @@
     }
     .wa-order-btn:hover { background: #1da851; }
     
+    /* Desktop product page: mobile PWA rules remain untouched. */
+    @media (min-width: 1025px) {
+        body { background: #fff; }
+        .header { padding: 15px clamp(28px, 5vw, 88px); background: rgba(255,255,255,.96); }
+        .header-inner { max-width: 1440px; }
+        .header-logo { width: 46px; height: 46px; border-radius: 50%; background: #f5f3ef; color: #171717; }
+        .header-name { font-size: 16px; font-weight: 700; }
+        .back-btn { border-radius: 0; background: #171717; border-color: #171717; color: #fff; }
+        .product-main { max-width: 1320px; grid-template-columns: minmax(0, 1.25fr) minmax(360px, .75fr); gap: clamp(44px, 6vw, 110px); padding: 70px 32px 58px; }
+        .product-image-wrap { aspect-ratio: 4 / 5; border-radius: 0; background: #f5f3ef; box-shadow: none; }
+        .product-image-wrap img { background: #f5f3ef; }
+        .gallery-thumb { border-radius: 0; width: 84px; height: 84px; flex-basis: 84px; }
+        .gallery-thumb img { border-radius: 0; }
+        .product-info { padding-top: 18px; gap: 22px; }
+        .product-category { color: #777; letter-spacing: 1px; }
+        .product-name { font-size: clamp(32px, 3vw, 46px); font-weight: 700; line-height: 1.2; }
+        .product-price-wrap { padding: 18px 0; border-color: #e8e5df; }
+        .product-price { font-size: 30px; font-weight: 700; }
+        .product-desc { font-size: 15px; color: #625e57; }
+        .btn-primary, .btn-secondary { border-radius: 0; min-height: 52px; }
+        .btn-primary { background: #171717; }
+        .btn-secondary { border-color: #171717; color: #171717; }
+        .share-section { border-top-color: #e8e5df; }
+        .store-card, .related { max-width: 1320px; }
+        .store-card { border-radius: 0; box-shadow: none; }
+        .related-card, .related-img { border-radius: 0; }
+    }
     </style>
 </head>
 <body>

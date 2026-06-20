@@ -99,7 +99,7 @@
         .processing-toggle.stop { color: #b91c1c; background: rgba(239, 68, 68, 0.1); }
         .processing-toggle.start { color: #047857; background: rgba(16, 185, 129, 0.12); }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 32px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
         .stat-card { 
             background: var(--white); border: 1px solid var(--border); padding: 32px; 
             border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); transition: var(--transition);
@@ -295,16 +295,6 @@
         .badge-active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .badge-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
         .badge-store { background: var(--gray-bg); color: var(--navy); font-weight: 600; }
-        .badge-premium-template {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 6px;
-            background: linear-gradient(135deg, #111827, #475569);
-            color: #f8fafc;
-            border: 1px solid rgba(232,237,242,0.28);
-            box-shadow: 0 8px 20px rgba(15,23,42,0.14);
-        }
 
         .btn-group { display: flex; gap: 10px; align-items: center; }
         .btn-sm { 
@@ -544,10 +534,6 @@
                 <div class="stat-label">رصيد النظام الكلي</div>
                 <div class="stat-value">{{ stats.total_credits }}</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">قالب المجوهرات الفاخر</div>
-                <div class="stat-value">{{ stats.luxury_jewelry_stores }}</div>
-            </div>
         </div>
 
         <!-- إحصائيات الطلبات -->
@@ -781,13 +767,6 @@
                         <td>
                             {% if user.store_name %}
                             <span class="badge badge-store">{{ user.store_name }}</span>
-                            {% if user.store_visual_identity == 'jewelry_luxury' %}
-                            <br>
-                            <span class="badge badge-premium-template">
-                                <i data-lucide="gem" style="width:12px;height:12px;"></i>
-                                قالب مدفوع 150 شيكل
-                            </span>
-                            {% endif %}
                             {% else %}
                             <span style="color:#ccc; font-size:11px;">لا يوجد متجر</span>
                             {% endif %}

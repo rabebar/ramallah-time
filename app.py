@@ -114,70 +114,6 @@ STORE_BACKGROUNDS = [
 ]
 STORE_BACKGROUND_FILES = {item['key']: item['file'] for item in STORE_BACKGROUNDS}
 
-VISUAL_IDENTITIES = [
-    {
-        'key': 'current',
-        'label': 'الشكل الحالي',
-        'description': 'يحافظ على إعدادات المتجر كما هي بدون أي تغيير مفاجئ.',
-        'theme': None,
-        'background': None,
-        'accent': '#C4963A',
-        'surface': '#ffffff',
-        'ink': '#111827',
-    },
-    {
-        'key': 'silver_velvet',
-        'label': 'مخملي فضي',
-        'description': 'واجهة فاخرة للفضة والمجوهرات بخلفية داكنة ولمعة فضية.',
-        'theme': 'industrial_steel',
-        'background': 'velvet_teal',
-        'accent': '#d8e2ea',
-        'surface': '#101820',
-        'ink': '#f8fafc',
-    },
-    {
-        'key': 'jewelry_luxury',
-        'label': 'قالب المجوهرات الفاخر',
-        'description': 'قالب مدفوع 150 شيكل لمتاجر الفضة والمجوهرات مع هيدر منتج وبطاقات بوتيك.',
-        'theme': 'industrial_steel',
-        'background': 'none',
-        'accent': '#e8edf2',
-        'surface': '#070b10',
-        'ink': '#f8fafc',
-    },
-    {
-        'key': 'gold_luxury',
-        'label': 'ذهبي فاخر',
-        'description': 'مناسب للساعات والإكسسوارات الراقية مع حضور ذهبي واضح.',
-        'theme': 'luxury_champagne',
-        'background': 'navy_silk',
-        'accent': '#f5c451',
-        'surface': '#0b1020',
-        'ink': '#fff7df',
-    },
-    {
-        'key': 'soft_marble',
-        'label': 'رخامي ناعم',
-        'description': 'مظهر هادئ للعطور والهدايا والمنتجات الناعمة.',
-        'theme': 'soft_lavender',
-        'background': 'luxury_lilac_marble',
-        'accent': '#9b7bb0',
-        'surface': '#fbf7ff',
-        'ink': '#272136',
-    },
-    {
-        'key': 'rose_velvet',
-        'label': 'وردي مخملي',
-        'description': 'إحساس أنثوي دافئ مناسب للعطور والاكسسوارات والهدايا.',
-        'theme': 'luxury_rose_gold',
-        'background': 'luxury_dusty_pink_velvet',
-        'accent': '#c98b7b',
-        'surface': '#24151b',
-        'ink': '#fff3ef',
-    },
-]
-VISUAL_IDENTITY_MAP = {item['key']: item for item in VISUAL_IDENTITIES}
-
 def normalize_store_background(value):
     value = (value or 'none').strip()
     return value if value in STORE_BACKGROUND_FILES else 'none'
@@ -185,23 +121,6 @@ def normalize_store_background(value):
 def get_store_background_url(value):
     filename = STORE_BACKGROUND_FILES.get(normalize_store_background(value))
     return f"/static/assets/bg/{filename}" if filename else None
-
-def normalize_visual_identity(value):
-    value = (value or 'current').strip()
-    return value if value in VISUAL_IDENTITY_MAP else 'current'
-
-def get_visual_identity(value):
-    return VISUAL_IDENTITY_MAP[normalize_visual_identity(value)]
-
-def pick_hero_product(store, products):
-    if not products:
-        return None
-    selected_id = store.get('hero_product_id') if store else None
-    if selected_id:
-        for product in products:
-            if product.get('id') == selected_id:
-                return product
-    return products[0]
 
 # Theme colors
 THEME_COLORS = {
@@ -679,7 +598,6 @@ SUBSCRIPTION_PLANS = {
     'biannual': {'label': 'اشتراك 6 أشهر', 'days': 180, 'amount': Decimal('510.00'), 'currency': '₪'},
     'annual': {'label': 'اشتراك سنوي', 'days': 365, 'amount': Decimal('960.00'), 'currency': '₪'},
 }
-LUXURY_JEWELRY_TEMPLATE_FEE = Decimal('150.00')
 
 PAYMENT_METHOD_LABELS = {
     'wallet': 'محفظة إلكترونية',
@@ -701,21 +619,6 @@ RECEIPT_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'pdf'}
 
 def get_subscription_plan(plan_type):
     return SUBSCRIPTION_PLANS.get(plan_type, SUBSCRIPTION_PLANS['monthly'])
-
-
-def get_store_template_fee(store):
-    visual_identity = None
-    if store:
-        try:
-            visual_identity = store.get('visual_identity')
-        except AttributeError:
-            try:
-                visual_identity = store['visual_identity']
-            except (KeyError, IndexError, TypeError):
-                visual_identity = None
-    if visual_identity == 'jewelry_luxury':
-        return LUXURY_JEWELRY_TEMPLATE_FEE
-    return Decimal('0.00')
 
 
 def get_payment_settings():
@@ -757,8 +660,6 @@ try:
     _mcur.execute("ALTER TABLE product_variants ADD COLUMN IF NOT EXISTS description TEXT")
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_theme TEXT DEFAULT 'gold'")
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS store_background TEXT DEFAULT 'none'")
-    _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS visual_identity TEXT DEFAULT 'current'")
-    _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS hero_product_id INTEGER")
     _mcur.execute("ALTER TABLE stores ADD COLUMN IF NOT EXISTS product_gallery_enabled BOOLEAN DEFAULT FALSE")
     _mcur.execute("""
         CREATE TABLE IF NOT EXISTS product_images (
@@ -1625,8 +1526,6 @@ def admin():
         shipping_integration=shipping_integration,
         subscription_payments=subscription_payments,
         subscription_plans=SUBSCRIPTION_PLANS,
-        luxury_template_fee=LUXURY_JEWELRY_TEMPLATE_FEE,
-        store_template_fee=get_store_template_fee(store),
         payment_methods=PAYMENT_METHOD_LABELS,
         payment_settings=get_payment_settings(),
         latest_order_id=latest_order_id,
@@ -1634,8 +1533,7 @@ def admin():
         push_configured=bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY),
         vapid_public_key=VAPID_PUBLIC_KEY,
         theme_list=theme_list,
-        store_backgrounds=STORE_BACKGROUNDS,
-        visual_identities=VISUAL_IDENTITIES
+        store_backgrounds=STORE_BACKGROUNDS
     )
 
 @app.route('/admin/subscription-payment', methods=['POST'])
@@ -1684,10 +1582,6 @@ def admin_subscription_payment():
             return redirect(url_for('admin', active_tab='settings'))
 
         plan = get_subscription_plan(plan_type)
-        template_fee = get_store_template_fee(store)
-        payment_amount = plan['amount'] + template_fee
-        if template_fee:
-            notes = (notes + "\n" if notes else "") + f"يتضمن رسم قالب المجوهرات الفاخر: {template_fee} {plan['currency']}"
         invoice_code = make_invoice_code(user_id)
         cursor.execute("""
             INSERT INTO subscription_payments (
@@ -1696,7 +1590,7 @@ def admin_subscription_payment():
             )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            user_id, store['id'], invoice_code, plan_type, payment_amount, plan['currency'],
+            user_id, store['id'], invoice_code, plan_type, plan['amount'], plan['currency'],
             payment_method, transaction_ref or None, receipt_url, notes or None
         ))
         conn.commit()
@@ -2101,51 +1995,30 @@ def update_store():
     currency = request.form.get('currency', '₪')
     store_theme = request.form.get('store_theme', '').strip() or 'gold'
     store_background = normalize_store_background(request.form.get('store_background'))
-    visual_identity = normalize_visual_identity(request.form.get('visual_identity'))
-    hero_product_raw = (request.form.get('hero_product_id') or '').strip()
-    hero_product_id = int(hero_product_raw) if hero_product_raw.isdigit() else None
-    identity_preset = get_visual_identity(visual_identity)
-    if visual_identity != 'current':
-        store_theme = identity_preset.get('theme') or store_theme
-        store_background = normalize_store_background(identity_preset.get('background') or store_background)
 
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        if hero_product_id:
-            cursor.execute("""
-                SELECT p.id
-                FROM products p
-                JOIN stores s ON s.id = p.store_id
-                WHERE p.id = %s AND s.user_id = %s AND p.active = TRUE
-            """, (hero_product_id, user_id))
-            if not cursor.fetchone():
-                hero_product_id = None
-
         if logo_url:
             cursor.execute("""
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s,
-                    store_theme=%s, store_background=%s, visual_identity=%s, hero_product_id=%s
+                    address=%s, website=%s, logo_url=%s, inventory_enabled=%s, currency=%s, store_theme=%s, store_background=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, logo_url, inventory_enabled, currency, store_theme,
-                  store_background, visual_identity, hero_product_id, user_id))
+                  address, website, logo_url, inventory_enabled, currency, store_theme, store_background, user_id))
         else:
             cursor.execute("""
                 UPDATE stores SET 
                     name=%s, slug=%s, bio=%s, display_phone=%s, whatsapp_phone=%s,
                     instagram_handle=%s, tiktok_handle=%s, facebook_handle=%s, 
-                    address=%s, website=%s, inventory_enabled=%s, currency=%s,
-                    store_theme=%s, store_background=%s, visual_identity=%s, hero_product_id=%s
+                    address=%s, website=%s, inventory_enabled=%s, currency=%s, store_theme=%s, store_background=%s
                 WHERE user_id=%s
             """, (name, slug, bio, display_phone, whatsapp_phone,
                   instagram_handle, tiktok_handle, facebook_handle,
-                  address, website, inventory_enabled, currency, store_theme,
-                  store_background, visual_identity, hero_product_id, user_id))
+                  address, website, inventory_enabled, currency, store_theme, store_background, user_id))
         conn.commit()
         flash("تم تحديث الإعدادات.", "success")
     except Exception as e:
@@ -2199,22 +2072,13 @@ def admin_store_preview():
 
     cursor.execute("SELECT * FROM products WHERE store_id = %s AND active = TRUE ORDER BY id DESC", (store['id'],))
     products = cursor.fetchall()
-    preview_hero_raw = (request.args.get('hero_product_id') or '').strip()
-    if preview_hero_raw.isdigit():
-        store = dict(store)
-        store['hero_product_id'] = int(preview_hero_raw)
-    hero_product = pick_hero_product(store, products)
     conn.close()
 
     from themes import ENHANCED_THEMES, rgb_to_hex
     requested_theme = request.args.get('theme', '').strip()
     theme_name = requested_theme if requested_theme in ENHANCED_THEMES else (store.get('store_theme') or 'gold')
-    visual_identity = normalize_visual_identity(request.args.get('identity', store.get('visual_identity')))
-    identity_preset = get_visual_identity(visual_identity)
-    if visual_identity != 'current':
-        theme_name = identity_preset.get('theme') or theme_name
     background_name = normalize_store_background(
-        request.args.get('background', identity_preset.get('background') or store.get('store_background'))
+        request.args.get('background', store.get('store_background'))
     )
     theme_colors = ENHANCED_THEMES.get(theme_name, ENHANCED_THEMES['gold'])
     theme_hex = {
@@ -2225,12 +2089,9 @@ def admin_store_preview():
         'store.html',
         store=store,
         products=products,
-        hero_product=hero_product,
         product_to_open=None,
         theme_hex=theme_hex,
         theme_name=theme_name,
-        visual_identity=visual_identity,
-        visual_identity_data=identity_preset,
         store_background=background_name,
         store_background_url=get_store_background_url(background_name),
         preview_mode=True
@@ -2258,7 +2119,6 @@ def view_store(slug):
         # جلب المنتجات النشطة فقط (المخفية لا تظهر أبداً)
     cursor.execute("SELECT * FROM products WHERE store_id = %s AND active = TRUE ORDER BY id DESC", (store['id'],))
     products = cursor.fetchall()
-    hero_product = pick_hero_product(store, products)
 
     open_id = request.args.get('open_product')
     product_to_open = None
@@ -2269,8 +2129,6 @@ def view_store(slug):
     conn.close()
     from themes import ENHANCED_THEMES, rgb_to_hex
     theme_name = store.get('store_theme') or 'gold'
-    visual_identity = normalize_visual_identity(store.get('visual_identity'))
-    identity_preset = get_visual_identity(visual_identity)
     background_name = normalize_store_background(store.get('store_background'))
     theme_colors = ENHANCED_THEMES.get(theme_name, ENHANCED_THEMES['gold'])
     theme_hex = {
@@ -2281,12 +2139,9 @@ def view_store(slug):
         'store.html',
         store=store,
         products=products,
-        hero_product=hero_product,
         product_to_open=product_to_open,
         theme_hex=theme_hex,
         theme_name=theme_name,
-        visual_identity=visual_identity,
-        visual_identity_data=identity_preset,
         store_background=background_name,
         store_background_url=get_store_background_url(background_name),
         preview_mode=False
@@ -3173,8 +3028,6 @@ def super_admin():
     t_products = cursor.fetchone()['count']
     cursor.execute("SELECT SUM(credits) as sum_c FROM users")
     t_credits = cursor.fetchone()['sum_c'] or 0
-    cursor.execute("SELECT COUNT(*) as count FROM stores WHERE visual_identity = 'jewelry_luxury'")
-    t_luxury_jewelry_stores = cursor.fetchone()['count']
 
     order_period = request.args.get('order_period', '30')
     if order_period not in {'today', '7', '30', 'all'}:
@@ -3250,7 +3103,7 @@ def super_admin():
     order_store_options = cursor.fetchall()
 
     cursor.execute("""
-        SELECT users.*, stores.name as store_name, stores.slug as store_slug, stores.visual_identity as store_visual_identity
+        SELECT users.*, stores.name as store_name, stores.slug as store_slug
         FROM users LEFT JOIN stores ON users.id = stores.user_id 
         ORDER BY users.created_at DESC
     """)
@@ -3273,7 +3126,7 @@ def super_admin():
     conn.close()
 
     return render_template('superadmin.html',
-                           stats={'total_users': t_users, 'total_products': t_products, 'total_credits': t_credits, 'luxury_jewelry_stores': t_luxury_jewelry_stores},
+                           stats={'total_users': t_users, 'total_products': t_products, 'total_credits': t_credits},
                            users=users,
                            visit_stats=visit_stats,
                            join_visit_stats=join_visit_stats,

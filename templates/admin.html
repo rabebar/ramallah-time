@@ -102,7 +102,7 @@
     .payment-gateway-body { padding: 22px; }
     .invoice-summary {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 12px;
         margin-bottom: 18px;
     }
@@ -114,26 +114,6 @@
     }
     .invoice-label { color: #64748b; font-size: 11px; font-weight: 800; margin-bottom: 5px; }
     .invoice-value { color: #0f172a; font-size: 15px; font-weight: 900; }
-    .invoice-box.is-premium-addon {
-        border-color: rgba(196,150,58,.42);
-        background: linear-gradient(135deg, #fffaf0, #ffffff);
-    }
-    .invoice-box.is-total {
-        border-color: rgba(15,23,42,.16);
-        background: #0f172a;
-    }
-    .invoice-box.is-total .invoice-label { color: rgba(255,255,255,.72); }
-    .invoice-box.is-total .invoice-value { color: #fff; }
-    .premium-payment-note {
-        padding: 12px 14px;
-        border-radius: 12px;
-        background: #fffbeb;
-        color: #92400e;
-        border: 1px solid #fde68a;
-        font-size: 12px;
-        line-height: 1.8;
-        margin: 12px 0 16px;
-    }
     .payment-methods {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -920,78 +900,7 @@
             </button>
             <div class="settings-step-body">
         <div class="form-group" style="margin-top:10px;">
-            <label class="form-label">اختر هوية المتجر الجاهزة</label>
-            <input type="hidden" name="visual_identity" id="selectedVisualIdentity" value="{{ store.visual_identity or 'current' }}">
-            <div style="margin:10px 0 16px;padding:16px;border:1px solid rgba(196,150,58,.35);border-radius:18px;background:linear-gradient(135deg,#090b10,#1f2937);box-shadow:0 16px 38px rgba(15,23,42,.16);">
-                <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">
-                    <div>
-                        <div style="display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:999px;background:rgba(196,150,58,.16);color:#f8e7c3;font-size:11px;font-weight:900;margin-bottom:10px;">
-                            <i data-lucide="gem" style="width:13px;height:13px;"></i>
-                            قالب مدفوع
-                        </div>
-                        <div style="color:#fff;font-size:18px;font-weight:900;margin-bottom:6px;">قالب المجوهرات الفاخر</div>
-                        <div style="color:rgba(255,255,255,.72);font-size:12px;line-height:1.8;max-width:620px;">
-                            تصميم بوتيك مستقل لمتاجر الفضة والمجوهرات: هيدر منتج فاخر، شريط مزايا، بطاقات منتجات راقية، ومظهر مخصص للموبايل والكمبيوتر.
-                        </div>
-                    </div>
-                    <div style="text-align:left;color:#f8e7c3;font-size:12px;font-weight:900;">
-                        + 150 شيكل
-                    </div>
-                </div>
-                <button type="button"
-                        class="identity-option"
-                        id="identity-jewelry_luxury"
-                        data-identity="jewelry_luxury"
-                        data-theme="industrial_steel"
-                        data-background="none"
-                        onclick="selectVisualIdentity(this)"
-                        style="margin-top:14px;width:100%;border:2px solid {{ '#C4963A' if (store.visual_identity or 'current') == 'jewelry_luxury' else 'rgba(255,255,255,.18)' }};border-radius:14px;background:rgba(255,255,255,.07);padding:12px;cursor:pointer;color:#fff;text-align:right;">
-                    <span style="display:block;height:92px;border-radius:12px;margin-bottom:10px;background:
-                        radial-gradient(circle at 18% 18%, rgba(255,255,255,.30), transparent 18%),
-                        radial-gradient(circle at 72% 42%, rgba(232,237,242,.18), transparent 22%),
-                        linear-gradient(135deg,#030405,#111827 54%,#d8c19b);"></span>
-                    <span style="font-size:13px;font-weight:900;">تفعيل قالب المجوهرات الفاخر</span>
-                    <span style="display:block;color:rgba(255,255,255,.64);font-size:11px;margin-top:5px;">يظهر كقالب مدفوع في السوبر أدمن ويضاف رسمه إلى مركز الدفع.</span>
-                </button>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:10px;">
-                {% for identity in visual_identities %}
-                {% if identity.key != 'jewelry_luxury' %}
-                <button type="button"
-                        class="identity-option"
-                        id="identity-{{ identity.key }}"
-                        data-identity="{{ identity.key }}"
-                        data-theme="{{ identity.theme or '' }}"
-                        data-background="{{ identity.background or '' }}"
-                        onclick="selectVisualIdentity(this)"
-                        style="text-align:right;border:2px solid {{ '#C4963A' if (store.visual_identity or 'current') == identity.key else '#e5e7eb' }};border-radius:14px;background:#fff;padding:12px;cursor:pointer;box-shadow:0 8px 22px rgba(15,23,42,0.06);transition:all .2s;">
-                    <span style="display:block;height:78px;border-radius:10px;margin-bottom:10px;background:
-                        radial-gradient(circle at 22% 18%, rgba(255,255,255,.55), transparent 24%),
-                        linear-gradient(135deg, {{ identity.surface }}, {{ identity.accent }} 55%, {{ identity.ink }});"></span>
-                    <span style="display:block;font-size:14px;font-weight:900;color:#111827;margin-bottom:4px;">{{ identity.label }}</span>
-                    <span style="display:block;font-size:11px;line-height:1.7;color:#64748b;">{{ identity.description }}</span>
-                </button>
-                {% endif %}
-                {% endfor %}
-            </div>
-            <small style="color:var(--text-muted);margin-top:8px;display:block;">اختيار هوية جاهزة يضبط الشكل العام تلقائياً. اختر "الشكل الحالي" للحفاظ على التصميم كما هو.</small>
-        </div>
-
-        <div class="form-group" style="margin-top:12px;">
-            <label class="form-label">منتج الهيدر الفاخر</label>
-            <select name="hero_product_id" id="selectedHeroProduct" class="input-field" onchange="refreshStorePreview()">
-                <option value="">تلقائي: أحدث منتج</option>
-                {% for product in products %}
-                {% if product.active %}
-                <option value="{{ product.id }}" {% if store.hero_product_id == product.id %}selected{% endif %}>{{ product.name }}</option>
-                {% endif %}
-                {% endfor %}
-            </select>
-            <small style="color:var(--text-muted);margin-top:8px;display:block;">يظهر هذا المنتج كصورة رئيسية داخل الهيدر في الهويات الجاهزة فقط.</small>
-        </div>
-
-        <div class="form-group" style="margin-top:10px;">
-            <label class="form-label">تخصيص متقدم: خلفية المتجر الفاخرة</label>
+            <label class="form-label">خلفية المتجر الفاخرة</label>
             <input type="hidden" name="store_background" id="selectedStoreBackground" value="{{ store.store_background or 'none' }}">
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
                 {% for background in store_backgrounds %}
@@ -1011,7 +920,7 @@
         </div>
 
         <div class="form-group" style="margin-top: 10px;">
-            <label class="form-label">تخصيص متقدم: ثيم المتجر</label>
+            <label class="form-label">ثيم المتجر (Store Theme)</label>
             <input type="hidden" name="store_theme" id="selectedTheme" value="{{ store.store_theme or 'gold' }}">
             <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;align-items:flex-start;">
                 <div style="width:260px;flex-shrink:0;max-height:340px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:12px;padding:10px;">
@@ -1042,7 +951,7 @@
                     </div>
                     <div id="themePreviewFrame" style="width:390px;max-width:100%;height:680px;margin:0 auto;border:8px solid #111827;border-radius:28px;overflow:hidden;background:#fff;box-shadow:0 14px 35px rgba(15,23,42,0.18);transition:width .25s ease,border-radius .25s ease;">
                         <iframe id="themePreview"
-                                src="/admin/store-preview?theme={{ store.store_theme or 'gold' }}&background={{ store.store_background or 'none' }}&identity={{ store.visual_identity or 'current' }}&hero_product_id={{ store.hero_product_id or '' }}"
+                                src="/admin/store-preview?theme={{ store.store_theme or 'gold' }}&background={{ store.store_background or 'none' }}"
                                 title="معاينة المتجر"
                                 sandbox="allow-scripts allow-same-origin"
                                 style="display:block;width:100%;height:100%;border:0;background:#fff;"></iframe>
@@ -1053,63 +962,24 @@
         </div>
 
         <script>
-        const initialStoreTheme = '{{ store.store_theme or "gold" }}';
-        const initialStoreBackground = '{{ store.store_background or "none" }}';
-
-        function markVisualIdentity(name){
-            const input=document.getElementById('selectedVisualIdentity');
-            if(input) input.value=name;
-            document.querySelectorAll('.identity-option').forEach(btn=>btn.style.border='2px solid #e5e7eb');
-            const selected=document.getElementById('identity-'+name);
-            if(selected) selected.style.border='2px solid #C4963A';
-        }
-
-        function setThemeSelection(name){
-            const input=document.getElementById('selectedTheme');
-            const label=document.getElementById('themeLabel');
-            if(input) input.value=name;
-            if(label) label.textContent=name;
-            document.querySelectorAll('[id^="theme-"]').forEach(el=>el.style.border='3px solid transparent');
-            const s=document.getElementById('theme-'+name);
-            if(s)s.style.border='3px solid #C4963A';
-        }
-
-        function setBackgroundSelection(name){
-            const input=document.getElementById('selectedStoreBackground');
-            if(input) input.value=name;
-            document.querySelectorAll('.store-bg-option').forEach(btn=>btn.style.border='3px solid transparent');
-            const selected=document.querySelector('.store-bg-option[data-background="'+CSS.escape(name)+'"]');
-            if(selected) selected.style.border='3px solid #C4963A';
-        }
-
         function refreshStorePreview(){
             const theme=document.getElementById('selectedTheme')?.value||'gold';
             const background=document.getElementById('selectedStoreBackground')?.value||'none';
-            const identity=document.getElementById('selectedVisualIdentity')?.value||'current';
-            const heroProduct=document.getElementById('selectedHeroProduct')?.value||'';
             const preview=document.getElementById('themePreview');
-            if(preview) preview.src='/admin/store-preview?theme='+encodeURIComponent(theme)+'&background='+encodeURIComponent(background)+'&identity='+encodeURIComponent(identity)+'&hero_product_id='+encodeURIComponent(heroProduct)+'&_='+Date.now();
-        }
-        function selectVisualIdentity(el){
-            const identity=el.dataset.identity||'current';
-            markVisualIdentity(identity);
-            if(identity==='current'){
-                setThemeSelection(initialStoreTheme);
-                setBackgroundSelection(initialStoreBackground);
-            } else {
-                if(el.dataset.theme) setThemeSelection(el.dataset.theme);
-                if(el.dataset.background) setBackgroundSelection(el.dataset.background);
-            }
-            refreshStorePreview();
+            if(preview) preview.src='/admin/store-preview?theme='+encodeURIComponent(theme)+'&background='+encodeURIComponent(background)+'&_='+Date.now();
         }
         function selectTheme(name,light,dark){
-            markVisualIdentity('current');
-            setThemeSelection(name);
+            document.getElementById('selectedTheme').value=name;
+            document.getElementById('themeLabel').textContent=name;
+            document.querySelectorAll('[id^="theme-"]').forEach(el=>el.style.border='3px solid transparent');
+            const s=document.getElementById('theme-'+name);
+            if(s)s.style.border='3px solid #C4963A';
             refreshStorePreview();
         }
         function selectStoreBackground(name,el){
-            markVisualIdentity('current');
-            setBackgroundSelection(name);
+            document.getElementById('selectedStoreBackground').value=name;
+            document.querySelectorAll('.store-bg-option').forEach(btn=>btn.style.border='3px solid transparent');
+            el.style.border='3px solid #C4963A';
             refreshStorePreview();
         }
         function setPreviewMode(mode){
@@ -1257,26 +1127,14 @@
                                 <div class="invoice-label">الحساب المستفيد</div>
                                 <div class="invoice-value">{{ payment_settings.payment_account_name or 'RT Studio' }}</div>
                             </div>
-                            {% if store_template_fee and store_template_fee > 0 %}
-                            <div class="invoice-box is-premium-addon">
-                                <div class="invoice-label">رسم القالب الفاخر</div>
-                                <div class="invoice-value">{{ subscription_plans.monthly.currency }} {{ '%.0f'|format(store_template_fee) }}</div>
-                            </div>
-                            {% endif %}
-                            <div class="invoice-box is-total">
-                                <div class="invoice-label">الإجمالي المطلوب</div>
-                                <div class="invoice-value" id="paymentTotalValue">
-                                    {{ subscription_plans.monthly.currency }} {{ '%.0f'|format(subscription_plans.monthly.amount + store_template_fee) }}
-                                </div>
-                            </div>
                         </div>
 
                         <div class="grid-2">
                             <div class="form-group">
                                 <label class="form-label">اختر الباقة</label>
-                                <select name="plan_type" class="input-field" id="paymentPlanSelect">
+                                <select name="plan_type" class="input-field">
                                     {% for plan_key, plan in subscription_plans.items() %}
-                                    <option value="{{ plan_key }}" data-amount="{{ '%.2f'|format(plan.amount) }}" data-currency="{{ plan.currency }}">
+                                    <option value="{{ plan_key }}">
                                         {{ plan.label }} - {{ plan.currency }} {{ '%.0f'|format(plan.amount) }}
                                     </option>
                                     {% endfor %}
@@ -1291,12 +1149,6 @@
                                 </select>
                             </div>
                         </div>
-
-                        {% if store_template_fee and store_template_fee > 0 %}
-                        <div class="premium-payment-note">
-                            هذا المتجر يستخدم قالب المجوهرات الفاخر، لذلك يتم إضافة {{ subscription_plans.monthly.currency }} {{ '%.0f'|format(store_template_fee) }} على مبلغ الباقة المختارة.
-                        </div>
-                        {% endif %}
 
                         <div class="payment-methods">
                             <div class="payment-method-card {% if not payment_settings.payment_wallet_number %}is-empty{% endif %}">
@@ -2025,21 +1877,8 @@ document.addEventListener('DOMContentLoaded', () => { if (PRODUCT_ID) loadVarian
         );
     });
 
-    const luxuryTemplateFee = Number('{{ "%.2f"|format(store_template_fee or 0) }}');
-    function updatePaymentTotal() {
-        const planSelect = document.getElementById('paymentPlanSelect');
-        const totalBox = document.getElementById('paymentTotalValue');
-        if (!planSelect || !totalBox) return;
-        const selected = planSelect.options[planSelect.selectedIndex];
-        const amount = Number(selected?.dataset.amount || 0);
-        const currency = selected?.dataset.currency || '₪';
-        totalBox.textContent = `${currency} ${Math.round(amount + luxuryTemplateFee)}`;
-    }
-    document.getElementById('paymentPlanSelect')?.addEventListener('change', updatePaymentTotal);
-
     document.addEventListener('pointerdown', unlockOrderSound, { once: true });
     window.addEventListener('load', () => {
-        updatePaymentTotal();
         updatePendingOrderBadge({{ pending_order_count or 0 }});
         refreshPushSubscriptionState();
         window.setInterval(pollOrderNotifications, 15000);
