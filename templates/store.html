@@ -889,6 +889,20 @@
 </style>
 </head>
 <body class="{% if store_background_url %}has-store-background{% endif %}">
+    {% set desktop_categories = [] %}
+    {% set desktop_showcase = [] %}
+    {% set desktop_prices = namespace(max=0) %}
+    {% for p in products %}
+        {% if p.category and p.category not in desktop_categories %}
+            {% set _ = desktop_categories.append(p.category) %}
+        {% endif %}
+        {% if p.get('active', True) and desktop_showcase|length < 3 %}
+            {% set _ = desktop_showcase.append(p) %}
+        {% endif %}
+        {% if p.price and p.price > desktop_prices.max %}
+            {% set desktop_prices.max = p.price %}
+        {% endif %}
+    {% endfor %}
 
     <!-- ══ DESKTOP TOP BAR ══ -->
     {% if store.announcement %}
@@ -916,12 +930,28 @@
 
         <!-- Category nav removed to avoid duplication with main category bar -->
 
+        <div class="desktop-main-links" aria-label="Store categories">
+            <button type="button" onclick="filterCategory('all', this)" class="desktop-nav-category active" data-t="all_products">كل المنتجات</button>
+            {% for cat in desktop_categories[:5] %}
+            <button type="button" onclick="filterCategory('{{ cat }}', this)" class="desktop-nav-category">{{ cat }}</button>
+            {% endfor %}
+        </div>
+
         <!-- Actions -->
         <div class="store-nav-actions">
+            <label class="desktop-search" aria-label="Search products">
+                <i data-lucide="search"></i>
+                <input id="desktopProductSearch" type="search" data-t-ph="desktop_search_ph" placeholder="ابحث بالاسم أو الكود" oninput="setDesktopSearch(this.value)">
+            </label>
             <div class="store-lang-sw">
                 <button class="store-lang-btn active" onclick="setLanguage('ar')" id="deskBtnAr">AR</button>
                 <button class="store-lang-btn" onclick="setLanguage('en')" id="deskBtnEn">EN</button>
             </div>
+            <button type="button" class="desktop-nav-cart" onclick="openCart()" aria-label="Cart">
+                <i data-lucide="shopping-bag"></i>
+                <span data-t="cart_title">سلة الشراء</span>
+                <b id="desktopTopCartCount">0</b>
+            </button>
             {% if store.whatsapp_phone %}
             <a href="https://wa.me/{{ store.whatsapp_phone }}" class="store-nav-wa" target="_blank">
                 <i data-lucide="message-circle" style="width:14px;height:14px;"></i>
@@ -1012,6 +1042,21 @@
             </div>
         </header>
 
+        {% if desktop_showcase %}
+        <section class="desktop-product-showcase" aria-label="Featured products">
+            {% for product in desktop_showcase %}
+            {% set showcase_image = product.final_image_url if product.final_image_url else product.processed_image_url %}
+            <a href="/store/{{ store.slug }}/product/{{ product.id }}" class="desktop-showcase-item {% if loop.index == 2 %}desktop-showcase-featured{% endif %}">
+                {% if showcase_image %}<img src="/static/uploads/{{ showcase_image }}" alt="{{ product.name }}" loading="lazy">{% endif %}
+                <span class="desktop-showcase-shade"></span>
+                {% if loop.index == 2 %}
+                <span class="desktop-showcase-copy"><small data-t="featured_product">منتج مميز</small><strong>{{ product.name }}</strong></span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </section>
+        {% endif %}
+
         {% if store.announcement %}
         <div id="announcementBar" style="
             background: #111827;
@@ -1035,6 +1080,35 @@
                 {% set _ = categories.append(p.category) %}
             {% endif %}
         {% endfor %}
+
+        <div class="desktop-catalog-layout">
+            <aside class="desktop-filter-panel" aria-label="Product filters">
+                <div class="desktop-filter-group">
+                    <div class="desktop-filter-title" data-t="filter_categories">التصنيفات</div>
+                    <button type="button" class="desktop-filter-option active" onclick="filterCategory('all', this)"><span data-t="all_products">كل المنتجات</span><b>{{ products|length }}</b></button>
+                    {% for cat in desktop_categories %}
+                    {% set category_count = namespace(value=0) %}
+                    {% for item in products %}{% if item.category == cat %}{% set category_count.value = category_count.value + 1 %}{% endif %}{% endfor %}
+                    <button type="button" class="desktop-filter-option" onclick="filterCategory('{{ cat }}', this)"><span>{{ cat }}</span><b>{{ category_count.value }}</b></button>
+                    {% endfor %}
+                </div>
+                <div class="desktop-filter-group">
+                    <div class="desktop-filter-title" data-t="filter_availability">التوفر</div>
+                    <label class="desktop-check-option"><input id="desktopAvailableOnly" type="checkbox" onchange="updateProductFilters()"><span data-t="filter_available">متوفر فقط</span></label>
+                </div>
+                {% if desktop_prices.max > 0 %}
+                <div class="desktop-filter-group">
+                    <div class="desktop-filter-title" data-t="filter_price">السعر</div>
+                    <input id="desktopPriceRange" class="desktop-price-range" type="range" min="0" max="{{ desktop_prices.max|int }}" value="{{ desktop_prices.max|int }}" oninput="setDesktopPrice(this.value)">
+                    <div class="desktop-price-values"><span>0 {{ store.currency or '₪' }}</span><strong id="desktopPriceValue">{{ desktop_prices.max|int }} {{ store.currency or '₪' }}</strong></div>
+                </div>
+                {% endif %}
+            </aside>
+            <section class="desktop-catalog-results">
+                <div class="desktop-catalog-heading">
+                    <div><p class="desktop-kicker" data-t="catalog_kicker">تسوق مجموعتنا</p><h2 data-t="latest_products">أحدث المنتجات</h2></div>
+                    <span id="desktopResultsCount" data-total="{{ products|length }}">{{ products|length }} <span data-t="products_count">منتج</span></span>
+                </div>
 
         {% if categories|length > 1 %}
         <div id="categoryBar" class="category-bar" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 5px 25px 5px; margin: 0 -15px; padding-left: 15px; padding-right: 15px; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;">
@@ -1064,8 +1138,9 @@
             {% set fit = (p_fit|lower if p_fit else ('cover' if p_category in ['ملابس','أجهزة','الكترونيات','هواتف','أحذية'] else 'contain')) %}
             {% set available = ( p_active and ( (not store.get('inventory_enabled')) or (p_stock > 0) ) ) %}
 
+            <div class="desktop-product-wrap">
             <a href="/store/{{ store.slug }}/product/{{ product.id }}" class="product-card ratio-{{ ratio }} fit-{{ fit }} {% if not available %}card-disabled{% endif %}" 
-                 data-category="{{ product.category }}"
+                 data-category="{{ product.category }}" data-name="{{ product.name }}" data-sku="{{ product.sku or '' }}" data-price="{{ product.price }}" data-available="{{ 'true' if available else 'false' }}"
                  style="text-decoration: none; color: inherit; display: block;">
                 {% if not available %}
                     <div class="badge-soldout" data-t="sold_out">غير متوفر</div>
@@ -1091,7 +1166,19 @@
                     {% endif %}
                 </div>
             </a>
+            {% if available %}
+            <button type="button" class="desktop-card-add" data-t="add_to_cart" onclick="addDesktopProduct(this, {{ product.id }}, {{ product.name|tojson }}, {{ (product.sku or '')|tojson }}, {{ product.price }})">أضف للسلة</button>
+            {% endif %}
+            </div>
             {% endfor %}
+        </div>
+
+                <div class="desktop-trust-strip">
+                    <div><i data-lucide="shield-check"></i><span data-t="trust_quality">ضمان الجودة</span></div>
+                    <div><i data-lucide="truck"></i><span data-t="trust_shipping">توصيل سريع</span></div>
+                    <div><i data-lucide="headphones"></i><span data-t="trust_support">خدمة عملاء</span></div>
+                </div>
+            </section>
         </div>
 
         <h2 class="section-title" data-t="quick_links">روابط سريعة</h2>
@@ -1350,6 +1437,21 @@
             }
         };
 
+        Object.assign(translations.ar, {
+            all_products: 'كل المنتجات', featured_product: 'منتج مميز',
+            desktop_search_ph: 'ابحث بالاسم أو الكود', filter_categories: 'التصنيفات',
+            filter_availability: 'التوفر', filter_available: 'متوفر فقط', filter_price: 'السعر',
+            catalog_kicker: 'تسوق مجموعتنا', products_count: 'منتج',
+            trust_quality: 'ضمان الجودة', trust_shipping: 'توصيل سريع', trust_support: 'خدمة عملاء'
+        });
+        Object.assign(translations.en, {
+            all_products: 'All Products', featured_product: 'Featured product',
+            desktop_search_ph: 'Search by name or code', filter_categories: 'Categories',
+            filter_availability: 'Availability', filter_available: 'In stock only', filter_price: 'Price',
+            catalog_kicker: 'Shop our collection', products_count: 'products',
+            trust_quality: 'Quality guarantee', trust_shipping: 'Fast delivery', trust_support: 'Customer support'
+        });
+
         let currentLang = localStorage.getItem('storeLang') || 'ar';
 
         function setLanguage(lang) {
@@ -1408,6 +1510,7 @@
             if (dAr) dAr.classList.toggle('active', lang === 'ar');
             if (dEn) dEn.classList.toggle('active', lang === 'en');
 
+            if (typeof updateProductFilters === 'function') updateProductFilters();
             lucide.createIcons();
         }
 
@@ -1607,6 +1710,8 @@
                 dCnt.textContent = n;
                 dCnt.style.display = n > 0 ? 'flex' : 'none';
             }
+            const topCartCount = document.getElementById('desktopTopCartCount');
+            if (topCartCount) topCartCount.textContent = cartCount();
 
             const box = document.getElementById('cartItems');
             const sub = document.getElementById('cartSubtotal');
@@ -1962,30 +2067,69 @@
 
         window.addEventListener('touchend', () => { isDragging = false; });
 
+        let activeDesktopCategory = 'all';
+        let desktopSearchTerm = '';
+        let desktopMaximumPrice = Number(document.getElementById('desktopPriceRange')?.max || Infinity);
+
         function filterCategory(category, btn) {
+            activeDesktopCategory = category;
+            document.querySelectorAll('.cat-btn, .desktop-filter-option, .desktop-nav-category').forEach(button => {
+                const isCurrent = button === btn;
+                button.classList.toggle('active', isCurrent);
+            });
             const themeStyles = getComputedStyle(document.documentElement);
             const surface = themeStyles.getPropertyValue('--theme-surface').trim();
             const muted = themeStyles.getPropertyValue('--theme-muted').trim();
             const line = themeStyles.getPropertyValue('--theme-line').trim();
             const accent = themeStyles.getPropertyValue('--theme-accent').trim();
             const onAccent = themeStyles.getPropertyValue('--theme-on-accent').trim();
-
-            // تحديث أزرار الموبايل (cat-btn)
-            document.querySelectorAll('.cat-btn').forEach(b => {
-                b.style.background = surface;
-                b.style.color = muted;
-                b.style.borderColor = line;
+            document.querySelectorAll('.cat-btn').forEach(button => {
+                button.style.background = surface;
+                button.style.color = muted;
+                button.style.borderColor = line;
             });
-            if (btn && btn.classList.contains('cat-btn')) {
+            if (btn?.classList.contains('cat-btn')) {
                 btn.style.background = accent;
                 btn.style.color = onAccent;
                 btn.style.borderColor = accent;
             }
-            // فلترة المنتجات
+            updateProductFilters();
+        }
+
+        function setDesktopSearch(value) {
+            desktopSearchTerm = String(value || '').trim().toLocaleLowerCase();
+            updateProductFilters();
+        }
+
+        function setDesktopPrice(value) {
+            desktopMaximumPrice = Number(value || Infinity);
+            const label = document.getElementById('desktopPriceValue');
+            if (label) label.textContent = `${desktopMaximumPrice} ${CURRENCY}`;
+            updateProductFilters();
+        }
+
+        function updateProductFilters() {
+            const availableOnly = document.getElementById('desktopAvailableOnly')?.checked || false;
+            let visible = 0;
             document.querySelectorAll('.product-card').forEach(card => {
-                const match = category === 'all' || card.getAttribute('data-category') === category;
-                card.style.display = match ? '' : 'none';
+                const categoryMatch = activeDesktopCategory === 'all' || card.dataset.category === activeDesktopCategory;
+                const searchable = `${card.dataset.name || ''} ${card.dataset.sku || ''} ${card.dataset.category || ''}`.toLocaleLowerCase();
+                const searchMatch = !desktopSearchTerm || searchable.includes(desktopSearchTerm);
+                const priceMatch = Number(card.dataset.price || 0) <= desktopMaximumPrice;
+                const availabilityMatch = !availableOnly || card.dataset.available === 'true';
+                const match = categoryMatch && searchMatch && priceMatch && availabilityMatch;
+                const wrapper = card.closest('.desktop-product-wrap') || card;
+                wrapper.style.display = match ? '' : 'none';
+                if (match) visible += 1;
             });
+            const count = document.getElementById('desktopResultsCount');
+            if (count) count.innerHTML = `${visible} <span>${translations[currentLang].products_count}</span>`;
+        }
+
+        function addDesktopProduct(button, productId, name, sku, price) {
+            addToCart({ product_id: productId, name, sku, price, qty: 1 });
+            button.classList.add('added');
+            window.setTimeout(() => button.classList.remove('added'), 700);
         }
 
         const slider = document.getElementById('categoryBar');
