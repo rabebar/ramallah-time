@@ -993,6 +993,13 @@
         </a>
 
         <header class="welcome-header">
+            <div class="desktop-hero-logo" aria-hidden="true">
+                {% if store.logo_url %}
+                <img src="/static/uploads/{{ store.logo_url }}" alt="">
+                {% else %}
+                <span>{{ store.name[0] }}</span>
+                {% endif %}
+            </div>
             <div class="welcome-text">
                 <h1 id="welcomeTitle">أهلاً بك في <span>{{ store.name }}</span></h1>
                 <p id="welcomeBio">{{ store.bio or 'اكتشف مجموعتنا الحصرية من المنتجات الفاخرة.' }}</p>
