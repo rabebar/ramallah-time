@@ -1178,6 +1178,19 @@
                     <div><i data-lucide="truck"></i><span data-t="trust_shipping">توصيل سريع</span></div>
                     <div><i data-lucide="headphones"></i><span data-t="trust_support">خدمة عملاء</span></div>
                 </div>
+                <footer class="desktop-store-footer">
+                    <div class="desktop-store-footer-copy">
+                        <strong data-t="follow_store">تابع المتجر</strong>
+                        <span data-t="follow_hint">تواصل معنا عبر قنواتنا الرسمية</span>
+                    </div>
+                    <div class="desktop-store-socials" aria-label="وسائل التواصل">
+                        {% if store.whatsapp_phone %}<a href="https://wa.me/{{ store.whatsapp_phone }}" target="_blank" aria-label="WhatsApp"><i data-lucide="message-circle"></i></a>{% endif %}
+                        {% if store.instagram_handle %}<a href="#" data-social="instagram" data-handle="{{ store.instagram_handle }}" target="_blank" aria-label="Instagram"><i data-lucide="instagram"></i></a>{% endif %}
+                        {% if store.facebook_handle %}<a href="#" data-social="facebook" data-handle="{{ store.facebook_handle }}" target="_blank" aria-label="Facebook"><i data-lucide="facebook"></i></a>{% endif %}
+                        {% if store.tiktok_handle %}<a href="#" data-social="tiktok" data-handle="{{ store.tiktok_handle }}" target="_blank" aria-label="TikTok"><i data-lucide="music-2"></i></a>{% endif %}
+                        {% if store.display_phone %}<a href="tel:{{ store.display_phone }}" aria-label="Phone"><i data-lucide="phone"></i></a>{% endif %}
+                    </div>
+                </footer>
             </section>
         </div>
 
@@ -1442,14 +1455,16 @@
             desktop_search_ph: 'ابحث بالاسم أو الكود', filter_categories: 'التصنيفات',
             filter_availability: 'التوفر', filter_available: 'متوفر فقط', filter_price: 'السعر',
             catalog_kicker: 'تسوق مجموعتنا', products_count: 'منتج',
-            trust_quality: 'ضمان الجودة', trust_shipping: 'توصيل سريع', trust_support: 'خدمة عملاء'
+            trust_quality: 'ضمان الجودة', trust_shipping: 'توصيل سريع', trust_support: 'خدمة عملاء',
+            follow_store: 'تابع المتجر', follow_hint: 'تواصل معنا عبر قنواتنا الرسمية'
         });
         Object.assign(translations.en, {
             all_products: 'All Products', featured_product: 'Featured product',
             desktop_search_ph: 'Search by name or code', filter_categories: 'Categories',
             filter_availability: 'Availability', filter_available: 'In stock only', filter_price: 'Price',
             catalog_kicker: 'Shop our collection', products_count: 'products',
-            trust_quality: 'Quality guarantee', trust_shipping: 'Fast delivery', trust_support: 'Customer support'
+            trust_quality: 'Quality guarantee', trust_shipping: 'Fast delivery', trust_support: 'Customer support',
+            follow_store: 'Follow the store', follow_hint: 'Reach us through our official channels'
         });
 
         let currentLang = localStorage.getItem('storeLang') || 'ar';
