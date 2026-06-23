@@ -2351,5 +2351,23 @@
         </div>
     </footer>
 
+    <script>
+        // The desktop catalog replaces the legacy welcome header; mobile keeps its existing PWA layout.
+        (function () {
+            function syncDesktopHeader() {
+                const legacyHeader = document.querySelector('.welcome-header');
+                if (!legacyHeader) return;
+                legacyHeader.style.setProperty(
+                    'display',
+                    window.matchMedia('(min-width: 1025px)').matches ? 'none' : '',
+                    'important'
+                );
+            }
+
+            syncDesktopHeader();
+            window.addEventListener('resize', syncDesktopHeader);
+        })();
+    </script>
+
 </body>
 </html>
