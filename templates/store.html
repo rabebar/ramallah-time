@@ -906,23 +906,25 @@
         top: 0;
         z-index: 5000;
         display: grid !important;
-        grid-template-columns: 1fr auto 1fr;
-        height: 68px !important;
-        padding: 0 48px !important;
+        grid-template-columns: minmax(280px, .9fr) minmax(0, 1.25fr) minmax(390px, .9fr);
+        column-gap: 28px;
+        height: 84px !important;
+        padding: 0 54px !important;
         background: rgba(255,255,255,.97) !important;
         border-bottom: 1px solid #e5e7eb !important;
         box-shadow: none !important;
         direction: rtl;
     }
-    .store-nav-logo { justify-self: end; min-width: 185px; gap: 9px; }
-    .store-nav-logo-img, .store-nav-logo-fallback { width: 32px !important; height: 32px !important; border-radius: 6px !important; }
-    .store-nav-name { font-size: 12px !important; font-weight: 750 !important; color: #1f2937 !important; }
-    .store-nav-loc { display: block !important; font-size: 8px !important; color: #94a3b8 !important; }
-    .desktop-main-links { display: flex !important; justify-content: center; gap: 22px; }
-    .desktop-nav-category { padding: 7px 0 !important; color: #303030 !important; font-size: 10px !important; font-weight: 650 !important; }
+    .store-nav-logo { justify-self: end; min-width: 0; max-width: 360px; gap: 12px; }
+    .store-nav-logo-img, .store-nav-logo-fallback { flex: 0 0 auto; width: 48px !important; height: 48px !important; border-radius: 10px !important; }
+    .store-nav-logo > div { min-width: 0; }
+    .store-nav-name { display: block; overflow: hidden; color: #1f2937 !important; font-size: 15px !important; font-weight: 800 !important; letter-spacing: .14em; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+    .store-nav-loc { display: block !important; margin-top: 4px; color: #94a3b8 !important; font-size: 8px !important; letter-spacing: .12em; }
+    .desktop-main-links { display: flex !important; min-width: 0; justify-content: center; gap: 18px; overflow: hidden; white-space: nowrap; }
+    .desktop-nav-category { flex: 0 0 auto; padding: 7px 0 !important; color: #303030 !important; font-size: 10px !important; font-weight: 650 !important; }
     .desktop-nav-category:hover, .desktop-nav-category.active { color: var(--desktop-accent) !important; }
-    .store-nav-actions { justify-self: start; min-width: 330px; gap: 11px; direction: rtl; }
-    .desktop-search { width: 190px; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 999px; background: #fff; }
+    .store-nav-actions { justify-self: start; min-width: 390px; gap: 12px; direction: rtl; }
+    .desktop-search { width: 210px; padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 999px; background: #fff; }
     .desktop-search input { font-size: 10px; }
     .store-lang-sw { padding: 2px !important; border: 1px solid #e5e7eb !important; border-radius: 5px !important; }
     .store-lang-btn { min-width: 26px !important; padding: 4px 5px !important; border: 0 !important; border-radius: 3px !important; font-size: 9px !important; }
@@ -975,7 +977,16 @@
     .desktop-store-socials a:hover { color: var(--desktop-accent); border-color: var(--desktop-accent); }
 }
 @media (min-width: 1400px) { .products-grid { grid-template-columns: repeat(4,minmax(0,1fr)) !important; } }
-@media (min-width: 1025px) and (max-width: 1180px) { .desktop-main-links .desktop-nav-category:nth-child(n+5) { display: none; } .desktop-search { width: 145px; } }
+@media (min-width: 1025px) and (max-width: 1260px) {
+    .store-main-nav { grid-template-columns: minmax(230px, .8fr) minmax(0, 1fr) minmax(320px, .9fr); column-gap: 16px; padding: 0 28px !important; }
+    .store-nav-logo { max-width: 270px; gap: 9px; }
+    .store-nav-logo-img, .store-nav-logo-fallback { width: 38px !important; height: 38px !important; }
+    .store-nav-name { font-size: 12px !important; letter-spacing: .08em; }
+    .desktop-main-links { gap: 12px; }
+    .desktop-main-links .desktop-nav-category:nth-child(n+4) { display: none; }
+    .store-nav-actions { min-width: 320px; gap: 8px; }
+    .desktop-search { width: 150px; }
+}
 </style>
 </head>
 <body class="{% if store_background_url %}has-store-background{% endif %}">
