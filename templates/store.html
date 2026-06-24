@@ -1279,7 +1279,8 @@
                     data-product-id="{{ product.id }}"
                     data-product-name="{{ product.name }}"
                     data-product-sku="{{ product.sku or '' }}"
-                    data-product-price="{{ product.price }}">أضف للسلة</button>
+                    data-product-price="{{ product.price }}"
+                    onclick="return addDesktopProductFromButton(this, event)">أضف للسلة</button>
             {% endif %}
             </div>
             {% endfor %}
@@ -2259,10 +2260,7 @@
             window.setTimeout(() => button.classList.remove('added'), 700);
         }
 
-        document.addEventListener('click', event => {
-            const button = event.target.closest('.desktop-card-add');
-            if (!button) return;
-
+        function addDesktopProductFromButton(button, event) {
             event.preventDefault();
             event.stopPropagation();
             addDesktopProduct(
@@ -2272,7 +2270,8 @@
                 button.dataset.productSku,
                 Number(button.dataset.productPrice)
             );
-        });
+            return false;
+        }
 
         const slider = document.getElementById('categoryBar');
         let isDown = false;
