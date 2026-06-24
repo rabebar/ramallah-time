@@ -958,7 +958,7 @@
 
     .products-grid { grid-template-columns: repeat(3,minmax(0,1fr)) !important; gap: 12px !important; margin: 0 !important; padding: 0 !important; }
     .desktop-product-wrap { display: block !important; position: relative; padding-bottom: 40px; }
-    .desktop-product-wrap .product-card { display: flex !important; min-height: 388px; padding: 16px 14px 14px !important; overflow: hidden; border: 0 !important; border-radius: 12px !important; background: #fff !important; box-shadow: 0 4px 20px rgba(0,0,0,.02), 0 10px 40px rgba(0,0,0,.03) !important; }
+    .desktop-product-wrap .product-card { display: flex !important; height: auto !important; min-height: 388px; padding: 16px 14px 14px !important; overflow: hidden; border: 0 !important; border-radius: 12px !important; background: #fff !important; box-shadow: 0 4px 20px rgba(0,0,0,.02), 0 10px 40px rgba(0,0,0,.03) !important; }
     .desktop-product-wrap .product-card:hover { transform: translateY(-6px) !important; box-shadow: 0 20px 40px rgba(100,90,110,.08) !important; }
     .desktop-product-wrap .img-container { height: 218px !important; aspect-ratio: auto !important; border-radius: 9px !important; background: #f9f7f8 !important; }
     .desktop-product-wrap .fit-contain .img-container img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
@@ -969,7 +969,7 @@
     .desktop-product-wrap .p-info .p-meta { order: 3; margin-top: auto; padding-top: 11px; color: var(--desktop-accent) !important; font-size: 14px !important; font-weight: 800; }
     .desktop-product-wrap .price-sale { color: var(--desktop-accent) !important; }
     .desktop-card-badge { display: block; position: absolute; top: 24px; right: 22px; z-index: 3; padding: 4px 7px; border-radius: 5px; background: var(--desktop-accent); color: #fff; font-size: 9px; font-weight: 750; }
-    .desktop-card-add { right: 14px; bottom: 7px; left: 14px; height: 30px; border-radius: 6px; background: var(--desktop-accent); font-size: 10px; font-weight: 750; }
+    .desktop-card-add { position: absolute !important; right: 14px; bottom: 7px; left: 14px; z-index: 10 !important; height: 30px; border-radius: 6px; background: var(--desktop-accent); cursor: pointer; font-size: 10px; font-weight: 750; pointer-events: auto !important; }
     .desktop-card-add:hover, .desktop-card-add.added { background: color-mix(in srgb, var(--desktop-accent) 78%, #000 22%); }
     .desktop-trust-strip { display: grid !important; grid-template-columns: repeat(3,1fr); margin-top: 28px; padding: 14px 16px; border: 1px solid #e8e5e9; border-radius: 14px; background: rgba(255,255,255,.72); }
     .desktop-trust-strip div { font-size: 10px; }
