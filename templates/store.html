@@ -1275,7 +1275,11 @@
                 </div>
             </a>
             {% if available %}
-            <button type="button" class="desktop-card-add" data-t="add_to_cart" onclick="addDesktopProduct(this, {{ product.id }}, {{ product.name|tojson }}, {{ (product.sku or '')|tojson }}, {{ product.price }})">أضف للسلة</button>
+            <button type="button" class="desktop-card-add" data-t="add_to_cart"
+                    data-product-id="{{ product.id }}"
+                    data-product-name="{{ product.name }}"
+                    data-product-sku="{{ product.sku or '' }}"
+                    data-product-price="{{ product.price }}">أضف للسلة</button>
             {% endif %}
             </div>
             {% endfor %}
@@ -2254,6 +2258,21 @@
             button.classList.add('added');
             window.setTimeout(() => button.classList.remove('added'), 700);
         }
+
+        document.addEventListener('click', event => {
+            const button = event.target.closest('.desktop-card-add');
+            if (!button) return;
+
+            event.preventDefault();
+            event.stopPropagation();
+            addDesktopProduct(
+                button,
+                Number(button.dataset.productId),
+                button.dataset.productName,
+                button.dataset.productSku,
+                Number(button.dataset.productPrice)
+            );
+        });
 
         const slider = document.getElementById('categoryBar');
         let isDown = false;
