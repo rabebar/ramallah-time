@@ -889,6 +889,7 @@
 </style>
 <style>
 /* Final desktop storefront: mirrors the approved preview and deliberately excludes the legacy welcome header. */
+.desktop-card-badge { display: none; }
 @media (min-width: 1025px) {
     :root { --desktop-accent: var(--theme-accent, #8d3b45); }
     body,
@@ -956,16 +957,19 @@
     #desktopResultsCount { font-size: 10px; }
 
     .products-grid { grid-template-columns: repeat(3,minmax(0,1fr)) !important; gap: 12px !important; margin: 0 !important; padding: 0 !important; }
-    .desktop-product-wrap { display: block !important; position: relative; padding-bottom: 34px; }
-    .desktop-product-wrap .product-card { min-height: 312px; padding: 16px 13px 13px !important; overflow: hidden; border: 0 !important; border-radius: 10px !important; background: #fff !important; box-shadow: 0 4px 20px rgba(0,0,0,.02), 0 10px 40px rgba(0,0,0,.03) !important; }
+    .desktop-product-wrap { display: block !important; position: relative; padding-bottom: 40px; }
+    .desktop-product-wrap .product-card { display: flex !important; min-height: 388px; padding: 16px 14px 14px !important; overflow: hidden; border: 0 !important; border-radius: 12px !important; background: #fff !important; box-shadow: 0 4px 20px rgba(0,0,0,.02), 0 10px 40px rgba(0,0,0,.03) !important; }
     .desktop-product-wrap .product-card:hover { transform: translateY(-6px) !important; box-shadow: 0 20px 40px rgba(100,90,110,.08) !important; }
-    .desktop-product-wrap .img-container { height: 172px !important; aspect-ratio: auto !important; border-radius: 8px !important; background: #f9f7f8 !important; }
-    .desktop-product-wrap .fit-contain .img-container img { width: 86% !important; height: 86% !important; object-fit: contain !important; }
+    .desktop-product-wrap .img-container { height: 218px !important; aspect-ratio: auto !important; border-radius: 9px !important; background: #f9f7f8 !important; }
+    .desktop-product-wrap .fit-contain .img-container img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
     .desktop-product-wrap .fit-cover .img-container img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
-    .desktop-product-wrap .p-info { padding: 11px 2px 0 !important; }
-    .desktop-product-wrap .p-info .p-name { min-height: 34px; color: #1a1a1a !important; font-size: 12px !important; font-weight: 700 !important; }
-    .desktop-product-wrap .p-info .p-meta, .desktop-product-wrap .price-sale { font-size: 10px !important; color: var(--desktop-accent) !important; }
-    .desktop-card-add { right: 13px; bottom: 7px; left: 13px; height: 27px; border-radius: 6px; background: var(--desktop-accent); font-size: 10px; }
+    .desktop-product-wrap .p-info { display: flex !important; flex: 1; flex-direction: column; padding: 13px 3px 0 !important; }
+    .desktop-product-wrap .p-info .p-name { order: 1; min-height: 34px; color: #1a1a1a !important; font-size: 13px !important; font-weight: 750 !important; line-height: 1.4; }
+    .desktop-product-wrap .p-info .p-sku { order: 2; margin-top: 2px; color: #94a3b8 !important; font-size: 9px !important; letter-spacing: .08em; }
+    .desktop-product-wrap .p-info .p-meta { order: 3; margin-top: auto; padding-top: 11px; color: var(--desktop-accent) !important; font-size: 14px !important; font-weight: 800; }
+    .desktop-product-wrap .price-sale { color: var(--desktop-accent) !important; }
+    .desktop-card-badge { display: block; position: absolute; top: 24px; right: 22px; z-index: 3; padding: 4px 7px; border-radius: 5px; background: var(--desktop-accent); color: #fff; font-size: 9px; font-weight: 750; }
+    .desktop-card-add { right: 14px; bottom: 7px; left: 14px; height: 30px; border-radius: 6px; background: var(--desktop-accent); font-size: 10px; font-weight: 750; }
     .desktop-card-add:hover, .desktop-card-add.added { background: color-mix(in srgb, var(--desktop-accent) 78%, #000 22%); }
     .desktop-trust-strip { display: grid !important; grid-template-columns: repeat(3,1fr); margin-top: 28px; padding: 14px 16px; border: 1px solid #e8e5e9; border-radius: 14px; background: rgba(255,255,255,.72); }
     .desktop-trust-strip div { font-size: 10px; }
@@ -1243,6 +1247,9 @@
             <a href="/store/{{ store.slug }}/product/{{ product.id }}" class="product-card ratio-{{ ratio }} fit-{{ fit }} {% if not available %}card-disabled{% endif %}" 
                  data-category="{{ product.category }}" data-name="{{ product.name }}" data-sku="{{ product.sku or '' }}" data-price="{{ product.price }}" data-available="{{ 'true' if available else 'false' }}"
                  style="text-decoration: none; color: inherit; display: block;">
+                {% if available and loop.index <= 3 %}
+                    <div class="desktop-card-badge" data-t="new">جديد</div>
+                {% endif %}
                 {% if not available %}
                     <div class="badge-soldout" data-t="sold_out">غير متوفر</div>
                 {% endif %}
@@ -1520,7 +1527,7 @@
                 order_now:"اطلب الآن عبر واتساب", welcome:"أهلاً بك في",
                 install_app:"تثبيت التطبيق", install_desc:"تصفح المتجر بشكل أسرع", install_btn:"تثبيت",
                 website:"الموقع", website_full:"الموقع الإلكتروني",
-                add_to_cart:"أضف للسلة", not_available:"غير متوفر", sold_out:"غير متوفر",
+                add_to_cart:"أضف للسلة", not_available:"غير متوفر", sold_out:"غير متوفر", new:"جديد",
                 cart_title:"سلة الشراء", cart_total:"المجموع:", cart_no_delivery:"لا تشمل رسوم التوصيل",
                 field_name:"الاسم", field_name_ph:"الاسم الكامل (مطلوب)",
                 field_phone:"رقم الهاتف", field_phone_ph:"الرقم المحلي (مطلوب)",
@@ -1538,7 +1545,7 @@
                 order_now:"Order Now via WhatsApp", welcome:"Welcome to",
                 install_app:"Install App", install_desc:"Browse the store faster", install_btn:"Install",
                 website:"Website", website_full:"Visit Website",
-                add_to_cart:"Add to Cart", not_available:"Not Available", sold_out:"Sold Out",
+                add_to_cart:"Add to Cart", not_available:"Not Available", sold_out:"Sold Out", new:"New",
                 cart_title:"Shopping Cart", cart_total:"Subtotal:", cart_no_delivery:"Delivery fees not included",
                 field_name:"Name", field_name_ph:"Full name (required)",
                 field_phone:"Phone Number", field_phone_ph:"Local number (required)",
