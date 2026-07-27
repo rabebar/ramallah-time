@@ -1,0 +1,20 @@
+{
+  "name": "مُعين — الذاكرة التنفيذية",
+  "short_name": "مُعين",
+  "description": "المساعد الشخصي والذاكرة التنفيذية للأمين العام",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#edf1ee",
+  "theme_color": "#102b25",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

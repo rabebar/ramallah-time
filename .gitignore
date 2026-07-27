@@ -4,3 +4,5 @@ __pycache__/
 .vscode/
 static/uploads/*
 !static/uploads/.gitkeep
+moeen/data/
+moeen/__pycache__/
