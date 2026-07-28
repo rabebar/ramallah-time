@@ -902,7 +902,7 @@ def send_moeen_signup_notifications(account_id, full_name, job_title):
         f"{full_name} · تجربة مجانية لمدة 48 ساعة · {job_title or 'دون مسمى وظيفي'}",
         f"moeen-signup-{account_id}",
         "/superadmin#moeen-executive",
-        "/static/moeen_exec/icon.svg",
+        "/static/moeen_exec/icon-192.png",
     )
 
 
