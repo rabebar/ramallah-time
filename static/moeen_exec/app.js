@@ -177,7 +177,7 @@ function dictateInto(field,mic){
   if(!SR){alert("تحويل الصوت إلى نص غير متاح في هذا المتصفح.");return}
   if(fieldRecognition){fieldRecognition.stop();return}
   const base=field.value.trim();
-  fieldRecognition=new SR();fieldRecognition.lang="ar";fieldRecognition.continuous=true;fieldRecognition.interimResults=true;activeMic=mic;mic.classList.add("listening");mic.textContent="■";
+  fieldRecognition=new SR();fieldRecognition.lang="ar";fieldRecognition.continuous=false;fieldRecognition.interimResults=true;activeMic=mic;mic.classList.add("listening");mic.textContent="■";
   fieldRecognition.onresult=e=>{field.value=normalizeVoiceValue(joinSpeechResult(base,e),field.type);field.dispatchEvent(new Event("input",{bubbles:true}))};
   fieldRecognition.onerror=()=>{alert("تعذر تشغيل الإملاء الصوتي. تحقق من إذن الميكروفون والاتصال.")};
   fieldRecognition.onend=()=>{if(activeMic){activeMic.classList.remove("listening");activeMic.textContent="🎙"}fieldRecognition=null;activeMic=null;field.focus()};
@@ -190,7 +190,43 @@ function joinSpeechResult(base,event){
     if(!text)continue;
     (event.results[i].isFinal?finalParts:interimParts).push(text);
   }
-  return [base,...finalParts,...interimParts].filter(Boolean).join(" ").replace(/\s+/g," ").trim();
+  return mergeSpeechParts(base,[...finalParts,...interimParts]);
+}
+function speechToken(value){
+  return (value||"").toLowerCase().replace(/[\u064b-\u065f\u0670]/g,"").replace(/[^\p{L}\p{N}@+]/gu,"");
+}
+function mergeSpeechParts(base,parts){
+  const words=(base||"").trim().split(/\s+/).filter(Boolean);
+  for(const part of parts){
+    const incoming=(part||"").trim().split(/\s+/).filter(Boolean);
+    if(!incoming.length)continue;
+    const currentNorm=words.map(speechToken),incomingNorm=incoming.map(speechToken);
+    const recent=currentNorm.slice(-Math.max(24,incomingNorm.length*2)).join(" ");
+    if(incomingNorm.length>1&&recent.includes(incomingNorm.join(" ")))continue;
+    let overlap=0,max=Math.min(16,words.length,incoming.length);
+    for(let size=max;size>0;size--){
+      const tail=currentNorm.slice(-size).join(" "),head=incomingNorm.slice(0,size).join(" ");
+      if(tail&&tail===head){overlap=size;break}
+    }
+    words.push(...incoming.slice(overlap));
+    collapseRepeatedSpeech(words);
+  }
+  return words.join(" ").replace(/\s+/g," ").trim();
+}
+function collapseRepeatedSpeech(words){
+  let changed=true;
+  while(changed){
+    changed=false;
+    const normalized=words.map(speechToken);
+    for(let size=Math.min(14,Math.floor(words.length/2));size>=1;size--){
+      for(let end=words.length;end>=size*2;end--){
+        const first=normalized.slice(end-size*2,end-size).join(" ");
+        const second=normalized.slice(end-size,end).join(" ");
+        if(first&&first===second){words.splice(end-size,size);changed=true;break}
+      }
+      if(changed)break;
+    }
+  }
 }
 function normalizeVoiceValue(value,type){
   let s=(value||"").replace(/[٠-٩]/g,d=>"0123456789"["٠١٢٣٤٥٦٧٨٩".indexOf(d)]).replace(/[۰-۹]/g,d=>"0123456789"["۰۱۲۳۴۵۶۷۸۹".indexOf(d)]);
