@@ -831,6 +831,13 @@
                                         {% if account.status == 'active' %}إيقاف{% else %}تفعيل{% endif %}
                                     </button>
                                 </form>
+                                {% if account.status != 'cancelled' %}
+                                <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/subscription"
+                                      onsubmit="return confirm('إلغاء اشتراك هذا الحساب؟ يمكن تفعيله لاحقًا دون حذف بياناته.')">
+                                    <input type="hidden" name="action" value="cancelled">
+                                    <button class="btn-sm btn-reject" type="submit">إلغاء</button>
+                                </form>
+                                {% endif %}
                                 <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/subscription"
                                       onsubmit="return confirm('إلغاء اعتماد جميع أجهزة هذا الحساب؟')">
                                     <input type="hidden" name="action" value="revoke_devices">
