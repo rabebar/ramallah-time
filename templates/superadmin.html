@@ -892,6 +892,10 @@
                                     <input type="hidden" name="action" value="revoke_devices">
                                     <button class="btn-sm btn-reject" type="submit">إلغاء الأجهزة</button>
                                 </form>
+                                <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/delete"
+                                      onsubmit="return confirm('حذف هذا الحساب نهائيًا؟ سيتم حذف بياناته المشفرة وأجهزته ودفعاته ولا يمكن التراجع عن ذلك.')">
+                                    <button class="btn-sm btn-reject" type="submit">حذف نهائي</button>
+                                </form>
                             </div>
                         </td>
                     </tr>

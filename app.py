@@ -3603,6 +3603,44 @@ def super_admin_update_moeen_subscription(account_id):
         conn.close()
     return redirect(url_for('super_admin') + '#moeen-executive')
 
+@app.post('/superadmin/moeen/accounts/<int:account_id>/delete')
+def super_admin_delete_moeen_account(account_id):
+    if not session.get('is_superadmin'):
+        return redirect(url_for('super_admin_login'))
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    receipt_paths = []
+    try:
+        cursor.execute("SELECT full_name FROM moeen_accounts WHERE id=%s FOR UPDATE", (account_id,))
+        account = cursor.fetchone()
+        if not account:
+            flash("حساب مُعين غير موجود.", "error")
+            return redirect(url_for('super_admin') + '#moeen-executive')
+        cursor.execute(
+            "SELECT receipt_url FROM moeen_subscription_payments WHERE account_id=%s AND receipt_url IS NOT NULL",
+            (account_id,),
+        )
+        receipt_paths = [row["receipt_url"] for row in cursor.fetchall()]
+        cursor.execute("DELETE FROM moeen_accounts WHERE id=%s", (account_id,))
+        conn.commit()
+        uploads_root = os.path.abspath(app.config['UPLOAD_FOLDER'])
+        for relative_path in receipt_paths:
+            target = os.path.abspath(os.path.join(uploads_root, relative_path))
+            if target.startswith(uploads_root + os.sep) and os.path.isfile(target):
+                try:
+                    os.remove(target)
+                except OSError:
+                    logging.warning("Could not remove Moeen receipt file: %s", target)
+        flash(f"تم حذف حساب {account['full_name']} وبياناته نهائيًا.", "success")
+    except Exception:
+        conn.rollback()
+        logging.exception("Delete Moeen account failed")
+        flash("تعذر حذف حساب مُعين.", "error")
+    finally:
+        cursor.close()
+        conn.close()
+    return redirect(url_for('super_admin') + '#moeen-executive')
+
 @app.route('/superadmin/toggle-removebg', methods=['POST'])
 def super_admin_toggle_removebg():
     if not session.get('is_superadmin'):
