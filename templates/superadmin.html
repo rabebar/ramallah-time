@@ -377,6 +377,9 @@
             <button id="superadminPushBtn" class="admin-push-btn" type="button" {% if not push_configured %}disabled{% endif %}>
                 <i data-lucide="bell"></i><span>تفعيل إشعارات RT Studio ومُعين</span>
             </button>
+            <button id="superadminPushTestBtn" class="admin-push-btn" type="button" hidden>
+                <i data-lucide="send"></i><span>إرسال إشعار تجريبي</span>
+            </button>
             <div style="color: var(--text-muted); font-size: 14px; font-weight: 600;">
                 <i data-lucide="calendar" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;"></i>
                 {{ current_date }}
@@ -985,25 +988,48 @@
     <script>
     const SUPERADMIN_VAPID_KEY={{ vapid_public_key|tojson }};
     const superadminPushButton=document.getElementById("superadminPushBtn");
+    const superadminPushTestButton=document.getElementById("superadminPushTestBtn");
     function vapidBytes(value){const padding="=".repeat((4-value.length%4)%4),raw=atob((value+padding).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
     async function refreshSuperadminPush(){
-      if(!superadminPushButton||!SUPERADMIN_VAPID_KEY||!("serviceWorker" in navigator)||!("PushManager" in window))return;
+      if(!superadminPushButton||!SUPERADMIN_VAPID_KEY||!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window))return false;
       const reg=await navigator.serviceWorker.register("/sw.js");
       const sub=await reg.pushManager.getSubscription();
-      superadminPushButton.classList.toggle("enabled",!!sub&&Notification.permission==="granted");
-      superadminPushButton.querySelector("span").textContent=sub&&Notification.permission==="granted"?"إشعارات RT Studio ومُعين مفعّلة":"تفعيل إشعارات RT Studio ومُعين";
+      const enabled=!!sub&&Notification.permission==="granted";
+      superadminPushButton.classList.toggle("enabled",enabled);
+      superadminPushButton.querySelector("span").textContent=enabled?"إشعارات RT Studio ومُعين مفعّلة":"تفعيل إشعارات RT Studio ومُعين";
+      if(superadminPushTestButton)superadminPushTestButton.hidden=!enabled;
+      return enabled;
     }
     if(superadminPushButton)superadminPushButton.onclick=async()=>{
+      const label=superadminPushButton.querySelector("span");
+      superadminPushButton.disabled=true;
+      label.textContent="جارٍ ربط الجهاز…";
       try{
-        const permission=await Notification.requestPermission();
+        if(!("Notification" in window))throw new Error("هذا المتصفح لا يدعم إشعارات النظام.");
+        let permission=Notification.permission;
+        if(permission==="default")permission=await Notification.requestPermission();
         if(permission!=="granted")throw new Error("لم يتم السماح بالإشعارات من المتصفح.");
         const reg=await navigator.serviceWorker.register("/sw.js");
+        await navigator.serviceWorker.ready;
         let sub=await reg.pushManager.getSubscription();
         if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:vapidBytes(SUPERADMIN_VAPID_KEY)});
         const response=await fetch("/superadmin/push/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(sub.toJSON())});
         if(!response.ok)throw new Error("تعذر حفظ اشتراك الإشعارات.");
-        await refreshSuperadminPush();
+        if(!await refreshSuperadminPush())throw new Error("لم يكتمل ربط الجهاز. أعد تحميل الصفحة وحاول مجددًا.");
       }catch(error){alert(error.message||"تعذر تفعيل الإشعارات.")}
+      finally{superadminPushButton.disabled=false;await refreshSuperadminPush().catch(()=>{});}
+    };
+    if(superadminPushTestButton)superadminPushTestButton.onclick=async()=>{
+      const label=superadminPushTestButton.querySelector("span");
+      superadminPushTestButton.disabled=true;
+      label.textContent="جارٍ إرسال الاختبار…";
+      try{
+        const response=await fetch("/superadmin/push/test",{method:"POST"});
+        const result=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(result.error==="NO_ACTIVE_SUBSCRIPTIONS"?"لا يوجد جهاز مرتبط فعليًا بالإشعارات. أعد تفعيلها أولًا.":"تعذر إرسال الإشعار التجريبي.");
+        label.textContent="تم إرسال الإشعار ✓";
+      }catch(error){label.textContent="إرسال إشعار تجريبي";alert(error.message);}
+      finally{superadminPushTestButton.disabled=false;setTimeout(()=>{label.textContent="إرسال إشعار تجريبي"},3000);}
     };
     refreshSuperadminPush().catch(()=>{});
     lucide.createIcons();

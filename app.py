@@ -23,6 +23,7 @@ import hashlib
 import urllib.parse
 import json
 import threading
+import time
 from datetime import datetime, timedelta
 from collections import defaultdict
 from decimal import Decimal
@@ -847,11 +848,11 @@ def send_order_push_notifications(store_id, store_name, store_slug, order_id, to
 def send_superadmin_push_notification(title, body, tag, url, icon="/static/rt_logo_192.png"):
     """Deliver an RT Studio platform notification to subscribed superadmin devices."""
     if not (VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY):
-        return
+        return {"sent": 0, "failed": 0, "configured": False}
     try:
         from pywebpush import webpush, WebPushException
     except ImportError:
-        return
+        return {"sent": 0, "failed": 0, "configured": False}
     conn = get_db_connection()
     cur = conn.cursor()
     try:
@@ -868,6 +869,8 @@ def send_superadmin_push_notification(title, body, tag, url, icon="/static/rt_lo
         "badge": "/static/rt_logo_192.png",
     }, ensure_ascii=False)
     expired = []
+    sent = 0
+    failed = 0
     for subscription in subscriptions:
         try:
             webpush(
@@ -880,10 +883,14 @@ def send_superadmin_push_notification(title, body, tag, url, icon="/static/rt_lo
                 vapid_claims={"sub": VAPID_SUBJECT},
                 timeout=5,
             )
+            sent += 1
         except WebPushException as exc:
+            failed += 1
             if getattr(getattr(exc, "response", None), "status_code", None) in (404, 410):
                 expired.append(subscription["id"])
+            logging.warning("Superadmin push failed: %s", exc)
         except Exception as exc:
+            failed += 1
             logging.warning("Superadmin push failed: %s", exc)
     if expired:
         conn = get_db_connection()
@@ -893,6 +900,7 @@ def send_superadmin_push_notification(title, body, tag, url, icon="/static/rt_lo
             conn.commit()
         finally:
             conn.close()
+    return {"sent": sent, "failed": failed, "configured": True}
 
 
 def send_moeen_signup_notifications(account_id, full_name, job_title):
@@ -3374,6 +3382,22 @@ def superadmin_push_subscribe():
         return jsonify(ok=True)
     finally:
         conn.close()
+
+@app.post('/superadmin/push/test')
+def superadmin_push_test():
+    if not session.get('is_superadmin'):
+        return jsonify(error="UNAUTHORIZED"), 401
+    result = send_superadmin_push_notification(
+        "اختبار إشعارات RT Studio",
+        "الإشعارات تعمل بنجاح على هذا الجهاز.",
+        f"rt-studio-test-{int(time.time())}",
+        "/superadmin",
+    )
+    if not result.get("configured"):
+        return jsonify(error="PUSH_NOT_CONFIGURED"), 503
+    if result.get("sent", 0) < 1:
+        return jsonify(error="NO_ACTIVE_SUBSCRIPTIONS", **result), 409
+    return jsonify(ok=True, **result)
 
 @app.post('/superadmin/moeen/accounts')
 def super_admin_create_moeen_account():
