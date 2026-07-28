@@ -38,7 +38,7 @@
           <button class="primary" type="submit">دخول آمن</button>
         </form>
       </div>
-      <p id="authMessage" class="auth-message"></p>
+      <p id="authMessage" class="auth-message">{% if request.args.get('registered') == '1' %}تم إنشاء حسابك بنجاح. سجّل الدخول الآن لبدء التجربة المجانية لمدة 7 أيام.{% endif %}</p>
       <small class="auth-foot">🔒 اتصال مشفّر عند النشر · جلسة مقفلة تلقائيًا</small>
     </div>
   </section>

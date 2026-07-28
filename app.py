@@ -1080,8 +1080,7 @@ def moeen_public_register():
                 generate_password_hash(password, method='scrypt'), start, end,
             ))
             conn.commit()
-            flash("تم إنشاء حساب مُعين التنفيذي. يمكنك تسجيل الدخول الآن، والتجربة مجانية لمدة 7 أيام.", "success")
-            return redirect(url_for('moeen_multi.moeen_home'))
+            return redirect(url_for('moeen_multi.moeen_home', registered='1'))
         except Exception as exc:
             conn.rollback()
             logging.warning("public Moeen registration failed: %s", exc)
