@@ -41,7 +41,7 @@
       </div>
       <p id="authMessage" class="auth-message">{% if request.args.get('registered') == '1' %}تم إنشاء حسابك وبدأت تجربتك المجانية لمدة 48 ساعة. سجّل الدخول الآن.{% endif %}</p>
       <button id="authInstallBtn" class="install-app-btn" type="button">تثبيت مُعين على هذا الجهاز</button>
-      <small class="auth-foot">🔒 اتصال مشفّر عند النشر · جلسة مقفلة تلقائيًا</small>
+      <small class="auth-foot">🔒 اتصال مشفّر عند النشر · جلسة مقفلة تلقائيًا · <a href="/moeen-executive/privacy" target="_blank">الخصوصية</a> · <a href="/moeen-executive/terms" target="_blank">الشروط</a></small>
     </div>
   </section>
   <div class="shell">
@@ -139,6 +139,7 @@
           <article class="security-card"><div class="card-top"><h3>الأجهزة المصرح بها</h3><span id="deviceCount" class="tag">0</span></div><div id="deviceList"></div></article>
           <article class="security-card"><div class="card-top"><h3>محاولات الدخول</h3><button id="reviewAttempts" class="security-secondary">تحديد كمراجعة</button></div><div id="attemptList"></div></article>
         </div>
+        <p class="legal-links"><a href="/moeen-executive/privacy" target="_blank">سياسة الخصوصية</a><span>·</span><a href="/moeen-executive/terms" target="_blank">شروط الاستخدام</a></p>
       </section>
     </main>
   </div>

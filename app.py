@@ -613,6 +613,7 @@ MOEEN_SUBSCRIPTION_PLANS = {
     'quarterly': {'label': 'اشتراك 3 أشهر', 'days': 90, 'amount': Decimal('160.00'), 'currency': '₪'},
     'annual': {'label': 'اشتراك سنوي', 'days': 365, 'amount': Decimal('540.00'), 'currency': '₪'},
 }
+MOEEN_TERMS_VERSION = "2026-07-28"
 
 PAYMENT_SETTING_KEYS = [
     'payment_account_name',
@@ -765,6 +766,8 @@ try:
             UNIQUE(account_id, reminder_key)
         )
     """)
+    _mcur.execute("ALTER TABLE moeen_accounts ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMP")
+    _mcur.execute("ALTER TABLE moeen_accounts ADD COLUMN IF NOT EXISTS terms_version TEXT")
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS admin_note TEXT")
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP")
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS reviewed_by TEXT")
@@ -1292,6 +1295,7 @@ def moeen_public_register():
         email = (request.form.get('email') or '').strip().lower()
         password = request.form.get('password') or ''
         password_confirm = request.form.get('password_confirm') or ''
+        terms_accepted = request.form.get('terms_accepted') == 'yes'
 
         if len(full_name) < 3 or len(phone) < 7:
             flash("يرجى إدخال الاسم ورقم الهاتف بصورة صحيحة.", "error")
@@ -1302,6 +1306,9 @@ def moeen_public_register():
         if password != password_confirm:
             flash("كلمتا المرور غير متطابقتين.", "error")
             return render_template('moeen_register.html')
+        if not terms_accepted:
+            flash("يجب الموافقة على شروط الاستخدام وسياسة الخصوصية لإنشاء الحساب.", "error")
+            return render_template('moeen_register.html')
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -1310,13 +1317,14 @@ def moeen_public_register():
                 INSERT INTO moeen_accounts
                     (full_name, job_title, phone, email, password_hash, status,
                      plan_type, subscription_start, subscription_end,
-                     must_change_password)
+                     must_change_password, terms_accepted_at, terms_version)
                 VALUES (%s, %s, %s, %s, %s, 'active', 'trial',
-                        NOW(), NOW() + INTERVAL '48 hours', FALSE)
+                        NOW(), NOW() + INTERVAL '48 hours', FALSE, NOW(), %s)
                 RETURNING id
             """, (
                 full_name, job_title or None, phone, email or None,
                 generate_password_hash(password, method='scrypt'),
+                MOEEN_TERMS_VERSION,
             ))
             account_id = cursor.fetchone()["id"]
             conn.commit()

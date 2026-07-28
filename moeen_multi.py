@@ -156,6 +156,15 @@ def index():
     }
     return render_template("moeen_exec.html", payment_settings=payment_settings)
 
+@moeen_bp.get("/privacy")
+def privacy_policy():
+    return render_template("moeen_legal.html", document="privacy", version="2026-07-28")
+
+
+@moeen_bp.get("/terms")
+def terms_of_use():
+    return render_template("moeen_legal.html", document="terms", version="2026-07-28")
+
 
 @moeen_bp.get("/manifest.webmanifest")
 def moeen_manifest():
