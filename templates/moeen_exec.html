@@ -39,6 +39,7 @@
         </form>
       </div>
       <p id="authMessage" class="auth-message">{% if request.args.get('registered') == '1' %}تم إنشاء حسابك بنجاح. سجّل الدخول الآن لبدء التجربة المجانية لمدة 7 أيام.{% endif %}</p>
+      <button id="authInstallBtn" class="install-app-btn" type="button">تثبيت مُعين على هذا الجهاز</button>
       <small class="auth-foot">🔒 اتصال مشفّر عند النشر · جلسة مقفلة تلقائيًا</small>
     </div>
   </section>
@@ -59,7 +60,7 @@
     <main>
       <header>
         <div><p id="date"></p><h1 id="greeting">أهلًا بك</h1><span class="header-note">كل ما يحتاج انتباهك، في مكان واحد.</span></div>
-        <div class="header-actions"><span id="syncStatus" class="sync-status">محفوظ محليًا</span><button id="quickLogout" class="header-logout" title="تسجيل الخروج">خروج</button><button id="quickRecord" class="primary record-top"><i></i><span>ملاحظة صوتية</span></button></div>
+        <div class="header-actions"><span id="syncStatus" class="sync-status">محفوظ محليًا</span><button id="headerInstallBtn" class="header-install" type="button">تثبيت التطبيق</button><button id="quickLogout" class="header-logout" title="تسجيل الخروج">خروج</button><button id="quickRecord" class="primary record-top"><i></i><span>ملاحظة صوتية</span></button></div>
       </header>
 
       <section id="home" class="view active">

@@ -10,6 +10,22 @@ const trustedKeyStore={
   async load(scope){const db=await this.open();return new Promise((resolve,reject)=>{const q=db.transaction("session").objectStore("session").get("vault");q.onsuccess=()=>resolve(q.result?.scope===scope?q.result.key:null);q.onerror=()=>reject(q.error)})},
   async clear(){const db=await this.open();return new Promise(resolve=>{const q=db.transaction("session","readwrite").objectStore("session").delete("vault");q.onsuccess=()=>resolve();q.onerror=()=>resolve()})}
 };
+let installPrompt=null;
+const installButtons=()=>[$("#authInstallBtn"),$("#headerInstallBtn")].filter(Boolean);
+function isInstalled(){return window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true}
+function refreshInstallButtons(){const installed=isInstalled();installButtons().forEach(button=>button.hidden=installed)}
+window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;refreshInstallButtons()});
+window.addEventListener("appinstalled",()=>{installPrompt=null;refreshInstallButtons()});
+async function installMoeen(){
+  if(isInstalled()){alert("مُعين مثبت بالفعل على هذا الجهاز.");return}
+  if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;refreshInstallButtons();return}
+  const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  alert(ios
+    ?"على iPhone: اضغط زر المشاركة في Safari، ثم اختر «إضافة إلى الشاشة الرئيسية»، وبعدها اضغط «إضافة»."
+    :"من قائمة المتصفح اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».");
+}
+installButtons().forEach(button=>button.onclick=installMoeen);
+refreshInstallButtons();
 const store={
   get:(k)=>secureState[k]||[],
   set:(k,v)=>{
