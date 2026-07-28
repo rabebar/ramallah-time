@@ -184,15 +184,17 @@ def auth_status():
     device_id = session.get(SESSION_DEVICE)
     account = _account(account_id=account_id) if account_id else None
     authenticated = bool(
-        account and _subscription_valid(account) and device_id and _device(account_id, device_id)
+        account and account["status"] == "active" and device_id and _device(account_id, device_id)
     )
+    renewal_only = bool(authenticated and not _subscription_valid(account))
     return jsonify(
         configured=True,
         authenticated=authenticated,
-        must_change=bool(account["must_change_password"]) if authenticated else False,
+        renewal_only=renewal_only,
+        must_change=bool(account["must_change_password"]) if authenticated and not renewal_only else False,
         csrf=session.get(SESSION_CSRF) if authenticated else None,
-        key_scope=str(account_id) if authenticated else None,
-        vault=_vault(account_id) if authenticated else None,
+        key_scope=str(account_id) if authenticated and not renewal_only else None,
+        vault=_vault(account_id) if authenticated and not renewal_only else None,
         profile={
             "name": account["full_name"],
             "title": account["job_title"] or "",
@@ -218,8 +220,9 @@ def login():
     if not check_password_hash(account["password_hash"], password):
         _record_attempt("bad_password", account["id"], phone, device_id, device_name)
         return jsonify(error="INVALID_CREDENTIALS"), 401
-    if not _subscription_valid(account):
+    if account["status"] != "active":
         return jsonify(error="SUBSCRIPTION_INACTIVE"), 403
+    renewal_only = not _subscription_valid(account)
     known = _device(account["id"], device_id)
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -261,8 +264,11 @@ def login():
         conn.close()
     _record_attempt("success", account["id"], phone, device_id, device_name)
     return jsonify(
-        ok=True, must_change=account["must_change_password"],
-        csrf=session[SESSION_CSRF], key_scope=str(account["id"]), vault=_vault(account["id"]),
+        ok=True, renewal_only=renewal_only,
+        must_change=account["must_change_password"] if not renewal_only else False,
+        csrf=session[SESSION_CSRF],
+        key_scope=str(account["id"]) if not renewal_only else None,
+        vault=_vault(account["id"]) if not renewal_only else None,
         profile={"name": account["full_name"], "title": account["job_title"] or ""},
         subscription=_subscription_info(account),
     )
@@ -280,6 +286,8 @@ def pair_device():
     if not account or not check_password_hash(account["password_hash"], password):
         _record_attempt("bad_pairing", account["id"] if account else None, phone, device_id, device_name)
         return jsonify(error="INVALID_CREDENTIALS"), 401
+    if not _subscription_valid(account):
+        return jsonify(error="SUBSCRIPTION_INACTIVE"), 403
     digest = hashlib.sha256(code.encode()).hexdigest()
     conn = get_db_connection()
     cursor = conn.cursor()
