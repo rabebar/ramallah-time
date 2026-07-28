@@ -85,6 +85,9 @@
             display: flex; gap: 12px;
         }
         .pending-notice i { flex-shrink: 0; }
+        .selected-plan { margin: 18px 0 24px; padding: 12px 14px; border-radius: 12px; background: rgba(184,151,74,.1); color: #ead08f; border: 1px solid rgba(184,151,74,.22); font-size: 13px; font-weight: 700; }
+        .flash { margin: 0 0 18px; padding: 12px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; background: rgba(239,68,68,.12); color:#fecaca; border:1px solid rgba(239,68,68,.25); }
+        .flash.success { background:rgba(34,197,94,.12);color:#bbf7d0;border-color:rgba(34,197,94,.25); }
 
         .footer-link { margin-top: 30px; font-size: 14px; color: rgba(255, 255, 255, 0.5); }
         .footer-link a { color: var(--gold); text-decoration: none; font-weight: 700; transition: 0.2s; }
@@ -95,9 +98,14 @@
     <div class="register-card">
         <div class="logo-box">RT</div>
         <h2>ابدأ متجرك الآن</h2>
-        <p>انضم إلى منصة RT Studio لتصميم صور منتجاتك باحترافية</p>
+        <p>أنشئ متجرك الإلكتروني وأدر منتجاتك وطلباتك من مكان واحد.</p>
+        <div class="selected-plan">الباقة المطلوبة: {{ selected_plan_label }}</div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+        {% endwith %}
         
         <form method="POST">
+            <input type="hidden" name="plan_type" value="{{ selected_plan }}">
             <div class="form-group">
                 <label>اسم المتجر</label>
                 <input type="text" name="store_name" placeholder="مثال: بوتيك الأناقة" required>
@@ -110,7 +118,7 @@
 
             <div class="form-group">
                 <label>كلمة المرور</label>
-                <input type="password" name="password" placeholder="اختر كلمة مرور قوية" required>
+                <input type="password" name="password" minlength="8" placeholder="8 أحرف على الأقل" required>
             </div>
 
             <button type="submit">

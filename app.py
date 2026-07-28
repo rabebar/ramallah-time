@@ -1107,10 +1107,26 @@ def get_user_stats(user_id):
 # =========================
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    signup_plans = {
+        'monthly': 'الاشتراك الشهري — 100₪',
+        'biannual': 'اشتراك 6 أشهر — 510₪',
+        'annual': 'الاشتراك السنوي — 960₪',
+        'four_year': 'عرض 4 سنوات — 3200₪',
+    }
+    selected_plan = (request.form.get('plan_type') or request.args.get('plan') or 'monthly').strip()
+    if selected_plan not in signup_plans:
+        selected_plan = 'monthly'
     if request.method == 'POST':
-        phone = request.form.get('phone')
+        phone = (request.form.get('phone') or '').strip()
         password = request.form.get('password')
-        store_name = request.form.get('store_name')
+        store_name = (request.form.get('store_name') or '').strip()
+        if len(store_name) < 2 or len(phone) < 7 or len(password or '') < 8:
+            flash("أدخل اسم متجر ورقم هاتف صحيحين، وكلمة مرور من 8 أحرف على الأقل.", "error")
+            return render_template(
+                'register.html',
+                selected_plan=selected_plan,
+                selected_plan_label=signup_plans[selected_plan],
+            )
         raw_slug = store_name.lower().strip().replace(' ', '-')
         slug = re.sub(r'[^a-z0-9؀-ۿ-]', '', raw_slug) or 'store'[:30]
 
@@ -1118,8 +1134,9 @@ def register():
         cursor = conn.cursor()
         try:
             cursor.execute(
-                "INSERT INTO users (phone, password_hash, status, credits) VALUES (%s, %s, %s, %s) RETURNING id",
-                (phone, generate_password_hash(password), 'pending', 10)
+                """INSERT INTO users (phone, password_hash, status, credits, plan_type)
+                   VALUES (%s, %s, %s, %s, %s) RETURNING id""",
+                (phone, generate_password_hash(password), 'pending', 10, selected_plan)
             )
             user_id = cursor.fetchone()['id']
             cursor.execute(
@@ -1141,7 +1158,11 @@ def register():
             flash("فشل التسجيل: رقم الهاتف أو اسم المتجر مستخدم بالفعل.", "error")
         finally:
             conn.close()
-    return render_template('register.html')
+    return render_template(
+        'register.html',
+        selected_plan=selected_plan,
+        selected_plan_label=signup_plans[selected_plan],
+    )
 
 @app.route('/moeen-executive/register', methods=['GET', 'POST'])
 def moeen_public_register():

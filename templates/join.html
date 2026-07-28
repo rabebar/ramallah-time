@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google-site-verification" content="KLX3kKnhgUvUUs6De5PwzcWfR4wO8qlF7jaEDpRUCo0">
-<title>RT Studio — افتح متجرك الاحترافي</title>
+<title>RT Studio — منتجات رقمية لأعمال أكثر ذكاءً</title>
+<meta name="description" content="منتجات وخدمات رقمية من RT Studio: متاجر إلكترونية جاهزة، مُعين التنفيذي، وتصميم مواقع خاصة باشتراكات واضحة ودعم محلي.">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -23,6 +24,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 html { overflow-x: hidden; }
+[id] { scroll-margin-top: 82px; }
 body {
       background:
         radial-gradient(circle at top right,#E0EAFF 0%,transparent 30%),
@@ -135,16 +137,25 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
 .service-choice-head { text-align: center; margin-bottom: 20px; }
 .service-choice-head h2 { font-size: clamp(24px,3vw,36px); margin-bottom: 7px; }
 .service-choice-head p { color: var(--text-muted); font-size: 14px; }
-.service-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.service-choice-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 .service-choice-card { position: relative; overflow: hidden; padding: 28px; border-radius: 22px; background: #fff; border: 1px solid #e2e7e4; box-shadow: 0 16px 44px rgba(16,43,37,.08); }
 .service-choice-card.moeen { background: linear-gradient(145deg,#102b25,#173d34); color: #fff; border: 0; }
+.service-choice-card.custom { background: linear-gradient(145deg,#171b2f,#29243f); color:#fff; border:0; }
 .service-choice-card .service-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; margin-bottom: 18px; background: #eef2ff; color: #5b54dc; font-size: 20px; font-weight: 800; }
 .service-choice-card.moeen .service-icon { background: rgba(216,185,108,.16); color: #e4c777; }
+.service-choice-card.custom .service-icon { background:rgba(255,255,255,.1);color:#d8b96c; }
 .service-choice-card h3 { font-size: 21px; margin-bottom: 9px; }
 .service-choice-card p { min-height: 56px; color: #667085; font-size: 13px; line-height: 1.8; }
 .service-choice-card.moeen p { color: #c9d8d2; }
+.service-choice-card.custom p { color:#d5d3df; }
+.product-label{display:inline-flex;margin-bottom:13px;padding:5px 9px;border-radius:999px;background:#f1f0ff;color:#574fcf;font-size:9px;font-weight:800}
+.service-choice-card.moeen .product-label,.service-choice-card.custom .product-label{background:#ffffff12;color:#efd787}
+.product-price{display:flex;align-items:baseline;gap:5px;margin-top:17px;color:#1f2937}.product-price strong{font-size:25px}.product-price span{font-size:10px;color:#7a8580}
+.service-choice-card.moeen .product-price,.service-choice-card.custom .product-price{color:#fff}.service-choice-card.moeen .product-price span,.service-choice-card.custom .product-price span{color:#c9d8d2}
+.product-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:18px}.product-actions .service-choice-action{margin-top:0}.product-link{color:#5d6672;font-size:11px;font-weight:700;text-decoration:none;padding:10px}.service-choice-card.moeen .product-link,.service-choice-card.custom .product-link{color:#e9e5d9}
 .service-choice-action { display: inline-flex; align-items: center; justify-content: center; margin-top: 19px; min-height: 46px; padding: 0 22px; border-radius: 11px; text-decoration: none; font-size: 13px; font-weight: 800; background: #6c63ff; color: #fff; }
 .service-choice-card.moeen .service-choice-action { background: #d8b96c; color: #102b25; }
+.service-choice-card.custom .service-choice-action{background:#d8b96c;color:#171b2f}
 
 /* Featured value */
 .value-showcase { max-width: 1220px; margin: 8px auto 46px; padding: 0 26px; }
@@ -436,51 +447,36 @@ body.ltr .wa-float { left: auto; right: 24px; }
   <span class="nav-logo-text">RT Studio</span>
  </a>
  <div class="nav-links">
+  <a href="#products" data-ar="المنتجات الرقمية" data-en="Digital Products">المنتجات الرقمية</a>
   <a href="#features" data-ar="المميزات" data-en="Features">المميزات</a>
-  <a href="#how" data-ar="كيف يعمل؟" data-en="How it works?">كيف يعمل؟</a>
   <a href="#pricing" data-ar="الأسعار والخدمات" data-en="Pricing & Services">الأسعار والخدمات</a>
   <button class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</button>
   <a href="/login" class="nav-login" data-ar="تسجيل الدخول" data-en="Login">تسجيل الدخول</a>
-  <a href="/register" class="nav-cta" data-ar="ابدأ مجاناً" data-en="Start Free">ابدأ مجاناً</a>
+  <a href="#products" class="nav-cta" data-ar="اختر منتجك" data-en="Choose a Product">اختر منتجك</a>
  </div>
 </nav>
-
-<section class="moeen-spotlight">
- <div>
-  <span class="moeen-spotlight-kicker">جديد من RT Studio</span>
-  <h2>مُعين التنفيذي</h2>
-  <p>ذاكرتك التنفيذية المشفرة للاجتماعات والمتابعات والملاحظات الصوتية وجهات الاتصال، متزامنة بين الهاتف واللابتوب.</p>
-  <div class="moeen-prices">
-   <span><b>60₪</b> شهريًا</span>
-   <span><b>160₪</b> كل 3 أشهر</span>
-   <span><b>540₪</b> سنويًا</span>
-  </div>
-  <small>تجربة مجانية 48 ساعة تبدأ فور إنشاء الحساب · دون انتظار موافقة</small>
- </div>
- <a href="/moeen-executive/register">ابدأ تجربتك الآن</a>
-</section>
 
 <div class="hero-section">
  <div class="hero-image">
   <div class="hero-service-badge">
-   <strong data-ar="خدمة تصميم خاص" data-en="Custom Design Service">خدمة تصميم خاص</strong>
-   <span data-ar="موقع مصمم لهوية مشروعك من الصفر" data-en="A website designed around your brand from scratch">موقع مصمم لهوية مشروعك من الصفر</span>
+   <strong data-ar="منتجات رقمية قابلة للنمو" data-en="Digital Products Built to Scale">منتجات رقمية قابلة للنمو</strong>
+   <span data-ar="حلول جاهزة وخدمات خاصة تحت مظلة واحدة" data-en="Ready products and custom services under one roof">حلول جاهزة وخدمات خاصة تحت مظلة واحدة</span>
   </div>
   <img src="/static/hero_devices.png" alt="RT Studio على الأجهزة">
  </div>
 
  <div class="hero-text">
-  <div class="hero-kicker" data-ar="مدعوم بالذكاء الاصطناعي" data-en="Powered by AI">مدعوم بالذكاء الاصطناعي</div>
+  <div class="hero-kicker" data-ar="منتجات رقمية من RT Studio" data-en="Digital Products by RT Studio">منتجات رقمية من RT Studio</div>
   <h1 class="hero-title">
-   <span data-ar="افتح متجرك" data-en="Launch Your Store">افتح متجرك</span>
-   <span class="accent-line" data-ar="الاحترافي" data-en="Professionally">الاحترافي</span>
+   <span data-ar="حلول رقمية" data-en="Digital Solutions">حلول رقمية</span>
+   <span class="accent-line" data-ar="لعمل أكثر ذكاءً" data-en="For Smarter Work">لعمل أكثر ذكاءً</span>
   </h1>
-  <p class="hero-description" data-ar="ابدأ بمتجر إلكتروني جاهز خلال دقائق، أو دع فريقنا يصمم لك موقعاً خاصاً بهوية مشروعك." data-en="Start with an online store in minutes, or let our team design a custom website for your brand.">ابدأ بمتجر إلكتروني جاهز خلال دقائق، أو دع فريقنا يصمم لك موقعاً خاصاً بهوية مشروعك.</p>
+  <p class="hero-description" data-ar="اختر منتجًا رقميًا جاهزًا، ابدأ تجربتك، وطوّر أعمالك من منصة موثوقة مصممة للسوق المحلي." data-en="Choose a ready digital product, start your trial, and grow with a trusted platform built for the local market.">اختر منتجًا رقميًا جاهزًا، ابدأ تجربتك، وطوّر أعمالك من منصة موثوقة مصممة للسوق المحلي.</p>
   <div class="hero-actions">
-   <a href="/register" class="hero-mini-cta primary" data-ar="ابدأ الآن" data-en="Start Now">ابدأ الآن</a>
-   <a href="#" onclick="openWA('custom')" target="_blank" rel="noopener" class="hero-mini-cta secondary" data-ar="خدمة التصميم الخاص" data-en="Custom Design Service">خدمة التصميم الخاص</a>
+   <a href="#products" class="hero-mini-cta primary" data-ar="استكشف المنتجات" data-en="Explore Products">استكشف المنتجات</a>
+   <a href="#" onclick="openWA('general');return false" class="hero-mini-cta secondary" data-ar="ساعدني في الاختيار" data-en="Help Me Choose">ساعدني في الاختيار</a>
   </div>
-  <div class="hero-trust" data-ar="تجار يبيعون مع RT Studio" data-en="Merchants selling with RT Studio">تجار يبيعون مع RT Studio</div>
+  <div class="hero-trust" data-ar="من الفكرة إلى منتج رقمي يعمل على الهاتف واللابتوب" data-en="From idea to a digital product that works on mobile and laptop">من الفكرة إلى منتج رقمي يعمل على الهاتف واللابتوب</div>
  </div>
 </div>
 
@@ -488,26 +484,70 @@ body.ltr .wa-float { left: auto; right: 24px; }
  <div class="hero-benefit">
   <div class="hero-benefit-icon">▣</div>
   <div>
-   <strong data-ar="متجر جاهز خلال دقائق" data-en="Store Ready in Minutes">متجر جاهز خلال دقائق</strong>
-   <span data-ar="اختر من القوالب وأطلق متجرك بسرعة" data-en="Pick a template and launch quickly">اختر من القوالب وأطلق متجرك بسرعة</span>
+   <strong data-ar="منتجات جاهزة للاستخدام" data-en="Ready-to-use Products">منتجات جاهزة للاستخدام</strong>
+   <span data-ar="ابدأ بسرعة دون تعقيد تقني" data-en="Start quickly without technical complexity">ابدأ بسرعة دون تعقيد تقني</span>
   </div>
  </div>
  <div class="hero-benefit">
   <div class="hero-benefit-icon">✦</div>
   <div>
-   <strong data-ar="صور احترافية بالذكاء الاصطناعي" data-en="AI Product Photos">صور احترافية بالذكاء الاصطناعي</strong>
-   <span data-ar="حوّل صور المنتجات إلى عرض أجمل" data-en="Turn product photos into polished visuals">حوّل صور المنتجات إلى عرض أجمل</span>
+   <strong data-ar="اشتراكات واضحة ومرنة" data-en="Clear, Flexible Plans">اشتراكات واضحة ومرنة</strong>
+   <span data-ar="أسعار معلنة وخيارات تناسب النمو" data-en="Published pricing and options that scale">أسعار معلنة وخيارات تناسب النمو</span>
   </div>
  </div>
  <div class="hero-benefit">
   <div class="hero-benefit-icon">♛</div>
   <div>
-   <strong data-ar="تصميم خاص حسب الهوية" data-en="Custom Brand Design">تصميم خاص حسب الهوية</strong>
-   <span data-ar="موقع فريد يعكس علامتك التجارية" data-en="A unique website for your brand">موقع فريد يعكس علامتك التجارية</span>
+   <strong data-ar="دعم وتطوير محلي" data-en="Local Support & Development">دعم وتطوير محلي</strong>
+   <span data-ar="نتابع المنتج ونطوره مع احتياجك" data-en="We support and evolve the product with you">نتابع المنتج ونطوره مع احتياجك</span>
   </div>
  </div>
 </div>
 
+<section class="service-choice" id="products" aria-labelledby="serviceChoiceTitle">
+ <div class="service-choice-head">
+  <span class="section-label" data-ar="كتالوج RT Studio" data-en="RT Studio Catalog">كتالوج RT Studio</span>
+  <h2 id="serviceChoiceTitle" data-ar="اختر المنتج الرقمي المناسب لك" data-en="Choose the Right Digital Product">اختر المنتج الرقمي المناسب لك</h2>
+  <p data-ar="ثلاثة مسارات واضحة، ولكل منتج تجربته وسعره وخطوة البدء الخاصة به." data-en="Three clear paths, each with its own pricing, trial, and next step.">ثلاثة مسارات واضحة، ولكل منتج تجربته وسعره وخطوة البدء الخاصة به.</p>
+ </div>
+ <div class="service-choice-grid">
+  <article class="service-choice-card">
+   <span class="product-label" data-ar="تجارة إلكترونية" data-en="E-commerce">تجارة إلكترونية</span>
+   <div class="service-icon">RT</div>
+   <h3 data-ar="متجر RT Studio" data-en="RT Studio Store">متجر RT Studio</h3>
+   <p data-ar="متجر إلكتروني وتطبيق ويب مع إدارة المنتجات والطلبات، إشعارات فورية، واتساب وخيارات شحن." data-en="An online store and web app with product and order management, instant alerts, WhatsApp, and shipping options.">متجر إلكتروني وتطبيق ويب مع إدارة المنتجات والطلبات، إشعارات فورية، واتساب وخيارات شحن.</p>
+   <div class="product-price"><strong>100₪</strong><span data-ar="شهريًا · صفر عمولة" data-en="monthly · zero commission">شهريًا · صفر عمولة</span></div>
+   <div class="product-actions">
+    <a class="service-choice-action" href="/register" data-ar="إنشاء متجر" data-en="Create a Store">إنشاء متجر</a>
+    <a class="product-link" href="#store-details" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a>
+   </div>
+  </article>
+  <article class="service-choice-card moeen">
+   <span class="product-label" data-ar="إدارة تنفيذية" data-en="Executive Productivity">إدارة تنفيذية</span>
+   <div class="service-icon">م</div>
+   <h3 data-ar="مُعين التنفيذي" data-en="Moeen Executive">مُعين التنفيذي</h3>
+   <p data-ar="ذاكرة شخصية مشفرة للمسؤولين والمديرين: صوت إلى نص، اجتماعات، متابعات وجهات اتصال متزامنة." data-en="An encrypted personal workspace for leaders: voice-to-text, meetings, follow-ups, and synced contacts.">ذاكرة شخصية مشفرة للمسؤولين والمديرين: صوت إلى نص، اجتماعات، متابعات وجهات اتصال متزامنة.</p>
+   <div class="product-price"><strong>60₪</strong><span data-ar="شهريًا · تجربة 48 ساعة" data-en="monthly · 48-hour trial">شهريًا · تجربة 48 ساعة</span></div>
+   <div class="product-actions">
+    <a class="service-choice-action" href="/moeen-executive/register" data-ar="ابدأ التجربة" data-en="Start Trial">ابدأ التجربة</a>
+    <a class="product-link" href="#moeen-pricing" data-ar="عرض الأسعار" data-en="View Pricing">عرض الأسعار</a>
+   </div>
+  </article>
+  <article class="service-choice-card custom">
+   <span class="product-label" data-ar="خدمة حسب الطلب" data-en="Custom Service">خدمة حسب الطلب</span>
+   <div class="service-icon">✦</div>
+   <h3 data-ar="تصميم موقع خاص" data-en="Custom Website Design">تصميم موقع خاص</h3>
+   <p data-ar="تصميم وبرمجة موقع أو نظام ويب يعكس هوية مشروعك، مع خيارات الاستضافة والصيانة وإدارة المحتوى." data-en="Design and development of a website or web system tailored to your brand, with hosting and content-management options.">تصميم وبرمجة موقع أو نظام ويب يعكس هوية مشروعك، مع خيارات الاستضافة والصيانة وإدارة المحتوى.</p>
+   <div class="product-price"><strong>300$</strong><span data-ar="يبدأ من · مرة واحدة" data-en="starting from · one-time">يبدأ من · مرة واحدة</span></div>
+   <div class="product-actions">
+    <a class="service-choice-action" href="#" onclick="openWA('custom');return false" data-ar="اطلب استشارة" data-en="Request Consultation">اطلب استشارة</a>
+    <a class="product-link" href="#custom-service" data-ar="ما الذي يشمله؟" data-en="What's Included?">ما الذي يشمله؟</a>
+   </div>
+  </article>
+ </div>
+</section>
+
+<span id="store-details"></span>
 <section class="value-showcase" id="featuredBenefits" aria-labelledby="featuredBenefitsTitle">
  <div class="value-showcase-head">
   <div>
@@ -566,49 +606,6 @@ body.ltr .wa-float { left: auto; right: 24px; }
   </article>
  </div>
 </section>
-
-<section class="service-choice" aria-labelledby="serviceChoiceTitle">
- <div class="service-choice-head">
-  <h2 id="serviceChoiceTitle">اختر الخدمة المناسبة لك</h2>
-  <p>RT Studio للتجارة الإلكترونية، ومُعين التنفيذي للإدارة الشخصية الذكية.</p>
- </div>
- <div class="service-choice-grid">
-  <article class="service-choice-card">
-   <div class="service-icon">RT</div>
-   <h3>متجر RT Studio</h3>
-   <p>أنشئ متجرك الإلكتروني، أدر المنتجات والطلبات، ووصل إلى عملائك من الهاتف واللابتوب.</p>
-   <a class="service-choice-action" href="/register">إنشاء حساب متجر</a>
-  </article>
-  <article class="service-choice-card moeen">
-   <div class="service-icon">م</div>
-   <h3>مُعين التنفيذي</h3>
-   <p>ذاكرة شخصية مشفرة للمسؤولين والمديرين: صوت إلى نص، اجتماعات، متابعات، ودفتر اتصالات متزامن.</p>
-   <a class="service-choice-action" href="/moeen-executive/register">إنشاء حساب مُعين</a>
-  </article>
- </div>
-</section>
-
-<div class="hero-signup-shell">
- <div class="form-card">
-  <div class="form-card-title" data-ar="أنشئ حسابك مجاناً" data-en="Create Your Free Account">أنشئ حسابك مجاناً</div>
-  <form action="/register" method="POST">
-   <div class="field">
-    <label data-ar="اسم المتجر" data-en="Store Name">اسم المتجر</label>
-    <input type="text" name="store_name" data-ar-ph="مثال: متجر سلفانا للمجوهرات" data-en-ph="Example: Selvana Jewelry" placeholder="مثال: متجر سلفانا للمجوهرات" required>
-   </div>
-   <div class="field">
-    <label data-ar="رقم الهاتف" data-en="Phone Number">رقم الهاتف</label>
-    <input type="tel" name="phone" data-ar-ph="05x xxx xxxx" data-en-ph="05x xxx xxxx" placeholder="05x xxx xxxx" required>
-   </div>
-   <div class="field">
-    <label data-ar="كلمة المرور" data-en="Password">كلمة المرور</label>
-    <input type="password" name="password" data-ar-ph="8 أحرف على الأقل" data-en-ph="At least 8 characters" placeholder="8 أحرف على الأقل" required>
-   </div>
-   <button type="submit" class="btn-submit" data-ar="سجّل مجاناً الآن" data-en="Sign Up Free Now">سجّل مجاناً الآن</button>
-  </form>
-  <div class="form-note" data-ar="جرّب مجاناً 7 أيام · صفر عمولة · بدون بطاقة ائتمان" data-en="Free 7-day trial · Zero commission · No credit card">جرّب مجاناً 7 أيام · صفر عمولة · بدون بطاقة ائتمان</div>
- </div>
-</div>
 
 <hr>
 
@@ -757,9 +754,9 @@ body.ltr .wa-float { left: auto; right: 24px; }
 
 <div class="container">
 <section class="section" id="how">
- <div class="section-label" data-ar="كيف يعمل" data-en="How it works">كيف يعمل</div>
- <h2 class="section-title" data-ar="3 خطوات وتنطلق" data-en="3 Steps and You're Live">3 خطوات وتنطلق</h2>
- <p class="section-sub" data-ar="بدون خبرة تقنية، بدون تصميم، بدون تعقيد." data-en="No technical experience, no design, no complexity.">بدون خبرة تقنية، بدون تصميم، بدون تعقيد.</p>
+ <div class="section-label" data-ar="متجر RT Studio" data-en="RT Studio Store">متجر RT Studio</div>
+ <h2 class="section-title" data-ar="3 خطوات لإطلاق متجرك" data-en="Launch Your Store in 3 Steps">3 خطوات لإطلاق متجرك</h2>
+ <p class="section-sub" data-ar="هذا المسار خاص بمنتج المتجر الإلكتروني، ولا يحتاج خبرة تقنية." data-en="This path is for the online-store product and requires no technical experience.">هذا المسار خاص بمنتج المتجر الإلكتروني، ولا يحتاج خبرة تقنية.</p>
  <div class="steps">
   <div class="step">
    <div class="step-num">01</div>
@@ -769,7 +766,7 @@ body.ltr .wa-float { left: auto; right: 24px; }
   <div class="step">
    <div class="step-num">02</div>
    <div class="step-title" data-ar="ارفع صور منتجاتك" data-en="Upload Your Products">ارفع صور منتجاتك</div>
-   <div class="step-desc" data-ar="الذكاء الاصطناعي يزيل الخلفية ويولّد صوراً احترافية تلقائياً." data-en="AI removes the background and generates professional images automatically.">الذكاء الاصطناعي يزيل الخلفية ويولّد صوراً احترافية تلقائياً.</div>
+   <div class="step-desc" data-ar="أدوات معالجة الصور تزيل الخلفية وتجهّز عرض المنتج بصورة أنظف." data-en="Image tools remove backgrounds and prepare a cleaner product presentation.">أدوات معالجة الصور تزيل الخلفية وتجهّز عرض المنتج بصورة أنظف.</div>
   </div>
   <div class="step">
    <div class="step-num">03</div>
@@ -785,24 +782,50 @@ body.ltr .wa-float { left: auto; right: 24px; }
 <div class="container">
 <section class="section" id="pricing">
  <div class="section-label" data-ar="الأسعار والخدمات" data-en="Pricing & Services">الأسعار والخدمات</div>
- <h2 class="section-title" data-ar="اختر المسار الذي يناسبك" data-en="Choose Your Path">اختر المسار الذي يناسبك</h2>
- <p class="section-sub" data-ar="سواء كنت تفضل إدارة متجرك بنفسك أو تريد أن نقوم بكل شيء نيابة عنك، لدينا الحل المناسب لعملك." data-en="Whether you prefer to manage it yourself or want us to do everything, we have the right solution for your business.">سواء كنت تفضل إدارة متجرك بنفسك أو تريد أن نقوم بكل شيء نيابة عنك، لدينا الحل المناسب لعملك.</p>
+ <h2 class="section-title" data-ar="أسعار واضحة لكل منتج رقمي" data-en="Clear Pricing for Every Digital Product">أسعار واضحة لكل منتج رقمي</h2>
+ <p class="section-sub" data-ar="اختر المنتج أولًا، ثم الباقة التي تناسب استخدامك. لا توجد عمولة مخفية على المبيعات." data-en="Choose the product first, then the plan that fits your use. There are no hidden sales commissions.">اختر المنتج أولًا، ثم الباقة التي تناسب استخدامك. لا توجد عمولة مخفية على المبيعات.</p>
 
- <h3 class="path-title" data-ar="المسار الأول: اشتراك المنصة (إدارة ذاتية)" data-en="Path 1: Platform Subscription (Self-Managed)">المسار الأول: اشتراك المنصة (إدارة ذاتية)</h3>
+ <div id="moeen-pricing"></div>
+ <h3 class="path-title" data-ar="مُعين التنفيذي" data-en="Moeen Executive">مُعين التنفيذي</h3>
+ <div class="pricing-grid" style="max-width:820px;margin:0 auto 56px;">
+  <div class="plan" style="border-top:4px solid #17483b;">
+   <div class="plan-name" style="color:#17483b;" data-ar="شهري" data-en="Monthly">شهري</div>
+   <div class="plan-price" style="color:#17483b;">60<span>₪</span></div>
+   <div class="plan-period" data-ar="كل شهر" data-en="every month">كل شهر</div>
+   <div class="plan-save" data-ar="تجربة مجانية 48 ساعة" data-en="48-hour free trial">تجربة مجانية 48 ساعة</div>
+   <a href="/moeen-executive/register" class="plan-btn" data-ar="ابدأ التجربة" data-en="Start Trial">ابدأ التجربة</a>
+  </div>
+  <div class="plan featured" style="border-color:#c4963a;">
+   <div class="plan-name" style="color:#9a6b12;" data-ar="3 أشهر" data-en="3 Months">3 أشهر</div>
+   <div class="plan-price" style="color:#9a6b12;">160<span>₪</span></div>
+   <div class="plan-period" data-ar="كل ثلاثة أشهر" data-en="every three months">كل ثلاثة أشهر</div>
+   <div class="plan-save" data-ar="وفّر 20₪" data-en="Save 20 ILS">وفّر 20₪</div>
+   <a href="/moeen-executive/register" class="plan-btn" data-ar="ابدأ التجربة" data-en="Start Trial">ابدأ التجربة</a>
+  </div>
+  <div class="plan" style="border-top:4px solid #17483b;">
+   <div class="plan-name" style="color:#17483b;" data-ar="سنوي" data-en="Annual">سنوي</div>
+   <div class="plan-price" style="color:#17483b;">540<span>₪</span></div>
+   <div class="plan-period" data-ar="كل سنة" data-en="every year">كل سنة</div>
+   <div class="plan-save" data-ar="وفّر 180₪" data-en="Save 180 ILS">وفّر 180₪</div>
+   <a href="/moeen-executive/register" class="plan-btn" data-ar="ابدأ التجربة" data-en="Start Trial">ابدأ التجربة</a>
+  </div>
+ </div>
+
+ <h3 class="path-title" data-ar="متجر RT Studio — إدارة ذاتية" data-en="RT Studio Store — Self-managed">متجر RT Studio — إدارة ذاتية</h3>
  <div class="pricing-grid">
   <div class="plan" style="border-top: 4px solid #6366F1;">
    <div class="plan-name" data-ar="شهري" data-en="Monthly" style="color:#6366F1;">شهري</div>
    <div class="plan-price" style="color:#6366F1;">100<span>₪</span></div>
    <div class="plan-period" data-ar="شهرياً · 30$" data-en="per month · 30$">شهرياً · 30$</div>
    <div class="plan-save" style="color:#374151; font-size:12px; font-weight:500;" data-ar="مثالي لتجربة المنصة وإطلاق متجرك بدون التزامات طويلة" data-en="Perfect to try the platform with no long commitments">مثالي لتجربة المنصة وإطلاق متجرك بدون التزامات طويلة</div>
-   <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
+   <a href="/register?plan=monthly" class="plan-btn" data-ar="اختر الشهري" data-en="Choose Monthly">اختر الشهري</a>
   </div>
   <div class="plan" style="border-top: 4px solid #059669;">
    <div class="plan-name" data-ar="6 أشهر" data-en="6 Months" style="color:#059669;">6 أشهر</div>
    <div class="plan-price" style="color:#059669;">510<span>₪</span></div>
    <div class="plan-period" data-ar="كل 6 أشهر · 150$" data-en="every 6 months · 150$">كل 6 أشهر · 150$</div>
    <div class="plan-save" data-ar="وفّر 30$ مقارنة بالشهري" data-en="Save $30 vs monthly">وفّر 30$ مقارنة بالشهري</div>
-   <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
+   <a href="/register?plan=biannual" class="plan-btn" data-ar="اختر 6 أشهر" data-en="Choose 6 Months">اختر 6 أشهر</a>
   </div>
   <div class="plan featured" style="position:relative;margin-top:14px;border-top:4px solid #2563EB;">
    <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#2563EB,#059669);color:#fff;font-size:11px;font-weight:700;padding:4px 16px;border-radius:50px;white-space:nowrap;" data-ar=" خيار التجار المحترفين" data-en=" Pro Merchants Choice"> خيار التجار المحترفين</div>
@@ -810,7 +833,7 @@ body.ltr .wa-float { left: auto; right: 24px; }
    <div class="plan-price" style="color:#2563EB;">960<span>₪</span></div>
    <div class="plan-period" data-ar="سنوياً · 290$" data-en="per year · 290$">سنوياً · 290$</div>
    <div class="plan-save" data-ar="وفّر 70$ — الأكثر طلباً بين التجار" data-en="Save $70 — Most popular among merchants">وفّر 70$ — الأكثر طلباً بين التجار</div>
-   <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
+   <a href="/register?plan=annual" class="plan-btn" data-ar="اختر السنوي" data-en="Choose Annual">اختر السنوي</a>
   </div>
   <div class="plan" style="border:2px solid #C4963A; box-shadow:0 8px 32px rgba(196,150,58,0.15); position:relative; margin-top:14px;">
    <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#C4963A;color:#fff;font-size:11px;font-weight:700;padding:4px 16px;border-radius:50px;white-space:nowrap;" data-ar=" عرض العمر لشركات النمو" data-en=" Lifetime Deal for Growing Brands"> عرض العمر لشركات النمو</div>
@@ -818,11 +841,11 @@ body.ltr .wa-float { left: auto; right: 24px; }
    <div class="plan-price" style="color:#C4963A;">3200<span>₪</span></div>
    <div class="plan-period" data-ar="لـ 4 سنوات · 950$" data-en="for 4 years · 950$">لـ 4 سنوات · 950$</div>
    <div class="plan-save" data-ar="السنة الخامسة هدية من المنصة " data-en="5th year is our gift to you ">السنة الخامسة هدية من المنصة </div>
-   <a href="/register" class="plan-btn" data-ar="ابدأ الآن" data-en="Get Started">ابدأ الآن</a>
+   <a href="/register?plan=four_year" class="plan-btn" data-ar="اختر عرض 4 سنوات" data-en="Choose 4-Year Offer">اختر عرض 4 سنوات</a>
   </div>
  </div>
 
- <h3 class="path-title" style="margin-top: 80px;" data-ar="المسار الثاني: تصميم وبناء متجر خاص (VIP)" data-en="Path 2: Custom Store Design (VIP)">المسار الثاني: تصميم وبناء متجر خاص (VIP)</h3>
+ <h3 class="path-title" id="custom-service" style="margin-top: 80px;" data-ar="تصميم موقع أو نظام خاص" data-en="Custom Website or Web System">تصميم موقع أو نظام خاص</h3>
  <div class="vip-card">
     <div class="vip-header">
         <div class="vip-badge" data-ar="خدمة الوكالة المتكاملة" data-en="Full Agency Service">خدمة الوكالة المتكاملة</div>
@@ -872,7 +895,7 @@ body.ltr .wa-float { left: auto; right: 24px; }
     </div>
     
     <div style="text-align: center;">
-        <a href="#" onclick="openWA('vip')" target="_blank" rel="noopener" class="btn-vip-action" data-ar="احجز استشارتك لبناء متجرك الخاص" data-en="Book your consultation for a custom store">احجز استشارتك لبناء متجرك الخاص</a>
+        <a href="#" onclick="openWA('vip');return false" class="btn-vip-action" data-ar="احجز استشارة لمشروعك الرقمي" data-en="Book a Consultation for Your Digital Project">احجز استشارة لمشروعك الرقمي</a>
     </div>
  </div>
 
@@ -938,10 +961,10 @@ body.ltr .wa-float { left: auto; right: 24px; }
 
 <div class="container">
  <div class="cta-section">
-  <h2 data-ar="جاهز تطلق متجرك؟" data-en="Ready to Launch Your Store?">جاهز تطلق متجرك؟</h2>
-  <p data-ar="انضم لمئات التجار الفلسطينيين الذين يبيعون أونلاين الآن." data-en="Join hundreds of Palestinian merchants selling online today.">انضم لمئات التجار الفلسطينيين الذين يبيعون أونلاين الآن.</p>
-  <a href="/register" class="btn-primary" data-ar="سجّل مجاناً الآن" data-en="Sign Up Free Now">سجّل مجاناً الآن</a>
-  <a href="#" onclick="openWA('general')" class="btn-secondary" style="margin-right:8px;" data-ar="عندك سؤال؟ راسلنا واتساب" data-en="Have a question? WhatsApp us">عندك سؤال؟ راسلنا واتساب</a>
+  <h2 data-ar="أي منتج رقمي يناسبك؟" data-en="Which Digital Product Fits You?">أي منتج رقمي يناسبك؟</h2>
+  <p data-ar="ابدأ من الكتالوج، أو تواصل معنا لنساعدك في اختيار الحل الأنسب لعملك." data-en="Start from the catalog, or contact us and we'll help you choose the right solution.">ابدأ من الكتالوج، أو تواصل معنا لنساعدك في اختيار الحل الأنسب لعملك.</p>
+  <a href="#products" class="btn-primary" data-ar="استعرض المنتجات" data-en="Browse Products">استعرض المنتجات</a>
+  <a href="#" onclick="openWA('general');return false" class="btn-secondary" style="margin-right:8px;" data-ar="ساعدني في الاختيار" data-en="Help Me Choose">ساعدني في الاختيار</a>
  </div>
 </div>
 
@@ -1003,14 +1026,14 @@ function openWA(type) {
 (function(){
  const tabs = document.querySelectorAll('.mobile-tabbar .tab-item[data-tab]');
  if (!tabs.length) return;
- const sections = { top: document.getElementById('top'), features: document.getElementById('features'), pricing: document.getElementById('pricing') };
+ const sections = { top: document.getElementById('top'), products: document.getElementById('products'), pricing: document.getElementById('pricing') };
  function setActive(name){
   tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-tab') === name));
  }
  function onScroll(){
   const y = window.scrollY + window.innerHeight * 0.35;
   let current = 'top';
-  if (sections.features && y >= sections.features.offsetTop) current = 'features';
+  if (sections.products && y >= sections.products.offsetTop) current = 'products';
   if (sections.pricing && y >= sections.pricing.offsetTop) current = 'pricing';
   setActive(current);
  }
@@ -1019,7 +1042,7 @@ function openWA(type) {
 })();
 </script>
 
-<a href="#" onclick="openWA('general')" class="wa-float" aria-label="WhatsApp">
+<a href="#" onclick="openWA('general');return false" class="wa-float" aria-label="WhatsApp">
  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.1 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg>
  <span data-ar="تواصل معنا" data-en="Contact us">تواصل معنا</span>
 </a>
@@ -1029,15 +1052,15 @@ function openWA(type) {
   <span class="tab-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/></svg></span>
   <span data-ar="الرئيسية" data-en="Home">الرئيسية</span>
  </a>
- <a href="#features" class="tab-item" data-tab="features">
+ <a href="#products" class="tab-item" data-tab="products">
   <span class="tab-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3Z"/></svg></span>
-  <span data-ar="المميزات" data-en="Features">المميزات</span>
+  <span data-ar="المنتجات" data-en="Products">المنتجات</span>
  </a>
  <a href="#pricing" class="tab-item" data-tab="pricing">
   <span class="tab-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span>
   <span data-ar="الأسعار" data-en="Pricing">الأسعار</span>
  </a>
- <a href="#" onclick="openWA('general')" class="tab-item wa">
+ <a href="#" onclick="openWA('general');return false" class="tab-item wa">
   <span class="tab-icon-wrap"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.1 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg></span>
   <span data-ar="واتساب" data-en="WhatsApp">واتساب</span>
  </a>
