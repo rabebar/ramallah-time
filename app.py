@@ -608,6 +608,12 @@ PAYMENT_METHOD_LABELS = {
     'iban': 'تحويل إلى الإيبان',
 }
 
+MOEEN_SUBSCRIPTION_PLANS = {
+    'monthly': {'label': 'اشتراك شهري', 'days': 30, 'amount': Decimal('60.00'), 'currency': '₪'},
+    'quarterly': {'label': 'اشتراك 3 أشهر', 'days': 90, 'amount': Decimal('160.00'), 'currency': '₪'},
+    'annual': {'label': 'اشتراك سنوي', 'days': 365, 'amount': Decimal('540.00'), 'currency': '₪'},
+}
+
 PAYMENT_SETTING_KEYS = [
     'payment_account_name',
     'payment_wallet_name',
@@ -732,6 +738,24 @@ try:
         )
     """)
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS store_id INTEGER")
+    _mcur.execute("""
+        CREATE TABLE IF NOT EXISTS moeen_subscription_payments (
+            id SERIAL PRIMARY KEY,
+            account_id INTEGER NOT NULL REFERENCES moeen_accounts(id) ON DELETE CASCADE,
+            invoice_code TEXT NOT NULL UNIQUE,
+            plan_type TEXT NOT NULL,
+            amount NUMERIC(12,2) NOT NULL,
+            currency TEXT NOT NULL DEFAULT '₪',
+            payment_method TEXT NOT NULL,
+            transaction_ref TEXT,
+            receipt_url TEXT,
+            notes TEXT,
+            status TEXT NOT NULL DEFAULT 'pending',
+            admin_note TEXT,
+            reviewed_at TIMESTAMP,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW()
+        )
+    """)
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS admin_note TEXT")
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP")
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS reviewed_by TEXT")
@@ -931,6 +955,15 @@ def send_rt_payment_notification(invoice_code, store_name, plan_label):
         f"{store_name} · {plan_label} · {invoice_code}",
         f"rt-payment-{invoice_code}",
         "/superadmin",
+    )
+
+def send_moeen_payment_notification(invoice_code, full_name, plan_label):
+    send_superadmin_push_notification(
+        "إثبات دفع جديد في مُعين التنفيذي",
+        f"{full_name} · {plan_label} · {invoice_code}",
+        f"moeen-payment-{invoice_code}",
+        "/superadmin#moeen-payments",
+        "/static/moeen_exec/icon-192.png",
     )
 
 
@@ -1793,6 +1826,69 @@ def admin_subscription_payment():
         conn.close()
 
     return redirect(url_for('admin', active_tab='settings'))
+
+@app.post('/moeen-executive/subscription-payment')
+def moeen_subscription_payment():
+    account_id = session.get('moeen_account_id')
+    if not account_id:
+        return jsonify(error="AUTH_REQUIRED"), 401
+    if request.headers.get("X-CSRF-Token") != session.get("moeen_csrf"):
+        return jsonify(error="INVALID_CSRF"), 403
+
+    plan_type = (request.form.get('plan_type') or 'monthly').strip()
+    payment_method = (request.form.get('payment_method') or 'reflect').strip()
+    if plan_type not in MOEEN_SUBSCRIPTION_PLANS or payment_method not in {'reflect', 'iban'}:
+        return jsonify(error="INVALID_PAYMENT_DATA"), 400
+
+    transaction_ref = (request.form.get('transaction_ref') or '').strip()[:160]
+    notes = (request.form.get('notes') or '').strip()[:1000]
+    receipt = request.files.get('receipt')
+    receipt_url = None
+    if receipt and receipt.filename:
+        if not allowed_receipt_file(receipt.filename):
+            return jsonify(error="INVALID_RECEIPT"), 400
+        receipt_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'moeen_payment_receipts')
+        os.makedirs(receipt_dir, exist_ok=True)
+        ext = secure_filename(receipt.filename).rsplit('.', 1)[1].lower()
+        filename = f"moeen_{account_id}_{uuid.uuid4().hex[:10]}.{ext}"
+        receipt.save(os.path.join(receipt_dir, filename))
+        receipt_url = f"moeen_payment_receipts/{filename}"
+    if not transaction_ref and not receipt_url:
+        return jsonify(error="PROOF_REQUIRED"), 400
+
+    plan = MOEEN_SUBSCRIPTION_PLANS[plan_type]
+    invoice_code = f"MOEEN-{datetime.utcnow().strftime('%Y%m%d')}-{account_id}-{uuid.uuid4().hex[:6].upper()}"
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT full_name FROM moeen_accounts WHERE id=%s", (account_id,))
+        account = cursor.fetchone()
+        if not account:
+            return jsonify(error="ACCOUNT_NOT_FOUND"), 404
+        cursor.execute("""
+            INSERT INTO moeen_subscription_payments
+                (account_id, invoice_code, plan_type, amount, currency,
+                 payment_method, transaction_ref, receipt_url, notes)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (
+            account_id, invoice_code, plan_type, plan['amount'], plan['currency'],
+            payment_method, transaction_ref or None, receipt_url, notes or None,
+        ))
+        conn.commit()
+        threading.Thread(
+            target=send_moeen_payment_notification,
+            args=(invoice_code, account['full_name'], plan['label']),
+            daemon=True,
+            name=f"moeen-payment-push-{invoice_code}",
+        ).start()
+        return jsonify(ok=True, invoice_code=invoice_code)
+    except Exception:
+        conn.rollback()
+        logging.exception("Moeen payment proof failed")
+        return jsonify(error="PAYMENT_SUBMISSION_FAILED"), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 @app.route('/edit_product/<int:id>', methods=['POST'])
 def edit_product_route(id):
@@ -3323,6 +3419,14 @@ def super_admin():
         ORDER BY ma.created_at DESC
     """)
     moeen_accounts = cursor.fetchall()
+    cursor.execute("""
+        SELECT mp.*, ma.full_name, ma.phone
+        FROM moeen_subscription_payments mp
+        JOIN moeen_accounts ma ON ma.id = mp.account_id
+        ORDER BY CASE WHEN mp.status='pending' THEN 0 ELSE 1 END, mp.created_at DESC
+        LIMIT 30
+    """)
+    moeen_payments = cursor.fetchall()
     active_moeen_trial_count = sum(
         1 for account in moeen_accounts
         if account["status"] == "active"
@@ -3345,6 +3449,8 @@ def super_admin():
                            order_store_id=order_store_id,
                            subscription_payments=subscription_payments,
                            moeen_accounts=moeen_accounts,
+                           moeen_payments=moeen_payments,
+                           moeen_subscription_plans=MOEEN_SUBSCRIPTION_PLANS,
                            active_moeen_trial_count=active_moeen_trial_count,
                            push_configured=bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY),
                            vapid_public_key=VAPID_PUBLIC_KEY,
@@ -3571,6 +3677,47 @@ def super_admin_review_subscription_payment(payment_id, action):
         conn.close()
 
     return redirect(url_for('super_admin'))
+
+@app.post('/superadmin/moeen-payment/<int:payment_id>/<action>')
+def super_admin_review_moeen_payment(payment_id, action):
+    if not session.get('is_superadmin'):
+        return redirect(url_for('super_admin_login'))
+    if action not in {'approve', 'reject'}:
+        return redirect(url_for('super_admin') + '#moeen-payments')
+    note = (request.form.get('admin_note') or '').strip()[:1000]
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT * FROM moeen_subscription_payments WHERE id=%s FOR UPDATE", (payment_id,))
+        payment = cursor.fetchone()
+        if not payment or payment['status'] != 'pending':
+            flash("طلب الدفع غير موجود أو تمت مراجعته سابقًا.", "error")
+            return redirect(url_for('super_admin') + '#moeen-payments')
+        status = 'approved' if action == 'approve' else 'rejected'
+        cursor.execute("""
+            UPDATE moeen_subscription_payments
+            SET status=%s,admin_note=%s,reviewed_at=NOW() WHERE id=%s
+        """, (status, note or None, payment_id))
+        if action == 'approve':
+            plan = MOEEN_SUBSCRIPTION_PLANS[payment['plan_type']]
+            cursor.execute("""
+                UPDATE moeen_accounts
+                SET status='active',plan_type=%s,
+                    subscription_start=NOW(),
+                    subscription_end=GREATEST(COALESCE(subscription_end,NOW()),NOW()) + (%s * INTERVAL '1 day'),
+                    updated_at=NOW()
+                WHERE id=%s
+            """, (payment['plan_type'], plan['days'], payment['account_id']))
+        conn.commit()
+        flash("تم قبول الدفعة وتجديد اشتراك مُعين." if action == 'approve' else "تم رفض إثبات الدفع.", "success")
+    except Exception:
+        conn.rollback()
+        logging.exception("Moeen payment review failed")
+        flash("تعذرت مراجعة دفعة مُعين.", "error")
+    finally:
+        cursor.close()
+        conn.close()
+    return redirect(url_for('super_admin') + '#moeen-payments')
 
 @app.route('/superadmin/login', methods=['GET', 'POST'])
 def super_admin_login():

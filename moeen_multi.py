@@ -6,7 +6,7 @@ from functools import wraps
 from flask import Blueprint, Response, current_app, jsonify, render_template, request, send_from_directory, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from database import get_db_connection
+from database import get_app_setting, get_db_connection
 
 
 moeen_bp = Blueprint("moeen_multi", __name__, url_prefix="/moeen-executive")
@@ -135,7 +135,15 @@ def security_headers(response):
 
 @moeen_bp.get("/")
 def index():
-    return render_template("moeen_exec.html")
+    payment_settings = {
+        "account_name": get_app_setting("payment_account_name", "RT Studio"),
+        "wallet_name": get_app_setting("payment_wallet_name", ""),
+        "wallet_number": get_app_setting("payment_wallet_number", ""),
+        "bank_name": get_app_setting("payment_bank_name", ""),
+        "iban": get_app_setting("payment_iban", ""),
+        "note": get_app_setting("payment_note", ""),
+    }
+    return render_template("moeen_exec.html", payment_settings=payment_settings)
 
 
 @moeen_bp.get("/manifest.webmanifest")

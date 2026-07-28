@@ -383,4 +383,22 @@ $("#reviewAttempts").onclick=async()=>{await api("/api/security/attempts/review"
 async function loadSecurity(){try{const r=await api("/api/security/overview");$("#deviceCount").textContent=r.devices.filter(d=>!d.revoked_at).length;$("#deviceList").innerHTML=r.devices.map(d=>`<div class="security-row"><div><b>${esc(d.name)}${d.id===r.current_device_id?" · هذا الجهاز":""}</b><small>آخر نشاط: ${fmt(d.last_seen_at)}</small></div>${!d.revoked_at&&d.id!==r.current_device_id?`<button class="security-secondary" onclick="revokeDevice('${d.id}')">إلغاء الجهاز</button>`:d.revoked_at?'<span class="tag">ملغى</span>':'<span class="tag">نشط</span>'}</div>`).join("")||'<div class="empty">لا توجد أجهزة.</div>';$("#attemptList").innerHTML=r.attempts.map(a=>`<div class="security-row alert-row ${a.reviewed?"reviewed":""}"><div><b>${attemptLabel(a.outcome)} · ${esc(a.device_name||"جهاز غير معروف")}</b><small>${fmt(a.created_at)} · ${esc(a.ip_address)}</small></div></div>`).join("")||'<div class="empty">لا توجد محاولات مريبة.</div>'}catch(err){if(err.status===401){document.body.classList.add("locked")}}}
 function attemptLabel(o){return({bad_password:"كلمة مرور خاطئة",unknown_device_blocked:"جهاز غير مصرح",bad_pairing:"رمز ربط خاطئ",temporarily_blocked:"محاولة أثناء الحظر"})[o]||"محاولة مرفوضة"}
 window.revokeDevice=async id=>{if(!confirm("إلغاء تصريح هذا الجهاز؟"))return;await api(`/api/security/devices/${encodeURIComponent(id)}/revoke`,{method:"POST",body:"{}"});loadSecurity()};
+$("#moeenPaymentForm").onsubmit=async e=>{
+  e.preventDefault();
+  const form=e.currentTarget,message=$("#paymentMessage"),button=form.querySelector('button[type="submit"]');
+  const data=new FormData(form);
+  data.set("plan_type",document.querySelector('input[name="moeenPlan"]:checked').value);
+  data.set("payment_method",document.querySelector('input[name="moeenPaymentMethod"]:checked').value);
+  message.className="payment-message";message.textContent="جارٍ إرسال إثبات الدفع…";button.disabled=true;
+  try{
+    const response=await fetch("/moeen-executive/subscription-payment",{method:"POST",headers:{"X-CSRF-Token":apiCsrf},body:data});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(result.error||"FAILED");
+    form.reset();document.querySelector('input[name="moeenPlan"][value="monthly"]').checked=true;document.querySelector('input[name="moeenPaymentMethod"][value="reflect"]').checked=true;
+    message.className="payment-message success";message.textContent=`تم إرسال الإثبات بنجاح. رقم المتابعة: ${result.invoice_code}`;
+  }catch(err){
+    const labels={PROOF_REQUIRED:"أدخل رقم العملية أو ارفع الإيصال.",INVALID_RECEIPT:"صيغة الإيصال غير مدعومة.",AUTH_REQUIRED:"سجّل الدخول ثم حاول مجددًا."};
+    message.className="payment-message error";message.textContent=labels[err.message]||"تعذر إرسال الإثبات الآن. حاول مرة أخرى.";
+  }finally{button.disabled=false}
+};
 audioDb.init().then(()=>{render();initAuth()});

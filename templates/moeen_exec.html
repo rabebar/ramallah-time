@@ -53,6 +53,7 @@
         <button class="nav" data-view="tasks" data-icon="✓"><span>المتابعات</span></button>
         <button class="nav" data-view="meetings" data-icon="◎"><span>الاجتماعات</span></button>
         <button class="nav" data-view="contacts" data-icon="♧"><span>الاتصالات</span></button>
+        <button class="nav" data-view="subscription" data-icon="₪"><span>الاشتراك</span></button>
         <button class="nav" data-view="security" data-icon="◈"><span>الأمان</span></button>
       </nav>
       <div class="privacy">🔒 البيانات محفوظة على هذا الجهاز</div>
@@ -100,6 +101,31 @@
         <div class="title-row"><div><p>دليل شخصي آمن</p><h2>جهات الاتصال</h2></div><button id="addContact" class="primary">+ جهة اتصال</button></div>
         <div class="contact-tools"><input id="contactSearch" placeholder="ابحث بالاسم أو الجهة أو الرقم…"></div>
         <div id="contactList" class="contact-grid"></div>
+      </section>
+
+      <section id="subscription" class="view">
+        <div class="title-row"><div><p>تجديد آمن وواضح</p><h2>دفع اشتراك مُعين</h2></div></div>
+        <div class="payment-intro">
+          <strong>اختر الباقة وطريقة التحويل</strong>
+          <span>يتم تفعيل الاشتراك بعد مراجعة إثبات الدفع من RT Studio.</span>
+        </div>
+        <div class="moeen-plans">
+          <label><input type="radio" name="moeenPlan" value="monthly" checked><b>شهري</b><strong>60₪</strong><small>30 يومًا</small></label>
+          <label><input type="radio" name="moeenPlan" value="quarterly"><b>3 أشهر</b><strong>160₪</strong><small>90 يومًا</small></label>
+          <label><input type="radio" name="moeenPlan" value="annual"><b>سنوي</b><strong>540₪</strong><small>365 يومًا</small></label>
+        </div>
+        <div class="payment-method-grid">
+          <label class="payment-option"><input type="radio" name="moeenPaymentMethod" value="reflect" checked><div><b>محفظة Reflect</b><span>الاسم: {{ payment_settings.wallet_name or payment_settings.account_name }}</span><strong>{{ payment_settings.wallet_number or 'سيتم توفير رقم المحفظة قريبًا' }}</strong></div></label>
+          <label class="payment-option"><input type="radio" name="moeenPaymentMethod" value="iban"><div><b>تحويل بنكي عبر IBAN</b><span>{{ payment_settings.bank_name or 'بيانات البنك' }} · {{ payment_settings.account_name }}</span><strong>{{ payment_settings.iban or 'سيتم توفير رقم الإيبان قريبًا' }}</strong></div></label>
+        </div>
+        <form id="moeenPaymentForm" class="payment-proof-form">
+          <input id="paymentTransactionRef" name="transaction_ref" placeholder="رقم العملية أو مرجع التحويل">
+          <label class="receipt-upload"><span>صورة الإيصال أو ملف PDF (اختياري عند إدخال رقم العملية)</span><input id="paymentReceipt" name="receipt" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf"></label>
+          <textarea id="paymentNotes" name="notes" rows="3" placeholder="ملاحظة اختيارية للإدارة"></textarea>
+          <p class="payment-note">{{ payment_settings.note }}</p>
+          <button class="primary" type="submit">إرسال إثبات الدفع</button>
+          <div id="paymentMessage" class="payment-message"></div>
+        </form>
       </section>
 
       <section id="security" class="view">

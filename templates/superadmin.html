@@ -771,6 +771,35 @@
             {% endif %}
         </div>
 
+        <section class="payments-section" id="moeen-payments">
+            <div class="section-head">
+                <div><h2>دفعات مُعين التنفيذي</h2><p>إثباتات التحويل عبر Reflect أو الإيبان.</p></div>
+            </div>
+            {% for payment in moeen_payments %}
+            <div class="payment-review-card">
+                <div class="payment-review-head">
+                    <div>
+                        <div class="payment-invoice">{{ payment.invoice_code }}</div>
+                        <div class="payment-meta">{{ payment.full_name }} · {{ payment.phone }} · {{ moeen_subscription_plans[payment.plan_type].label }} · {{ payment.amount }}{{ payment.currency }} · {{ 'محفظة Reflect' if payment.payment_method == 'reflect' else 'تحويل IBAN' }}</div>
+                    </div>
+                    <span class="payment-status {{ payment.status }}">{{ 'مقبولة' if payment.status == 'approved' else ('مرفوضة' if payment.status == 'rejected' else 'قيد المراجعة') }}</span>
+                </div>
+                <div class="payment-meta">رقم العملية: <strong>{{ payment.transaction_ref or 'غير مدخل' }}</strong>
+                    {% if payment.receipt_url %} · <a href="/static/uploads/{{ payment.receipt_url }}" target="_blank">فتح الإيصال</a>{% endif %}
+                    {% if payment.notes %}<br>ملاحظة المشترك: {{ payment.notes }}{% endif %}
+                </div>
+                {% if payment.status == 'pending' %}
+                <div class="payment-actions">
+                    <form method="POST" action="/superadmin/moeen-payment/{{ payment.id }}/approve"><input name="admin_note" placeholder="ملاحظة اختيارية"><button class="btn-sm btn-approve">قبول وتجديد</button></form>
+                    <form method="POST" action="/superadmin/moeen-payment/{{ payment.id }}/reject"><input name="admin_note" placeholder="سبب الرفض"><button class="btn-sm btn-reject">رفض</button></form>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <p>لا توجد إثباتات دفع لمُعين حتى الآن.</p>
+            {% endfor %}
+        </section>
+
         <section class="table-container" id="moeen-executive">
             <div class="table-title">إدارة اشتراكات مُعين التنفيذي</div>
             <form class="moeen-create" method="POST" action="/superadmin/moeen/accounts">
