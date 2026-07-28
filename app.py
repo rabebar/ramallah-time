@@ -845,7 +845,7 @@ def send_order_push_notifications(store_id, store_name, store_slug, order_id, to
             cleanup_conn.close()
 
 def send_moeen_signup_notifications(account_id, full_name, job_title):
-    """Notify subscribed RT Studio superadmin devices about a new Moeen request."""
+    """Notify subscribed RT Studio superadmin devices about a new active Moeen trial."""
     if not (VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY):
         return
     try:
@@ -860,8 +860,8 @@ def send_moeen_signup_notifications(account_id, full_name, job_title):
     finally:
         conn.close()
     payload = json.dumps({
-        "title": "طلب اشتراك جديد في مُعين التنفيذي",
-        "body": f"{full_name} · {job_title or 'دون مسمى وظيفي'}",
+        "title": "بدأت تجربة جديدة في مُعين التنفيذي",
+        "body": f"{full_name} · تجربة مجانية لمدة 48 ساعة · {job_title or 'دون مسمى وظيفي'}",
         "tag": f"moeen-signup-{account_id}",
         "url": "/superadmin#moeen-executive",
         "icon": "/static/moeen_exec/icon.svg",
@@ -1133,7 +1133,8 @@ def moeen_public_register():
                     (full_name, job_title, phone, email, password_hash, status,
                      plan_type, subscription_start, subscription_end,
                      must_change_password)
-                VALUES (%s, %s, %s, %s, %s, 'suspended', 'pending', NULL, NULL, FALSE)
+                VALUES (%s, %s, %s, %s, %s, 'active', 'trial',
+                        NOW(), NOW() + INTERVAL '48 hours', FALSE)
                 RETURNING id
             """, (
                 full_name, job_title or None, phone, email or None,
@@ -1147,8 +1148,7 @@ def moeen_public_register():
                 daemon=True,
                 name=f"moeen-signup-push-{account_id}",
             ).start()
-            flash("تم استلام طلب حساب مُعين. ستبدأ تجربتك المجانية لمدة 48 ساعة بعد موافقة الإدارة.", "success")
-            return redirect(url_for('moeen_public_register', submitted='1'))
+            return redirect(url_for('moeen_multi.index', registered='1'))
         except Exception as exc:
             conn.rollback()
             logging.warning("public Moeen registration failed: %s", exc)
@@ -3250,9 +3250,12 @@ def super_admin():
         ORDER BY ma.created_at DESC
     """)
     moeen_accounts = cursor.fetchall()
-    pending_moeen_count = sum(
+    active_moeen_trial_count = sum(
         1 for account in moeen_accounts
-        if account["status"] == "suspended" and account["plan_type"] == "pending"
+        if account["status"] == "active"
+        and account["plan_type"] == "trial"
+        and account["subscription_end"]
+        and account["subscription_end"] >= datetime.utcnow()
     )
     conn.close()
 
@@ -3269,7 +3272,7 @@ def super_admin():
                            order_store_id=order_store_id,
                            subscription_payments=subscription_payments,
                            moeen_accounts=moeen_accounts,
-                           pending_moeen_count=pending_moeen_count,
+                           active_moeen_trial_count=active_moeen_trial_count,
                            push_configured=bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY),
                            vapid_public_key=VAPID_PUBLIC_KEY,
                            subscription_plans=SUBSCRIPTION_PLANS,
@@ -3359,16 +3362,20 @@ def super_admin_update_moeen_subscription(account_id):
     cursor = conn.cursor()
     try:
         if action == 'renew':
-            months = max(1, min(int(request.form.get('months') or 1), 36))
+            plan_type = (request.form.get('plan_type') or 'monthly').strip()
+            plan_days = {'monthly': 30, 'quarterly': 90, 'annual': 365}
+            if plan_type not in plan_days:
+                raise ValueError("unknown plan")
             cursor.execute("""
                 UPDATE moeen_accounts
                 SET subscription_end =
                     GREATEST(COALESCE(subscription_end, NOW()), NOW())
-                    + (%s * INTERVAL '30 days'),
+                    + (%s * INTERVAL '1 day'),
+                    plan_type = %s,
                     status = 'active', updated_at = NOW()
                 WHERE id = %s
-            """, (months, account_id))
-            message = "تم تجديد اشتراك مُعين التنفيذي."
+            """, (plan_days[plan_type], plan_type, account_id))
+            message = "تم تفعيل الباقة المدفوعة بعد نهاية المدة الحالية دون خسارة الوقت المتبقي."
         elif action == 'active':
             cursor.execute("""
                 UPDATE moeen_accounts

@@ -358,7 +358,7 @@
             <a href="#moeen-executive" class="nav-item">
                 <i data-lucide="briefcase-business"></i>
                 <span>مُعين التنفيذي</span>
-                {% if pending_moeen_count %}<b class="nav-count">{{ pending_moeen_count }}</b>{% endif %}
+                {% if active_moeen_trial_count %}<b class="nav-count">{{ active_moeen_trial_count }}</b>{% endif %}
             </a>
             
             <a href="/logout" class="nav-item logout-btn">
@@ -375,7 +375,7 @@
                 <p>مراقبة أداء منصة RT Studio وإدارة التجار</p>
             </div>
             <button id="superadminPushBtn" class="admin-push-btn" type="button" {% if not push_configured %}disabled{% endif %}>
-                <i data-lucide="bell"></i><span>تفعيل إشعارات طلبات مُعين</span>
+                <i data-lucide="bell"></i><span>تفعيل إشعارات تسجيلات مُعين</span>
             </button>
             <div style="color: var(--text-muted); font-size: 14px; font-weight: 600;">
                 <i data-lucide="calendar" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;"></i>
@@ -809,7 +809,9 @@
                             <small style="display:block;color:var(--text-muted);">{{ account.email or '' }}</small>
                         </td>
                         <td>
-                            {% if account.status == 'active' %}
+                            {% if account.status == 'active' and account.plan_type == 'trial' %}
+                                <span class="badge badge-pending">تجربة مجانية</span>
+                            {% elif account.status == 'active' %}
                                 <span class="badge badge-active">نشط</span>
                             {% elif account.status == 'suspended' and account.plan_type == 'pending' %}
                                 <span class="badge badge-pending">بانتظار التفعيل</span>
@@ -831,8 +833,14 @@
                             <div class="moeen-actions">
                                 <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/subscription">
                                     <input type="hidden" name="action" value="renew">
-                                    <input type="number" name="months" min="1" max="36" value="1" title="عدد الأشهر">
-                                    <button class="btn-sm btn-approve" type="submit">تجديد</button>
+                                    <select name="plan_type" title="الباقة المدفوعة">
+                                        <option value="monthly">شهري · 60₪</option>
+                                        <option value="quarterly">3 أشهر · 160₪</option>
+                                        <option value="annual">سنوي · 540₪</option>
+                                    </select>
+                                    <button class="btn-sm btn-approve" type="submit">
+                                        {% if account.plan_type == 'trial' %}تفعيل المدفوع{% else %}تجديد{% endif %}
+                                    </button>
                                 </form>
                                 <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/subscription">
                                     <input type="hidden" name="action" value="{% if account.status == 'active' %}suspended{% else %}active{% endif %}">
@@ -983,7 +991,7 @@
       const reg=await navigator.serviceWorker.register("/sw.js");
       const sub=await reg.pushManager.getSubscription();
       superadminPushButton.classList.toggle("enabled",!!sub&&Notification.permission==="granted");
-      superadminPushButton.querySelector("span").textContent=sub&&Notification.permission==="granted"?"إشعارات مُعين مفعّلة":"تفعيل إشعارات طلبات مُعين";
+      superadminPushButton.querySelector("span").textContent=sub&&Notification.permission==="granted"?"إشعارات مُعين مفعّلة":"تفعيل إشعارات تسجيلات مُعين";
     }
     if(superadminPushButton)superadminPushButton.onclick=async()=>{
       try{

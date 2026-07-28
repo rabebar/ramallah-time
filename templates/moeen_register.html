@@ -41,7 +41,7 @@
     </section>
     <section class="card">
       <h2>إنشاء حساب مُعين</h2>
-      <p>أرسل طلبك الآن. تبدأ تجربتك المجانية لمدة 48 ساعة بعد موافقة الإدارة.</p>
+      <p>أنشئ حسابك وابدأ تجربتك المجانية لمدة 48 ساعة فورًا، دون انتظار موافقة.</p>
       <div class="prices"><span><b>60₪</b> شهريًا</span><span><b>160₪</b> كل 3 أشهر</span><span><b>540₪</b> سنويًا</span></div>
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
@@ -55,7 +55,7 @@
           <div class="field"><label>كلمة المرور</label><input type="password" name="password" minlength="12" required autocomplete="new-password"></div>
           <div class="field"><label>تأكيد كلمة المرور</label><input type="password" name="password_confirm" minlength="12" required autocomplete="new-password"></div>
         </div>
-        <button type="submit">إرسال طلب الاشتراك</button>
+        <button type="submit">إنشاء الحساب وبدء التجربة</button>
       </form>
       <div class="note">بياناتك التنفيذية مشفرة ولا يستطيع مدير المنصة قراءة محتواها.</div>
     </section>
