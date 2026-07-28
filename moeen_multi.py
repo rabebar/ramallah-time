@@ -1,4 +1,5 @@
 import hashlib
+import re
 import secrets
 from datetime import datetime, timedelta
 from functools import wraps
@@ -15,6 +16,15 @@ SESSION_DEVICE = "moeen_device_id"
 SESSION_CSRF = "moeen_csrf"
 
 
+def _phone_variants(phone):
+    digits = re.sub(r"\D", "", str(phone or ""))
+    if digits.startswith("00"):
+        digits = digits[2:]
+    if not (digits.startswith("970") or digits.startswith("972")):
+        return []
+    return [f"00{digits}", f"+{digits}", digits]
+
+
 def _account(account_id=None, phone=None):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -22,7 +32,10 @@ def _account(account_id=None, phone=None):
         if account_id:
             cursor.execute("SELECT * FROM moeen_accounts WHERE id = %s", (account_id,))
         else:
-            cursor.execute("SELECT * FROM moeen_accounts WHERE phone = %s", (phone,))
+            variants = _phone_variants(phone)
+            if not variants:
+                return None
+            cursor.execute("SELECT * FROM moeen_accounts WHERE phone = ANY(%s) LIMIT 1", (variants,))
         return cursor.fetchone()
     finally:
         cursor.close()

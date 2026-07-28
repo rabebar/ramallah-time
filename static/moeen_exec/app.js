@@ -402,7 +402,13 @@ async function initAuth(){
 $("#setupForm").onsubmit=async e=>{e.preventDefault();const p=$("#setupPassword").value,c=$("#setupPasswordConfirm").value;if(p!==c){$("#authMessage").textContent="كلمتا المرور غير متطابقتين.";return}try{const raw=crypto.getRandomValues(new Uint8Array(32)),vault=await createWrappedVault(p,raw);await api("/api/setup",{method:"POST",body:JSON.stringify({password:p,vault})});$("#authMessage").textContent="تم الإعداد. سجّل الدخول الآن.";$("#setupPane").hidden=true;$("#loginPane").hidden=false}catch(err){$("#authMessage").textContent=err.message==="WEAK_PASSWORD"?"استخدم 12 حرفًا على الأقل.":"تعذر إكمال الإعداد."}};
 $("#loginForm").onsubmit=async e=>{
   e.preventDefault();
-  const phone=$("#loginPhone").value.trim(),password=$("#loginPassword").value;
+  const prefix=$("#loginPhonePrefix").value;
+  let local=$("#loginPhone").value.replace(/\D/g,"");
+  if(local.startsWith(`00${prefix}`))local=local.slice(prefix.length+2);
+  else if(local.startsWith(prefix))local=local.slice(prefix.length);
+  local=local.replace(/^0+/,"");
+  if(local.length<7||local.length>10){$("#authMessage").textContent="اكتب الرقم المحلي فقط بصورة صحيحة.";return}
+  const phone=`00${prefix}${local}`,password=$("#loginPassword").value;
   const payload={phone,password,device_id:deviceId(),device_name:deviceName()},code=$("#pairingCode").value.trim();
   try{
     const result=code

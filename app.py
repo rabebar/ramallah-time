@@ -216,6 +216,21 @@ def normalize_customer_phone(prefix, phone):
         return None
     return normalized
 
+
+def normalize_moeen_phone(prefix, phone):
+    """Return a canonical Moeen login number such as 0097059xxxxxxx."""
+    prefix_digits = re.sub(r'\D', '', str(prefix or ''))
+    if prefix_digits.startswith('00'):
+        prefix_digits = prefix_digits[2:]
+    if prefix_digits not in {'970', '972'}:
+        return None
+
+    normalized = clean_phone_number(prefix_digits, phone)
+    local_digits = normalized[len(prefix_digits):] if normalized else ''
+    if not 7 <= len(local_digits) <= 10:
+        return None
+    return f"00{prefix_digits}{local_digits}"
+
 def check_rate_limit(user_id):
     now = datetime.utcnow()
     cutoff = now - timedelta(hours=1)
@@ -1291,13 +1306,16 @@ def moeen_public_register():
     if request.method == 'POST':
         full_name = (request.form.get('full_name') or '').strip()
         job_title = (request.form.get('job_title') or '').strip()
-        phone = re.sub(r'\s+', '', (request.form.get('phone') or '').strip())
+        phone = normalize_moeen_phone(
+            request.form.get('phone_prefix'),
+            request.form.get('phone'),
+        )
         email = (request.form.get('email') or '').strip().lower()
         password = request.form.get('password') or ''
         password_confirm = request.form.get('password_confirm') or ''
         terms_accepted = request.form.get('terms_accepted') == 'yes'
 
-        if len(full_name) < 3 or len(phone) < 7:
+        if len(full_name) < 3 or not phone:
             flash("يرجى إدخال الاسم ورقم الهاتف بصورة صحيحة.", "error")
             return render_template('moeen_register.html')
         if len(password) < 12:
@@ -1313,6 +1331,14 @@ def moeen_public_register():
         conn = get_db_connection()
         cursor = conn.cursor()
         try:
+            phone_variants = [phone, f"+{phone[2:]}", phone[2:]]
+            cursor.execute(
+                "SELECT 1 FROM moeen_accounts WHERE phone = ANY(%s) LIMIT 1",
+                (phone_variants,),
+            )
+            if cursor.fetchone():
+                flash("رقم الهاتف مستخدم بالفعل. يمكنك تسجيل الدخول مباشرة.", "error")
+                return render_template('moeen_register.html')
             cursor.execute("""
                 INSERT INTO moeen_accounts
                     (full_name, job_title, phone, email, password_hash, status,
