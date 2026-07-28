@@ -106,6 +106,7 @@ $("#addContact").onclick=()=>{
 window.addCallTask=id=>{const c=store.get("contacts").find(x=>x.id===id);if(!c)return;const arr=store.get("tasks");arr.unshift({id:crypto.randomUUID(),title:`الاتصال بـ ${c.name}`,person:c.org||c.role||"",due:new Date().toISOString().slice(0,10),notes:c.phone||c.email||"",done:false});store.set("tasks",arr);render();alert("تمت إضافة تذكير الاتصال إلى متابعات اليوم.")};
 function openRecorder(){$("#noteText").value="";$("#noteTitle").value="";$("#noteCategory").value="memory";audioBlob=null;updateSmartRoute();$("#recordStatus").textContent="يمكنك التسجيل فقط، أو استخدام الإملاء لتحويل العربية إلى نص.";$("#recordDialog").showModal()}
 $("#quickRecord").onclick=openRecorder;
+$("#addMemory").onclick=openRecorder;
 $("#recordBtn").onclick=async()=>{
   if(mediaRecorder?.state==="recording"){mediaRecorder.stop();return}
   try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];mediaRecorder=new MediaRecorder(stream);mediaRecorder.ondataavailable=e=>chunks.push(e.data);mediaRecorder.onstop=()=>{audioBlob=new Blob(chunks,{type:mediaRecorder.mimeType});stream.getTracks().forEach(t=>t.stop());$("#recordBtn").textContent="إعادة التسجيل";$("#pulse").classList.remove("live");$("#recordStatus").textContent=`تم حفظ التسجيل مؤقتًا (${Math.ceil(audioBlob.size/1024)} كيلوبايت).`;};mediaRecorder.start();$("#recordBtn").textContent="إيقاف التسجيل";$("#pulse").classList.add("live");$("#recordStatus").textContent="التسجيل جارٍ…";}catch(e){$("#recordStatus").textContent="تعذر الوصول إلى الميكروفون. اسمح للتطبيق باستخدامه ثم حاول مجددًا."}
@@ -165,7 +166,7 @@ const audioDb={
 };
 function installVoiceFields(root=document){
   root.querySelectorAll('input:not([type="date"]):not([type="hidden"]):not([type="password"]), textarea').forEach(field=>{
-    if(field.closest(".voice-field")||field.id==="noteText")return;
+    if(field.closest(".voice-field")||field.id==="noteText"||field.id==="search"||field.id==="contactSearch")return;
     const wrap=document.createElement("div");wrap.className="voice-field";field.parentNode.insertBefore(wrap,field);wrap.appendChild(field);
     const mic=document.createElement("button");mic.type="button";mic.className="voice-mic";mic.title="تحدث لتحويل الصوت إلى نص";mic.setAttribute("aria-label","إملاء صوتي");mic.textContent="🎙";wrap.appendChild(mic);
     mic.onclick=()=>dictateInto(field,mic);

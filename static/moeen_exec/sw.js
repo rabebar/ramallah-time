@@ -1,4 +1,4 @@
-const CACHE="moeen-executive-v3";
+const CACHE="moeen-executive-v4";
 const ASSETS=["/moeen-executive/","/static/moeen_exec/styles.css","/static/moeen_exec/premium.css","/static/moeen_exec/app.js","/moeen-executive/manifest.webmanifest","/static/moeen_exec/icon.svg","/static/moeen_exec/fonts/noto-kufi-400.woff2","/static/moeen_exec/fonts/noto-kufi-500.woff2","/static/moeen_exec/fonts/noto-kufi-700.woff2"];
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
