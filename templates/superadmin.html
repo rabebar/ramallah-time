@@ -375,7 +375,7 @@
                 <p>مراقبة أداء منصة RT Studio وإدارة التجار</p>
             </div>
             <button id="superadminPushBtn" class="admin-push-btn" type="button" {% if not push_configured %}disabled{% endif %}>
-                <i data-lucide="bell"></i><span>تفعيل إشعارات تسجيلات مُعين</span>
+                <i data-lucide="bell"></i><span>تفعيل إشعارات RT Studio ومُعين</span>
             </button>
             <div style="color: var(--text-muted); font-size: 14px; font-weight: 600;">
                 <i data-lucide="calendar" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;"></i>
@@ -991,7 +991,7 @@
       const reg=await navigator.serviceWorker.register("/sw.js");
       const sub=await reg.pushManager.getSubscription();
       superadminPushButton.classList.toggle("enabled",!!sub&&Notification.permission==="granted");
-      superadminPushButton.querySelector("span").textContent=sub&&Notification.permission==="granted"?"إشعارات مُعين مفعّلة":"تفعيل إشعارات تسجيلات مُعين";
+      superadminPushButton.querySelector("span").textContent=sub&&Notification.permission==="granted"?"إشعارات RT Studio ومُعين مفعّلة":"تفعيل إشعارات RT Studio ومُعين";
     }
     if(superadminPushButton)superadminPushButton.onclick=async()=>{
       try{

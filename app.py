@@ -844,8 +844,8 @@ def send_order_push_notifications(store_id, store_name, store_slug, order_id, to
         finally:
             cleanup_conn.close()
 
-def send_moeen_signup_notifications(account_id, full_name, job_title):
-    """Notify subscribed RT Studio superadmin devices about a new active Moeen trial."""
+def send_superadmin_push_notification(title, body, tag, url, icon="/static/rt_logo_192.png"):
+    """Deliver an RT Studio platform notification to subscribed superadmin devices."""
     if not (VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY):
         return
     try:
@@ -860,11 +860,11 @@ def send_moeen_signup_notifications(account_id, full_name, job_title):
     finally:
         conn.close()
     payload = json.dumps({
-        "title": "بدأت تجربة جديدة في مُعين التنفيذي",
-        "body": f"{full_name} · تجربة مجانية لمدة 48 ساعة · {job_title or 'دون مسمى وظيفي'}",
-        "tag": f"moeen-signup-{account_id}",
-        "url": "/superadmin#moeen-executive",
-        "icon": "/static/moeen_exec/icon.svg",
+        "title": title,
+        "body": body,
+        "tag": tag,
+        "url": url,
+        "icon": icon,
         "badge": "/static/rt_logo_192.png",
     }, ensure_ascii=False)
     expired = []
@@ -884,7 +884,7 @@ def send_moeen_signup_notifications(account_id, full_name, job_title):
             if getattr(getattr(exc, "response", None), "status_code", None) in (404, 410):
                 expired.append(subscription["id"])
         except Exception as exc:
-            logging.warning("Moeen signup push failed: %s", exc)
+            logging.warning("Superadmin push failed: %s", exc)
     if expired:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -893,6 +893,38 @@ def send_moeen_signup_notifications(account_id, full_name, job_title):
             conn.commit()
         finally:
             conn.close()
+
+
+def send_moeen_signup_notifications(account_id, full_name, job_title):
+    """Notify subscribed superadmin devices about a new active Moeen trial."""
+    send_superadmin_push_notification(
+        "بدأت تجربة جديدة في مُعين التنفيذي",
+        f"{full_name} · تجربة مجانية لمدة 48 ساعة · {job_title or 'دون مسمى وظيفي'}",
+        f"moeen-signup-{account_id}",
+        "/superadmin#moeen-executive",
+        "/static/moeen_exec/icon.svg",
+    )
+
+
+def send_rt_signup_notification(user_id, store_name, phone):
+    """Notify subscribed superadmin devices about a new RT Studio signup."""
+    send_superadmin_push_notification(
+        "تسجيل متجر جديد في RT Studio",
+        f"{store_name} · {phone}",
+        f"rt-signup-{user_id}",
+        "/superadmin",
+    )
+
+
+def send_rt_payment_notification(invoice_code, store_name, plan_label):
+    """Notify subscribed superadmin devices about a submitted payment proof."""
+    send_superadmin_push_notification(
+        "إثبات دفع جديد في RT Studio",
+        f"{store_name} · {plan_label} · {invoice_code}",
+        f"rt-payment-{invoice_code}",
+        "/superadmin",
+    )
+
 
 def get_store_by_id(store_id):
     conn = get_db_connection()
@@ -1095,6 +1127,12 @@ def register():
                 (user_id, store_name, slug)
             )
             conn.commit()
+            threading.Thread(
+                target=send_rt_signup_notification,
+                args=(user_id, store_name, phone),
+                daemon=True,
+                name=f"rt-signup-push-{user_id}",
+            ).start()
             flash("تم استلام طلبك بنجاح! سيتم تفعيل الحساب من قبل الإدارة قريباً.", "success")
             return redirect(url_for('login'))
         except Exception as e:
@@ -1711,6 +1749,12 @@ def admin_subscription_payment():
             payment_method, transaction_ref or None, receipt_url, notes or None
         ))
         conn.commit()
+        threading.Thread(
+            target=send_rt_payment_notification,
+            args=(invoice_code, store['name'], plan['label']),
+            daemon=True,
+            name=f"rt-payment-push-{invoice_code}",
+        ).start()
         flash(f"تم إرسال إثبات الدفع بنجاح. رقم الفاتورة: {invoice_code}", "success")
     except Exception as exc:
         conn.rollback()
@@ -3773,7 +3817,9 @@ def api_showcase():
 # =========================
 @app.route('/sw.js')
 def sw():
-    return send_from_directory(app.root_path, 'sw.js')
+    response = send_from_directory(app.root_path, 'sw.js')
+    response.headers["Cache-Control"] = "no-cache"
+    return response
 
 # =========================
 # SEO: robots.txt + sitemap

@@ -3,7 +3,7 @@
  * Cache only the local app icons and leave all other requests to the browser.
  */
 
-const CACHE_NAME = 'rt-studio-v1.5';
+const CACHE_NAME = 'rt-studio-v1.6';
 const ASSETS = [
   '/static/rt_logo_192.png',
   '/static/rt_logo_512.png'
@@ -49,12 +49,12 @@ self.addEventListener('push', (event) => {
   try {
     payload = event.data ? event.data.json() : {};
   } catch (error) {
-    payload = { title: 'طلب جديد', body: event.data ? event.data.text() : '' };
+    payload = { title: 'إشعار جديد من RT Studio', body: event.data ? event.data.text() : '' };
   }
 
-  const title = payload.title || 'طلب جديد';
+  const title = payload.title || 'إشعار جديد من RT Studio';
   const options = {
-    body: payload.body || 'وصل طلب جديد إلى متجرك.',
+    body: payload.body || 'لديك تحديث جديد.',
     icon: payload.icon || '/static/rt_logo_192.png',
     badge: payload.badge || '/static/rt_logo_192.png',
     tag: payload.tag || 'rt-studio-new-order',
