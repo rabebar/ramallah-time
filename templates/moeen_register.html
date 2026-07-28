@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#102b25">
+  <title>إنشاء حساب مُعين التنفيذي | RT Studio</title>
+  <link rel="icon" href="/static/moeen_exec/icon.svg">
+  <style>
+    @font-face{font-family:"Noto Kufi";src:url("/static/moeen_exec/fonts/noto-kufi-400.woff2")}
+    @font-face{font-family:"Noto Kufi";src:url("/static/moeen_exec/fonts/noto-kufi-700.woff2");font-weight:700}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:"Noto Kufi",sans-serif;color:#16241f;background:radial-gradient(circle at 90% 5%,#dcebe4,transparent 34%),#f2f4f1}
+    .top{height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 max(22px,calc((100vw - 1120px)/2));background:#fff;border-bottom:1px solid #dfe6e2}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#102b25;font-weight:700}.mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#102b25;color:#d8b96c}
+    .login{color:#315349;text-decoration:none;font-size:13px}.wrap{max-width:1060px;margin:0 auto;padding:54px 22px;display:grid;grid-template-columns:.9fr 1.1fr;gap:44px;align-items:center}
+    .intro small{color:#9b762b;font-weight:700}.intro h1{font-size:clamp(30px,4vw,50px);line-height:1.45;margin:12px 0;color:#102b25}.intro p{color:#607169;line-height:2;font-size:14px}
+    .points{display:grid;gap:12px;margin-top:24px}.point{display:flex;gap:10px;align-items:center;font-size:13px}.point i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#dcebe4;color:#174d3e;font-style:normal}
+    .card{background:#fff;border:1px solid #dce4df;border-radius:24px;padding:28px;box-shadow:0 24px 70px rgba(27,57,47,.12)}.card h2{margin:0 0 5px;color:#102b25;font-size:21px}.card>p{margin:0 0 22px;color:#718078;font-size:12px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}label{font-size:12px;color:#42574f;font-weight:700}input{width:100%;padding:12px 13px;border:1px solid #ccd8d2;border-radius:11px;font:inherit;font-size:13px;outline:none;background:#fbfcfb}input:focus{border-color:#326b5b;box-shadow:0 0 0 3px #e2eee9}
+    button{width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:#102b25;color:#fff;font:inherit;font-weight:700;cursor:pointer}.note{text-align:center;color:#7a8881;font-size:10px;margin-top:12px}
+    .flash{padding:11px 13px;border-radius:10px;margin-bottom:16px;font-size:12px;background:#fff2d8;color:#74500c;border:1px solid #eed399}.flash.success{background:#e5f5ed;color:#185740;border-color:#b9dfcd}
+    @media(max-width:760px){.wrap{grid-template-columns:1fr;padding-top:30px}.intro{text-align:center}.points{display:none}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:22px}.top{padding:0 18px}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/"><span class="mark">م</span><span>مُعين التنفيذي · RT Studio</span></a>
+    <a class="login" href="/moeen-executive/">لديك حساب؟ تسجيل الدخول</a>
+  </header>
+  <main class="wrap">
+    <section class="intro">
+      <small>ذاكرة تنفيذية خاصة بك</small>
+      <h1>حوّل الملاحظات والقرارات إلى متابعة منظّمة.</h1>
+      <p>تطبيق ويب شخصي ومشفّر للمسؤولين والمديرين، يعمل بسلاسة على الهاتف واللابتوب ويحافظ على تزامن العمل بين أجهزتك.</p>
+      <div class="points">
+        <div class="point"><i>✓</i> تسجيل صوتي وتحويل الحديث إلى نص</div>
+        <div class="point"><i>✓</i> اجتماعات ومتابعات وجهات اتصال في مكان واحد</div>
+        <div class="point"><i>✓</i> تشفير المحتوى وربط الأجهزة برمز آمن</div>
+      </div>
+    </section>
+    <section class="card">
+      <h2>إنشاء حساب مُعين</h2>
+      <p>ابدأ تجربة مجانية لمدة 7 أيام، دون بطاقة ائتمان.</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+      {% endwith %}
+      <form method="post">
+        <div class="grid">
+          <div class="field"><label>الاسم الكامل</label><input name="full_name" value="{{ request.form.get('full_name','') }}" required autocomplete="name"></div>
+          <div class="field"><label>المسمى الوظيفي</label><input name="job_title" value="{{ request.form.get('job_title','') }}" placeholder="مثال: مدير عام"></div>
+          <div class="field"><label>رقم الهاتف</label><input type="tel" name="phone" value="{{ request.form.get('phone','') }}" required autocomplete="tel"></div>
+          <div class="field"><label>البريد الإلكتروني (اختياري)</label><input type="email" name="email" value="{{ request.form.get('email','') }}" autocomplete="email"></div>
+          <div class="field"><label>كلمة المرور</label><input type="password" name="password" minlength="12" required autocomplete="new-password"></div>
+          <div class="field"><label>تأكيد كلمة المرور</label><input type="password" name="password_confirm" minlength="12" required autocomplete="new-password"></div>
+        </div>
+        <button type="submit">إنشاء حسابي الآن</button>
+      </form>
+      <div class="note">بياناتك التنفيذية مشفرة ولا يستطيع مدير المنصة قراءة محتواها.</div>
+    </section>
+  </main>
+</body>
+</html>

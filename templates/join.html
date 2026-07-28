@@ -129,6 +129,20 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
 .hero-benefit strong { display: block; color: #111827; font-size: 15px; margin-bottom: 4px; }
 .hero-benefit span { display: block; color: #667085; font-size: 12px; line-height: 1.6; }
 .hero-signup-shell { max-width: 620px; margin: 0 auto 54px; padding: 0 20px; }
+.service-choice { max-width: 1120px; margin: 16px auto 42px; padding: 0 22px; }
+.service-choice-head { text-align: center; margin-bottom: 20px; }
+.service-choice-head h2 { font-size: clamp(24px,3vw,36px); margin-bottom: 7px; }
+.service-choice-head p { color: var(--text-muted); font-size: 14px; }
+.service-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.service-choice-card { position: relative; overflow: hidden; padding: 28px; border-radius: 22px; background: #fff; border: 1px solid #e2e7e4; box-shadow: 0 16px 44px rgba(16,43,37,.08); }
+.service-choice-card.moeen { background: linear-gradient(145deg,#102b25,#173d34); color: #fff; border: 0; }
+.service-choice-card .service-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; margin-bottom: 18px; background: #eef2ff; color: #5b54dc; font-size: 20px; font-weight: 800; }
+.service-choice-card.moeen .service-icon { background: rgba(216,185,108,.16); color: #e4c777; }
+.service-choice-card h3 { font-size: 21px; margin-bottom: 9px; }
+.service-choice-card p { min-height: 56px; color: #667085; font-size: 13px; line-height: 1.8; }
+.service-choice-card.moeen p { color: #c9d8d2; }
+.service-choice-action { display: inline-flex; align-items: center; justify-content: center; margin-top: 19px; min-height: 46px; padding: 0 22px; border-radius: 11px; text-decoration: none; font-size: 13px; font-weight: 800; background: #6c63ff; color: #fff; }
+.service-choice-card.moeen .service-choice-action { background: #d8b96c; color: #102b25; }
 
 /* Featured value */
 .value-showcase { max-width: 1220px; margin: 8px auto 46px; padding: 0 26px; }
@@ -305,6 +319,8 @@ body.ltr .wa-float { left: auto; right: 24px; }
 
 /* Mobile */
 @media (max-width: 768px) {
+ .service-choice-grid { grid-template-columns: 1fr; }
+ .service-choice-card p { min-height: 0; }
  .hero-section { display: flex; flex-direction: column; padding: 28px 18px 24px; gap: 28px; }
  .hero-image { order: 2; margin-top: 0; width: 100%; }
  .hero-text { order: 1; }
@@ -529,6 +545,27 @@ body.ltr .wa-float { left: auto; right: 24px; }
    </div>
    <h3 class="value-card-title" data-ar="خيارات للنوع أو الطعم أو الحجم" data-en="Options for type, flavor, or size">خيارات للنوع أو الطعم أو الحجم</h3>
    <p class="value-card-desc" data-ar="لكل خيار سعر وصورة ووصف مستقل، مناسب للساعات، العطور، الطعام والملابس." data-en="Each option can have its own price, image, and description for watches, perfumes, food, and fashion.">لكل خيار سعر وصورة ووصف مستقل، مناسب للساعات، العطور، الطعام والملابس.</p>
+  </article>
+ </div>
+</section>
+
+<section class="service-choice" aria-labelledby="serviceChoiceTitle">
+ <div class="service-choice-head">
+  <h2 id="serviceChoiceTitle">اختر الخدمة المناسبة لك</h2>
+  <p>RT Studio للتجارة الإلكترونية، ومُعين التنفيذي للإدارة الشخصية الذكية.</p>
+ </div>
+ <div class="service-choice-grid">
+  <article class="service-choice-card">
+   <div class="service-icon">RT</div>
+   <h3>متجر RT Studio</h3>
+   <p>أنشئ متجرك الإلكتروني، أدر المنتجات والطلبات، ووصل إلى عملائك من الهاتف واللابتوب.</p>
+   <a class="service-choice-action" href="/register">إنشاء حساب متجر</a>
+  </article>
+  <article class="service-choice-card moeen">
+   <div class="service-icon">م</div>
+   <h3>مُعين التنفيذي</h3>
+   <p>ذاكرة شخصية مشفرة للمسؤولين والمديرين: صوت إلى نص، اجتماعات، متابعات، ودفتر اتصالات متزامن.</p>
+   <a class="service-choice-action" href="/moeen-executive/register">إنشاء حساب مُعين</a>
   </article>
  </div>
 </section>

@@ -1044,6 +1044,54 @@ def register():
             conn.close()
     return render_template('register.html')
 
+@app.route('/moeen-executive/register', methods=['GET', 'POST'])
+def moeen_public_register():
+    if request.method == 'POST':
+        full_name = (request.form.get('full_name') or '').strip()
+        job_title = (request.form.get('job_title') or '').strip()
+        phone = re.sub(r'\s+', '', (request.form.get('phone') or '').strip())
+        email = (request.form.get('email') or '').strip().lower()
+        password = request.form.get('password') or ''
+        password_confirm = request.form.get('password_confirm') or ''
+
+        if len(full_name) < 3 or len(phone) < 7:
+            flash("يرجى إدخال الاسم ورقم الهاتف بصورة صحيحة.", "error")
+            return render_template('moeen_register.html')
+        if len(password) < 12:
+            flash("يجب أن تتكون كلمة المرور من 12 حرفًا على الأقل.", "error")
+            return render_template('moeen_register.html')
+        if password != password_confirm:
+            flash("كلمتا المرور غير متطابقتين.", "error")
+            return render_template('moeen_register.html')
+
+        start = datetime.utcnow()
+        end = start + timedelta(days=7)
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                INSERT INTO moeen_accounts
+                    (full_name, job_title, phone, email, password_hash, status,
+                     plan_type, subscription_start, subscription_end,
+                     must_change_password)
+                VALUES (%s, %s, %s, %s, %s, 'active', 'trial', %s, %s, FALSE)
+            """, (
+                full_name, job_title or None, phone, email or None,
+                generate_password_hash(password, method='scrypt'), start, end,
+            ))
+            conn.commit()
+            flash("تم إنشاء حساب مُعين التنفيذي. يمكنك تسجيل الدخول الآن، والتجربة مجانية لمدة 7 أيام.", "success")
+            return redirect(url_for('moeen_multi.moeen_home'))
+        except Exception as exc:
+            conn.rollback()
+            logging.warning("public Moeen registration failed: %s", exc)
+            flash("تعذر إنشاء الحساب. قد يكون رقم الهاتف مستخدمًا بالفعل.", "error")
+        finally:
+            cursor.close()
+            conn.close()
+
+    return render_template('moeen_register.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
