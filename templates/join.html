@@ -129,6 +129,8 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
 .hero-benefit strong { display: block; color: #111827; font-size: 15px; margin-bottom: 4px; }
 .hero-benefit span { display: block; color: #667085; font-size: 12px; line-height: 1.6; }
 .hero-signup-shell { max-width: 620px; margin: 0 auto 54px; padding: 0 20px; }
+.moeen-spotlight{max-width:1220px;margin:30px auto 4px;padding:28px 32px;border-radius:26px;background:linear-gradient(135deg,#102b25,#17483b);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:28px;box-shadow:0 22px 60px rgba(16,43,37,.2)}
+.moeen-spotlight-kicker{display:inline-block;color:#e4c777;font-size:11px;font-weight:800;margin-bottom:6px}.moeen-spotlight h2{font-size:clamp(26px,3vw,40px);margin-bottom:5px}.moeen-spotlight p{max-width:760px;color:#cbdad5;font-size:13px;line-height:1.8}.moeen-spotlight>a{flex:0 0 auto;background:#d8b96c;color:#102b25;text-decoration:none;border-radius:13px;padding:14px 23px;font-size:13px;font-weight:800}.moeen-prices{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 8px}.moeen-prices span{background:#ffffff12;border:1px solid #ffffff1c;border-radius:9px;padding:7px 10px;font-size:11px}.moeen-prices b{color:#efd787}.moeen-spotlight small{color:#9fb8af;font-size:10px}
 .service-choice { max-width: 1120px; margin: 16px auto 42px; padding: 0 22px; }
 .service-choice-head { text-align: center; margin-bottom: 20px; }
 .service-choice-head h2 { font-size: clamp(24px,3vw,36px); margin-bottom: 7px; }
@@ -319,6 +321,7 @@ body.ltr .wa-float { left: auto; right: 24px; }
 
 /* Mobile */
 @media (max-width: 768px) {
+ .moeen-spotlight{margin:18px 16px 0;padding:24px 20px;align-items:stretch;flex-direction:column}.moeen-spotlight>a{text-align:center}
  .service-choice-grid { grid-template-columns: 1fr; }
  .service-choice-card p { min-height: 0; }
  .hero-section { display: flex; flex-direction: column; padding: 28px 18px 24px; gap: 28px; }
@@ -441,6 +444,21 @@ body.ltr .wa-float { left: auto; right: 24px; }
   <a href="/register" class="nav-cta" data-ar="ابدأ مجاناً" data-en="Start Free">ابدأ مجاناً</a>
  </div>
 </nav>
+
+<section class="moeen-spotlight">
+ <div>
+  <span class="moeen-spotlight-kicker">جديد من RT Studio</span>
+  <h2>مُعين التنفيذي</h2>
+  <p>ذاكرتك التنفيذية المشفرة للاجتماعات والمتابعات والملاحظات الصوتية وجهات الاتصال، متزامنة بين الهاتف واللابتوب.</p>
+  <div class="moeen-prices">
+   <span><b>60₪</b> شهريًا</span>
+   <span><b>160₪</b> كل 3 أشهر</span>
+   <span><b>540₪</b> سنويًا</span>
+  </div>
+  <small>تجربة مجانية 48 ساعة تبدأ بعد موافقة الإدارة</small>
+ </div>
+ <a href="/moeen-executive/register">اطلب حساب مُعين</a>
+</section>
 
 <div class="hero-section">
  <div class="hero-image">

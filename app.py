@@ -699,6 +699,17 @@ try:
         ON push_subscriptions(store_id)
     """)
     _mcur.execute("""
+        CREATE TABLE IF NOT EXISTS superadmin_push_subscriptions (
+            id SERIAL PRIMARY KEY,
+            endpoint TEXT NOT NULL UNIQUE,
+            p256dh TEXT NOT NULL,
+            auth TEXT NOT NULL,
+            user_agent TEXT,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        )
+    """)
+    _mcur.execute("""
         CREATE TABLE IF NOT EXISTS subscription_payments (
             id SERIAL PRIMARY KEY,
             user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -832,6 +843,56 @@ def send_order_push_notifications(store_id, store_name, store_slug, order_id, to
             cleanup_conn.commit()
         finally:
             cleanup_conn.close()
+
+def send_moeen_signup_notifications(account_id, full_name, job_title):
+    """Notify subscribed RT Studio superadmin devices about a new Moeen request."""
+    if not (VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY):
+        return
+    try:
+        from pywebpush import webpush, WebPushException
+    except ImportError:
+        return
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT id, endpoint, p256dh, auth FROM superadmin_push_subscriptions")
+        subscriptions = cur.fetchall()
+    finally:
+        conn.close()
+    payload = json.dumps({
+        "title": "طلب اشتراك جديد في مُعين التنفيذي",
+        "body": f"{full_name} · {job_title or 'دون مسمى وظيفي'}",
+        "tag": f"moeen-signup-{account_id}",
+        "url": "/superadmin#moeen-executive",
+        "icon": "/static/moeen_exec/icon.svg",
+        "badge": "/static/rt_logo_192.png",
+    }, ensure_ascii=False)
+    expired = []
+    for subscription in subscriptions:
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": subscription["endpoint"],
+                    "keys": {"p256dh": subscription["p256dh"], "auth": subscription["auth"]},
+                },
+                data=payload,
+                vapid_private_key=VAPID_PRIVATE_KEY,
+                vapid_claims={"sub": VAPID_SUBJECT},
+                timeout=5,
+            )
+        except WebPushException as exc:
+            if getattr(getattr(exc, "response", None), "status_code", None) in (404, 410):
+                expired.append(subscription["id"])
+        except Exception as exc:
+            logging.warning("Moeen signup push failed: %s", exc)
+    if expired:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute("DELETE FROM superadmin_push_subscriptions WHERE id = ANY(%s)", (expired,))
+            conn.commit()
+        finally:
+            conn.close()
 
 def get_store_by_id(store_id):
     conn = get_db_connection()
@@ -1064,8 +1125,6 @@ def moeen_public_register():
             flash("كلمتا المرور غير متطابقتين.", "error")
             return render_template('moeen_register.html')
 
-        start = datetime.utcnow()
-        end = start + timedelta(days=7)
         conn = get_db_connection()
         cursor = conn.cursor()
         try:
@@ -1074,13 +1133,22 @@ def moeen_public_register():
                     (full_name, job_title, phone, email, password_hash, status,
                      plan_type, subscription_start, subscription_end,
                      must_change_password)
-                VALUES (%s, %s, %s, %s, %s, 'active', 'trial', %s, %s, FALSE)
+                VALUES (%s, %s, %s, %s, %s, 'suspended', 'pending', NULL, NULL, FALSE)
+                RETURNING id
             """, (
                 full_name, job_title or None, phone, email or None,
-                generate_password_hash(password, method='scrypt'), start, end,
+                generate_password_hash(password, method='scrypt'),
             ))
+            account_id = cursor.fetchone()["id"]
             conn.commit()
-            return redirect(url_for('moeen_multi.moeen_home', registered='1'))
+            threading.Thread(
+                target=send_moeen_signup_notifications,
+                args=(account_id, full_name, job_title),
+                daemon=True,
+                name=f"moeen-signup-push-{account_id}",
+            ).start()
+            flash("تم استلام طلب حساب مُعين. ستبدأ تجربتك المجانية لمدة 48 ساعة بعد موافقة الإدارة.", "success")
+            return redirect(url_for('moeen_public_register', submitted='1'))
         except Exception as exc:
             conn.rollback()
             logging.warning("public Moeen registration failed: %s", exc)
@@ -3182,6 +3250,10 @@ def super_admin():
         ORDER BY ma.created_at DESC
     """)
     moeen_accounts = cursor.fetchall()
+    pending_moeen_count = sum(
+        1 for account in moeen_accounts
+        if account["status"] == "suspended" and account["plan_type"] == "pending"
+    )
     conn.close()
 
     return render_template('superadmin.html',
@@ -3197,12 +3269,43 @@ def super_admin():
                            order_store_id=order_store_id,
                            subscription_payments=subscription_payments,
                            moeen_accounts=moeen_accounts,
+                           pending_moeen_count=pending_moeen_count,
+                           push_configured=bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY),
+                           vapid_public_key=VAPID_PUBLIC_KEY,
                            subscription_plans=SUBSCRIPTION_PLANS,
                            payment_methods=PAYMENT_METHOD_LABELS,
                            payment_settings=get_payment_settings(),
                            removebg_enabled=removebg_enabled,
                            removebg_configured=bool(REMOVEBG_API_KEY),
                            now=datetime.utcnow())  # <--- هذا هو السطر الذي كان ناقصاً
+
+@app.post('/superadmin/push/subscribe')
+def superadmin_push_subscribe():
+    if not session.get('is_superadmin'):
+        return jsonify(error="UNAUTHORIZED"), 401
+    if not (VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY):
+        return jsonify(error="PUSH_NOT_CONFIGURED"), 503
+    data = request.get_json(silent=True) or {}
+    keys = data.get("keys") or {}
+    endpoint = str(data.get("endpoint") or "").strip()
+    p256dh = str(keys.get("p256dh") or "").strip()
+    auth = str(keys.get("auth") or "").strip()
+    if not endpoint.startswith("https://") or not p256dh or not auth:
+        return jsonify(error="INVALID_SUBSCRIPTION"), 400
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            INSERT INTO superadmin_push_subscriptions(endpoint,p256dh,auth,user_agent,updated_at)
+            VALUES(%s,%s,%s,%s,NOW())
+            ON CONFLICT(endpoint) DO UPDATE SET
+                p256dh=EXCLUDED.p256dh,auth=EXCLUDED.auth,
+                user_agent=EXCLUDED.user_agent,updated_at=NOW()
+        """, (endpoint, p256dh, auth, request.headers.get("User-Agent", "")[:500]))
+        conn.commit()
+        return jsonify(ok=True)
+    finally:
+        conn.close()
 
 @app.post('/superadmin/moeen/accounts')
 def super_admin_create_moeen_account():
@@ -3266,7 +3369,18 @@ def super_admin_update_moeen_subscription(account_id):
                 WHERE id = %s
             """, (months, account_id))
             message = "تم تجديد اشتراك مُعين التنفيذي."
-        elif action in {'active', 'suspended', 'cancelled'}:
+        elif action == 'active':
+            cursor.execute("""
+                UPDATE moeen_accounts
+                SET status = 'active',
+                    plan_type = CASE WHEN plan_type = 'pending' THEN 'trial' ELSE plan_type END,
+                    subscription_start = CASE WHEN plan_type = 'pending' THEN NOW() ELSE subscription_start END,
+                    subscription_end = CASE WHEN plan_type = 'pending' THEN NOW() + INTERVAL '48 hours' ELSE subscription_end END,
+                    updated_at = NOW()
+                WHERE id = %s
+            """, (account_id,))
+            message = "تم تفعيل الحساب. بدأت التجربة المجانية لمدة 48 ساعة."
+        elif action in {'suspended', 'cancelled'}:
             cursor.execute("""
                 UPDATE moeen_accounts SET status = %s, updated_at = NOW() WHERE id = %s
             """, (action, account_id))

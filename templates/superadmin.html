@@ -49,6 +49,9 @@
         .nav-item i { width: 20px; height: 20px; }
         .nav-item.active { background: var(--gold); color: var(--navy); box-shadow: 0 4px 15px rgba(184, 151, 74, 0.2); }
         .nav-item:hover:not(.active) { background: rgba(255,255,255,0.05); color: var(--white); }
+        .nav-count { margin-right:auto;min-width:22px;height:22px;padding:0 6px;border-radius:20px;display:inline-grid;place-items:center;background:#ef4444;color:#fff;font-size:10px; }
+        .admin-push-btn { border:1px solid var(--border);background:#fff;color:var(--navy);border-radius:12px;padding:11px 15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px; }
+        .admin-push-btn.enabled { background:#e8f7ef;color:#047857;border-color:#bce3cf; }
         .logout-btn { margin-top: auto; color: #f87171 !important; }
         .logout-btn:hover { background: rgba(239, 68, 68, 0.1) !important; }
 
@@ -355,6 +358,7 @@
             <a href="#moeen-executive" class="nav-item">
                 <i data-lucide="briefcase-business"></i>
                 <span>مُعين التنفيذي</span>
+                {% if pending_moeen_count %}<b class="nav-count">{{ pending_moeen_count }}</b>{% endif %}
             </a>
             
             <a href="/logout" class="nav-item logout-btn">
@@ -370,6 +374,9 @@
                 <h1>لوحة تحكم النظام</h1>
                 <p>مراقبة أداء منصة RT Studio وإدارة التجار</p>
             </div>
+            <button id="superadminPushBtn" class="admin-push-btn" type="button" {% if not push_configured %}disabled{% endif %}>
+                <i data-lucide="bell"></i><span>تفعيل إشعارات طلبات مُعين</span>
+            </button>
             <div style="color: var(--text-muted); font-size: 14px; font-weight: 600;">
                 <i data-lucide="calendar" style="width: 16px; height: 16px; vertical-align: middle; margin-left: 4px;"></i>
                 {{ current_date }}
@@ -804,6 +811,8 @@
                         <td>
                             {% if account.status == 'active' %}
                                 <span class="badge badge-active">نشط</span>
+                            {% elif account.status == 'suspended' and account.plan_type == 'pending' %}
+                                <span class="badge badge-pending">بانتظار التفعيل</span>
                             {% elif account.status == 'suspended' %}
                                 <span class="badge badge-pending">موقوف</span>
                             {% else %}
@@ -965,6 +974,31 @@
         </div>
     </main>
 
-    <script>lucide.createIcons();</script>
+    <script>
+    const SUPERADMIN_VAPID_KEY={{ vapid_public_key|tojson }};
+    const superadminPushButton=document.getElementById("superadminPushBtn");
+    function vapidBytes(value){const padding="=".repeat((4-value.length%4)%4),raw=atob((value+padding).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
+    async function refreshSuperadminPush(){
+      if(!superadminPushButton||!SUPERADMIN_VAPID_KEY||!("serviceWorker" in navigator)||!("PushManager" in window))return;
+      const reg=await navigator.serviceWorker.register("/sw.js");
+      const sub=await reg.pushManager.getSubscription();
+      superadminPushButton.classList.toggle("enabled",!!sub&&Notification.permission==="granted");
+      superadminPushButton.querySelector("span").textContent=sub&&Notification.permission==="granted"?"إشعارات مُعين مفعّلة":"تفعيل إشعارات طلبات مُعين";
+    }
+    if(superadminPushButton)superadminPushButton.onclick=async()=>{
+      try{
+        const permission=await Notification.requestPermission();
+        if(permission!=="granted")throw new Error("لم يتم السماح بالإشعارات من المتصفح.");
+        const reg=await navigator.serviceWorker.register("/sw.js");
+        let sub=await reg.pushManager.getSubscription();
+        if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:vapidBytes(SUPERADMIN_VAPID_KEY)});
+        const response=await fetch("/superadmin/push/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(sub.toJSON())});
+        if(!response.ok)throw new Error("تعذر حفظ اشتراك الإشعارات.");
+        await refreshSuperadminPush();
+      }catch(error){alert(error.message||"تعذر تفعيل الإشعارات.")}
+    };
+    refreshSuperadminPush().catch(()=>{});
+    lucide.createIcons();
+    </script>
 </body>
 </html>

@@ -436,6 +436,15 @@ def init_db():
                       ON moeen_login_attempts(account_id, created_at DESC)""")
     cursor.execute("""CREATE INDEX IF NOT EXISTS ix_moeen_accounts_subscription
                       ON moeen_accounts(status, subscription_end)""")
+    cursor.execute('''CREATE TABLE IF NOT EXISTS superadmin_push_subscriptions (
+            id SERIAL PRIMARY KEY,
+            endpoint TEXT NOT NULL UNIQUE,
+            p256dh TEXT NOT NULL,
+            auth TEXT NOT NULL,
+            user_agent TEXT,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )''')
 
     conn.commit()
     cursor.close()

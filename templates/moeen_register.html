@@ -16,6 +16,7 @@
     .intro small{color:#9b762b;font-weight:700}.intro h1{font-size:clamp(30px,4vw,50px);line-height:1.45;margin:12px 0;color:#102b25}.intro p{color:#607169;line-height:2;font-size:14px}
     .points{display:grid;gap:12px;margin-top:24px}.point{display:flex;gap:10px;align-items:center;font-size:13px}.point i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#dcebe4;color:#174d3e;font-style:normal}
     .card{background:#fff;border:1px solid #dce4df;border-radius:24px;padding:28px;box-shadow:0 24px 70px rgba(27,57,47,.12)}.card h2{margin:0 0 5px;color:#102b25;font-size:21px}.card>p{margin:0 0 22px;color:#718078;font-size:12px}
+    .prices{display:flex;gap:7px;flex-wrap:wrap;margin:-8px 0 18px}.prices span{background:#edf4f1;color:#31584c;border-radius:8px;padding:7px 9px;font-size:9px}.prices b{color:#102b25}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}label{font-size:12px;color:#42574f;font-weight:700}input{width:100%;padding:12px 13px;border:1px solid #ccd8d2;border-radius:11px;font:inherit;font-size:13px;outline:none;background:#fbfcfb}input:focus{border-color:#326b5b;box-shadow:0 0 0 3px #e2eee9}
     button{width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:#102b25;color:#fff;font:inherit;font-weight:700;cursor:pointer}.note{text-align:center;color:#7a8881;font-size:10px;margin-top:12px}
     .flash{padding:11px 13px;border-radius:10px;margin-bottom:16px;font-size:12px;background:#fff2d8;color:#74500c;border:1px solid #eed399}.flash.success{background:#e5f5ed;color:#185740;border-color:#b9dfcd}
@@ -40,7 +41,8 @@
     </section>
     <section class="card">
       <h2>إنشاء حساب مُعين</h2>
-      <p>ابدأ تجربة مجانية لمدة 7 أيام، دون بطاقة ائتمان.</p>
+      <p>أرسل طلبك الآن. تبدأ تجربتك المجانية لمدة 48 ساعة بعد موافقة الإدارة.</p>
+      <div class="prices"><span><b>60₪</b> شهريًا</span><span><b>160₪</b> كل 3 أشهر</span><span><b>540₪</b> سنويًا</span></div>
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
       {% endwith %}
@@ -53,7 +55,7 @@
           <div class="field"><label>كلمة المرور</label><input type="password" name="password" minlength="12" required autocomplete="new-password"></div>
           <div class="field"><label>تأكيد كلمة المرور</label><input type="password" name="password_confirm" minlength="12" required autocomplete="new-password"></div>
         </div>
-        <button type="submit">إنشاء حسابي الآن</button>
+        <button type="submit">إرسال طلب الاشتراك</button>
       </form>
       <div class="note">بياناتك التنفيذية مشفرة ولا يستطيع مدير المنصة قراءة محتواها.</div>
     </section>
