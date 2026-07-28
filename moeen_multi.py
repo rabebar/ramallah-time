@@ -172,6 +172,7 @@ def auth_status():
         authenticated=authenticated,
         must_change=bool(account["must_change_password"]) if authenticated else False,
         csrf=session.get(SESSION_CSRF) if authenticated else None,
+        key_scope=str(account_id) if authenticated else None,
         vault=_vault(account_id) if authenticated else None,
         profile={
             "name": account["full_name"],
@@ -241,7 +242,7 @@ def login():
     _record_attempt("success", account["id"], phone, device_id, device_name)
     return jsonify(
         ok=True, must_change=account["must_change_password"],
-        csrf=session[SESSION_CSRF], vault=_vault(account["id"]),
+        csrf=session[SESSION_CSRF], key_scope=str(account["id"]), vault=_vault(account["id"]),
         profile={"name": account["full_name"], "title": account["job_title"] or ""},
     )
 
@@ -285,7 +286,11 @@ def pair_device():
     session[SESSION_ACCOUNT] = account["id"]
     session[SESSION_DEVICE] = device_id
     session[SESSION_CSRF] = secrets.token_urlsafe(24)
-    return jsonify(ok=True, csrf=session[SESSION_CSRF], vault=_vault(account["id"]))
+    return jsonify(
+        ok=True, csrf=session[SESSION_CSRF], key_scope=str(account["id"]),
+        vault=_vault(account["id"]),
+        profile={"name": account["full_name"], "title": account["job_title"] or ""},
+    )
 
 
 @moeen_bp.post("/api/auth/logout")
