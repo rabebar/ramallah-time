@@ -54,6 +54,16 @@ function applyProfile(profile){
   const label=[profile.title,profile.name].filter(Boolean).join(" ");
   $("#greeting").textContent=`${timeGreeting}، ${label}`;
 }
+function applySubscription(subscription){
+  const alert=$("#subscriptionAlert");
+  if(!alert||!subscription||subscription.hours_left==null){if(alert)alert.hidden=true;return}
+  const hours=Number(subscription.hours_left),isTrial=subscription.plan_type==="trial";
+  if(hours>168||(isTrial&&hours>24)){alert.hidden=true;return}
+  const timing=hours<=24?`${Math.max(1,Math.ceil(hours))} ساعة`:`${Math.max(1,Math.ceil(hours/24))} أيام`;
+  alert.innerHTML=`<strong>${isTrial?"تنتهي تجربتك المجانية":"ينتهي اشتراكك"} خلال ${timing}</strong> · اضغط لعرض خيارات التجديد والدفع.`;
+  alert.hidden=false;
+}
+$("#subscriptionAlert").onclick=()=>setView("subscription");
 
 function render(){
   const memories=store.get("memories"),tasks=store.get("tasks"),meetings=store.get("meetings");
@@ -358,7 +368,7 @@ async function initAuth(){
   try{
     const status=await api("/api/auth/status");
     if(status.authenticated){
-      apiCsrf=status.csrf||"";applyProfile(status.profile);
+      apiCsrf=status.csrf||"";applyProfile(status.profile);applySubscription(status.subscription);
       const remembered=await trustedKeyStore.load(status.key_scope).catch(()=>null);
       if(remembered){
         vaultKey=remembered;
@@ -373,7 +383,7 @@ async function initAuth(){
   }catch{$("#authMessage").textContent="تعذر الاتصال بخادم مُعين المحلي."}
 }
 $("#setupForm").onsubmit=async e=>{e.preventDefault();const p=$("#setupPassword").value,c=$("#setupPasswordConfirm").value;if(p!==c){$("#authMessage").textContent="كلمتا المرور غير متطابقتين.";return}try{const raw=crypto.getRandomValues(new Uint8Array(32)),vault=await createWrappedVault(p,raw);await api("/api/setup",{method:"POST",body:JSON.stringify({password:p,vault})});$("#authMessage").textContent="تم الإعداد. سجّل الدخول الآن.";$("#setupPane").hidden=true;$("#loginPane").hidden=false}catch(err){$("#authMessage").textContent=err.message==="WEAK_PASSWORD"?"استخدم 12 حرفًا على الأقل.":"تعذر إكمال الإعداد."}};
-$("#loginForm").onsubmit=async e=>{e.preventDefault();const phone=$("#loginPhone").value.trim(),password=$("#loginPassword").value,payload={phone,password,device_id:deviceId(),device_name:deviceName()},code=$("#pairingCode").value.trim();try{const result=code?await api("/api/auth/pair",{method:"POST",body:JSON.stringify({...payload,pairing_code:code})}):await api("/api/auth/login",{method:"POST",body:JSON.stringify(payload)});apiCsrf=result.csrf||apiCsrf;applyProfile(result.profile);await initializeOrUnlockVault(password,result.vault,result.key_scope);document.body.classList.remove("locked");$("#authMessage").textContent="";$("#loginPassword").value="";if(result.must_change){setView("security");alert("يرجى تغيير كلمة المرور المؤقتة.")}}catch(err){const messages={INVALID_CREDENTIALS:"بيانات الدخول غير صحيحة.",DEVICE_NOT_AUTHORIZED:"هذا الجهاز غير مصرح له. استخدم رمز ربط من الجهاز الرئيسي.",INVALID_PAIRING_CODE:"رمز الربط غير صحيح أو انتهت صلاحيته.",TEMPORARILY_BLOCKED:"تم حظر المحاولات مؤقتًا. حاول لاحقًا.",SUBSCRIPTION_INACTIVE:"الاشتراك غير نشط. تواصل مع RT Studio.",OperationError:"تعذر فتح الخزنة. تحقق من كلمة المرور."};$("#authMessage").textContent=messages[err.message]||"تعذر تسجيل الدخول أو فتح الخزنة."}};
+$("#loginForm").onsubmit=async e=>{e.preventDefault();const phone=$("#loginPhone").value.trim(),password=$("#loginPassword").value,payload={phone,password,device_id:deviceId(),device_name:deviceName()},code=$("#pairingCode").value.trim();try{const result=code?await api("/api/auth/pair",{method:"POST",body:JSON.stringify({...payload,pairing_code:code})}):await api("/api/auth/login",{method:"POST",body:JSON.stringify(payload)});apiCsrf=result.csrf||apiCsrf;applyProfile(result.profile);applySubscription(result.subscription);await initializeOrUnlockVault(password,result.vault,result.key_scope);document.body.classList.remove("locked");$("#authMessage").textContent="";$("#loginPassword").value="";if(result.must_change){setView("security");alert("يرجى تغيير كلمة المرور المؤقتة.")}}catch(err){const messages={INVALID_CREDENTIALS:"بيانات الدخول غير صحيحة.",DEVICE_NOT_AUTHORIZED:"هذا الجهاز غير مصرح له. استخدم رمز ربط من الجهاز الرئيسي.",INVALID_PAIRING_CODE:"رمز الربط غير صحيح أو انتهت صلاحيته.",TEMPORARILY_BLOCKED:"تم حظر المحاولات مؤقتًا. حاول لاحقًا.",SUBSCRIPTION_INACTIVE:"الاشتراك غير نشط. تواصل مع RT Studio.",OperationError:"تعذر فتح الخزنة. تحقق من كلمة المرور."};$("#authMessage").textContent=messages[err.message]||"تعذر تسجيل الدخول أو فتح الخزنة."}};
 async function logoutNow(){try{await pushSync();await api("/api/auth/logout",{method:"POST",body:"{}"})}finally{await trustedKeyStore.clear();apiCsrf="";vaultKey=null;secureState=emptyState();document.body.classList.add("locked");$("#loginPane").hidden=false;$("#loginPassword").value="";$("#pairingCode").value=""}}
 $("#logoutBtn").onclick=logoutNow;
 $("#quickLogout").onclick=logoutNow;

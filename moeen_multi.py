@@ -104,6 +104,17 @@ def _subscription_valid(account):
         return False
     return not account["subscription_end"] or account["subscription_end"] >= datetime.utcnow()
 
+def _subscription_info(account):
+    if not account:
+        return None
+    end = account["subscription_end"]
+    hours_left = max(0, (end - datetime.utcnow()).total_seconds() / 3600) if end else None
+    return {
+        "plan_type": account["plan_type"],
+        "ends_at": end.isoformat() if end else None,
+        "hours_left": round(hours_left, 1) if hours_left is not None else None,
+    }
+
 
 def require_moeen_auth(view):
     @wraps(view)
@@ -186,6 +197,7 @@ def auth_status():
             "name": account["full_name"],
             "title": account["job_title"] or "",
         } if authenticated else None,
+        subscription=_subscription_info(account) if authenticated else None,
     )
 
 
@@ -252,6 +264,7 @@ def login():
         ok=True, must_change=account["must_change_password"],
         csrf=session[SESSION_CSRF], key_scope=str(account["id"]), vault=_vault(account["id"]),
         profile={"name": account["full_name"], "title": account["job_title"] or ""},
+        subscription=_subscription_info(account),
     )
 
 
@@ -298,6 +311,7 @@ def pair_device():
         ok=True, csrf=session[SESSION_CSRF], key_scope=str(account["id"]),
         vault=_vault(account["id"]),
         profile={"name": account["full_name"], "title": account["job_title"] or ""},
+        subscription=_subscription_info(account),
     )
 
 

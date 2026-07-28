@@ -756,6 +756,15 @@ try:
             created_at TIMESTAMP NOT NULL DEFAULT NOW()
         )
     """)
+    _mcur.execute("""
+        CREATE TABLE IF NOT EXISTS moeen_expiry_notifications (
+            id BIGSERIAL PRIMARY KEY,
+            account_id INTEGER NOT NULL REFERENCES moeen_accounts(id) ON DELETE CASCADE,
+            reminder_key TEXT NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            UNIQUE(account_id, reminder_key)
+        )
+    """)
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS admin_note TEXT")
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP")
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS reviewed_by TEXT")
@@ -965,6 +974,75 @@ def send_moeen_payment_notification(invoice_code, full_name, plan_label):
         "/superadmin#moeen-payments",
         "/static/moeen_exec/icon-192.png",
     )
+
+_moeen_expiry_check_lock = threading.Lock()
+_moeen_expiry_last_check = 0.0
+
+
+def check_moeen_expiry_notifications():
+    """Send each expiry milestone once; invoked opportunistically by normal web traffic."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    reminders = []
+    try:
+        cursor.execute("""
+            SELECT id, full_name, plan_type, subscription_end,
+                   EXTRACT(EPOCH FROM (subscription_end - NOW())) / 3600 AS hours_left
+            FROM moeen_accounts
+            WHERE status='active' AND subscription_end IS NOT NULL
+              AND subscription_end BETWEEN NOW() - INTERVAL '7 days' AND NOW() + INTERVAL '7 days'
+        """)
+        for account in cursor.fetchall():
+            hours = float(account["hours_left"])
+            if hours <= 0:
+                key, timing = "expired", "انتهى الاشتراك"
+            elif account["plan_type"] == "trial" and hours <= 24:
+                key, timing = "trial_24h", f"تنتهي التجربة خلال {max(1, round(hours))} ساعة"
+            elif account["plan_type"] != "trial" and hours <= 24:
+                key, timing = "paid_1d", f"ينتهي الاشتراك خلال {max(1, round(hours))} ساعة"
+            elif account["plan_type"] != "trial" and hours <= 168:
+                key, timing = "paid_7d", f"ينتهي الاشتراك خلال {max(1, round(hours / 24))} أيام"
+            else:
+                continue
+            cursor.execute("""
+                INSERT INTO moeen_expiry_notifications(account_id, reminder_key)
+                VALUES(%s,%s) ON CONFLICT(account_id, reminder_key) DO NOTHING
+                RETURNING id
+            """, (account["id"], key))
+            if cursor.fetchone():
+                reminders.append((account, key, timing))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        logging.exception("Moeen expiry reminder scan failed")
+    finally:
+        cursor.close()
+        conn.close()
+    for account, key, timing in reminders:
+        send_superadmin_push_notification(
+            "تنبيه اشتراك مُعين التنفيذي",
+            f"{account['full_name']} · {timing}",
+            f"moeen-expiry-{account['id']}-{key}",
+            "/superadmin#moeen-executive",
+            "/static/moeen_exec/icon-192.png",
+        )
+
+
+@app.before_request
+def schedule_moeen_expiry_check():
+    global _moeen_expiry_last_check
+    now = time.monotonic()
+    if now - _moeen_expiry_last_check < 1800:
+        return
+    if not _moeen_expiry_check_lock.acquire(blocking=False):
+        return
+    _moeen_expiry_last_check = now
+    def worker():
+        try:
+            check_moeen_expiry_notifications()
+        finally:
+            _moeen_expiry_check_lock.release()
+    threading.Thread(target=worker, daemon=True, name="moeen-expiry-check").start()
 
 
 def get_store_by_id(store_id):
