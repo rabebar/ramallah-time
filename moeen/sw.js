@@ -1,4 +1,4 @@
-const CACHE="moeen-v11";
+const CACHE="moeen-v12";
 const ASSETS=["./","index.html","styles.css","premium.css","app.js","manifest.webmanifest","icon.svg","fonts/noto-kufi-400.woff2","fonts/noto-kufi-500.woff2","fonts/noto-kufi-700.woff2"];
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));

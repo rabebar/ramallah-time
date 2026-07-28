@@ -83,8 +83,8 @@ $("#recordBtn").onclick=async()=>{
 $("#transcribeBtn").onclick=()=>{
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$("#recordStatus").textContent="الإملاء الصوتي غير متاح في هذا المتصفح. لا يزال بإمكانك حفظ التسجيل.";return}
   if(recognition){recognition.stop();recognition=null;return}
-  recognition=new SR();recognition.lang="ar";recognition.continuous=true;recognition.interimResults=true;let finalText=$("#noteText").value;
-  recognition.onresult=e=>{let interim="";for(let i=e.resultIndex;i<e.results.length;i++){const s=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=(finalText?" ":"")+s;else interim+=s}$("#noteText").value=finalText+(interim?" "+interim:"");updateSmartRoute()};
+  recognition=new SR();recognition.lang="ar";recognition.continuous=true;recognition.interimResults=true;const baseText=$("#noteText").value.trim();
+  recognition.onresult=e=>{$("#noteText").value=joinSpeechResult(baseText,e);updateSmartRoute()};
   recognition.onend=()=>{recognition=null;$("#transcribeBtn").textContent="تحويل الكلام مباشرة";$("#pulse").classList.remove("live");$("#recordStatus").textContent="انتهى الإملاء. راجع النص قبل الحفظ."};
   recognition.onerror=()=>{$("#recordStatus").textContent="تعذر تشغيل الإملاء. تحقق من الميكروفون والاتصال.";};recognition.start();$("#transcribeBtn").textContent="إيقاف الإملاء";$("#pulse").classList.add("live");$("#recordStatus").textContent="أتحدث الآن… سيظهر النص أثناء كلامك.";
 };
@@ -145,12 +145,21 @@ function dictateInto(field,mic){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){alert("تحويل الصوت إلى نص غير متاح في هذا المتصفح.");return}
   if(fieldRecognition){fieldRecognition.stop();return}
-  const base=field.value.trim();let finalText=base;
+  const base=field.value.trim();
   fieldRecognition=new SR();fieldRecognition.lang="ar";fieldRecognition.continuous=true;fieldRecognition.interimResults=true;activeMic=mic;mic.classList.add("listening");mic.textContent="■";
-  fieldRecognition.onresult=e=>{let interim="";for(let i=e.resultIndex;i<e.results.length;i++){const s=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=(finalText?" ":"")+s;else interim+=s}field.value=normalizeVoiceValue(finalText+(interim?" "+interim:""),field.type);field.dispatchEvent(new Event("input",{bubbles:true}))};
+  fieldRecognition.onresult=e=>{field.value=normalizeVoiceValue(joinSpeechResult(base,e),field.type);field.dispatchEvent(new Event("input",{bubbles:true}))};
   fieldRecognition.onerror=()=>{alert("تعذر تشغيل الإملاء الصوتي. تحقق من إذن الميكروفون والاتصال.")};
   fieldRecognition.onend=()=>{if(activeMic){activeMic.classList.remove("listening");activeMic.textContent="🎙"}fieldRecognition=null;activeMic=null;field.focus()};
   fieldRecognition.start();
+}
+function joinSpeechResult(base,event){
+  const finalParts=[],interimParts=[];
+  for(let i=0;i<event.results.length;i++){
+    const text=(event.results[i][0]?.transcript||"").trim();
+    if(!text)continue;
+    (event.results[i].isFinal?finalParts:interimParts).push(text);
+  }
+  return [base,...finalParts,...interimParts].filter(Boolean).join(" ").replace(/\s+/g," ").trim();
 }
 function normalizeVoiceValue(value,type){
   let s=(value||"").replace(/[٠-٩]/g,d=>"0123456789"["٠١٢٣٤٥٦٧٨٩".indexOf(d)]).replace(/[۰-۹]/g,d=>"0123456789"["۰۱۲۳۴۵۶۷۸۹".indexOf(d)]);
