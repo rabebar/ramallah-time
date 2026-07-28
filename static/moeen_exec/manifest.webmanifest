@@ -1,0 +1,20 @@
+{
+  "name": "مُعين التنفيذي من RT Studio",
+  "short_name": "مُعين",
+  "description": "مساعد شخصي وذاكرة تنفيذية مشفرة للمسؤولين والمديرين",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/moeen-executive/",
+  "scope": "/moeen-executive/",
+  "display": "standalone",
+  "background_color": "#edf1ee",
+  "theme_color": "#102b25",
+  "icons": [
+    {
+      "src": "/static/moeen_exec/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

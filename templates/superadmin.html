@@ -287,6 +287,19 @@
         }
         .table-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; color: var(--navy); }
         table { width: 100%; border-collapse: collapse; text-align: right; }
+        .moeen-create {
+            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px; margin-bottom: 24px; padding: 20px;
+            background: #f8fafc; border: 1px solid var(--border); border-radius: 18px;
+        }
+        .moeen-create input, .moeen-create select {
+            width: 100%; border: 1px solid #dbe2ea; border-radius: 11px;
+            padding: 11px 12px; background: white; font-size: 13px;
+        }
+        .moeen-create button { min-height: 42px; border: 0; cursor: pointer; }
+        .moeen-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .moeen-actions form { display: inline-flex; align-items: center; gap: 5px; }
+        .moeen-actions input { width: 58px; padding: 7px; border: 1px solid #dbe2ea; border-radius: 8px; }
         th { padding: 16px; color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--gray-bg); }
         th { padding: 12px 8px; color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--gray-bg); }
         td { padding: 12px 8px; border-bottom: 1px solid var(--gray-bg); font-size: 12.5px; color: var(--text-main); white-space: nowrap; }
@@ -338,6 +351,10 @@
             <a href="/superadmin" class="nav-item active">
                 <i data-lucide="bar-chart-3"></i>
                 <span>الإحصائيات</span>
+            </a>
+            <a href="#moeen-executive" class="nav-item">
+                <i data-lucide="briefcase-business"></i>
+                <span>مُعين التنفيذي</span>
             </a>
             
             <a href="/logout" class="nav-item logout-btn">
@@ -743,6 +760,91 @@
                 </div>
             {% endif %}
         </div>
+
+        <section class="table-container" id="moeen-executive">
+            <div class="table-title">إدارة اشتراكات مُعين التنفيذي</div>
+            <form class="moeen-create" method="POST" action="/superadmin/moeen/accounts">
+                <input name="full_name" required placeholder="اسم المشترك الكامل">
+                <input name="job_title" placeholder="المنصب">
+                <input name="phone" required placeholder="رقم الهاتف / اسم الدخول">
+                <input name="email" type="email" placeholder="البريد الإلكتروني">
+                <input name="temporary_password" type="password" minlength="12" required placeholder="كلمة مرور مؤقتة (12 حرفًا)">
+                <select name="plan_type">
+                    <option value="monthly">اشتراك شهري</option>
+                    <option value="quarterly">اشتراك ربع سنوي</option>
+                    <option value="annual">اشتراك سنوي</option>
+                </select>
+                <input name="months" type="number" min="1" max="36" value="1" aria-label="عدد الأشهر">
+                <button class="btn-sm btn-approve" type="submit">
+                    <i data-lucide="user-plus"></i> إنشاء حساب مُعين
+                </button>
+            </form>
+            <table>
+                <thead>
+                    <tr>
+                        <th>المشترك</th>
+                        <th>بيانات الدخول</th>
+                        <th>الحالة</th>
+                        <th>انتهاء الاشتراك</th>
+                        <th>الأجهزة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in moeen_accounts %}
+                    <tr>
+                        <td>
+                            <strong>{{ account.full_name }}</strong>
+                            <small style="display:block;color:var(--text-muted);">{{ account.job_title or '—' }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ account.phone }}</strong>
+                            <small style="display:block;color:var(--text-muted);">{{ account.email or '' }}</small>
+                        </td>
+                        <td>
+                            {% if account.status == 'active' %}
+                                <span class="badge badge-active">نشط</span>
+                            {% elif account.status == 'suspended' %}
+                                <span class="badge badge-pending">موقوف</span>
+                            {% else %}
+                                <span class="badge badge-pending">ملغي</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if account.subscription_end %}
+                                <strong style="color:{% if account.subscription_end < now %}var(--danger){% else %}var(--success){% endif %}">
+                                    {{ account.subscription_end.strftime('%Y-%m-%d') }}
+                                </strong>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td>{{ account.device_count or 0 }}</td>
+                        <td>
+                            <div class="moeen-actions">
+                                <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/subscription">
+                                    <input type="hidden" name="action" value="renew">
+                                    <input type="number" name="months" min="1" max="36" value="1" title="عدد الأشهر">
+                                    <button class="btn-sm btn-approve" type="submit">تجديد</button>
+                                </form>
+                                <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/subscription">
+                                    <input type="hidden" name="action" value="{% if account.status == 'active' %}suspended{% else %}active{% endif %}">
+                                    <button class="btn-sm {% if account.status == 'active' %}btn-reject{% else %}btn-approve{% endif %}" type="submit">
+                                        {% if account.status == 'active' %}إيقاف{% else %}تفعيل{% endif %}
+                                    </button>
+                                </form>
+                                <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/subscription"
+                                      onsubmit="return confirm('إلغاء اعتماد جميع أجهزة هذا الحساب؟')">
+                                    <input type="hidden" name="action" value="revoke_devices">
+                                    <button class="btn-sm btn-reject" type="submit">إلغاء الأجهزة</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" style="text-align:center;padding:36px;color:var(--text-muted);">لم تُنشأ حسابات مُعين التنفيذي بعد.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
 
         <!-- جدول التجار -->
         <div class="table-container">

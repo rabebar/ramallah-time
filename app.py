@@ -498,6 +498,8 @@ def compose_final(cutout_path, name, price, theme, style, background_key, out_ba
         return None
 
 app = Flask(__name__)
+from moeen_multi import moeen_bp
+app.register_blueprint(moeen_bp)
 
 # Config
 app.secret_key = os.environ.get('SECRET_KEY', 'rt_studio_secure_2025_palestine_#99')
@@ -3123,6 +3125,16 @@ def super_admin():
         LIMIT 30
     """)
     subscription_payments = cursor.fetchall()
+    cursor.execute("""
+        SELECT ma.*,
+               COUNT(md.id) FILTER (WHERE md.authorized = TRUE) AS device_count,
+               MAX(md.last_seen) AS last_device_activity
+        FROM moeen_accounts ma
+        LEFT JOIN moeen_devices md ON md.account_id = ma.id
+        GROUP BY ma.id
+        ORDER BY ma.created_at DESC
+    """)
+    moeen_accounts = cursor.fetchall()
     conn.close()
 
     return render_template('superadmin.html',
@@ -3137,12 +3149,96 @@ def super_admin():
                            order_period=order_period,
                            order_store_id=order_store_id,
                            subscription_payments=subscription_payments,
+                           moeen_accounts=moeen_accounts,
                            subscription_plans=SUBSCRIPTION_PLANS,
                            payment_methods=PAYMENT_METHOD_LABELS,
                            payment_settings=get_payment_settings(),
                            removebg_enabled=removebg_enabled,
                            removebg_configured=bool(REMOVEBG_API_KEY),
                            now=datetime.utcnow())  # <--- هذا هو السطر الذي كان ناقصاً
+
+@app.post('/superadmin/moeen/accounts')
+def super_admin_create_moeen_account():
+    if not session.get('is_superadmin'):
+        return redirect(url_for('super_admin_login'))
+    full_name = (request.form.get('full_name') or '').strip()
+    job_title = (request.form.get('job_title') or '').strip()
+    phone = (request.form.get('phone') or '').strip()
+    email = (request.form.get('email') or '').strip()
+    temporary_password = request.form.get('temporary_password') or ''
+    plan_type = (request.form.get('plan_type') or 'monthly').strip()
+    try:
+        months = max(1, min(int(request.form.get('months') or 1), 36))
+    except ValueError:
+        months = 1
+    if not full_name or not phone or len(temporary_password) < 12:
+        flash("الاسم والهاتف وكلمة مرور مؤقتة من 12 حرفًا مطلوبة.", "error")
+        return redirect(url_for('super_admin') + '#moeen-executive')
+    start = datetime.utcnow()
+    end = start + timedelta(days=30 * months)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            INSERT INTO moeen_accounts
+                (full_name, job_title, phone, email, password_hash, plan_type,
+                 subscription_start, subscription_end, must_change_password)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, TRUE)
+        """, (
+            full_name, job_title or None, phone, email or None,
+            generate_password_hash(temporary_password, method='scrypt'),
+            plan_type, start, end,
+        ))
+        conn.commit()
+        flash("تم إنشاء حساب مُعين التنفيذي. يجب تغيير كلمة المرور عند أول دخول.", "success")
+    except Exception as exc:
+        conn.rollback()
+        logging.error("create Moeen account failed: %s", exc)
+        flash("تعذر إنشاء الحساب. تأكد أن رقم الهاتف غير مستخدم.", "error")
+    finally:
+        cursor.close()
+        conn.close()
+    return redirect(url_for('super_admin') + '#moeen-executive')
+
+@app.post('/superadmin/moeen/accounts/<int:account_id>/subscription')
+def super_admin_update_moeen_subscription(account_id):
+    if not session.get('is_superadmin'):
+        return redirect(url_for('super_admin_login'))
+    action = (request.form.get('action') or '').strip()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        if action == 'renew':
+            months = max(1, min(int(request.form.get('months') or 1), 36))
+            cursor.execute("""
+                UPDATE moeen_accounts
+                SET subscription_end =
+                    GREATEST(COALESCE(subscription_end, NOW()), NOW())
+                    + (%s * INTERVAL '30 days'),
+                    status = 'active', updated_at = NOW()
+                WHERE id = %s
+            """, (months, account_id))
+            message = "تم تجديد اشتراك مُعين التنفيذي."
+        elif action in {'active', 'suspended', 'cancelled'}:
+            cursor.execute("""
+                UPDATE moeen_accounts SET status = %s, updated_at = NOW() WHERE id = %s
+            """, (action, account_id))
+            message = "تم تحديث حالة الاشتراك."
+        elif action == 'revoke_devices':
+            cursor.execute("DELETE FROM moeen_devices WHERE account_id = %s", (account_id,))
+            message = "تم إلغاء اعتماد جميع أجهزة الحساب."
+        else:
+            raise ValueError("unknown action")
+        conn.commit()
+        flash(message, "success")
+    except Exception as exc:
+        conn.rollback()
+        logging.error("update Moeen subscription failed: %s", exc)
+        flash("تعذر تحديث حساب مُعين التنفيذي.", "error")
+    finally:
+        cursor.close()
+        conn.close()
+    return redirect(url_for('super_admin') + '#moeen-executive')
 
 @app.route('/superadmin/toggle-removebg', methods=['POST'])
 def super_admin_toggle_removebg():

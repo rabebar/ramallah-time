@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#102b25">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="مُعين">
+  <title>مُعين — الذاكرة التنفيذية</title>
+  <link rel="manifest" href="{{ url_for('moeen_multi.moeen_manifest') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='moeen_exec/icon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/premium.css') }}">
+</head>
+<body class="locked">
+  <section id="authGate" class="auth-gate">
+    <div class="auth-card">
+      <div class="auth-brand"><span>م</span><div><b>مُعين</b><small>دخول آمن</small></div></div>
+      <div id="setupPane" hidden>
+        <p class="eyebrow">إعداد الجهاز الرئيسي</p>
+        <h1>أنشئ كلمة المرور الأولى</h1>
+        <p>سيصبح هذا الجهاز الجهاز الرئيسي المصرح له.</p>
+        <form id="setupForm">
+          <input id="setupPassword" type="password" minlength="12" autocomplete="new-password" placeholder="كلمة مرور من 12 حرفًا على الأقل" required>
+          <input id="setupPasswordConfirm" type="password" minlength="12" autocomplete="new-password" placeholder="تأكيد كلمة المرور" required>
+          <button class="primary" type="submit">تهيئة مُعين</button>
+        </form>
+      </div>
+      <div id="loginPane" hidden>
+        <p class="eyebrow">مساحة خاصة</p>
+        <h1>أهلًا بعودتك</h1>
+        <p>أدخل رقم الهاتف وكلمة المرور للمتابعة.</p>
+        <form id="loginForm">
+          <input id="loginPhone" type="tel" autocomplete="username" placeholder="رقم الهاتف" required>
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور" required>
+          <input id="pairingCode" inputmode="numeric" maxlength="6" placeholder="رمز ربط جهاز جديد (عند الحاجة)">
+          <button class="primary" type="submit">دخول آمن</button>
+        </form>
+      </div>
+      <p id="authMessage" class="auth-message"></p>
+      <small class="auth-foot">🔒 اتصال مشفّر عند النشر · جلسة مقفلة تلقائيًا</small>
+    </div>
+  </section>
+  <div class="shell">
+    <aside>
+      <div class="brand"><span>م</span><div><strong>مُعين</strong><small>الذاكرة التنفيذية</small></div></div>
+      <nav>
+        <button class="nav active" data-view="home" data-icon="⌂"><span>اليوم</span></button>
+        <button class="nav" data-view="memory" data-icon="◇"><span>الذاكرة</span></button>
+        <button class="nav" data-view="tasks" data-icon="✓"><span>المتابعات</span></button>
+        <button class="nav" data-view="meetings" data-icon="◎"><span>الاجتماعات</span></button>
+        <button class="nav" data-view="contacts" data-icon="♧"><span>الاتصالات</span></button>
+        <button class="nav" data-view="security" data-icon="◈"><span>الأمان</span></button>
+      </nav>
+      <div class="privacy">🔒 البيانات محفوظة على هذا الجهاز</div>
+    </aside>
+
+    <main>
+      <header>
+        <div><p id="date"></p><h1 id="greeting">أهلًا بك</h1><span class="header-note">كل ما يحتاج انتباهك، في مكان واحد.</span></div>
+        <div class="header-actions"><span id="syncStatus" class="sync-status">محفوظ محليًا</span><button id="quickLogout" class="header-logout" title="تسجيل الخروج">خروج</button><button id="quickRecord" class="primary record-top"><i></i><span>ملاحظة صوتية</span></button></div>
+      </header>
+
+      <section id="home" class="view active">
+        <div class="hero">
+          <div><small>موجز اليوم</small><h2>بداية واضحة ليومٍ أكثر تركيزًا</h2><p id="dailyLine">ابدأ بإضافة أول ملاحظة أو متابعة.</p><button class="hero-record" onclick="document.querySelector('#quickRecord').click()">تحدث الآن <b>←</b></button></div>
+          <div class="hero-mark"><span>م</span><small>ذاكرتك التنفيذية</small></div>
+        </div>
+        <div class="stats">
+          <article><b id="openTasks">0</b><span>متابعات مفتوحة</span></article>
+          <article><b id="dueTasks">0</b><span>تستحق اليوم</span></article>
+          <article><b id="memoryCount">0</b><span>ملاحظات محفوظة</span></article>
+        </div>
+        <div class="grid">
+          <section class="panel"><div class="panel-head"><h3>الأولوية اليوم</h3><button data-view-jump="tasks">عرض الكل</button></div><div id="todayTasks" class="empty">لا توجد متابعات بعد.</div></section>
+          <section class="panel"><div class="panel-head"><h3>آخر ما حفظته</h3><button data-view-jump="memory">فتح الذاكرة</button></div><div id="recentMemories" class="empty">ذاكرتك جاهزة لأول ملاحظة.</div></section>
+        </div>
+      </section>
+
+      <section id="memory" class="view">
+        <div class="title-row"><div><p>ذاكرتك الشخصية</p><h2>الملاحظات الصوتية والنصية</h2></div><input id="search" placeholder="ابحث في ذاكرتك…"></div>
+        <div id="memories" class="cards"></div>
+      </section>
+
+      <section id="tasks" class="view">
+        <div class="title-row"><div><p>لا تدع شيئًا يسقط</p><h2>المتابعات والالتزامات</h2></div><button id="addTask" class="primary">+ متابعة جديدة</button></div>
+        <div id="taskList" class="cards"></div>
+      </section>
+
+      <section id="meetings" class="view">
+        <div class="title-row"><div><p>قبل الاجتماع وبعده</p><h2>دفتر الاجتماعات</h2></div><button id="addMeeting" class="primary">+ اجتماع جديد</button></div>
+        <div id="meetingList" class="cards"></div>
+      </section>
+
+      <section id="contacts" class="view">
+        <div class="title-row"><div><p>دليل شخصي آمن</p><h2>جهات الاتصال</h2></div><button id="addContact" class="primary">+ جهة اتصال</button></div>
+        <div class="contact-tools"><input id="contactSearch" placeholder="ابحث بالاسم أو الجهة أو الرقم…"></div>
+        <div id="contactList" class="contact-grid"></div>
+      </section>
+
+      <section id="security" class="view">
+        <div class="title-row"><div><p>الحساب والأجهزة</p><h2>مركز الأمان</h2></div><button id="logoutBtn" class="security-secondary">تسجيل الخروج</button></div>
+        <div class="security-grid">
+          <article class="security-card"><h3>تغيير كلمة المرور</h3><p>استخدم كلمة مرور طويلة وفريدة لهذا التطبيق.</p><form id="passwordForm"><input id="currentPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور الحالية" required><input id="newPassword" type="password" minlength="12" autocomplete="new-password" placeholder="كلمة المرور الجديدة" required><button class="primary" type="submit">تغيير كلمة المرور</button></form></article>
+          <article class="security-card"><h3>إضافة جهاز موثوق</h3><p>أنشئ رمزًا مؤقتًا، ثم أدخله مع كلمة المرور على الهاتف الجديد.</p><button id="pairingBtn" class="primary">إنشاء رمز ربط</button><div id="pairingResult" class="pairing-result"></div></article>
+        </div>
+        <div class="security-grid security-lists">
+          <article class="security-card"><div class="card-top"><h3>الأجهزة المصرح بها</h3><span id="deviceCount" class="tag">0</span></div><div id="deviceList"></div></article>
+          <article class="security-card"><div class="card-top"><h3>محاولات الدخول</h3><button id="reviewAttempts" class="security-secondary">تحديد كمراجعة</button></div><div id="attemptList"></div></article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="recordDialog">
+    <form method="dialog" class="modal">
+      <button class="close" value="cancel">×</button>
+      <p class="eyebrow">ملاحظة سريعة</p><h2>تحدّث، وسأتولى ترتيبها</h2>
+      <div id="pulse" class="pulse">🎙</div>
+      <div class="record-actions"><button type="button" id="recordBtn" class="primary">ابدأ التسجيل</button><button type="button" id="transcribeBtn">تحويل الكلام مباشرة</button></div>
+      <small id="recordStatus">يمكنك التسجيل فقط، أو استخدام الإملاء لتحويل العربية إلى نص.</small>
+      <textarea id="noteText" rows="7" placeholder="سيظهر النص هنا، ويمكنك مراجعته قبل الحفظ…"></textarea>
+      <input id="noteTitle" placeholder="عنوان مختصر (اختياري)">
+      <div class="smart-route">
+        <div><span>مكان الحفظ</span><small id="routeReason">سيُحدد تلقائيًا من مضمون الكلام.</small></div>
+        <select id="noteCategory">
+          <option value="memory">الذاكرة</option>
+          <option value="meeting">الاجتماعات</option>
+          <option value="task">المتابعات</option>
+          <option value="contact">الاتصالات</option>
+        </select>
+      </div>
+      <div class="modal-actions"><button value="cancel">إلغاء</button><button type="button" id="saveNote" class="primary">حفظ في الذاكرة</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="simpleDialog"><form method="dialog" class="modal" id="simpleForm"></form></dialog>
+  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}"></script>
+  <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("{{ url_for('moeen_multi.moeen_service_worker') }}");</script>
+</body>
+</html>

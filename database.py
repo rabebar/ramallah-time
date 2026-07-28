@@ -363,6 +363,80 @@ def init_db():
             ON CONFLICT (setting_key) DO NOTHING
         """, (key, value))
 
+    # Moeen Executive: isolated multi-tenant accounts and encrypted vaults.
+    cursor.execute('''CREATE TABLE IF NOT EXISTS moeen_accounts (
+            id SERIAL PRIMARY KEY,
+            full_name TEXT NOT NULL,
+            job_title TEXT,
+            phone TEXT UNIQUE NOT NULL,
+            email TEXT,
+            password_hash TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'active'
+                CHECK (status IN ('active', 'suspended', 'cancelled')),
+            plan_type TEXT NOT NULL DEFAULT 'monthly',
+            subscription_start TIMESTAMP,
+            subscription_end TIMESTAMP,
+            must_change_password BOOLEAN NOT NULL DEFAULT TRUE,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS moeen_vaults (
+            account_id INTEGER PRIMARY KEY REFERENCES moeen_accounts(id) ON DELETE CASCADE,
+            ciphertext TEXT,
+            iv TEXT,
+            vault_salt TEXT,
+            wrapped_vault TEXT,
+            wrap_iv TEXT,
+            version INTEGER NOT NULL DEFAULT 0,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS moeen_devices (
+            id SERIAL PRIMARY KEY,
+            account_id INTEGER NOT NULL REFERENCES moeen_accounts(id) ON DELETE CASCADE,
+            device_id TEXT NOT NULL,
+            device_name TEXT NOT NULL,
+            authorized BOOLEAN NOT NULL DEFAULT TRUE,
+            revoked_at TIMESTAMP,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            last_seen TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(account_id, device_id)
+        )''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS moeen_login_attempts (
+            id BIGSERIAL PRIMARY KEY,
+            account_id INTEGER REFERENCES moeen_accounts(id) ON DELETE CASCADE,
+            phone TEXT,
+            device_id TEXT,
+            device_name TEXT,
+            ip_address TEXT,
+            outcome TEXT NOT NULL,
+            reviewed BOOLEAN NOT NULL DEFAULT FALSE,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS moeen_pairing_codes (
+            id BIGSERIAL PRIMARY KEY,
+            account_id INTEGER NOT NULL REFERENCES moeen_accounts(id) ON DELETE CASCADE,
+            code_hash TEXT NOT NULL,
+            expires_at TIMESTAMP NOT NULL,
+            used_at TIMESTAMP,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )''')
+    cursor.execute("ALTER TABLE moeen_devices ADD COLUMN IF NOT EXISTS revoked_at TIMESTAMP")
+    cursor.execute("ALTER TABLE moeen_login_attempts ADD COLUMN IF NOT EXISTS device_name TEXT")
+    cursor.execute("ALTER TABLE moeen_login_attempts ADD COLUMN IF NOT EXISTS reviewed BOOLEAN NOT NULL DEFAULT FALSE")
+    cursor.execute('''CREATE TABLE IF NOT EXISTS moeen_audio_blobs (
+            account_id INTEGER NOT NULL REFERENCES moeen_accounts(id) ON DELETE CASCADE,
+            audio_id TEXT NOT NULL,
+            ciphertext BYTEA NOT NULL,
+            iv TEXT NOT NULL,
+            mime_type TEXT NOT NULL,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY(account_id, audio_id)
+        )''')
+    cursor.execute("""CREATE INDEX IF NOT EXISTS ix_moeen_attempts_account_created
+                      ON moeen_login_attempts(account_id, created_at DESC)""")
+    cursor.execute("""CREATE INDEX IF NOT EXISTS ix_moeen_accounts_subscription
+                      ON moeen_accounts(status, subscription_end)""")
+
     conn.commit()
     cursor.close()
     conn.close()
