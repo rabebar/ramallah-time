@@ -8,11 +8,11 @@
   <link rel="icon" href="/static/moeen_exec/icon-64.png">
   <style>
     @font-face{font-family:"Noto Kufi";src:url("/static/moeen_exec/fonts/noto-kufi-400.woff2")}@font-face{font-family:"Noto Kufi";src:url("/static/moeen_exec/fonts/noto-kufi-700.woff2");font-weight:700}
-    *{box-sizing:border-box}body{margin:0;background:#f3f6f4;color:#182a24;font-family:"Noto Kufi",sans-serif;line-height:2}.top{background:#102b25;color:#fff;padding:18px max(22px,calc((100vw - 880px)/2));display:flex;justify-content:space-between;align-items:center}.top a{color:#e2cc79;text-decoration:none}.doc{max-width:880px;margin:32px auto;padding:36px;background:#fff;border:1px solid #dce5e0;border-radius:22px;box-shadow:0 18px 50px #173e3410}.doc h1{margin:0;font-size:30px}.version{color:#78857f;font-size:11px}.notice{background:#fff7dc;border:1px solid #ead28a;border-radius:13px;padding:13px 16px;font-size:12px}.doc h2{font-size:18px;margin:28px 0 8px;color:#103d32}.doc p,.doc li{font-size:13px}.doc a{color:#17634f}.foot{margin-top:30px;padding-top:18px;border-top:1px solid #e2e8e5;color:#708079;font-size:11px}@media(max-width:700px){.doc{margin:14px;padding:23px;border-radius:16px}.doc h1{font-size:24px}}
+    *{box-sizing:border-box}body{margin:0;background:#f3f6f4;color:#182a24;font-family:"Noto Kufi",sans-serif;line-height:2}.top{background:#102b25;color:#fff;padding:18px max(22px,calc((100vw - 880px)/2));display:flex;justify-content:space-between;align-items:center}.top-actions{display:flex;align-items:center;gap:10px}.top a{color:#e2cc79;text-decoration:none}.language-toggle{border:1px solid #ffffff30;background:#ffffff12;color:#fff;border-radius:9px;padding:7px 10px;font:inherit;font-size:10px;cursor:pointer}.doc{max-width:880px;margin:32px auto;padding:36px;background:#fff;border:1px solid #dce5e0;border-radius:22px;box-shadow:0 18px 50px #173e3410}.doc h1{margin:0;font-size:30px}.version{color:#78857f;font-size:11px}.notice{background:#fff7dc;border:1px solid #ead28a;border-radius:13px;padding:13px 16px;font-size:12px}.doc h2{font-size:18px;margin:28px 0 8px;color:#103d32}.doc p,.doc li{font-size:13px}.doc a{color:#17634f}.foot{margin-top:30px;padding-top:18px;border-top:1px solid #e2e8e5;color:#708079;font-size:11px}.language-en{font-family:"Segoe UI",Arial,sans-serif}.language-en .doc{direction:ltr}@media(max-width:700px){.doc{margin:14px;padding:23px;border-radius:16px}.doc h1{font-size:24px}.top{padding:14px}.top strong{font-size:11px}.top-actions{gap:6px}.top a{font-size:10px}}
   </style>
 </head>
 <body>
-  <header class="top"><strong>مُعين التنفيذي · RT Studio</strong><a href="/moeen-executive/">العودة إلى التطبيق</a></header>
+  <header class="top"><strong>مُعين التنفيذي · RT Studio</strong><div class="top-actions"><button class="language-toggle" type="button" data-language-toggle>EN</button><a href="/moeen-executive/">العودة إلى التطبيق</a></div></header>
   <main class="doc">
     {% if document == 'privacy' %}
       <h1>سياسة الخصوصية</h1>
@@ -65,5 +65,6 @@
     {% endif %}
     <div class="foot">للاستفسار أو طلب حذف الحساب، تواصل مع RT Studio عبر قنوات التواصل المنشورة في الموقع الرسمي.</div>
   </main>
+  <script src="/static/moeen_exec/i18n.js"></script>
 </body>
 </html>
