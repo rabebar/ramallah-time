@@ -781,6 +781,33 @@ try:
             UNIQUE(account_id, reminder_key)
         )
     """)
+    _mcur.execute("""
+        CREATE TABLE IF NOT EXISTS moeen_push_subscriptions (
+            id BIGSERIAL PRIMARY KEY,
+            account_id INTEGER NOT NULL REFERENCES moeen_accounts(id) ON DELETE CASCADE,
+            endpoint TEXT NOT NULL UNIQUE,
+            p256dh TEXT NOT NULL,
+            auth TEXT NOT NULL,
+            user_agent TEXT,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        )
+    """)
+    _mcur.execute("""
+        CREATE TABLE IF NOT EXISTS moeen_reminders (
+            id BIGSERIAL PRIMARY KEY,
+            account_id INTEGER NOT NULL REFERENCES moeen_accounts(id) ON DELETE CASCADE,
+            item_id TEXT NOT NULL,
+            item_type TEXT NOT NULL CHECK(item_type IN ('meeting','task','call')),
+            remind_at TIMESTAMPTZ NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending',
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            sent_at TIMESTAMP,
+            UNIQUE(account_id, item_id)
+        )
+    """)
+    _mcur.execute("""CREATE INDEX IF NOT EXISTS ix_moeen_reminders_due
+                     ON moeen_reminders(status, remind_at)""")
     _mcur.execute("ALTER TABLE moeen_accounts ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMP")
     _mcur.execute("ALTER TABLE moeen_accounts ADD COLUMN IF NOT EXISTS terms_version TEXT")
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS admin_note TEXT")
@@ -952,6 +979,96 @@ def send_superadmin_push_notification(title, body, tag, url, icon="/static/rt_lo
         finally:
             conn.close()
     return {"sent": sent, "failed": failed, "configured": True}
+
+
+def send_due_moeen_reminders():
+    """Claim and deliver generic reminders without exposing encrypted item content."""
+    if not (VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY):
+        return
+    try:
+        from pywebpush import webpush, WebPushException
+    except ImportError:
+        return
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            UPDATE moeen_reminders
+            SET status='sending'
+            WHERE id IN (
+                SELECT id FROM moeen_reminders
+                WHERE status='pending' AND remind_at <= NOW()
+                ORDER BY remind_at LIMIT 50 FOR UPDATE SKIP LOCKED
+            )
+            RETURNING id, account_id, item_id, item_type
+        """)
+        reminders = cur.fetchall()
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
+    labels = {
+        "meeting": ("تذكير اجتماع", "حان موعد اجتماع محفوظ في مُعين."),
+        "task": ("تذكير متابعة", "لديك متابعة مستحقة الآن في مُعين."),
+        "call": ("تذكير اتصال", "حان موعد اتصال محفوظ في مُعين."),
+    }
+    for reminder in reminders:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute("""SELECT id,endpoint,p256dh,auth FROM moeen_push_subscriptions
+                           WHERE account_id=%s""", (reminder["account_id"],))
+            subscriptions = cur.fetchall()
+        finally:
+            cur.close()
+            conn.close()
+        title, body = labels[reminder["item_type"]]
+        payload = json.dumps({
+            "title": title, "body": body,
+            "tag": f"moeen-reminder-{reminder['item_id']}",
+            "url": f"/moeen-executive/?view={'meetings' if reminder['item_type']=='meeting' else 'tasks'}",
+            "icon": "/static/moeen_exec/icon-192.png",
+            "badge": "/static/moeen_exec/icon-64.png",
+        }, ensure_ascii=False)
+        sent = False
+        expired = []
+        for subscription in subscriptions:
+            try:
+                webpush(
+                    subscription_info={"endpoint": subscription["endpoint"],
+                                       "keys": {"p256dh": subscription["p256dh"], "auth": subscription["auth"]}},
+                    data=payload, vapid_private_key=VAPID_PRIVATE_KEY,
+                    vapid_claims={"sub": VAPID_SUBJECT}, timeout=5,
+                )
+                sent = True
+            except WebPushException as exc:
+                if getattr(getattr(exc, "response", None), "status_code", None) in (404, 410):
+                    expired.append(subscription["id"])
+            except Exception:
+                logging.exception("Moeen reminder push failed")
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            if expired:
+                cur.execute("DELETE FROM moeen_push_subscriptions WHERE id=ANY(%s)", (expired,))
+            cur.execute("""UPDATE moeen_reminders SET status=%s, sent_at=CASE WHEN %s THEN NOW() ELSE sent_at END
+                           WHERE id=%s""", ("sent" if sent else "pending", sent, reminder["id"]))
+            conn.commit()
+        finally:
+            cur.close()
+            conn.close()
+
+
+def _moeen_reminder_worker():
+    while True:
+        try:
+            send_due_moeen_reminders()
+        except Exception:
+            logging.exception("Moeen reminder worker failed")
+        time.sleep(30)
+
+
+threading.Thread(target=_moeen_reminder_worker, daemon=True, name="moeen-reminders").start()
 
 
 def send_moeen_signup_notifications(account_id, full_name, job_title):

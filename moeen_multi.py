@@ -1,4 +1,5 @@
 import hashlib
+import os
 import re
 import secrets
 from datetime import datetime, timedelta
@@ -198,6 +199,77 @@ def moeen_service_worker():
     response.headers["Service-Worker-Allowed"] = "/moeen-executive/"
     response.headers["Cache-Control"] = "no-cache"
     return response
+
+
+@moeen_bp.get("/api/push/config")
+@require_moeen_auth
+def push_config():
+    public_key = os.environ.get("VAPID_PUBLIC_KEY", "").strip()
+    return jsonify(configured=bool(public_key), public_key=public_key)
+
+
+@moeen_bp.post("/api/push/subscribe")
+@require_moeen_auth
+def push_subscribe():
+    data = request.get_json(silent=True) or {}
+    endpoint = str(data.get("endpoint", ""))[:2000]
+    keys = data.get("keys") or {}
+    if not endpoint or not keys.get("p256dh") or not keys.get("auth"):
+        return jsonify(error="INVALID_SUBSCRIPTION"), 400
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            INSERT INTO moeen_push_subscriptions(account_id,endpoint,p256dh,auth,user_agent)
+            VALUES(%s,%s,%s,%s,%s)
+            ON CONFLICT(endpoint) DO UPDATE SET account_id=EXCLUDED.account_id,
+                p256dh=EXCLUDED.p256dh,auth=EXCLUDED.auth,user_agent=EXCLUDED.user_agent,updated_at=NOW()
+        """, (session[SESSION_ACCOUNT], endpoint, keys["p256dh"], keys["auth"],
+              request.headers.get("User-Agent", "")[:500]))
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
+    return jsonify(ok=True)
+
+
+@moeen_bp.put("/api/reminders/<item_id>")
+@require_moeen_auth
+def reminder_upsert(item_id):
+    data = request.get_json(silent=True) or {}
+    item_type = data.get("item_type")
+    remind_at = data.get("remind_at")
+    if item_type not in {"meeting", "task", "call"} or not remind_at or len(item_id) > 120:
+        return jsonify(error="INVALID_REMINDER"), 400
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            INSERT INTO moeen_reminders(account_id,item_id,item_type,remind_at,status)
+            VALUES(%s,%s,%s,%s::timestamptz,'pending')
+            ON CONFLICT(account_id,item_id) DO UPDATE SET item_type=EXCLUDED.item_type,
+                remind_at=EXCLUDED.remind_at,status='pending',sent_at=NULL
+        """, (session[SESSION_ACCOUNT], item_id, item_type, remind_at))
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
+    return jsonify(ok=True)
+
+
+@moeen_bp.delete("/api/reminders/<item_id>")
+@require_moeen_auth
+def reminder_delete(item_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM moeen_reminders WHERE account_id=%s AND item_id=%s",
+                       (session[SESSION_ACCOUNT], item_id))
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
+    return jsonify(ok=True)
 
 
 @moeen_bp.get("/api/auth/status")

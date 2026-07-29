@@ -11,6 +11,33 @@ const trustedKeyStore={
   async clear(){const db=await this.open();return new Promise(resolve=>{const q=db.transaction("session","readwrite").objectStore("session").delete("vault");q.onsuccess=()=>resolve();q.onerror=()=>resolve()})}
 };
 let installPrompt=null;
+function urlBase64ToUint8Array(value){
+  const padding="=".repeat((4-value.length%4)%4),base64=(value+padding).replace(/-/g,"+").replace(/_/g,"/");
+  return Uint8Array.from(atob(base64),c=>c.charCodeAt(0));
+}
+async function enableMoeenPush(){
+  const status=$("#moeenPushStatus"),button=$("#enableMoeenPush");
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)){status.textContent="هذا المتصفح لا يدعم الإشعارات الخلفية.";return}
+  try{
+    const permission=await Notification.requestPermission();
+    if(permission!=="granted"){status.textContent="لم يتم السماح بالإشعارات من إعدادات الجهاز.";return}
+    const config=await api("/api/push/config");
+    if(!config.configured)throw new Error("NOT_CONFIGURED");
+    const registration=await navigator.serviceWorker.ready;
+    let subscription=await registration.pushManager.getSubscription();
+    if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(config.public_key)});
+    await api("/api/push/subscribe",{method:"POST",body:JSON.stringify(subscription.toJSON())});
+    status.textContent="الإشعارات مفعّلة على هذا الجهاز.";
+    button.textContent="الإشعارات مفعّلة";
+  }catch{status.textContent="تعذر تفعيل الإشعارات. تحقق من إعدادات المتصفح ثم حاول مجددًا."}
+}
+$("#enableMoeenPush").onclick=enableMoeenPush;
+async function syncReminder(itemId,itemType,eventAt,offsetMinutes){
+  if(!eventAt||offsetMinutes==="none")return api(`/api/reminders/${encodeURIComponent(itemId)}`,{method:"DELETE",body:"{}"}).catch(()=>{});
+  const remindAt=new Date(new Date(eventAt).getTime()-Number(offsetMinutes)*60000);
+  if(Number.isNaN(remindAt.getTime()))return;
+  return api(`/api/reminders/${encodeURIComponent(itemId)}`,{method:"PUT",body:JSON.stringify({item_type:itemType,remind_at:remindAt.toISOString()})}).catch(()=>{});
+}
 const installButtons=()=>[$("#authInstallBtn"),$("#headerInstallBtn")].filter(Boolean);
 function isInstalled(){return window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true}
 function refreshInstallButtons(){const installed=isInstalled();installButtons().forEach(button=>button.hidden=installed)}
@@ -110,15 +137,18 @@ function renderMemories(){
 }
 function bindAudioPlayers(){$$("audio[data-audio]").forEach(async a=>{if(a.src)return;const blob=await audioDb.get(a.dataset.audio);if(blob)a.src=URL.createObjectURL(blob)})}
 $("#search").oninput=renderMemories;
-window.toggleTask=id=>{let a=store.get("tasks"),t=a.find(x=>x.id===id);if(t)t.done=!t.done;store.set("tasks",a);render()};
-window.removeItem=(k,id)=>{if(confirm("حذف هذا العنصر؟")){store.set(k,store.get(k).filter(x=>x.id!==id));render()}};
+window.toggleTask=id=>{let a=store.get("tasks"),t=a.find(x=>x.id===id);if(t){t.done=!t.done;if(t.done)syncReminder(id,"task",null,"none")}store.set("tasks",a);render()};
+window.removeItem=(k,id)=>{if(confirm("حذف هذا العنصر؟")){store.set(k,store.get(k).filter(x=>x.id!==id));if(k==="tasks"||k==="meetings")syncReminder(id,k==="tasks"?"task":"meeting",null,"none");render()}};
 window.removeMemory=async id=>{if(confirm("حذف الملاحظة وتسجيلها الصوتي؟")){store.set("memories",store.get("memories").filter(x=>x.id!==id));await audioDb.remove(id);render()}};
 
-function openSimple(kind){
+function openSimple(kind,prefill={}){
   const task=kind==="task", title=task?"متابعة جديدة":"اجتماع جديد";
-  $("#simpleForm").innerHTML=`<button type="button" class="close" data-close-simple>×</button><p class="eyebrow">${title}</p><h2>${task?"ما الذي يجب متابعته؟":"ما الاجتماع الذي تريد حفظه؟"}</h2><input name="title" required placeholder="${task?"عنوان المتابعة":"عنوان الاجتماع"}"><input name="person" placeholder="${task?"الشخص أو الإدارة":"الحاضرون"}"><input name="date" type="date"><textarea name="notes" rows="5" placeholder="ملاحظات مختصرة"></textarea><div class="modal-actions"><button type="button" data-close-simple>إلغاء</button><button type="submit" class="primary">حفظ</button></div>`;
+  $("#simpleForm").innerHTML=`<button type="button" class="close" data-close-simple>×</button><p class="eyebrow">${title}</p><h2>${task?"ما الذي يجب متابعته؟":"ما الاجتماع الذي تريد حفظه؟"}</h2><input name="title" required placeholder="${task?"عنوان المتابعة":"عنوان الاجتماع"}"><input name="person" placeholder="${task?"الشخص أو الإدارة":"الحاضرون"}"><label>التاريخ والوقت</label><input name="date" type="datetime-local" required><label>موعد الإشعار</label><select name="reminder"><option value="0">عند الموعد</option><option value="15">قبل 15 دقيقة</option><option value="30" selected>قبل 30 دقيقة</option><option value="60">قبل ساعة</option><option value="1440">قبل يوم</option><option value="none">دون إشعار</option></select><textarea name="notes" rows="5" placeholder="ملاحظات مختصرة"></textarea><div class="modal-actions"><button type="button" data-close-simple>إلغاء</button><button type="submit" class="primary">حفظ</button></div>`;
   $("#simpleForm").querySelectorAll("[data-close-simple]").forEach(button=>button.onclick=()=>$("#simpleDialog").close());
-  $("#simpleForm").onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),key=task?"tasks":"meetings",arr=store.get(key);arr.unshift({id:crypto.randomUUID(),title:f.get("title"),[task?"person":"people"]:f.get("person"),[task?"due":"date"]:f.get("date")||new Date().toISOString(),notes:f.get("notes"),done:false});store.set(key,arr);$("#simpleDialog").close();render()};
+  if(prefill.title)$("#simpleForm").elements.title.value=prefill.title;
+  if(prefill.person)$("#simpleForm").elements.person.value=prefill.person;
+  if(prefill.notes)$("#simpleForm").elements.notes.value=prefill.notes;
+  $("#simpleForm").onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),key=task?"tasks":"meetings",arr=store.get(key),id=crypto.randomUUID(),eventAt=new Date(f.get("date")).toISOString(),itemType=prefill.itemType||(task?"task":"meeting");arr.unshift({id,title:f.get("title"),[task?"person":"people"]:f.get("person"),[task?"due":"date"]:eventAt,notes:f.get("notes"),done:false,reminder:f.get("reminder"),itemType});store.set(key,arr);syncReminder(id,itemType,eventAt,f.get("reminder"));$("#simpleDialog").close();render()};
   installVoiceFields($("#simpleForm"));$("#simpleDialog").showModal();
 }
 $("#addTask").onclick=()=>openSimple("task");$("#addMeeting").onclick=()=>openSimple("meeting");
@@ -129,7 +159,7 @@ $("#addContact").onclick=()=>{
   $("#simpleForm").onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),arr=store.get("contacts");arr.unshift({id:crypto.randomUUID(),name:f.get("name"),role:f.get("role"),org:f.get("org"),phone:normalizeVoiceValue(f.get("phone"),"tel"),email:normalizeVoiceValue(f.get("email"),"email"),notes:f.get("notes")});store.set("contacts",arr);$("#simpleDialog").close();render()};
   installVoiceFields($("#simpleForm"));$("#simpleDialog").showModal();
 };
-window.addCallTask=id=>{const c=store.get("contacts").find(x=>x.id===id);if(!c)return;const arr=store.get("tasks");arr.unshift({id:crypto.randomUUID(),title:`الاتصال بـ ${c.name}`,person:c.org||c.role||"",due:new Date().toISOString().slice(0,10),notes:c.phone||c.email||"",done:false});store.set("tasks",arr);render();alert("تمت إضافة تذكير الاتصال إلى متابعات اليوم.")};
+window.addCallTask=id=>{const c=store.get("contacts").find(x=>x.id===id);if(!c)return;openSimple("task",{title:`الاتصال بـ ${c.name}`,person:c.org||c.role||"",notes:c.phone||c.email||"",itemType:"call"})};
 function openRecorder(){$("#noteText").value="";$("#noteTitle").value="";$("#noteCategory").value="memory";audioBlob=null;updateSmartRoute();$("#recordStatus").textContent="يمكنك التسجيل فقط، أو استخدام الإملاء لتحويل العربية إلى نص.";$("#recordDialog").showModal()}
 $("#quickRecord").onclick=openRecorder;
 $("#addMemory").onclick=openRecorder;
