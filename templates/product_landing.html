@@ -9,6 +9,8 @@
   {% set login_url = '/login' %}
   {% set login_label = 'دخول أصحاب المتاجر' %}
   {% set accent = '#6254ea' %}
+  {% set hero_visual = '/static/assets/product-stores-visual.webp' %}
+  {% set hero_visual_alt = 'متجر إلكتروني متجاوب على الكمبيوتر والهاتف والجهاز اللوحي' %}
   {% set features = [
     ('إدارة المنتجات والطلبات', 'أضف المنتجات والصور والأسعار وتابع حالة كل طلب من لوحة الإدارة.'),
     ('صفر عمولة', 'اشتراك ثابت وواضح دون اقتطاع نسبة من مبيعاتك.'),
@@ -28,6 +30,8 @@
   {% set login_url = '/moeen-executive/' %}
   {% set login_label = 'دخول مُعين' %}
   {% set accent = '#17483b' %}
+  {% set hero_visual = '/static/assets/product-moeen-visual.webp' %}
+  {% set hero_visual_alt = 'مُعين التنفيذي على الهاتف والكمبيوتر في بيئة عمل رسمية' %}
   {% set features = [
     ('التذكير بالمواعيد', 'تنبيهات للاجتماعات والمتابعات والاتصالات مع إبراز الحدث داخل التطبيق.'),
     ('الصوت إلى نص', 'أملِ ملاحظتك بالعربية وراجع النص قبل حفظه في القسم المناسب.'),
@@ -47,6 +51,8 @@
   {% set login_url = '/#products' %}
   {% set login_label = 'العودة إلى المنتجات' %}
   {% set accent = '#182238' %}
+  {% set hero_visual = '/static/assets/product-custom-visual.webp' %}
+  {% set hero_visual_alt = 'تصميم مواقع وأنظمة ويب مخصصة ومتجاوبة' %}
   {% set features = [
     ('تصميم مخصص', 'واجهة متجاوبة تعكس هوية المشروع وتخدم جمهوره وأهدافه.'),
     ('برمجة وفق الاحتياج', 'صفحات ووظائف خاصة بدل حصر المشروع في قالب جاهز.'),
@@ -68,18 +74,19 @@
   <style>
     :root{--accent:{{ accent }};--ink:#17221f;--muted:#68746f;--line:#e1e7e4;--soft:#f5f8f7;--gold:#c49a43}*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{font-family:"Cairo",sans-serif;color:var(--ink);background:#fbfdfc}.wrap{width:min(1080px,calc(100% - 36px));margin:auto}
     header{border-bottom:1px solid var(--line);background:#fff}.nav{height:70px;display:flex;align-items:center;gap:12px}.brand{display:flex;align-items:center;gap:9px;font-weight:800;text-decoration:none}.mark{width:37px;height:37px;display:grid;place-items:center;border-radius:10px;background:var(--accent);color:#fff}.back{margin-inline-start:auto;text-decoration:none;font-size:12px;font-weight:700;color:#58655f}
-    .hero{padding:80px 0 65px;background:radial-gradient(circle at 20% 10%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 34%)}.hero-inner{max-width:850px;margin:auto;text-align:center}.eyebrow{display:inline-block;padding:6px 10px;border-radius:999px;background:color-mix(in srgb,var(--accent) 10%,white);color:var(--accent);font-size:11px;font-weight:800}.hero h1{font-size:clamp(38px,6vw,67px);line-height:1.2;margin:16px 0}.hero p{max-width:760px;margin:auto;color:var(--muted);font-size:15px;line-height:2}.price{margin-top:18px;color:var(--accent);font-size:15px;font-weight:800}.actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:24px}.btn{min-height:50px;display:inline-flex;align-items:center;justify-content:center;padding:0 21px;border-radius:12px;text-decoration:none;font-size:12px;font-weight:800}.btn.primary{background:var(--accent);color:#fff}.btn.secondary{border:1px solid var(--line);background:#fff;color:var(--accent)}
+    .hero{padding:72px 0 66px;background:radial-gradient(circle at 15% 5%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 35%)}.hero-inner{display:grid;grid-template-columns:minmax(0,.9fr) minmax(420px,1.1fr);align-items:center;gap:42px}.hero-copy{text-align:right}.eyebrow{display:inline-block;padding:6px 10px;border-radius:999px;background:color-mix(in srgb,var(--accent) 10%,white);color:var(--accent);font-size:11px;font-weight:800}.hero h1{font-size:clamp(36px,4.7vw,62px);line-height:1.22;margin:16px 0}.hero p{max-width:650px;color:var(--muted);font-size:14px;line-height:2}.price{margin-top:18px;color:var(--accent);font-size:15px;font-weight:800}.hero .actions{justify-content:flex-start}.hero-visual{position:relative;isolation:isolate}.hero-visual:before{content:"";position:absolute;inset:8% -4% -7% 9%;z-index:-1;border-radius:32px;background:color-mix(in srgb,var(--accent) 12%,#fff);transform:rotate(2deg)}.hero-visual img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:26px;box-shadow:0 24px 70px color-mix(in srgb,var(--accent) 22%,transparent)}.actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:24px}.btn{min-height:50px;display:inline-flex;align-items:center;justify-content:center;padding:0 21px;border-radius:12px;text-decoration:none;font-size:12px;font-weight:800}.btn.primary{background:var(--accent);color:#fff}.btn.secondary{border:1px solid var(--line);background:#fff;color:var(--accent)}
     .features{padding:60px 0}.section-head{text-align:center;margin-bottom:25px}.section-head small{color:var(--gold);font-weight:800}.section-head h2{font-size:32px;margin-top:6px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{padding:23px;border:1px solid var(--line);border-radius:18px;background:#fff}.card span{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:color-mix(in srgb,var(--accent) 9%,white);color:var(--accent);font-weight:800}.card h3{font-size:15px;margin:13px 0 7px}.card p{color:var(--muted);font-size:11px;line-height:1.9}
     .work{display:grid;grid-template-columns:.9fr 1.1fr;overflow:hidden;margin:25px auto 65px;border-radius:23px;background:#102e27;color:#fff}.work img{width:100%;height:100%;min-height:350px;object-fit:cover;object-position:top}.work-copy{padding:35px;display:flex;flex-direction:column;justify-content:center}.work-copy small{color:#e0c476;font-weight:800}.work h2{font-size:29px;margin:7px 0}.work p{color:#c8d7d1;font-size:12px;line-height:1.9}.work a{align-self:flex-start;margin-top:17px;color:#102e27;background:#dec475;padding:11px 16px;border-radius:10px;text-decoration:none;font-size:11px;font-weight:800}
     .customer-proof{padding:10px 0 65px}.client-links{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:24px}.client-links a{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--accent);text-decoration:none;font-size:10px;font-weight:800}.reviews{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.review{padding:22px;border:1px solid var(--line);border-radius:18px;background:#fff}.review .stars{color:#c49a43;letter-spacing:2px}.review blockquote{min-height:88px;margin:10px 0;color:#53615c;font-size:11px;line-height:1.9}.review strong{font-size:11px}.review small{display:block;color:#87918d;font-size:9px;margin-top:3px}
     .closing{text-align:center;padding:55px 18px;background:var(--soft)}.closing h2{font-size:30px}.closing p{color:var(--muted);margin:7px 0 18px}footer{padding:24px;text-align:center;color:#7a8581;font-size:10px}
-    @media(max-width:800px){.hero{padding:55px 0}.grid,.reviews{grid-template-columns:1fr}.work{grid-template-columns:1fr}.work img{min-height:260px}.work-copy{text-align:center}.work-copy a{align-self:stretch}.hero p{font-size:13px}.review blockquote{min-height:0}}
+    @media(max-width:800px){.hero{padding:44px 0 50px}.hero-inner{grid-template-columns:1fr;gap:30px}.hero-copy{text-align:center}.hero .actions{justify-content:center}.hero-visual{width:min(100%,620px);margin:auto}.hero-visual:before{inset:8% 2% -5% 8%}.hero-visual img{border-radius:20px}.grid,.reviews{grid-template-columns:1fr}.work{grid-template-columns:1fr}.work img{min-height:260px}.work-copy{text-align:center}.work-copy a{align-self:stretch}.hero p{font-size:13px}.review blockquote{min-height:0}}
+    @media(max-width:480px){.wrap{width:min(100% - 24px,1080px)}.hero h1{font-size:34px}.hero-visual img{aspect-ratio:4/3}.btn{width:100%}.back{font-size:10px}}
   </style>
 </head>
 <body>
   <header><div class="wrap nav"><a class="brand" href="/"><span class="mark">RT</span><span>RT Studio</span></a><a class="back" href="/#products">المنتجات ←</a></div></header>
   <main>
-    <section class="hero"><div class="wrap hero-inner"><span class="eyebrow">{{ eyebrow }}</span><h1>{{ headline }}</h1><p>{{ summary }}</p><div class="price">{{ price }}</div><div class="actions"><a class="btn primary" href="{{ primary_url }}" {% if product == 'custom' %}target="_blank" rel="noopener"{% endif %}>{{ primary_label }}</a><a class="btn secondary" href="{{ login_url }}">{{ login_label }}</a></div></div></section>
+    <section class="hero"><div class="wrap hero-inner"><div class="hero-copy"><span class="eyebrow">{{ eyebrow }}</span><h1>{{ headline }}</h1><p>{{ summary }}</p><div class="price">{{ price }}</div><div class="actions"><a class="btn primary" href="{{ primary_url }}" {% if product == 'custom' %}target="_blank" rel="noopener"{% endif %}>{{ primary_label }}</a><a class="btn secondary" href="{{ login_url }}">{{ login_label }}</a></div></div><figure class="hero-visual"><img src="{{ hero_visual }}" alt="{{ hero_visual_alt }}" width="1536" height="1024" fetchpriority="high"></figure></div></section>
     <section class="features"><div class="wrap"><div class="section-head"><small>ما الذي تحصل عليه؟</small><h2>مزايا تخدم هدفك مباشرة</h2></div><div class="grid">{% for title, description in features %}<article class="card"><span>✓</span><h3>{{ title }}</h3><p>{{ description }}</p></article>{% endfor %}</div></div></section>
     {% if product == 'stores' %}
     <section class="customer-proof">
