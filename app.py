@@ -1540,17 +1540,32 @@ def landing():
     if 'user_id' in session:
         return redirect(url_for('dashboard'))
         
-    # إذا لم يكن مسجلاً، نعرض صفحة الهبوط
+    # إذا لم يكن مسجلاً، نعرض الصفحة الرئيسية المختصرة
     from database import record_join_visit
     record_join_visit('home')
-    return render_template('join.html')
+    return render_template('home.html')
 
 @app.route('/join')
 def join():
-    # يمكن استخدام هذا الرابط أيضاً للوصول للصفحة الترويجية
+    # الكتالوج التفصيلي والأسعار
     from database import record_join_visit
     record_join_visit('join')
     return render_template('join.html')
+
+
+@app.route('/products/stores')
+def stores_product():
+    return render_template('product_landing.html', product='stores')
+
+
+@app.route('/products/moeen')
+def moeen_product():
+    return render_template('product_landing.html', product='moeen')
+
+
+@app.route('/services/custom-websites')
+def custom_websites_product():
+    return render_template('product_landing.html', product='custom')
 
 # =========================
 # Dashboard (Protected)

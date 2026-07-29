@@ -1,0 +1,90 @@
+{% if product == 'stores' %}
+  {% set page_title = 'متجر RT Studio' %}
+  {% set eyebrow = 'تجارة إلكترونية دون عمولة' %}
+  {% set headline = 'متجرك الإلكتروني وتطبيق إدارته في مكان واحد' %}
+  {% set summary = 'اعرض منتجاتك، استقبل الطلبات، تابع المخزون والشحن، وتواصل مع الزبائن عبر واتساب من لوحة واضحة تعمل على الهاتف والكمبيوتر.' %}
+  {% set price = '100₪ شهريًا' %}
+  {% set primary_url = '/register' %}
+  {% set primary_label = 'إنشاء متجر' %}
+  {% set login_url = '/login' %}
+  {% set login_label = 'دخول أصحاب المتاجر' %}
+  {% set accent = '#6254ea' %}
+  {% set features = [
+    ('إدارة المنتجات والطلبات', 'أضف المنتجات والصور والأسعار وتابع حالة كل طلب من لوحة الإدارة.'),
+    ('صفر عمولة', 'اشتراك ثابت وواضح دون اقتطاع نسبة من مبيعاتك.'),
+    ('واتساب وإشعارات فورية', 'يصل طلب الزبون منظمًا وتصلك إشعارات الطلبات الجديدة.'),
+    ('تطبيق ويب للمتجر والإدارة', 'ثبّت المتجر ولوحة الإدارة على الهاتف للوصول السريع.'),
+    ('صور وخيارات متعددة', 'اعرض أكثر من صورة وخيارات النوع أو الحجم أو الطعم.'),
+    ('الشحن والإحصائيات', 'اربط شركة الشحن وتابع الزيارات وأداء المنتجات والطلبات.')
+  ] %}
+{% elif product == 'moeen' %}
+  {% set page_title = 'مُعين التنفيذي' %}
+  {% set eyebrow = 'مساعدك الشخصي المشفّر' %}
+  {% set headline = 'مواعيدك وملاحظاتك ومتابعاتك تحت السيطرة' %}
+  {% set summary = 'مساعد شخصي للمدير والمسؤول يذكّرك بالمواعيد والاجتماعات، يحفظ الملاحظات المكتوبة والصوتية، وينظم الاتصالات والمتابعات على الهاتف والكمبيوتر.' %}
+  {% set price = '60₪ شهريًا · تجربة مجانية 48 ساعة' %}
+  {% set primary_url = '/moeen-executive/register' %}
+  {% set primary_label = 'ابدأ التجربة المجانية' %}
+  {% set login_url = '/moeen-executive/' %}
+  {% set login_label = 'دخول مُعين' %}
+  {% set accent = '#17483b' %}
+  {% set features = [
+    ('التذكير بالمواعيد', 'تنبيهات للاجتماعات والمتابعات والاتصالات مع إبراز الحدث داخل التطبيق.'),
+    ('الصوت إلى نص', 'أملِ ملاحظتك بالعربية وراجع النص قبل حفظه في القسم المناسب.'),
+    ('الاجتماعات والمتابعات', 'نظّم الالتزامات والأشخاص والمواعيد والملاحظات المرتبطة بها.'),
+    ('جهات الاتصال', 'دفتر شخصي للأرقام والبريد مع إضافة صوتية ومشاركة سهلة.'),
+    ('مزامنة بين الأجهزة', 'اربط الهاتف والكمبيوتر برمز مؤقت لتظهر البيانات على الجهازين.'),
+    ('خصوصية وتشفير', 'يُشفّر المحتوى على جهازك قبل المزامنة ولا يظهر في لوحة RT Studio.')
+  ] %}
+{% else %}
+  {% set page_title = 'تصميم موقع أو نظام خاص' %}
+  {% set eyebrow = 'خدمة تطوير حسب الطلب' %}
+  {% set headline = 'موقع يعكس هوية مشروعك، لا قالبًا يشبه الجميع' %}
+  {% set summary = 'نصمم ونطور موقعًا أو نظام ويب وفق احتياج مشروعك، من التخطيط والهوية إلى البرمجة والنشر، مع خيارات الاستضافة والصيانة وإدارة المحتوى.' %}
+  {% set price = 'التصميم والبرمجة يبدأان من 300$' %}
+  {% set primary_url = 'https://wa.me/970592776784?text=مرحبًا،%20أنا%20مهتم%20بتصميم%20موقع%20أو%20نظام%20خاص' %}
+  {% set primary_label = 'اطلب استشارة' %}
+  {% set login_url = '/join#custom-service' %}
+  {% set login_label = 'الأسعار والتفاصيل' %}
+  {% set accent = '#182238' %}
+  {% set features = [
+    ('تصميم مخصص', 'واجهة متجاوبة تعكس هوية المشروع وتخدم جمهوره وأهدافه.'),
+    ('برمجة وفق الاحتياج', 'صفحات ووظائف خاصة بدل حصر المشروع في قالب جاهز.'),
+    ('إطلاق واستضافة', 'رفع الموقع وربطه بالنطاق مع استضافة وصيانة اختيارية.'),
+    ('إدارة المحتوى', 'يمكننا متابعة التحديثات الروتينية للمحتوى وفق باقة واضحة.'),
+    ('وضوح في النطاق', 'نحدد ما يشمله المشروع قبل البدء، وأي تطوير جديد يُسعّر منفصلًا.'),
+    ('دعم محلي', 'تواصل مباشر ومتابعة عربية بعد الإطلاق.')
+  ] %}
+{% endif %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ page_title }} | RT Studio</title>
+  <meta name="description" content="{{ summary }}">
+  <link rel="canonical" href="https://www.rtstudio.store{{ request.path }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--accent:{{ accent }};--ink:#17221f;--muted:#68746f;--line:#e1e7e4;--soft:#f5f8f7;--gold:#c49a43}*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{font-family:"Cairo",sans-serif;color:var(--ink);background:#fbfdfc}.wrap{width:min(1080px,calc(100% - 36px));margin:auto}
+    header{border-bottom:1px solid var(--line);background:#fff}.nav{height:70px;display:flex;align-items:center;gap:12px}.brand{display:flex;align-items:center;gap:9px;font-weight:800;text-decoration:none}.mark{width:37px;height:37px;display:grid;place-items:center;border-radius:10px;background:var(--accent);color:#fff}.back{margin-inline-start:auto;text-decoration:none;font-size:12px;font-weight:700;color:#58655f}
+    .hero{padding:80px 0 65px;background:radial-gradient(circle at 20% 10%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 34%)}.hero-inner{max-width:850px;margin:auto;text-align:center}.eyebrow{display:inline-block;padding:6px 10px;border-radius:999px;background:color-mix(in srgb,var(--accent) 10%,white);color:var(--accent);font-size:11px;font-weight:800}.hero h1{font-size:clamp(38px,6vw,67px);line-height:1.2;margin:16px 0}.hero p{max-width:760px;margin:auto;color:var(--muted);font-size:15px;line-height:2}.price{margin-top:18px;color:var(--accent);font-size:15px;font-weight:800}.actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:24px}.btn{min-height:50px;display:inline-flex;align-items:center;justify-content:center;padding:0 21px;border-radius:12px;text-decoration:none;font-size:12px;font-weight:800}.btn.primary{background:var(--accent);color:#fff}.btn.secondary{border:1px solid var(--line);background:#fff;color:var(--accent)}
+    .features{padding:60px 0}.section-head{text-align:center;margin-bottom:25px}.section-head small{color:var(--gold);font-weight:800}.section-head h2{font-size:32px;margin-top:6px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{padding:23px;border:1px solid var(--line);border-radius:18px;background:#fff}.card span{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:color-mix(in srgb,var(--accent) 9%,white);color:var(--accent);font-weight:800}.card h3{font-size:15px;margin:13px 0 7px}.card p{color:var(--muted);font-size:11px;line-height:1.9}
+    .work{display:grid;grid-template-columns:.9fr 1.1fr;overflow:hidden;margin:25px auto 65px;border-radius:23px;background:#102e27;color:#fff}.work img{width:100%;height:100%;min-height:350px;object-fit:cover;object-position:top}.work-copy{padding:35px;display:flex;flex-direction:column;justify-content:center}.work-copy small{color:#e0c476;font-weight:800}.work h2{font-size:29px;margin:7px 0}.work p{color:#c8d7d1;font-size:12px;line-height:1.9}.work a{align-self:flex-start;margin-top:17px;color:#102e27;background:#dec475;padding:11px 16px;border-radius:10px;text-decoration:none;font-size:11px;font-weight:800}
+    .closing{text-align:center;padding:55px 18px;background:var(--soft)}.closing h2{font-size:30px}.closing p{color:var(--muted);margin:7px 0 18px}footer{padding:24px;text-align:center;color:#7a8581;font-size:10px}
+    @media(max-width:800px){.hero{padding:55px 0}.grid{grid-template-columns:1fr}.work{grid-template-columns:1fr}.work img{min-height:260px}.work-copy{text-align:center}.work-copy a{align-self:stretch}.hero p{font-size:13px}}
+  </style>
+</head>
+<body>
+  <header><div class="wrap nav"><a class="brand" href="/"><span class="mark">RT</span><span>RT Studio</span></a><a class="back" href="/join">الكتالوج والأسعار ←</a></div></header>
+  <main>
+    <section class="hero"><div class="wrap hero-inner"><span class="eyebrow">{{ eyebrow }}</span><h1>{{ headline }}</h1><p>{{ summary }}</p><div class="price">{{ price }}</div><div class="actions"><a class="btn primary" href="{{ primary_url }}" {% if product == 'custom' %}target="_blank" rel="noopener"{% endif %}>{{ primary_label }}</a><a class="btn secondary" href="{{ login_url }}">{{ login_label }}</a></div></div></section>
+    <section class="features"><div class="wrap"><div class="section-head"><small>ما الذي تحصل عليه؟</small><h2>مزايا تخدم هدفك مباشرة</h2></div><div class="grid">{% for title, description in features %}<article class="card"><span>✓</span><h3>{{ title }}</h3><p>{{ description }}</p></article>{% endfor %}</div></div></section>
+    {% if product == 'custom' %}
+    <section class="wrap work"><img src="/static/assets/mizan-political-showcase.png" alt="موقع مؤسسة الميزان السياسي"><div class="work-copy"><small>من أعمالنا</small><h2>مؤسسة الميزان السياسي</h2><p>موقع بحثي وإعلامي عربي للأخبار والتحليلات والترجمات، بواجهة تحريرية متجاوبة وبحث وتصنيفات واضحة.</p><a href="https://mizan-political-web.onrender.com" target="_blank" rel="noopener noreferrer">زيارة الموقع الحي ↗</a></div></section>
+    {% endif %}
+    <section class="closing"><h2>جاهز للخطوة التالية؟</h2><p>{{ price }}</p><div class="actions"><a class="btn primary" href="{{ primary_url }}" {% if product == 'custom' %}target="_blank" rel="noopener"{% endif %}>{{ primary_label }}</a><a class="btn secondary" href="/join#pricing">مقارنة الأسعار</a></div></section>
+  </main>
+  <footer>© 2026 RT Studio · صُنع في فلسطين</footer>
+</body>
+</html>
