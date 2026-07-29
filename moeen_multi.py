@@ -295,9 +295,12 @@ def auth_status():
     account_id = session.get(SESSION_ACCOUNT)
     device_id = session.get(SESSION_DEVICE)
     account = _account(account_id=account_id) if account_id else None
+    device = _device(account_id, device_id) if account and device_id else None
     authenticated = bool(
-        account and account["status"] == "active" and device_id and _device(account_id, device_id)
+        account and account["status"] == "active" and device
     )
+    if authenticated:
+        _touch_device(account_id, device)
     renewal_only = bool(authenticated and not _subscription_valid(account))
     return jsonify(
         configured=True,
