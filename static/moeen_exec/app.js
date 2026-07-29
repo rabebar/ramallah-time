@@ -4,6 +4,37 @@ const API_BASE="/moeen-executive";
 const dataKinds=["memories","tasks","meetings","contacts"];
 let secureState={memories:[],tasks:[],meetings:[],contacts:[],_deleted:{}};
 let vaultKey=null,syncVersion=0,syncTimer=null,syncBusy=false;
+function installPullToRefresh(){
+  if(!("ontouchstart" in window))return;
+  const indicator=document.createElement("div");
+  indicator.className="pull-refresh";
+  indicator.setAttribute("aria-hidden","true");
+  indicator.textContent="اسحب للتحديث";
+  document.body.appendChild(indicator);
+  let startX=0,startY=0,pulling=false,ready=false;
+  document.addEventListener("touchstart",event=>{
+    if(window.scrollY>0||event.touches.length!==1||event.target.closest("dialog,input,textarea,select"))return;
+    startX=event.touches[0].clientX;startY=event.touches[0].clientY;pulling=true;ready=false;
+  },{passive:true});
+  document.addEventListener("touchmove",event=>{
+    if(!pulling||event.touches.length!==1)return;
+    const dx=Math.abs(event.touches[0].clientX-startX),dy=event.touches[0].clientY-startY;
+    if(dy<=0||dx>dy){pulling=false;indicator.classList.remove("visible","ready");return}
+    const distance=Math.min(dy,120);
+    ready=distance>=82;
+    indicator.classList.toggle("visible",distance>18);
+    indicator.classList.toggle("ready",ready);
+    indicator.textContent=ready?"اترك للتحديث":"اسحب للتحديث";
+    indicator.style.setProperty("--pull",`${distance}px`);
+  },{passive:true});
+  document.addEventListener("touchend",()=>{
+    if(!pulling)return;
+    pulling=false;
+    if(ready){indicator.textContent="جارٍ التحديث…";indicator.classList.add("loading");location.reload();return}
+    indicator.classList.remove("visible","ready");indicator.style.removeProperty("--pull");
+  },{passive:true});
+}
+installPullToRefresh();
 const trustedKeyStore={
   async open(){return new Promise((resolve,reject)=>{const r=indexedDB.open("moeen_exec_trusted_device",1);r.onupgradeneeded=()=>r.result.createObjectStore("session");r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})},
   async save(scope,key){const db=await this.open();return new Promise((resolve,reject)=>{const q=db.transaction("session","readwrite").objectStore("session").put({scope,key},"vault");q.onsuccess=()=>resolve();q.onerror=()=>reject(q.error)})},
