@@ -179,6 +179,8 @@
     "سيتم توفير رقم الإيبان قريبًا": "IBAN will be available soon",
     "رقم العملية أو مرجع التحويل": "Transaction Number or Transfer Reference",
     "صورة الإيصال أو ملف PDF (اختياري عند إدخال رقم العملية)": "Receipt image or PDF (optional when entering a transaction number)",
+    "بنك فلسطين-حساب شيقل · RT Studio": "Bank of Palestine — Shekel Account · RT Studio",
+    "بعد التحويل، أرسل رقم العملية أو صورة الإيصال وسيتم تفعيل الاشتراك بعد المراجعة.": "After transferring, submit the transaction number or a receipt image. Your subscription will be activated after review.",
     "ملاحظة اختيارية للإدارة": "Optional Note for Administration",
     "إرسال إثبات الدفع": "Submit Payment Proof",
     "الحساب والأجهزة": "Account and Devices",
