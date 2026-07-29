@@ -1,3 +1,70 @@
+{% set is_en = lang|default('ar') == 'en' %}
+{% if is_en %}
+  {% if product == 'stores' %}
+    {% set page_title = 'RT Studio Online Store' %}
+    {% set eyebrow = 'Commission-free e-commerce' %}
+    {% set headline = 'Your online store and management app in one place' %}
+    {% set summary = 'Showcase your products, receive orders, track inventory and delivery, and communicate with customers through WhatsApp from one clear dashboard on mobile and desktop.' %}
+    {% set price = '₪100 per month' %}
+    {% set primary_url = '/register' %}
+    {% set primary_label = 'Create Your Store' %}
+    {% set login_url = '/login' %}
+    {% set login_label = 'Store Owner Login' %}
+    {% set accent = '#6254ea' %}
+    {% set hero_visual = '/static/assets/product-stores-visual.webp' %}
+    {% set hero_visual_alt = 'A responsive online store displayed on a laptop, tablet, and phone' %}
+    {% set features = [
+      ('Products and orders', 'Add products, images, and prices, then follow every order from your dashboard.'),
+      ('Zero commission', 'A clear fixed subscription with no percentage deducted from your sales.'),
+      ('WhatsApp and instant alerts', 'Receive organized customer orders and immediate notifications for new activity.'),
+      ('Installable web app', 'Install your storefront and dashboard on mobile for quick access.'),
+      ('Multiple images and options', 'Present several images and product options such as type, size, or flavor.'),
+      ('Delivery and analytics', 'Connect delivery services and track visits, products, and order performance.')
+    ] %}
+  {% elif product == 'moeen' %}
+    {% set page_title = 'Moeen Executive' %}
+    {% set eyebrow = 'Your encrypted personal assistant' %}
+    {% set headline = 'Keep your schedule, notes, and follow-ups under control' %}
+    {% set summary = 'A personal assistant for managers and executives that reminds you of meetings, saves written and voice notes, and organizes calls and follow-ups across mobile and desktop.' %}
+    {% set price = '₪60 per month · 48-hour free trial' %}
+    {% set primary_url = '/moeen-executive/register' %}
+    {% set primary_label = 'Start Your Free Trial' %}
+    {% set login_url = '/moeen-executive/' %}
+    {% set login_label = 'Moeen Login' %}
+    {% set accent = '#17483b' %}
+    {% set hero_visual = '/static/assets/product-moeen-visual.webp' %}
+    {% set hero_visual_alt = 'Moeen Executive on a phone and laptop in a professional workspace' %}
+    {% set features = [
+      ('Schedule reminders', 'Alerts for meetings, follow-ups, and calls, with due events highlighted inside the app.'),
+      ('Voice to text', 'Dictate your notes and review the text before saving it in the right section.'),
+      ('Meetings and follow-ups', 'Organize commitments, contacts, dates, and the notes related to each item.'),
+      ('Personal contacts', 'Keep phone numbers and emails, add entries by voice, and share them easily.'),
+      ('Device synchronization', 'Link your phone and computer with a temporary code to access the same information.'),
+      ('Privacy and encryption', 'Your content is encrypted on your device before syncing and is not visible in the RT Studio dashboard.')
+    ] %}
+  {% else %}
+    {% set page_title = 'Custom Website and Web System Design' %}
+    {% set eyebrow = 'Made-to-order development' %}
+    {% set headline = 'A website shaped around your identity, not a template made for everyone' %}
+    {% set summary = 'We design and develop a website or web system around your project, from planning and visual identity to development and launch, with optional hosting, maintenance, and content management.' %}
+    {% set price = 'Design and development start from $300' %}
+    {% set primary_url = 'https://wa.me/970592776784?text=Hello%2C%20I%20am%20interested%20in%20a%20custom%20website%20or%20web%20system' %}
+    {% set primary_label = 'Request a Consultation' %}
+    {% set login_url = '/#products' %}
+    {% set login_label = 'Back to Products' %}
+    {% set accent = '#182238' %}
+    {% set hero_visual = '/static/assets/product-custom-visual.webp' %}
+    {% set hero_visual_alt = 'Custom responsive websites and web systems across multiple devices' %}
+    {% set features = [
+      ('Bespoke design', 'A responsive interface that reflects your identity and serves your audience and goals.'),
+      ('Purpose-built development', 'Custom pages and functionality instead of forcing your project into a ready-made template.'),
+      ('Launch and hosting', 'Deployment, domain connection, and optional hosting and maintenance.'),
+      ('Content management', 'We can handle routine content updates through a clear service package.'),
+      ('Clear project scope', 'We define the included work before starting and price new additions separately.'),
+      ('Local support', 'Direct communication and Arabic follow-up after launch.')
+    ] %}
+  {% endif %}
+{% else %}
 {% if product == 'stores' %}
   {% set page_title = 'متجر RT Studio' %}
   {% set eyebrow = 'تجارة إلكترونية دون عمولة' %}
@@ -62,56 +129,66 @@
     ('دعم محلي', 'تواصل مباشر ومتابعة عربية بعد الإطلاق.')
   ] %}
 {% endif %}
+{% endif %}
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="{{ 'en' if is_en else 'ar' }}" dir="{{ 'ltr' if is_en else 'rtl' }}">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{{ page_title }} | RT Studio</title>
   <meta name="description" content="{{ summary }}">
-  <link rel="canonical" href="https://www.rtstudio.store{{ request.path }}">
+  <link rel="canonical" href="https://www.rtstudio.store{{ canonical_url }}">
+  <link rel="alternate" hreflang="{{ 'ar' if is_en else 'en' }}" href="https://www.rtstudio.store{{ alternate_url }}">
+  <link rel="alternate" hreflang="x-default" href="https://www.rtstudio.store{{ alternate_url if is_en else canonical_url }}">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root{--accent:{{ accent }};--ink:#17221f;--muted:#68746f;--line:#e1e7e4;--soft:#f5f8f7;--gold:#c49a43}*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{font-family:"Cairo",sans-serif;color:var(--ink);background:#fbfdfc}.wrap{width:min(1080px,calc(100% - 36px));margin:auto}
-    header{border-bottom:1px solid var(--line);background:#fff}.nav{height:70px;display:flex;align-items:center;gap:12px}.brand{display:flex;align-items:center;gap:9px;font-weight:800;text-decoration:none}.mark{width:37px;height:37px;display:grid;place-items:center;border-radius:10px;background:var(--accent);color:#fff}.back{margin-inline-start:auto;text-decoration:none;font-size:12px;font-weight:700;color:#58655f}
+    :root{--accent:{{ accent }};--ink:#17221f;--muted:#68746f;--line:#e1e7e4;--soft:#f5f8f7;--gold:#c49a43}*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{font-family:"Cairo",sans-serif;color:var(--ink);background:#fbfdfc}body.ltr{font-family:"Inter",sans-serif}.wrap{width:min(1080px,calc(100% - 36px));margin:auto}
+    header{border-bottom:1px solid var(--line);background:#fff}.nav{height:70px;display:flex;align-items:center;gap:12px}.brand{display:flex;align-items:center;gap:9px;font-weight:800;text-decoration:none;color:var(--ink)}.mark{width:37px;height:37px;display:grid;place-items:center;border-radius:10px;background:var(--accent);color:#fff}.back{margin-inline-start:auto;text-decoration:none;font-size:12px;font-weight:700;color:#58655f}.lang-switch{min-width:52px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--accent);text-align:center;text-decoration:none;font-size:11px;font-weight:800}
     .hero{padding:72px 0 66px;background:radial-gradient(circle at 15% 5%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 35%)}.hero-inner{display:grid;grid-template-columns:minmax(0,.9fr) minmax(420px,1.1fr);align-items:center;gap:42px}.hero-copy{text-align:right}.eyebrow{display:inline-block;padding:6px 10px;border-radius:999px;background:color-mix(in srgb,var(--accent) 10%,white);color:var(--accent);font-size:11px;font-weight:800}.hero h1{font-size:clamp(36px,4.7vw,62px);line-height:1.22;margin:16px 0}.hero p{max-width:650px;color:var(--muted);font-size:14px;line-height:2}.price{margin-top:18px;color:var(--accent);font-size:15px;font-weight:800}.hero .actions{justify-content:flex-start}.hero-visual{position:relative;isolation:isolate}.hero-visual:before{content:"";position:absolute;inset:8% -4% -7% 9%;z-index:-1;border-radius:32px;background:color-mix(in srgb,var(--accent) 12%,#fff);transform:rotate(2deg)}.hero-visual img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:26px;box-shadow:0 24px 70px color-mix(in srgb,var(--accent) 22%,transparent)}.actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:24px}.btn{min-height:50px;display:inline-flex;align-items:center;justify-content:center;padding:0 21px;border-radius:12px;text-decoration:none;font-size:12px;font-weight:800}.btn.primary{background:var(--accent);color:#fff}.btn.secondary{border:1px solid var(--line);background:#fff;color:var(--accent)}
     .features{padding:60px 0}.section-head{text-align:center;margin-bottom:25px}.section-head small{color:var(--gold);font-weight:800}.section-head h2{font-size:32px;margin-top:6px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{padding:23px;border:1px solid var(--line);border-radius:18px;background:#fff}.card span{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:color-mix(in srgb,var(--accent) 9%,white);color:var(--accent);font-weight:800}.card h3{font-size:15px;margin:13px 0 7px}.card p{color:var(--muted);font-size:11px;line-height:1.9}
     .work{display:grid;grid-template-columns:.9fr 1.1fr;overflow:hidden;margin:25px auto 65px;border-radius:23px;background:#102e27;color:#fff}.work img{width:100%;height:100%;min-height:350px;object-fit:cover;object-position:top}.work-copy{padding:35px;display:flex;flex-direction:column;justify-content:center}.work-copy small{color:#e0c476;font-weight:800}.work h2{font-size:29px;margin:7px 0}.work p{color:#c8d7d1;font-size:12px;line-height:1.9}.work a{align-self:flex-start;margin-top:17px;color:#102e27;background:#dec475;padding:11px 16px;border-radius:10px;text-decoration:none;font-size:11px;font-weight:800}
     .customer-proof{padding:10px 0 65px}.client-links{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:24px}.client-links a{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--accent);text-decoration:none;font-size:10px;font-weight:800}.reviews{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.review{padding:22px;border:1px solid var(--line);border-radius:18px;background:#fff}.review .stars{color:#c49a43;letter-spacing:2px}.review blockquote{min-height:88px;margin:10px 0;color:#53615c;font-size:11px;line-height:1.9}.review strong{font-size:11px}.review small{display:block;color:#87918d;font-size:9px;margin-top:3px}
+    body.ltr .hero-copy{text-align:left}body.ltr .work-copy{text-align:left}
     .closing{text-align:center;padding:55px 18px;background:var(--soft)}.closing h2{font-size:30px}.closing p{color:var(--muted);margin:7px 0 18px}footer{padding:24px;text-align:center;color:#7a8581;font-size:10px}
-    @media(max-width:800px){.hero{padding:44px 0 50px}.hero-inner{grid-template-columns:1fr;gap:30px}.hero-copy{text-align:center}.hero .actions{justify-content:center}.hero-visual{width:min(100%,620px);margin:auto}.hero-visual:before{inset:8% 2% -5% 8%}.hero-visual img{border-radius:20px}.grid,.reviews{grid-template-columns:1fr}.work{grid-template-columns:1fr}.work img{min-height:260px}.work-copy{text-align:center}.work-copy a{align-self:stretch}.hero p{font-size:13px}.review blockquote{min-height:0}}
+    @media(max-width:800px){.hero{padding:44px 0 50px}.hero-inner{grid-template-columns:1fr;gap:30px}.hero-copy,body.ltr .hero-copy{text-align:center}.hero .actions{justify-content:center}.hero-visual{width:min(100%,620px);margin:auto}.hero-visual:before{inset:8% 2% -5% 8%}.hero-visual img{border-radius:20px}.grid,.reviews{grid-template-columns:1fr}.work{grid-template-columns:1fr}.work img{min-height:260px}.work-copy,body.ltr .work-copy{text-align:center}.work-copy a{align-self:stretch}.hero p{font-size:13px}.review blockquote{min-height:0}}
     @media(max-width:480px){.wrap{width:min(100% - 24px,1080px)}.hero h1{font-size:34px}.hero-visual img{aspect-ratio:4/3}.btn{width:100%}.back{font-size:10px}}
   </style>
 </head>
-<body>
-  <header><div class="wrap nav"><a class="brand" href="/"><span class="mark">RT</span><span>RT Studio</span></a><a class="back" href="/#products">المنتجات ←</a></div></header>
+<body class="{{ 'ltr' if is_en else 'rtl' }}">
+  <header><div class="wrap nav"><a class="brand" href="/"><span class="mark">RT</span><span>RT Studio</span></a><a class="back" href="/#products">{{ 'Products' if is_en else 'المنتجات' }} {{ '→' if is_en else '←' }}</a><a class="lang-switch" href="{{ switch_url }}" lang="{{ 'ar' if is_en else 'en' }}">{{ 'عربي' if is_en else 'EN' }}</a></div></header>
   <main>
     <section class="hero"><div class="wrap hero-inner"><div class="hero-copy"><span class="eyebrow">{{ eyebrow }}</span><h1>{{ headline }}</h1><p>{{ summary }}</p><div class="price">{{ price }}</div><div class="actions"><a class="btn primary" href="{{ primary_url }}" {% if product == 'custom' %}target="_blank" rel="noopener"{% endif %}>{{ primary_label }}</a><a class="btn secondary" href="{{ login_url }}">{{ login_label }}</a></div></div><figure class="hero-visual"><img src="{{ hero_visual }}" alt="{{ hero_visual_alt }}" width="1536" height="1024" fetchpriority="high"></figure></div></section>
-    <section class="features"><div class="wrap"><div class="section-head"><small>ما الذي تحصل عليه؟</small><h2>مزايا تخدم هدفك مباشرة</h2></div><div class="grid">{% for title, description in features %}<article class="card"><span>✓</span><h3>{{ title }}</h3><p>{{ description }}</p></article>{% endfor %}</div></div></section>
+    <section class="features"><div class="wrap"><div class="section-head"><small>{{ 'What do you get?' if is_en else 'ما الذي تحصل عليه؟' }}</small><h2>{{ 'Features designed around your goal' if is_en else 'مزايا تخدم هدفك مباشرة' }}</h2></div><div class="grid">{% for title, description in features %}<article class="card"><span>✓</span><h3>{{ title }}</h3><p>{{ description }}</p></article>{% endfor %}</div></div></section>
     {% if product == 'stores' %}
     <section class="customer-proof">
       <div class="wrap">
-        <div class="section-head"><small>زبائننا في منصة المتاجر</small><h2>متاجر حقيقية وآراء أصحابها</h2></div>
+        <div class="section-head"><small>{{ 'Our e-commerce clients' if is_en else 'زبائننا في منصة المتاجر' }}</small><h2>{{ 'Real stores and owner feedback' if is_en else 'متاجر حقيقية وآراء أصحابها' }}</h2></div>
         <div class="client-links">
-          <a href="/store/ayyad-watches-" target="_blank">عياد للساعات</a>
+          <a href="/store/ayyad-watches-" target="_blank">{{ 'Ayyad Watches' if is_en else 'عياد للساعات' }}</a>
           <a href="/store/selvana" target="_blank">Selvana Jewellery</a>
           <a href="/store/palestinian-heritage-boutique" target="_blank">Palestinian Heritage</a>
           <a href="/store/royal-animals0" target="_blank">Royal Animals</a>
           <a href="/store/chrono-watches" target="_blank">CHRONO WATCHES</a>
         </div>
         <div class="reviews">
+          {% if is_en %}
+          <article class="review"><div class="stars">★★★★★</div><blockquote>“The shopping cart is extremely useful. It organizes orders and replaces the chaos of comments and messages.”</blockquote><strong>Mohammad Ayyad</strong><small>Store owner on RT Studio</small></article>
+          <article class="review"><div class="stars">★★★★★</div><blockquote>“Image processing is one of the strongest features. Product photos now look professional and details are much clearer.”</blockquote><strong>Ayyad Watches</strong><small>Watch store on the platform</small></article>
+          <article class="review"><div class="stars">★★★★★</div><blockquote>“The app is easy and advanced, and it has significantly improved how we organize our work.”</blockquote><strong>CHRONO WATCHES Owner</strong><small>Watch store on the platform</small></article>
+          {% else %}
           <article class="review"><div class="stars">★★★★★</div><blockquote>«سلة الشراء مفيدة جدًا؛ تنظّم الطلبات وتغنيني عن فوضى التعليقات والرسائل.»</blockquote><strong>محمد عياد</strong><small>صاحب متجر على RT Studio</small></article>
           <article class="review"><div class="stars">★★★★★</div><blockquote>«معالجة الصور من أقوى المزايا؛ أصبحت صور المنتجات احترافية وعرض التفاصيل أوضح.»</blockquote><strong>عياد للساعات</strong><small>متجر ساعات على المنصة</small></article>
           <article class="review"><div class="stars">★★★★★</div><blockquote>«التطبيق سهل ومتطور وساهم كثيرًا في تنظيم العمل؛ متجر CHRONO WATCHES على RT Studio أبهرني.»</blockquote><strong>صاحب CHRONO WATCHES</strong><small>متجر ساعات على المنصة</small></article>
+          {% endif %}
         </div>
       </div>
     </section>
     {% endif %}
     {% if product == 'custom' %}
-    <section class="wrap work"><img src="/static/assets/mizan-political-showcase.png" alt="موقع مؤسسة الميزان السياسي"><div class="work-copy"><small>من أعمالنا</small><h2>مؤسسة الميزان السياسي</h2><p>موقع بحثي وإعلامي عربي للأخبار والتحليلات والترجمات، بواجهة تحريرية متجاوبة وبحث وتصنيفات واضحة.</p><a href="https://mizan-political-web.onrender.com" target="_blank" rel="noopener noreferrer">زيارة الموقع الحي ↗</a></div></section>
+    <section class="wrap work"><img src="/static/assets/mizan-political-showcase.png" alt="{{ 'Mizan Political website' if is_en else 'موقع مؤسسة الميزان السياسي' }}"><div class="work-copy"><small>{{ 'Featured work' if is_en else 'من أعمالنا' }}</small><h2>{{ 'Mizan Political' if is_en else 'مؤسسة الميزان السياسي' }}</h2><p>{{ 'An Arabic research and media website for news, analysis, and translations, with a responsive editorial interface, search, and clear content categories.' if is_en else 'موقع بحثي وإعلامي عربي للأخبار والتحليلات والترجمات، بواجهة تحريرية متجاوبة وبحث وتصنيفات واضحة.' }}</p><a href="https://mizan-political-web.onrender.com" target="_blank" rel="noopener noreferrer">{{ 'Visit the live website ↗' if is_en else 'زيارة الموقع الحي ↗' }}</a></div></section>
     {% endif %}
-    <section class="closing"><h2>جاهز للخطوة التالية؟</h2><p>{{ price }}</p><div class="actions"><a class="btn primary" href="{{ primary_url }}" {% if product == 'custom' %}target="_blank" rel="noopener"{% endif %}>{{ primary_label }}</a><a class="btn secondary" href="/#products">العودة إلى المنتجات</a></div></section>
+    <section class="closing"><h2>{{ 'Ready for the next step?' if is_en else 'جاهز للخطوة التالية؟' }}</h2><p>{{ price }}</p><div class="actions"><a class="btn primary" href="{{ primary_url }}" {% if product == 'custom' %}target="_blank" rel="noopener"{% endif %}>{{ primary_label }}</a><a class="btn secondary" href="/#products">{{ 'Back to Products' if is_en else 'العودة إلى المنتجات' }}</a></div></section>
   </main>
-  <footer>© 2026 RT Studio · صُنع في فلسطين</footer>
+  <footer>© 2026 RT Studio · {{ 'Made in Palestine' if is_en else 'صُنع في فلسطين' }}</footer>
 </body>
 </html>

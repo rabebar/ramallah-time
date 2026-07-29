@@ -1553,19 +1553,38 @@ def join():
     return redirect(url_for('landing') + '#products', code=302)
 
 
-@app.route('/products/stores')
-def stores_product():
-    return render_template('product_landing.html', product='stores')
+def render_public_product(product, lang):
+    paths = {
+        'stores': {'ar': '/products/stores', 'en': '/en/products/stores'},
+        'moeen': {'ar': '/products/moeen', 'en': '/en/products/moeen'},
+        'custom': {'ar': '/services/custom-websites', 'en': '/en/services/custom-websites'},
+    }
+    return render_template(
+        'product_landing.html',
+        product=product,
+        lang=lang,
+        canonical_url=paths[product][lang],
+        switch_url=paths[product]['ar' if lang == 'en' else 'en'],
+        alternate_url=paths[product]['en' if lang == 'ar' else 'ar'],
+    )
 
 
-@app.route('/products/moeen')
-def moeen_product():
-    return render_template('product_landing.html', product='moeen')
+@app.route('/products/stores', defaults={'lang': 'ar'})
+@app.route('/en/products/stores', defaults={'lang': 'en'})
+def stores_product(lang):
+    return render_public_product('stores', lang)
 
 
-@app.route('/services/custom-websites')
-def custom_websites_product():
-    return render_template('product_landing.html', product='custom')
+@app.route('/products/moeen', defaults={'lang': 'ar'})
+@app.route('/en/products/moeen', defaults={'lang': 'en'})
+def moeen_product(lang):
+    return render_public_product('moeen', lang)
+
+
+@app.route('/services/custom-websites', defaults={'lang': 'ar'})
+@app.route('/en/services/custom-websites', defaults={'lang': 'en'})
+def custom_websites_product(lang):
+    return render_public_product('custom', lang)
 
 # =========================
 # Dashboard (Protected)
@@ -4360,6 +4379,12 @@ def sitemap_xml():
     urls = [
         ('https://www.rtstudio.store/', None),
         ('https://www.rtstudio.store/join', None),
+        ('https://www.rtstudio.store/products/stores', None),
+        ('https://www.rtstudio.store/products/moeen', None),
+        ('https://www.rtstudio.store/services/custom-websites', None),
+        ('https://www.rtstudio.store/en/products/stores', None),
+        ('https://www.rtstudio.store/en/products/moeen', None),
+        ('https://www.rtstudio.store/en/services/custom-websites', None),
     ]
     for s in stores:
         encoded_slug = urllib.parse.quote(s['slug'], safe='-')
