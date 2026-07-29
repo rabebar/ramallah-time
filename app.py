@@ -24,7 +24,8 @@ import urllib.parse
 import json
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from collections import defaultdict
 from decimal import Decimal
 from xml.sax.saxutils import escape
@@ -516,6 +517,17 @@ def compose_final(cutout_path, name, price, theme, style, background_key, out_ba
 app = Flask(__name__)
 from moeen_multi import moeen_bp
 app.register_blueprint(moeen_bp)
+
+PALESTINE_TIMEZONE = ZoneInfo("Asia/Hebron")
+
+
+@app.template_filter("palestine_time")
+def palestine_time(value, fmt="%Y-%m-%d %H:%M"):
+    """Display database UTC timestamps in Palestine local time."""
+    if not value:
+        return "—"
+    utc_value = value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value.astimezone(timezone.utc)
+    return utc_value.astimezone(PALESTINE_TIMEZONE).strftime(fmt)
 
 # Config
 app.secret_key = os.environ.get('SECRET_KEY', 'rt_studio_secure_2025_palestine_#99')

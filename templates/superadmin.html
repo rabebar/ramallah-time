@@ -304,6 +304,35 @@
         .moeen-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
         .moeen-actions form { display: inline-flex; align-items: center; gap: 5px; }
         .moeen-actions input { width: 58px; padding: 7px; border: 1px solid #dbe2ea; border-radius: 8px; }
+        #moeen-executive { overflow: hidden; }
+        #moeen-executive table, #moeen-executive tbody { display: block; width: 100%; }
+        #moeen-executive thead { display: none; }
+        #moeen-executive tbody tr {
+            display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px 20px; padding: 22px; margin-bottom: 16px;
+            background: #fff; border: 1px solid #e7edf3; border-radius: 18px;
+            box-shadow: 0 5px 16px rgba(15,23,42,.035);
+        }
+        #moeen-executive tbody tr:last-child { margin-bottom: 0; }
+        #moeen-executive td {
+            display: block; min-width: 0; padding: 0; border: 0;
+            white-space: normal; overflow-wrap: anywhere;
+        }
+        #moeen-executive td::before {
+            content: attr(data-label); display: block; margin-bottom: 7px;
+            color: var(--text-muted); font-size: 10px; font-weight: 800;
+        }
+        #moeen-executive td.moeen-account-actions {
+            grid-column: 1 / -1; border-top: 1px solid #edf2f7; padding-top: 16px;
+        }
+        #moeen-executive td[colspan] { grid-column: 1 / -1; }
+        #moeen-executive .moeen-actions { align-items: stretch; }
+        #moeen-executive .moeen-actions form {
+            background: #f8fafc; border: 1px solid #e7edf3; border-radius: 12px; padding: 7px;
+        }
+        #moeen-executive .moeen-actions select {
+            max-width: 150px; border: 1px solid #dbe2ea; border-radius: 8px; background: #fff;
+        }
         th { padding: 16px; color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--gray-bg); }
         th { padding: 12px 8px; color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--gray-bg); }
         td { padding: 12px 8px; border-bottom: 1px solid var(--gray-bg); font-size: 12.5px; color: var(--text-main); white-space: nowrap; }
@@ -375,6 +404,12 @@
             .panel-intro { padding: 20px; }
             .table-container, .payments-section, .visits-section, .orders-section { padding: 20px 16px; border-radius: 20px; }
             .moeen-create { grid-template-columns: 1fr; }
+            #moeen-executive tbody tr { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 520px) {
+            #moeen-executive tbody tr { grid-template-columns: 1fr; padding: 16px; }
+            #moeen-executive .moeen-actions, #moeen-executive .moeen-actions form { width: 100%; }
+            #moeen-executive .moeen-actions form { flex-wrap: wrap; }
         }
     </style>
 </head>
@@ -883,15 +918,15 @@
                 <tbody>
                     {% for account in moeen_accounts %}
                     <tr>
-                        <td>
+                        <td data-label="المشترك">
                             <strong>{{ account.full_name }}</strong>
                             <small style="display:block;color:var(--text-muted);">{{ account.job_title or '—' }}</small>
                         </td>
-                        <td>
+                        <td data-label="بيانات الدخول">
                             <strong>{{ account.phone }}</strong>
                             <small style="display:block;color:var(--text-muted);">{{ account.email or '' }}</small>
                         </td>
-                        <td>
+                        <td data-label="الحالة">
                             {% if account.status == 'active' and account.plan_type == 'trial' %}
                                 <span class="badge badge-pending">تجربة مجانية</span>
                             {% elif account.status == 'active' %}
@@ -904,22 +939,22 @@
                                 <span class="badge badge-pending">ملغي</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td data-label="انتهاء الاشتراك">
                             {% if account.subscription_end %}
                                 <strong style="color:{% if account.subscription_end < now %}var(--danger){% else %}var(--success){% endif %}">
                                     {{ account.subscription_end.strftime('%Y-%m-%d') }}
                                 </strong>
                             {% else %}—{% endif %}
                         </td>
-                        <td>{{ account.device_count or 0 }}</td>
-                        <td>
+                        <td data-label="الأجهزة">{{ account.device_count or 0 }}</td>
+                        <td data-label="آخر استخدام — توقيت فلسطين">
                             {% if account.last_device_activity %}
-                                <strong>{{ account.last_device_activity.strftime('%Y-%m-%d %H:%M') }}</strong>
+                                <strong>{{ account.last_device_activity|palestine_time }}</strong>
                             {% else %}
                                 <span style="color:var(--text-muted)">لم يستخدم بعد</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td data-label="النشاط">
                             {% if not account.last_device_activity %}
                                 <span class="usage-pill usage-never"><i class="usage-dot"></i> لم يستخدم</span>
                             {% elif (now - account.last_device_activity).total_seconds() <= 900 %}
@@ -932,7 +967,7 @@
                                 <span class="usage-pill usage-never"><i class="usage-dot"></i> غير نشط {{ (now - account.last_device_activity).days }} يوم</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td class="moeen-account-actions" data-label="الإجراءات">
                             <div class="moeen-actions">
                                 <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/subscription">
                                     <input type="hidden" name="action" value="renew">
@@ -980,13 +1015,13 @@
         <section class="table-container admin-panel moeen-admin" data-admin-panel="moeen" id="moeen-logs">
             <div class="table-title">سجل مُعين للدخول والأخطاء</div>
             <div class="logs-toolbar">
-                <p>آخر 120 محاولة دخول أو ربط جهاز. انسخ السجل وأرسله عند ظهور مشكلة.</p>
+                <p>آخر 120 محاولة دخول أو ربط جهاز. جميع الساعات بتوقيت فلسطين المحلي. انسخ السجل وأرسله عند ظهور مشكلة.</p>
                 <button id="copyMoeenLogs" class="logs-copy" type="button">نسخ السجل كاملًا</button>
             </div>
             <div id="moeenLogsText" class="system-logs">
                 {% for log in moeen_logs %}
                 <div class="log-line {% if log.outcome in ('success','paired_success') %}log-success{% endif %}">
-                    <span class="log-time">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                    <span class="log-time">{{ log.created_at|palestine_time('%Y-%m-%d %H:%M:%S') }}</span>
                     <span class="log-outcome">{{ log.outcome }}</span>
                     <span class="log-detail">{{ log.full_name or log.phone or 'حساب غير معروف' }}</span>
                     <span class="log-detail">{{ log.device_name or 'جهاز غير معروف' }}</span>
