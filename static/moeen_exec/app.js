@@ -70,7 +70,18 @@ let mediaRecorder, chunks=[], audioBlob=null, recognition=null;
 let fieldRecognition=null, activeMic=null;
 let renewalPollTimer=null;
 const fmt=d=>new Intl.DateTimeFormat("ar-PS",{dateStyle:"medium"}).format(new Date(d));
+const fmtDateTime=d=>new Intl.DateTimeFormat("ar-PS",{dateStyle:"medium",timeStyle:"short"}).format(new Date(d));
 const esc=s=>(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+function eventVisualState(value,done=false){
+  if(done||!value)return{className:"",badge:""};
+  const eventTime=new Date(value).getTime(),difference=eventTime-Date.now();
+  if(Number.isNaN(eventTime))return{className:"",badge:""};
+  if(difference<=0)return{className:"event-due",badge:"حان الآن"};
+  if(difference<=60*60*1000)return{className:"event-soon",badge:"خلال ساعة"};
+  if(difference<=24*60*60*1000)return{className:"event-today",badge:"اليوم"};
+  return{className:"",badge:""};
+}
+const eventBadge=state=>state.badge?`<span class="event-status">${state.badge}</span>`:"";
 function setView(id){$$(".view,.nav").forEach(x=>x.classList.remove("active"));$("#"+id).classList.add("active");$(`.nav[data-view="${id}"]`).classList.add("active");render();installVoiceFields();}
 $$(".nav").forEach(b=>b.onclick=()=>setView(b.dataset.view));$$("[data-view-jump]").forEach(b=>b.onclick=()=>setView(b.dataset.viewJump));
 const now=new Date();$("#date").textContent=new Intl.DateTimeFormat("ar-PS",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(now);
@@ -121,9 +132,10 @@ function render(){
   bindAudioPlayers();
   if($("#security").classList.contains("active"))loadSecurity();
 }
-function taskRow(t){return `<div class="card-top ${t.done?"done":""}"><div><b>${esc(t.title)}</b><div class="meta">${t.due?fmt(t.due):"بلا موعد"} · ${esc(t.person||"")}</div></div><button class="icon-btn" onclick="toggleTask('${t.id}')">${t.done?"↩":"✓"}</button></div>`}
-function taskCard(t){return `<article class="card ${t.done?"done":""}"><div class="card-top"><div><h3>${esc(t.title)}</h3><div class="meta"><span>${t.due?fmt(t.due):"بلا موعد"}</span><span>${esc(t.person||"")}</span></div></div><div class="card-actions"><button class="icon-btn" onclick="toggleTask('${t.id}')">${t.done?"إعادة":"تم"}</button><button class="icon-btn" onclick="removeItem('tasks','${t.id}')">حذف</button></div></div><p>${esc(t.notes||"")}</p>${t.audioId?`<audio controls data-audio="${t.audioId}"></audio>`:""}</article>`}
-function meetingCard(m){return `<article class="card"><div class="card-top"><div><h3>${esc(m.title)}</h3><div class="meta">${fmt(m.date)} · ${esc(m.people||"")}</div></div><button class="icon-btn" onclick="removeItem('meetings','${m.id}')">حذف</button></div><p>${esc(m.notes||"")}</p>${m.audioId?`<audio controls data-audio="${m.audioId}"></audio>`:""}</article>`}
+setInterval(()=>{if(!document.body.classList.contains("locked"))render()},60000);
+function taskRow(t){const state=eventVisualState(t.due,t.done);return `<div class="card-top event-row ${state.className} ${t.done?"done":""}"><div><b>${esc(t.title)}</b><div class="meta">${t.due?fmtDateTime(t.due):"بلا موعد"} · ${esc(t.person||"")}</div>${eventBadge(state)}</div><button class="icon-btn" onclick="toggleTask('${t.id}')">${t.done?"↩":"✓"}</button></div>`}
+function taskCard(t){const state=eventVisualState(t.due,t.done);return `<article class="card event-card ${state.className} ${t.done?"done":""}"><div class="card-top"><div><h3>${esc(t.title)}</h3><div class="meta"><span>${t.due?fmtDateTime(t.due):"بلا موعد"}</span><span>${esc(t.person||"")}</span></div>${eventBadge(state)}</div><div class="card-actions"><button class="icon-btn" onclick="toggleTask('${t.id}')">${t.done?"إعادة":"تم"}</button><button class="icon-btn" onclick="removeItem('tasks','${t.id}')">حذف</button></div></div><p>${esc(t.notes||"")}</p>${t.audioId?`<audio controls data-audio="${t.audioId}"></audio>`:""}</article>`}
+function meetingCard(m){const state=eventVisualState(m.date,m.done);return `<article class="card event-card ${state.className} ${m.done?"done":""}"><div class="card-top"><div><h3>${esc(m.title)}</h3><div class="meta">${fmtDateTime(m.date)} · ${esc(m.people||"")}</div>${eventBadge(state)}</div><div class="card-actions"><button class="icon-btn" onclick="toggleMeeting('${m.id}')">${m.done?"إعادة":"تم الاجتماع"}</button><button class="icon-btn" onclick="removeItem('meetings','${m.id}')">حذف</button></div></div><p>${esc(m.notes||"")}</p>${m.audioId?`<audio controls data-audio="${m.audioId}"></audio>`:""}</article>`}
 function renderContacts(){
   if(!$("#contactList"))return;
   const q=($("#contactSearch")?.value||"").toLowerCase();
@@ -138,6 +150,7 @@ function renderMemories(){
 function bindAudioPlayers(){$$("audio[data-audio]").forEach(async a=>{if(a.src)return;const blob=await audioDb.get(a.dataset.audio);if(blob)a.src=URL.createObjectURL(blob)})}
 $("#search").oninput=renderMemories;
 window.toggleTask=id=>{let a=store.get("tasks"),t=a.find(x=>x.id===id);if(t){t.done=!t.done;if(t.done)syncReminder(id,"task",null,"none")}store.set("tasks",a);render()};
+window.toggleMeeting=id=>{let a=store.get("meetings"),meeting=a.find(x=>x.id===id);if(meeting){meeting.done=!meeting.done;if(meeting.done)syncReminder(id,"meeting",null,"none")}store.set("meetings",a);render()};
 window.removeItem=(k,id)=>{if(confirm("حذف هذا العنصر؟")){store.set(k,store.get(k).filter(x=>x.id!==id));if(k==="tasks"||k==="meetings")syncReminder(id,k==="tasks"?"task":"meeting",null,"none");render()}};
 window.removeMemory=async id=>{if(confirm("حذف الملاحظة وتسجيلها الصوتي؟")){store.set("memories",store.get("memories").filter(x=>x.id!==id));await audioDb.remove(id);render()}};
 
