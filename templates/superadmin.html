@@ -55,7 +55,7 @@
         .logout-btn { margin-top: auto; color: #f87171 !important; }
         .logout-btn:hover { background: rgba(239, 68, 68, 0.1) !important; }
 
-        .main-viewport { flex-grow: 1; margin-right: var(--sidebar-w); padding: 48px; width: 100%; overflow-x: auto; }
+        .main-viewport { flex-grow: 1; margin-right: var(--sidebar-w); padding: 48px; width: calc(100% - var(--sidebar-w)); overflow-x: hidden; }
         .header-area { margin-bottom: 48px; display: flex; justify-content: space-between; align-items: flex-end; }
         .header-area h1 { font-size: 32px; font-weight: 800; color: var(--navy); letter-spacing: -1px; }
         .header-area p { color: var(--text-muted); font-size: 15px; margin-top: 4px; }
@@ -286,9 +286,10 @@
         .table-container { 
             background: var(--white); border: 1px solid var(--border); 
             border-radius: 28px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); 
-            min-width: 900px; /* لضمان ظهور الجدول كامل */
+            min-width: 0; overflow-x: auto;
         }
         .table-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; color: var(--navy); }
+        .table-container + .table-container { margin-top: 32px; }
         table { width: 100%; border-collapse: collapse; text-align: right; }
         .moeen-create {
             display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -332,6 +333,21 @@
         .btn-approve:hover { background: #059669; transform: translateY(-2px); }
         .btn-reject { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
         .btn-reject:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
+        .admin-panel { display: none; }
+        .admin-panel.is-visible { display: block; animation: panelIn .22s ease; }
+        .processing-control.admin-panel.is-visible { display: flex; }
+        .stats-grid.admin-panel.is-visible { display: grid; }
+        @keyframes panelIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+        .panel-intro {
+            background: linear-gradient(135deg, var(--navy), var(--navy-light));
+            color: #fff; border-radius: 24px; padding: 24px 28px; margin-bottom: 24px;
+            display: flex; align-items: center; justify-content: space-between; gap: 18px;
+            box-shadow: 0 12px 28px rgba(10,25,47,.12);
+        }
+        .panel-intro h2 { font-size: 22px; margin-bottom: 5px; }
+        .panel-intro p { color: rgba(255,255,255,.7); font-size: 13px; }
+        .panel-intro i { width: 34px; height: 34px; color: var(--gold); flex-shrink: 0; }
+        .admin-panel + .admin-panel { margin-top: 0; }
 
         .refill-input { 
             width: 60px; padding: 10px; border: 1px solid var(--border); 
@@ -344,12 +360,21 @@
             .sidebar { width: 80px; padding: 30px 10px; }
             .logo-text, .nav-item span { display: none; }
             .nav-item { justify-content: center; padding: 14px; }
-            .main-viewport { margin-right: 80px; padding: 32px; }
+            .main-viewport { margin-right: 80px; padding: 32px; width: calc(100% - 80px); }
             .stats-grid, .visits-counters, .join-source-list, .order-counters { grid-template-columns: 1fr; }
             .processing-control { align-items: stretch; flex-direction: column; }
             .processing-toggle { width: 100%; justify-content: center; }
             .orders-filter, .orders-filter select, .orders-filter button { width: 100%; }
             .payments-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            .sidebar { width: 64px; padding: 22px 8px; }
+            .main-viewport { margin-right: 64px; width: calc(100% - 64px); padding: 20px 14px; }
+            .header-area { align-items: stretch; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+            .header-area h1 { font-size: 25px; }
+            .panel-intro { padding: 20px; }
+            .table-container, .payments-section, .visits-section, .orders-section { padding: 20px 16px; border-radius: 20px; }
+            .moeen-create { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -361,11 +386,11 @@
             <span class="logo-text">RT System</span>
         </div>
         <nav class="nav-menu">
-            <a href="/superadmin" class="nav-item active">
+            <a href="#stores" class="nav-item" data-panel-link="stores">
                 <i data-lucide="bar-chart-3"></i>
-                <span>الإحصائيات</span>
+                <span>المتاجر والتجار</span>
             </a>
-            <a href="#moeen-executive" class="nav-item">
+            <a href="#moeen-executive" class="nav-item" data-panel-link="moeen">
                 <i data-lucide="briefcase-business"></i>
                 <span>مُعين التنفيذي</span>
                 {% if active_moeen_trial_count %}<b class="nav-count">{{ active_moeen_trial_count }}</b>{% endif %}
@@ -410,7 +435,21 @@
           {% endif %}
         {% endwith %}
 
-        <section class="processing-control">
+        <div class="admin-panel stores-admin" data-admin-panel="stores">
+            <div class="panel-intro">
+                <div><h2>المتاجر والتجار</h2><p>الإحصائيات، الطلبات، الاشتراكات وطلبات إنشاء المتاجر في مكان واحد.</p></div>
+                <i data-lucide="store"></i>
+            </div>
+        </div>
+
+        <div class="admin-panel moeen-admin" data-admin-panel="moeen">
+            <div class="panel-intro">
+                <div><h2>مُعين التنفيذي</h2><p>إدارة المشتركين والدفعات والنشاط وسجل الدخول.</p></div>
+                <i data-lucide="briefcase-business"></i>
+            </div>
+        </div>
+
+        <section class="processing-control admin-panel stores-admin" data-admin-panel="stores">
             <div class="processing-info">
                 <div class="processing-icon">
                     <i data-lucide="scan-line"></i>
@@ -454,7 +493,7 @@
             </form>
         </section>
 
-        <section class="payments-section">
+        <section class="payments-section admin-panel stores-admin" data-admin-panel="stores" id="merchant-payments">
             <div class="orders-header">
                 <div class="orders-heading">
                     <div class="orders-heading-icon" style="background:rgba(15,118,110,.1);color:#0f766e;">
@@ -558,7 +597,7 @@
         </section>
 
         <!-- إحصائيات عامة -->
-        <div class="stats-grid">
+        <div class="stats-grid admin-panel stores-admin" data-admin-panel="stores">
             <div class="stat-card">
                 <div class="stat-label">إجمالي التجار</div>
                 <div class="stat-value">{{ stats.total_users }}</div>
@@ -574,7 +613,7 @@
         </div>
 
         <!-- إحصائيات الطلبات -->
-        <section class="orders-section">
+        <section class="orders-section admin-panel stores-admin" data-admin-panel="stores">
             <div class="orders-header">
                 <div class="orders-heading">
                     <div class="orders-heading-icon">
@@ -676,7 +715,7 @@
         </section>
 
         <!-- إحصائيات صفحة الانضمام -->
-        <div class="visits-section">
+        <div class="visits-section admin-panel stores-admin" data-admin-panel="stores">
             <div class="visits-header">
                 <div class="visits-header-icon">
                     <i data-lucide="mouse-pointer-click"></i>
@@ -718,7 +757,7 @@
         </div>
 
         <!-- إحصائيات زيارات المتاجر -->
-        <div class="visits-section">
+        <div class="visits-section admin-panel stores-admin" data-admin-panel="stores">
             <div class="visits-header">
                 <div class="visits-header-icon">
                     <i data-lucide="activity"></i>
@@ -781,7 +820,7 @@
             {% endif %}
         </div>
 
-        <section class="payments-section" id="moeen-payments">
+        <section class="payments-section admin-panel moeen-admin" data-admin-panel="moeen" id="moeen-payments">
             <div class="section-head">
                 <div><h2>دفعات مُعين التنفيذي</h2><p>إثباتات التحويل عبر Reflect أو الإيبان.</p></div>
             </div>
@@ -810,7 +849,7 @@
             {% endfor %}
         </section>
 
-        <section class="table-container" id="moeen-executive">
+        <section class="table-container admin-panel moeen-admin" data-admin-panel="moeen" id="moeen-executive">
             <div class="table-title">إدارة اشتراكات مُعين التنفيذي</div>
             <form class="moeen-create" method="POST" action="/superadmin/moeen/accounts">
                 <input name="full_name" required placeholder="اسم المشترك الكامل">
@@ -938,7 +977,7 @@
             </table>
         </section>
 
-        <section class="table-container" id="moeen-logs">
+        <section class="table-container admin-panel moeen-admin" data-admin-panel="moeen" id="moeen-logs">
             <div class="table-title">سجل مُعين للدخول والأخطاء</div>
             <div class="logs-toolbar">
                 <p>آخر 120 محاولة دخول أو ربط جهاز. انسخ السجل وأرسله عند ظهور مشكلة.</p>
@@ -959,7 +998,7 @@
         </section>
 
         <!-- جدول التجار -->
-        <div class="table-container">
+        <div class="table-container admin-panel stores-admin" data-admin-panel="stores" id="merchant-accounts">
             <div class="table-title">إدارة طلبات وحسابات التجار</div>
             <table>
                 <thead>
@@ -1072,6 +1111,25 @@
 
     <script>
     const SUPERADMIN_VAPID_KEY={{ vapid_public_key|tojson }};
+    function showAdminPanel(){
+      const isMoeen=location.hash.startsWith("#moeen");
+      const selected=isMoeen?"moeen":"stores";
+      document.querySelectorAll("[data-admin-panel]").forEach(section=>{
+        section.classList.toggle("is-visible",section.dataset.adminPanel===selected);
+      });
+      document.querySelectorAll("[data-panel-link]").forEach(link=>{
+        link.classList.toggle("active",link.dataset.panelLink===selected);
+      });
+      const title=document.querySelector(".header-area h1");
+      const subtitle=document.querySelector(".header-area p");
+      if(title)title.textContent=isMoeen?"إدارة مُعين التنفيذي":"إدارة المتاجر والتجار";
+      if(subtitle)subtitle.textContent=isMoeen
+        ?"المشتركون والدفعات والنشاط والسجلات"
+        :"الإحصائيات والطلبات والاشتراكات وطلبات التجار";
+      window.scrollTo({top:0,behavior:"auto"});
+    }
+    window.addEventListener("hashchange",showAdminPanel);
+    showAdminPanel();
     const superadminPushButton=document.getElementById("superadminPushBtn");
     const superadminPushTestButton=document.getElementById("superadminPushTestBtn");
     function vapidBytes(value){const padding="=".repeat((4-value.length%4)%4),raw=atob((value+padding).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
