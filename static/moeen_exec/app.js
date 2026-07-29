@@ -175,14 +175,46 @@ $("#transcribeBtn").onclick=()=>{
   recognition.onend=()=>{recognition=null;$("#transcribeBtn").textContent="تحويل الكلام مباشرة";$("#pulse").classList.remove("live");$("#recordStatus").textContent="انتهى الإملاء. راجع النص قبل الحفظ."};
   recognition.onerror=()=>{$("#recordStatus").textContent="تعذر تشغيل الإملاء. تحقق من الميكروفون والاتصال.";};recognition.start();$("#transcribeBtn").textContent="إيقاف الإملاء";$("#pulse").classList.add("live");$("#recordStatus").textContent="أتحدث الآن… سيظهر النص أثناء كلامك.";
 };
+function extractArabicDateTime(value){
+  let text=(value||"").toLowerCase().replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
+  const now=new Date(),result=new Date(now);
+  let match=text.match(/(?:بعد|كمان)\s+(نصف)\s+ساعة/);
+  if(match)return new Date(now.getTime()+30*60000);
+  match=text.match(/(?:بعد|كمان)\s+(ساعة|ساعه)(?:\s+واحدة)?/);
+  if(match)return new Date(now.getTime()+60*60000);
+  match=text.match(/(?:بعد|كمان)\s+(ساعتين|ساعتان)/);
+  if(match)return new Date(now.getTime()+120*60000);
+  match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(دقيقة|دقيقه|دقائق)/);
+  if(match)return new Date(now.getTime()+Number(match[1])*60000);
+  match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(ساعة|ساعه|ساعات)/);
+  if(match)return new Date(now.getTime()+Number(match[1])*3600000);
+  const dayNames={الأحد:0,الاحد:0,الإثنين:1,الاثنين:1,الثلاثاء:2,الأربعاء:3,الاربعاء:3,الخميس:4,الجمعة:5,الجمعه:5,السبت:6};
+  let hasDate=false;
+  if(/غدا|غدًا|بكرة|بكره/.test(text)){result.setDate(result.getDate()+1);hasDate=true}
+  for(const [name,day] of Object.entries(dayNames)){
+    if(text.includes(name)){let add=(day-result.getDay()+7)%7;if(add===0)add=7;result.setDate(result.getDate()+add);hasDate=true;break}
+  }
+  if(/اليوم/.test(text))hasDate=true;
+  match=text.match(/(?:الساعة|الساعه)\s*(\d{1,2})(?::(\d{1,2}))?/);
+  if(match){
+    let hour=Number(match[1]),minute=Number(match[2]||0);
+    if(/مساء|المساء|ليلا|ليلًا/.test(text)&&hour<12)hour+=12;
+    if(/صباح|الصباح/.test(text)&&hour===12)hour=0;
+    result.setHours(hour,minute,0,0);hasDate=true;
+    if(result<=now&&!/غدا|غدًا|بكرة|بكره/.test(text)&&!Object.keys(dayNames).some(d=>text.includes(d)))result.setDate(result.getDate()+1);
+  }else if(hasDate){
+    result.setHours(/مساء/.test(text)?18:9,0,0,0);
+  }
+  return hasDate?result:null;
+}
 $("#saveNote").onclick=async()=>{
   const text=$("#noteText").value.trim();if(!text&&!audioBlob){alert("سجّل صوتًا أو اكتب ملاحظة أولًا.");return}
-  const id=crypto.randomUUID(),title=$("#noteTitle").value.trim()||text.slice(0,45)||"ملاحظة صوتية",category=$("#noteCategory").value;
-  if(category==="meeting"){const arr=store.get("meetings");arr.unshift({id,title,people:"",date:new Date().toISOString(),notes:text,audioId:audioBlob?id:null});store.set("meetings",arr)}
-  else if(category==="task"){const arr=store.get("tasks");arr.unshift({id,title,person:"",due:new Date().toISOString().slice(0,10),notes:text,done:false,audioId:audioBlob?id:null});store.set("tasks",arr)}
+  const id=crypto.randomUUID(),title=$("#noteTitle").value.trim()||text.slice(0,45)||"ملاحظة صوتية",category=$("#noteCategory").value,spokenDate=extractArabicDateTime(text),eventAt=(spokenDate||new Date()).toISOString();
+  if(category==="meeting"){const arr=store.get("meetings");arr.unshift({id,title,people:"",date:eventAt,notes:text,audioId:audioBlob?id:null,reminder:spokenDate?"0":"none"});store.set("meetings",arr);if(spokenDate)await syncReminder(id,"meeting",eventAt,"0")}
+  else if(category==="task"){const arr=store.get("tasks");arr.unshift({id,title,person:"",due:eventAt,notes:text,done:false,audioId:audioBlob?id:null,reminder:spokenDate?"0":"none"});store.set("tasks",arr);if(spokenDate)await syncReminder(id,/اتصال|اتصل/.test(text)?"call":"task",eventAt,"0")}
   else if(category==="contact"){const arr=store.get("contacts"),phone=(text.match(/(?:\\+?\\d[\\d\\s-]{6,}\\d)/)||[""])[0].replace(/[\\s-]/g,""),email=(text.match(/[\\w.+-]+@[\\w.-]+\\.[a-z]{2,}/i)||[""])[0];arr.unshift({id,name:$("#noteTitle").value.trim()||"جهة اتصال صوتية",role:"",org:"",phone,email,notes:text,audioId:audioBlob?id:null});store.set("contacts",arr)}
   else{const mem=store.get("memories");mem.unshift({id,title,text,created:new Date().toISOString(),hasAudio:!!audioBlob});store.set("memories",mem)}
-  if(audioBlob)await audioDb.put(id,audioBlob);$("#recordDialog").close();setView(category==="memory"?"memory":category==="meeting"?"meetings":category==="task"?"tasks":"contacts");
+  if(audioBlob)await audioDb.put(id,audioBlob);$("#recordDialog").close();setView(category==="memory"?"memory":category==="meeting"?"meetings":category==="task"?"tasks":"contacts");if(spokenDate&&(category==="meeting"||category==="task"))alert(`تم ضبط الموعد والتنبيه تلقائيًا: ${spokenDate.toLocaleString("ar")}`);
 };
 $("#noteText").oninput=updateSmartRoute;
 $("#noteCategory").onchange=updateSaveLabel;
