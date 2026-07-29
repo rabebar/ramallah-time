@@ -72,6 +72,16 @@
           <div><small>موجز اليوم</small><h2>بداية واضحة ليومٍ أكثر تركيزًا</h2><p id="dailyLine">ابدأ بإضافة أول ملاحظة أو متابعة.</p><button class="hero-record" onclick="document.querySelector('#quickRecord').click()">تحدث الآن <b>←</b></button></div>
           <div class="hero-mark"><span>م</span><small>ذاكرتك التنفيذية</small></div>
         </div>
+        <section class="trust-strip" aria-label="الخصوصية وربط الأجهزة">
+          <article class="trust-card privacy-assurance">
+            <span class="trust-icon" aria-hidden="true">◇</span>
+            <div><strong>محتواك الشخصي مشفّر</strong><p>الملاحظات والاجتماعات والمتابعات وجهات الاتصال والتسجيلات الصوتية تُشفّر على جهازك قبل المزامنة، ولا يظهر محتواها في لوحة إدارة RT Studio.</p></div>
+          </article>
+          <article class="trust-card device-reminder">
+            <span class="trust-icon" aria-hidden="true">⌘</span>
+            <div><strong>استخدم مُعين على الهاتف والكمبيوتر</strong><p>اربط جهازًا آخر برمز مؤقت من مركز الأمان لتظهر بياناتك المشفّرة على الجهازين.</p><button type="button" data-view-jump="security">طريقة ربط جهاز آخر ←</button></div>
+          </article>
+        </section>
         <section id="homeAlerts" class="home-alerts" hidden>
           <div class="home-alerts-head"><div><small>يتطلب انتباهك</small><h3 id="homeAlertsTitle">مواعيد وتنبيهات اليوم</h3></div><span id="homeAlertsCount"></span></div>
           <div id="homeAlertsList" class="home-alerts-list"></div>
@@ -138,7 +148,7 @@
         <div class="title-row"><div><p>الحساب والأجهزة</p><h2>مركز الأمان</h2></div><button id="logoutBtn" class="security-secondary">تسجيل الخروج</button></div>
         <div class="security-grid">
           <article class="security-card"><h3>تغيير كلمة المرور</h3><p>استخدم كلمة مرور طويلة وفريدة لهذا التطبيق.</p><form id="passwordForm"><input id="currentPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور الحالية" required><input id="newPassword" type="password" minlength="12" autocomplete="new-password" placeholder="كلمة المرور الجديدة" required><button class="primary" type="submit">تغيير كلمة المرور</button></form></article>
-          <article class="security-card"><h3>إضافة جهاز موثوق</h3><p>أنشئ رمزًا مؤقتًا، ثم أدخله مع كلمة المرور على الهاتف الجديد.</p><button id="pairingBtn" class="primary">إنشاء رمز ربط</button><div id="pairingResult" class="pairing-result"></div></article>
+          <article class="security-card pairing-guide"><h3>ربط الهاتف والكمبيوتر</h3><p>1. من هذا الجهاز اضغط «إنشاء رمز ربط».<br>2. افتح مُعين على الجهاز الآخر وسجّل بنفس رقم الهاتف وكلمة المرور.<br>3. أدخل رمز الربط في خانته؛ الرمز صالح لخمس دقائق فقط.</p><button id="pairingBtn" class="primary">إنشاء رمز ربط لجهاز آخر</button><div id="pairingResult" class="pairing-result"></div></article>
           <article class="security-card"><h3>إشعارات المواعيد</h3><p>استقبل تنبيهات الاجتماعات والمتابعات والاتصالات على هذا الجهاز حتى عند إغلاق التطبيق.</p><button id="enableMoeenPush" class="primary">تفعيل الإشعارات على هذا الجهاز</button><div id="moeenPushStatus" class="push-status"></div></article>
         </div>
         <div class="security-grid security-lists">
