@@ -10,6 +10,7 @@
     "إنشاء حساب مُعين التنفيذي | RT Studio": "Create a Moeen Executive Account | RT Studio",
     "مُعين": "Moeen",
     "م": "M",
+    "و": "and",
     "دخول آمن": "Secure Access",
     "إعداد الجهاز الرئيسي": "Primary Device Setup",
     "أنشئ كلمة المرور الأولى": "Create Your First Password",
