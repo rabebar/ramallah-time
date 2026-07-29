@@ -249,6 +249,7 @@ $("#addContact").onclick=()=>{
 window.addCallTask=id=>{const c=store.get("contacts").find(x=>x.id===id);if(!c)return;openSimple("task",{title:`الاتصال بـ ${c.name}`,person:c.org||c.role||"",notes:c.phone||c.email||"",itemType:"call"})};
 function openRecorder(){$("#noteText").value="";$("#noteTitle").value="";$("#noteCategory").value="memory";audioBlob=null;updateSmartRoute();$("#recordStatus").textContent="يمكنك التسجيل فقط، أو استخدام الإملاء لتحويل العربية إلى نص.";$("#recordDialog").showModal()}
 $("#quickRecord").onclick=openRecorder;
+$("#heroRecord").onclick=openRecorder;
 $("#addMemory").onclick=openRecorder;
 $("#recordBtn").onclick=async()=>{
   if(mediaRecorder?.state==="recording"){mediaRecorder.stop();return}
