@@ -156,6 +156,10 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
 .service-choice-action { display: inline-flex; align-items: center; justify-content: center; margin-top: 19px; min-height: 46px; padding: 0 22px; border-radius: 11px; text-decoration: none; font-size: 13px; font-weight: 800; background: #6c63ff; color: #fff; }
 .service-choice-card.moeen .service-choice-action { background: #d8b96c; color: #102b25; }
 .service-choice-card.custom .service-choice-action{background:#d8b96c;color:#171b2f}
+.portfolio-showcase{display:grid;grid-template-columns:minmax(300px,.95fr) minmax(0,1.05fr);gap:0;overflow:hidden;margin:22px 0 30px;border:1px solid #e2ddd0;border-radius:26px;background:#fff;box-shadow:0 18px 55px rgba(25,52,45,.1)}
+.portfolio-visual{position:relative;min-height:320px;background:#193d34}.portfolio-visual img{display:block;width:100%;height:100%;object-fit:cover;object-position:top}.portfolio-visual:after{content:"مشروع حي";position:absolute;top:18px;right:18px;padding:7px 11px;border-radius:999px;background:#173f35;color:#f0d58c;font-size:10px;font-weight:800;box-shadow:0 8px 20px #102b2540}
+.portfolio-content{display:flex;flex-direction:column;justify-content:center;padding:34px}.portfolio-kicker{color:#9a6b12;font-size:11px;font-weight:800;margin-bottom:8px}.portfolio-content h3{font-size:clamp(24px,3vw,36px);color:#173f35;margin-bottom:10px}.portfolio-content>p{color:#66766f;font-size:13px;line-height:1.9}.portfolio-features{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.portfolio-features span{padding:7px 10px;border:1px solid #dfe8e4;border-radius:9px;background:#f6faf8;color:#385a50;font-size:10px;font-weight:700}.portfolio-credit{display:block;color:#8a938f;font-size:10px;margin-bottom:15px}.portfolio-action{align-self:flex-start;padding:12px 18px;border-radius:11px;background:#173f35;color:#fff;text-decoration:none;font-size:12px;font-weight:800}.portfolio-action:hover{background:#205c4d}
+@media(max-width:760px){.portfolio-showcase{grid-template-columns:1fr}.portfolio-visual{min-height:260px}.portfolio-content{padding:24px 20px}.portfolio-action{width:100%;text-align:center}}
 
 /* Featured value */
 .value-showcase { max-width: 1220px; margin: 8px auto 46px; padding: 0 26px; }
@@ -862,6 +866,24 @@ body.ltr .wa-float { left: auto; right: 24px; }
  </div>
 
  <h3 class="path-title" id="custom-service" style="margin-top: 80px;" data-ar="تصميم موقع أو نظام خاص" data-en="Custom Website or Web System">تصميم موقع أو نظام خاص</h3>
+ <section class="portfolio-showcase" aria-labelledby="mizanProjectTitle">
+  <div class="portfolio-visual">
+   <img src="/static/assets/mizan-political-showcase.png" alt="واجهة موقع مؤسسة الميزان السياسي" loading="lazy">
+  </div>
+  <div class="portfolio-content">
+   <span class="portfolio-kicker" data-ar="من أعمال RT Studio" data-en="An RT Studio Project">من أعمال RT Studio</span>
+   <h3 id="mizanProjectTitle" data-ar="مؤسسة الميزان السياسي" data-en="Al-Mizan Political Foundation">مؤسسة الميزان السياسي</h3>
+   <p data-ar="موقع بحثي وإعلامي عربي صُمم لنشر الأخبار والتحليلات السياسية والترجمات ضمن تجربة قراءة منظمة، مع واجهة بحث وأقسام تحريرية وإبراز للمواد الرئيسية." data-en="An Arabic research and media website designed for publishing news, political analysis, and translations through an organized reading experience, with search, editorial sections, and featured stories.">موقع بحثي وإعلامي عربي صُمم لنشر الأخبار والتحليلات السياسية والترجمات ضمن تجربة قراءة منظمة، مع واجهة بحث وأقسام تحريرية وإبراز للمواد الرئيسية.</p>
+   <div class="portfolio-features">
+    <span data-ar="تصميم عربي متجاوب" data-en="Responsive Arabic Design">تصميم عربي متجاوب</span>
+    <span data-ar="بحث وتصنيفات" data-en="Search & Categories">بحث وتصنيفات</span>
+    <span data-ar="واجهة أخبار وتحليلات" data-en="News & Analysis Interface">واجهة أخبار وتحليلات</span>
+    <span data-ar="تجربة قراءة واضحة" data-en="Clear Reading Experience">تجربة قراءة واضحة</span>
+   </div>
+   <small class="portfolio-credit" data-ar="تم تصميم وتطوير الموقع لصالح العميل بواسطة RT Studio." data-en="Designed and developed for the client by RT Studio.">تم تصميم وتطوير الموقع لصالح العميل بواسطة RT Studio.</small>
+   <a class="portfolio-action" href="https://mizan-political-web.onrender.com" target="_blank" rel="noopener noreferrer" data-ar="زيارة الموقع الحي ↗" data-en="Visit Live Website ↗">زيارة الموقع الحي ↗</a>
+  </div>
+ </section>
  <div class="vip-card">
     <div class="vip-header">
         <div class="vip-badge" data-ar="خدمة الوكالة المتكاملة" data-en="Full Agency Service">خدمة الوكالة المتكاملة</div>
