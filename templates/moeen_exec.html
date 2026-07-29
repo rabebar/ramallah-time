@@ -17,6 +17,7 @@
 <body class="locked">
   <section id="authGate" class="auth-gate">
     <div class="auth-card">
+      <button class="language-toggle auth-language-toggle" type="button" data-language-toggle>EN</button>
       <div class="auth-brand"><span>م</span><div><b>مُعين</b><small>دخول آمن</small></div></div>
       <div id="setupPane" hidden>
         <p class="eyebrow">إعداد الجهاز الرئيسي</p>
@@ -63,7 +64,7 @@
     <main>
       <header>
         <div><p id="date"></p><h1 id="greeting">أهلًا بك</h1><span class="header-note">كل ما يحتاج انتباهك، في مكان واحد.</span></div>
-        <div class="header-actions"><span id="syncStatus" class="sync-status">محفوظ محليًا</span><button id="headerInstallBtn" class="header-install" type="button">تثبيت التطبيق</button><button id="quickLogout" class="header-logout" title="تسجيل الخروج">خروج</button><button id="quickRecord" class="primary record-top"><i></i><span>ملاحظة صوتية</span></button></div>
+        <div class="header-actions"><button class="language-toggle" type="button" data-language-toggle>EN</button><span id="syncStatus" class="sync-status">محفوظ محليًا</span><button id="headerInstallBtn" class="header-install" type="button">تثبيت التطبيق</button><button id="quickLogout" class="header-logout" title="تسجيل الخروج">خروج</button><button id="quickRecord" class="primary record-top"><i></i><span>ملاحظة صوتية</span></button></div>
       </header>
       <button id="subscriptionAlert" class="subscription-alert" type="button" hidden></button>
 
@@ -183,6 +184,7 @@
   </dialog>
 
   <dialog id="simpleDialog"><form method="dialog" class="modal" id="simpleForm"></form></dialog>
+  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}"></script>
   <script src="{{ url_for('static', filename='moeen_exec/app.js') }}"></script>
   <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("{{ url_for('moeen_multi.moeen_service_worker') }}");</script>
 </body>

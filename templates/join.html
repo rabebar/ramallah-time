@@ -1024,6 +1024,11 @@ function toggleLang() {
 function setLang(lang) {
  localStorage.setItem(LANG_KEY, lang);
  const isAr = lang === 'ar';
+ const localizedRoutes = {
+  '/products/stores': '/en/products/stores',
+  '/products/moeen': '/en/products/moeen',
+  '/services/custom-websites': '/en/services/custom-websites'
+ };
  document.documentElement.lang = lang;
  document.documentElement.dir = isAr ? 'rtl' : 'ltr';
  document.getElementById('langBtn').textContent = isAr ? 'EN' : 'AR';
@@ -1032,6 +1037,11 @@ function setLang(lang) {
  });
  document.querySelectorAll('[data-ar-ph]').forEach(el => {
   el.placeholder = isAr ? el.getAttribute('data-ar-ph') : el.getAttribute('data-en-ph');
+ });
+ document.querySelectorAll('a[href]').forEach(link => {
+  const current = link.getAttribute('href');
+  const arabicRoute = Object.keys(localizedRoutes).find(route => route === current || localizedRoutes[route] === current);
+  if (arabicRoute) link.setAttribute('href', isAr ? arabicRoute : localizedRoutes[arabicRoute]);
  });
 }
 const savedLang = localStorage.getItem(LANG_KEY) || 'ar';

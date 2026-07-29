@@ -27,9 +27,9 @@
     {% set headline = 'Keep your schedule, notes, and follow-ups under control' %}
     {% set summary = 'A personal assistant for managers and executives that reminds you of meetings, saves written and voice notes, and organizes calls and follow-ups across mobile and desktop.' %}
     {% set price = '₪60 per month · 48-hour free trial' %}
-    {% set primary_url = '/moeen-executive/register' %}
+    {% set primary_url = '/moeen-executive/register?lang=en' %}
     {% set primary_label = 'Start Your Free Trial' %}
-    {% set login_url = '/moeen-executive/' %}
+    {% set login_url = '/moeen-executive/?lang=en' %}
     {% set login_label = 'Moeen Login' %}
     {% set accent = '#17483b' %}
     {% set hero_visual = '/static/assets/product-moeen-visual.webp' %}
@@ -190,5 +190,6 @@
     <section class="closing"><h2>{{ 'Ready for the next step?' if is_en else 'جاهز للخطوة التالية؟' }}</h2><p>{{ price }}</p><div class="actions"><a class="btn primary" href="{{ primary_url }}" {% if product == 'custom' %}target="_blank" rel="noopener"{% endif %}>{{ primary_label }}</a><a class="btn secondary" href="/#products">{{ 'Back to Products' if is_en else 'العودة إلى المنتجات' }}</a></div></section>
   </main>
   <footer>© 2026 RT Studio · {{ 'Made in Palestine' if is_en else 'صُنع في فلسطين' }}</footer>
+  <script>localStorage.setItem('rt_lang','{{ lang|default("ar") }}');</script>
 </body>
 </html>
