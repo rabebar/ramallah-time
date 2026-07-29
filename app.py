@@ -1540,17 +1540,17 @@ def landing():
     if 'user_id' in session:
         return redirect(url_for('dashboard'))
         
-    # إذا لم يكن مسجلاً، نعرض الصفحة الرئيسية المختصرة
+    # إذا لم يكن مسجلاً، نعرض الصفحة الرئيسية بهويتها الأصلية
     from database import record_join_visit
     record_join_visit('home')
-    return render_template('home.html')
+    return render_template('join.html', show_details=False)
 
 @app.route('/join')
 def join():
-    # الكتالوج التفصيلي والأسعار
+    # رابط قديم محفوظ للتوافق، والمنتجات أصبحت في صفحات مستقلة.
     from database import record_join_visit
     record_join_visit('join')
-    return render_template('join.html')
+    return redirect(url_for('landing') + '#products', code=302)
 
 
 @app.route('/products/stores')

@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google-site-verification" content="KLX3kKnhgUvUUs6De5PwzcWfR4wO8qlF7jaEDpRUCo0">
-<title>كتالوج المنتجات والأسعار | RT Studio</title>
+<title>RT Studio — منتجات رقمية لأعمال أكثر ذكاءً</title>
 <meta name="description" content="منتجات وخدمات رقمية من RT Studio: متاجر إلكترونية جاهزة، مُعين التنفيذي، وتصميم مواقع خاصة باشتراكات واضحة ودعم محلي.">
-<link rel="canonical" href="https://www.rtstudio.store/join">
+<link rel="canonical" href="https://www.rtstudio.store/">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -453,8 +453,8 @@ body.ltr .wa-float { left: auto; right: 24px; }
  </a>
  <div class="nav-links">
   <a href="#products" data-ar="المنتجات الرقمية" data-en="Digital Products">المنتجات الرقمية</a>
-  <a href="#features" data-ar="المميزات" data-en="Features">المميزات</a>
-  <a href="#pricing" data-ar="الأسعار والخدمات" data-en="Pricing & Services">الأسعار والخدمات</a>
+  <a href="/products/stores" data-ar="المتاجر" data-en="Online Stores">المتاجر</a>
+  <a href="/products/moeen" data-ar="مُعين التنفيذي" data-en="Moeen Executive">مُعين التنفيذي</a>
   <button class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</button>
   <a href="/login" class="nav-login" data-ar="دخول المتاجر" data-en="Store Login">دخول المتاجر</a>
   <a href="/moeen-executive/" class="nav-login" data-ar="دخول مُعين" data-en="Moeen Login">دخول مُعين</a>
@@ -569,6 +569,7 @@ body.ltr .wa-float { left: auto; right: 24px; }
  </div>
 </section>
 
+{% if show_details|default(true) %}
 <span id="store-details"></span>
 <section class="value-showcase" id="featuredBenefits" aria-labelledby="featuredBenefitsTitle">
  <div class="value-showcase-head">
@@ -997,6 +998,8 @@ body.ltr .wa-float { left: auto; right: 24px; }
 </section>
 </div>
 
+{% endif %}
+
 <hr>
 
 <div class="container">
@@ -1096,9 +1099,9 @@ function openWA(type) {
   <span class="tab-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3Z"/></svg></span>
   <span data-ar="المنتجات" data-en="Products">المنتجات</span>
  </a>
- <a href="#pricing" class="tab-item" data-tab="pricing">
+ <a href="/products/stores" class="tab-item">
   <span class="tab-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span>
-  <span data-ar="الأسعار" data-en="Pricing">الأسعار</span>
+  <span data-ar="المتاجر" data-en="Stores">المتاجر</span>
  </a>
  <a href="#" onclick="openWA('general');return false" class="tab-item wa">
   <span class="tab-icon-wrap"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.3 5.1 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2z"/></svg></span>

@@ -44,8 +44,8 @@
   {% set price = 'التصميم والبرمجة يبدأان من 300$' %}
   {% set primary_url = 'https://wa.me/970592776784?text=مرحبًا،%20أنا%20مهتم%20بتصميم%20موقع%20أو%20نظام%20خاص' %}
   {% set primary_label = 'اطلب استشارة' %}
-  {% set login_url = '/join#custom-service' %}
-  {% set login_label = 'الأسعار والتفاصيل' %}
+  {% set login_url = '/#products' %}
+  {% set login_label = 'العودة إلى المنتجات' %}
   {% set accent = '#182238' %}
   {% set features = [
     ('تصميم مخصص', 'واجهة متجاوبة تعكس هوية المشروع وتخدم جمهوره وأهدافه.'),
@@ -71,19 +71,39 @@
     .hero{padding:80px 0 65px;background:radial-gradient(circle at 20% 10%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 34%)}.hero-inner{max-width:850px;margin:auto;text-align:center}.eyebrow{display:inline-block;padding:6px 10px;border-radius:999px;background:color-mix(in srgb,var(--accent) 10%,white);color:var(--accent);font-size:11px;font-weight:800}.hero h1{font-size:clamp(38px,6vw,67px);line-height:1.2;margin:16px 0}.hero p{max-width:760px;margin:auto;color:var(--muted);font-size:15px;line-height:2}.price{margin-top:18px;color:var(--accent);font-size:15px;font-weight:800}.actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:24px}.btn{min-height:50px;display:inline-flex;align-items:center;justify-content:center;padding:0 21px;border-radius:12px;text-decoration:none;font-size:12px;font-weight:800}.btn.primary{background:var(--accent);color:#fff}.btn.secondary{border:1px solid var(--line);background:#fff;color:var(--accent)}
     .features{padding:60px 0}.section-head{text-align:center;margin-bottom:25px}.section-head small{color:var(--gold);font-weight:800}.section-head h2{font-size:32px;margin-top:6px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{padding:23px;border:1px solid var(--line);border-radius:18px;background:#fff}.card span{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:color-mix(in srgb,var(--accent) 9%,white);color:var(--accent);font-weight:800}.card h3{font-size:15px;margin:13px 0 7px}.card p{color:var(--muted);font-size:11px;line-height:1.9}
     .work{display:grid;grid-template-columns:.9fr 1.1fr;overflow:hidden;margin:25px auto 65px;border-radius:23px;background:#102e27;color:#fff}.work img{width:100%;height:100%;min-height:350px;object-fit:cover;object-position:top}.work-copy{padding:35px;display:flex;flex-direction:column;justify-content:center}.work-copy small{color:#e0c476;font-weight:800}.work h2{font-size:29px;margin:7px 0}.work p{color:#c8d7d1;font-size:12px;line-height:1.9}.work a{align-self:flex-start;margin-top:17px;color:#102e27;background:#dec475;padding:11px 16px;border-radius:10px;text-decoration:none;font-size:11px;font-weight:800}
+    .customer-proof{padding:10px 0 65px}.client-links{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:24px}.client-links a{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--accent);text-decoration:none;font-size:10px;font-weight:800}.reviews{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.review{padding:22px;border:1px solid var(--line);border-radius:18px;background:#fff}.review .stars{color:#c49a43;letter-spacing:2px}.review blockquote{min-height:88px;margin:10px 0;color:#53615c;font-size:11px;line-height:1.9}.review strong{font-size:11px}.review small{display:block;color:#87918d;font-size:9px;margin-top:3px}
     .closing{text-align:center;padding:55px 18px;background:var(--soft)}.closing h2{font-size:30px}.closing p{color:var(--muted);margin:7px 0 18px}footer{padding:24px;text-align:center;color:#7a8581;font-size:10px}
-    @media(max-width:800px){.hero{padding:55px 0}.grid{grid-template-columns:1fr}.work{grid-template-columns:1fr}.work img{min-height:260px}.work-copy{text-align:center}.work-copy a{align-self:stretch}.hero p{font-size:13px}}
+    @media(max-width:800px){.hero{padding:55px 0}.grid,.reviews{grid-template-columns:1fr}.work{grid-template-columns:1fr}.work img{min-height:260px}.work-copy{text-align:center}.work-copy a{align-self:stretch}.hero p{font-size:13px}.review blockquote{min-height:0}}
   </style>
 </head>
 <body>
-  <header><div class="wrap nav"><a class="brand" href="/"><span class="mark">RT</span><span>RT Studio</span></a><a class="back" href="/join">الكتالوج والأسعار ←</a></div></header>
+  <header><div class="wrap nav"><a class="brand" href="/"><span class="mark">RT</span><span>RT Studio</span></a><a class="back" href="/#products">المنتجات ←</a></div></header>
   <main>
     <section class="hero"><div class="wrap hero-inner"><span class="eyebrow">{{ eyebrow }}</span><h1>{{ headline }}</h1><p>{{ summary }}</p><div class="price">{{ price }}</div><div class="actions"><a class="btn primary" href="{{ primary_url }}" {% if product == 'custom' %}target="_blank" rel="noopener"{% endif %}>{{ primary_label }}</a><a class="btn secondary" href="{{ login_url }}">{{ login_label }}</a></div></div></section>
     <section class="features"><div class="wrap"><div class="section-head"><small>ما الذي تحصل عليه؟</small><h2>مزايا تخدم هدفك مباشرة</h2></div><div class="grid">{% for title, description in features %}<article class="card"><span>✓</span><h3>{{ title }}</h3><p>{{ description }}</p></article>{% endfor %}</div></div></section>
+    {% if product == 'stores' %}
+    <section class="customer-proof">
+      <div class="wrap">
+        <div class="section-head"><small>زبائننا في منصة المتاجر</small><h2>متاجر حقيقية وآراء أصحابها</h2></div>
+        <div class="client-links">
+          <a href="/store/ayyad-watches-" target="_blank">عياد للساعات</a>
+          <a href="/store/selvana" target="_blank">Selvana Jewellery</a>
+          <a href="/store/palestinian-heritage-boutique" target="_blank">Palestinian Heritage</a>
+          <a href="/store/royal-animals0" target="_blank">Royal Animals</a>
+          <a href="/store/chrono-watches" target="_blank">CHRONO WATCHES</a>
+        </div>
+        <div class="reviews">
+          <article class="review"><div class="stars">★★★★★</div><blockquote>«سلة الشراء مفيدة جدًا؛ تنظّم الطلبات وتغنيني عن فوضى التعليقات والرسائل.»</blockquote><strong>محمد عياد</strong><small>صاحب متجر على RT Studio</small></article>
+          <article class="review"><div class="stars">★★★★★</div><blockquote>«معالجة الصور من أقوى المزايا؛ أصبحت صور المنتجات احترافية وعرض التفاصيل أوضح.»</blockquote><strong>عياد للساعات</strong><small>متجر ساعات على المنصة</small></article>
+          <article class="review"><div class="stars">★★★★★</div><blockquote>«التطبيق سهل ومتطور وساهم كثيرًا في تنظيم العمل؛ متجر CHRONO WATCHES على RT Studio أبهرني.»</blockquote><strong>صاحب CHRONO WATCHES</strong><small>متجر ساعات على المنصة</small></article>
+        </div>
+      </div>
+    </section>
+    {% endif %}
     {% if product == 'custom' %}
     <section class="wrap work"><img src="/static/assets/mizan-political-showcase.png" alt="موقع مؤسسة الميزان السياسي"><div class="work-copy"><small>من أعمالنا</small><h2>مؤسسة الميزان السياسي</h2><p>موقع بحثي وإعلامي عربي للأخبار والتحليلات والترجمات، بواجهة تحريرية متجاوبة وبحث وتصنيفات واضحة.</p><a href="https://mizan-political-web.onrender.com" target="_blank" rel="noopener noreferrer">زيارة الموقع الحي ↗</a></div></section>
     {% endif %}
-    <section class="closing"><h2>جاهز للخطوة التالية؟</h2><p>{{ price }}</p><div class="actions"><a class="btn primary" href="{{ primary_url }}" {% if product == 'custom' %}target="_blank" rel="noopener"{% endif %}>{{ primary_label }}</a><a class="btn secondary" href="/join#pricing">مقارنة الأسعار</a></div></section>
+    <section class="closing"><h2>جاهز للخطوة التالية؟</h2><p>{{ price }}</p><div class="actions"><a class="btn primary" href="{{ primary_url }}" {% if product == 'custom' %}target="_blank" rel="noopener"{% endif %}>{{ primary_label }}</a><a class="btn secondary" href="/#products">العودة إلى المنتجات</a></div></section>
   </main>
   <footer>© 2026 RT Studio · صُنع في فلسطين</footer>
 </body>
