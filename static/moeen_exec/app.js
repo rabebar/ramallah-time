@@ -124,6 +124,7 @@ function render(){
   const open=tasks.filter(t=>!t.done), today=new Date().toISOString().slice(0,10);
   $("#openTasks").textContent=open.length;$("#dueTasks").textContent=open.filter(t=>t.due===today).length;$("#memoryCount").textContent=memories.length;
   $("#dailyLine").textContent=open.length?`لديك ${open.length} متابعة مفتوحة. ركّز على الأكثر إلحاحًا أولًا.`:"جدول المتابعة هادئ. سجّل ما يستحق التذكر.";
+  renderHomeAlerts(tasks,meetings);
   $("#todayTasks").innerHTML=open.slice(0,4).map(taskRow).join("")||'<div class="empty">لا توجد متابعات بعد.</div>';
   $("#recentMemories").innerHTML=memories.slice(0,3).map(m=>`<div class="card-top"><div><b>${esc(m.title)}</b><div class="meta">${fmt(m.created)}</div></div><span class="tag">ملاحظة</span></div>`).join("")||'<div class="empty">ذاكرتك جاهزة لأول ملاحظة.</div>';
   renderMemories();$("#taskList").innerHTML=tasks.map(taskCard).join("")||'<div class="empty">أضف أول متابعة أو التزام.</div>';
@@ -133,6 +134,23 @@ function render(){
   if($("#security").classList.contains("active"))loadSecurity();
 }
 setInterval(()=>{if(!document.body.classList.contains("locked"))render()},60000);
+function renderHomeAlerts(tasks,meetings){
+  const taskEvents=tasks.filter(item=>!item.done&&item.due).map(item=>({...item,eventAt:item.due,view:"tasks",kind:item.itemType==="call"?"اتصال":"متابعة"}));
+  const meetingEvents=meetings.filter(item=>!item.done&&item.date).map(item=>({...item,eventAt:item.date,view:"meetings",kind:"اجتماع"}));
+  const events=[...taskEvents,...meetingEvents]
+    .filter(item=>eventVisualState(item.eventAt).badge)
+    .sort((a,b)=>new Date(a.eventAt)-new Date(b.eventAt));
+  const panel=$("#homeAlerts");
+  if(!events.length){panel.hidden=true;return}
+  const dueCount=events.filter(item=>new Date(item.eventAt)<=new Date()).length;
+  $("#homeAlertsTitle").textContent=dueCount?`لديك ${dueCount} حدث حان موعده`:"مواعيد وتنبيهات اليوم";
+  $("#homeAlertsCount").textContent=`${events.length} تنبيه`;
+  $("#homeAlertsList").innerHTML=events.slice(0,4).map(item=>{
+    const state=eventVisualState(item.eventAt);
+    return `<button type="button" class="home-alert-item ${state.className}" onclick="setView('${item.view}')"><span class="home-alert-kind">${item.kind}</span><span class="home-alert-content"><strong>${esc(item.title)}</strong><small>${fmtDateTime(item.eventAt)}${item.person||item.people?` · ${esc(item.person||item.people)}`:""}</small></span>${eventBadge(state)}<b aria-hidden="true">←</b></button>`;
+  }).join("");
+  panel.hidden=false;
+}
 function taskRow(t){const state=eventVisualState(t.due,t.done);return `<div class="card-top event-row ${state.className} ${t.done?"done":""}"><div><b>${esc(t.title)}</b><div class="meta">${t.due?fmtDateTime(t.due):"بلا موعد"} · ${esc(t.person||"")}</div>${eventBadge(state)}</div><button class="icon-btn" onclick="toggleTask('${t.id}')">${t.done?"↩":"✓"}</button></div>`}
 function taskCard(t){const state=eventVisualState(t.due,t.done);return `<article class="card event-card ${state.className} ${t.done?"done":""}"><div class="card-top"><div><h3>${esc(t.title)}</h3><div class="meta"><span>${t.due?fmtDateTime(t.due):"بلا موعد"}</span><span>${esc(t.person||"")}</span></div>${eventBadge(state)}</div><div class="card-actions"><button class="icon-btn" onclick="toggleTask('${t.id}')">${t.done?"إعادة":"تم"}</button><button class="icon-btn" onclick="removeItem('tasks','${t.id}')">حذف</button></div></div><p>${esc(t.notes||"")}</p>${t.audioId?`<audio controls data-audio="${t.audioId}"></audio>`:""}</article>`}
 function meetingCard(m){const state=eventVisualState(m.date,m.done);return `<article class="card event-card ${state.className} ${m.done?"done":""}"><div class="card-top"><div><h3>${esc(m.title)}</h3><div class="meta">${fmtDateTime(m.date)} · ${esc(m.people||"")}</div>${eventBadge(state)}</div><div class="card-actions"><button class="icon-btn" onclick="toggleMeeting('${m.id}')">${m.done?"إعادة":"تم الاجتماع"}</button><button class="icon-btn" onclick="removeItem('meetings','${m.id}')">حذف</button></div></div><p>${esc(m.notes||"")}</p>${m.audioId?`<audio controls data-audio="${m.audioId}"></audio>`:""}</article>`}

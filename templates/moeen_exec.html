@@ -72,6 +72,10 @@
           <div><small>موجز اليوم</small><h2>بداية واضحة ليومٍ أكثر تركيزًا</h2><p id="dailyLine">ابدأ بإضافة أول ملاحظة أو متابعة.</p><button class="hero-record" onclick="document.querySelector('#quickRecord').click()">تحدث الآن <b>←</b></button></div>
           <div class="hero-mark"><span>م</span><small>ذاكرتك التنفيذية</small></div>
         </div>
+        <section id="homeAlerts" class="home-alerts" hidden>
+          <div class="home-alerts-head"><div><small>يتطلب انتباهك</small><h3 id="homeAlertsTitle">مواعيد وتنبيهات اليوم</h3></div><span id="homeAlertsCount"></span></div>
+          <div id="homeAlertsList" class="home-alerts-list"></div>
+        </section>
         <div class="stats">
           <article><b id="openTasks">0</b><span>متابعات مفتوحة</span></article>
           <article><b id="dueTasks">0</b><span>تستحق اليوم</span></article>
