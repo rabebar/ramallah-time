@@ -57,6 +57,22 @@ def _device(account_id, device_id):
         cursor.close()
         conn.close()
 
+def _touch_device(account_id, device):
+    last_seen = device.get("last_seen") if device else None
+    if last_seen and datetime.utcnow() - last_seen < timedelta(minutes=5):
+        return
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "UPDATE moeen_devices SET last_seen=NOW() WHERE account_id=%s AND device_id=%s",
+            (account_id, device["device_id"]),
+        )
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
+
 
 def _vault(account_id):
     conn = get_db_connection()
@@ -135,8 +151,10 @@ def require_moeen_auth(view):
     def wrapped(*args, **kwargs):
         account_id = session.get(SESSION_ACCOUNT)
         device_id = session.get(SESSION_DEVICE)
-        if not account_id or not device_id or not _device(account_id, device_id):
+        device = _device(account_id, device_id) if account_id and device_id else None
+        if not account_id or not device_id or not device:
             return jsonify(error="AUTH_REQUIRED"), 401
+        _touch_device(account_id, device)
         account = _account(account_id=account_id)
         if not _subscription_valid(account):
             return jsonify(error="SUBSCRIPTION_INACTIVE"), 403

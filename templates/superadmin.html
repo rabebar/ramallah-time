@@ -311,6 +311,16 @@
         .badge-active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .badge-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
         .badge-store { background: var(--gray-bg); color: var(--navy); font-weight: 600; }
+        .usage-pill { display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:50px;font-size:10px;font-weight:700; }
+        .usage-live { background:#dcfce7;color:#047857; }.usage-recent { background:#e0f2fe;color:#0369a1; }
+        .usage-idle { background:#fef3c7;color:#a16207; }.usage-never { background:#f1f5f9;color:#64748b; }
+        .usage-dot { width:7px;height:7px;border-radius:50%;background:currentColor; }
+        .logs-toolbar { display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 16px;flex-wrap:wrap; }
+        .logs-toolbar p { color:var(--text-muted);font-size:12px; }
+        .logs-copy { border:0;border-radius:11px;background:var(--navy);color:#fff;padding:10px 15px;font-weight:700;cursor:pointer; }
+        .system-logs { max-height:430px;overflow:auto;border:1px solid var(--border);border-radius:16px;background:#0f172a;color:#dbeafe;direction:ltr;text-align:left; }
+        .log-line { display:grid;grid-template-columns:155px 150px minmax(170px,1fr) minmax(150px,1fr);gap:12px;padding:10px 13px;border-bottom:1px solid #ffffff12;font:11px/1.6 "Consolas","Courier New",monospace; }
+        .log-line:last-child { border-bottom:0; }.log-time{color:#93c5fd}.log-outcome{color:#fbbf24}.log-success .log-outcome{color:#86efac}.log-detail{overflow-wrap:anywhere}
 
         .btn-group { display: flex; gap: 10px; align-items: center; }
         .btn-sm { 
@@ -826,6 +836,8 @@
                         <th>الحالة</th>
                         <th>انتهاء الاشتراك</th>
                         <th>الأجهزة</th>
+                        <th>آخر استخدام</th>
+                        <th>النشاط</th>
                         <th>الإجراءات</th>
                     </tr>
                 </thead>
@@ -861,6 +873,26 @@
                             {% else %}—{% endif %}
                         </td>
                         <td>{{ account.device_count or 0 }}</td>
+                        <td>
+                            {% if account.last_device_activity %}
+                                <strong>{{ account.last_device_activity.strftime('%Y-%m-%d %H:%M') }}</strong>
+                            {% else %}
+                                <span style="color:var(--text-muted)">لم يستخدم بعد</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not account.last_device_activity %}
+                                <span class="usage-pill usage-never"><i class="usage-dot"></i> لم يستخدم</span>
+                            {% elif (now - account.last_device_activity).total_seconds() <= 900 %}
+                                <span class="usage-pill usage-live"><i class="usage-dot"></i> نشط الآن</span>
+                            {% elif (now - account.last_device_activity).total_seconds() <= 86400 %}
+                                <span class="usage-pill usage-recent"><i class="usage-dot"></i> نشط اليوم</span>
+                            {% elif (now - account.last_device_activity).days <= 7 %}
+                                <span class="usage-pill usage-idle"><i class="usage-dot"></i> نشط هذا الأسبوع</span>
+                            {% else %}
+                                <span class="usage-pill usage-never"><i class="usage-dot"></i> غير نشط {{ (now - account.last_device_activity).days }} يوم</span>
+                            {% endif %}
+                        </td>
                         <td>
                             <div class="moeen-actions">
                                 <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/subscription">
@@ -900,10 +932,30 @@
                         </td>
                     </tr>
                     {% else %}
-                    <tr><td colspan="6" style="text-align:center;padding:36px;color:var(--text-muted);">لم تُنشأ حسابات مُعين التنفيذي بعد.</td></tr>
+                    <tr><td colspan="8" style="text-align:center;padding:36px;color:var(--text-muted);">لم تُنشأ حسابات مُعين التنفيذي بعد.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
+        </section>
+
+        <section class="table-container" id="moeen-logs">
+            <div class="table-title">سجل مُعين للدخول والأخطاء</div>
+            <div class="logs-toolbar">
+                <p>آخر 120 محاولة دخول أو ربط جهاز. انسخ السجل وأرسله عند ظهور مشكلة.</p>
+                <button id="copyMoeenLogs" class="logs-copy" type="button">نسخ السجل كاملًا</button>
+            </div>
+            <div id="moeenLogsText" class="system-logs">
+                {% for log in moeen_logs %}
+                <div class="log-line {% if log.outcome in ('success','paired_success') %}log-success{% endif %}">
+                    <span class="log-time">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                    <span class="log-outcome">{{ log.outcome }}</span>
+                    <span class="log-detail">{{ log.full_name or log.phone or 'حساب غير معروف' }}</span>
+                    <span class="log-detail">{{ log.device_name or 'جهاز غير معروف' }}</span>
+                </div>
+                {% else %}
+                <div class="log-line"><span>لا توجد سجلات حتى الآن.</span></div>
+                {% endfor %}
+            </div>
         </section>
 
         <!-- جدول التجار -->
@@ -1065,6 +1117,15 @@
       finally{superadminPushTestButton.disabled=false;setTimeout(()=>{label.textContent="إرسال إشعار تجريبي"},3000);}
     };
     refreshSuperadminPush().catch(()=>{});
+    const copyMoeenLogs=document.getElementById("copyMoeenLogs");
+    if(copyMoeenLogs)copyMoeenLogs.onclick=async()=>{
+      const logs=document.getElementById("moeenLogsText")?.innerText||"";
+      try{
+        await navigator.clipboard.writeText(logs);
+        copyMoeenLogs.textContent="تم النسخ ✓";
+        setTimeout(()=>copyMoeenLogs.textContent="نسخ السجل كاملًا",2000);
+      }catch{alert("تعذر النسخ التلقائي. حدّد السجل وانسخه يدويًا.")}
+    };
     lucide.createIcons();
     </script>
 </body>

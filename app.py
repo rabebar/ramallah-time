@@ -3649,6 +3649,15 @@ def super_admin():
     """)
     moeen_accounts = cursor.fetchall()
     cursor.execute("""
+        SELECT mla.created_at, mla.outcome, mla.phone, mla.device_name,
+               ma.full_name
+        FROM moeen_login_attempts mla
+        LEFT JOIN moeen_accounts ma ON ma.id = mla.account_id
+        ORDER BY mla.created_at DESC
+        LIMIT 120
+    """)
+    moeen_logs = cursor.fetchall()
+    cursor.execute("""
         SELECT mp.*, ma.full_name, ma.phone
         FROM moeen_subscription_payments mp
         JOIN moeen_accounts ma ON ma.id = mp.account_id
@@ -3678,6 +3687,7 @@ def super_admin():
                            order_store_id=order_store_id,
                            subscription_payments=subscription_payments,
                            moeen_accounts=moeen_accounts,
+                           moeen_logs=moeen_logs,
                            moeen_payments=moeen_payments,
                            moeen_subscription_plans=MOEEN_SUBSCRIPTION_PLANS,
                            active_moeen_trial_count=active_moeen_trial_count,
