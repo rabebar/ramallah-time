@@ -1,5 +1,5 @@
-const CACHE="moeen-executive-v31";
-const ASSETS=["/moeen-executive/","/static/moeen_exec/styles.css?v=31","/static/moeen_exec/premium.css?v=31","/static/moeen_exec/i18n.js?v=31","/static/moeen_exec/app.js?v=31","/moeen-executive/manifest.webmanifest","/static/moeen_exec/icon-64.png","/static/moeen_exec/icon-192.png","/static/moeen_exec/icon-512.png","/static/moeen_exec/apple-touch-icon.png","/static/moeen_exec/fonts/noto-kufi-400.woff2","/static/moeen_exec/fonts/noto-kufi-500.woff2","/static/moeen_exec/fonts/noto-kufi-700.woff2"];
+const CACHE="moeen-executive-v32";
+const ASSETS=["/moeen-executive/","/static/moeen_exec/styles.css?v=32","/static/moeen_exec/premium.css?v=32","/static/moeen_exec/i18n.js?v=32","/static/moeen_exec/app.js?v=32","/moeen-executive/manifest.webmanifest","/static/moeen_exec/icon-64.png","/static/moeen_exec/icon-192.png","/static/moeen_exec/icon-512.png","/static/moeen_exec/apple-touch-icon.png","/static/moeen_exec/fonts/noto-kufi-400.woff2","/static/moeen_exec/fonts/noto-kufi-500.woff2","/static/moeen_exec/fonts/noto-kufi-700.woff2"];
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
   self.skipWaiting();
@@ -20,11 +20,14 @@ self.addEventListener("fetch",event=>{
 self.addEventListener("push",event=>{
   let data={title:"مُعين",body:"لديك تذكير جديد.",url:"/moeen-executive/"};
   try{data={...data,...event.data.json()}}catch{}
-  event.waitUntil(self.registration.showNotification(data.title,{
+  const silent=data.silent===true;
+  const options={
     body:data.body,tag:data.tag,icon:data.icon||"/static/moeen_exec/icon-192.png",
     badge:data.badge||"/static/moeen_exec/icon-64.png",data:{url:data.url},
-    renotify:true,vibrate:[180,90,180],timestamp:Date.now()
-  }));
+    renotify:!silent,silent,timestamp:Date.now()
+  };
+  if(!silent)options.vibrate=[180,90,180];
+  event.waitUntil(self.registration.showNotification(data.title,options));
 });
 self.addEventListener("notificationclick",event=>{
   event.notification.close();

@@ -1012,6 +1012,29 @@ try:
         )
     """)
     _mcur.execute("""
+        CREATE TABLE IF NOT EXISTS moeen_broadcast_notifications (
+            id BIGSERIAL PRIMARY KEY,
+            title_ar TEXT NOT NULL,
+            body_ar TEXT NOT NULL,
+            title_en TEXT,
+            body_en TEXT,
+            audience TEXT NOT NULL DEFAULT 'active'
+                CHECK(audience IN ('active', 'paid', 'trial')),
+            silent BOOLEAN NOT NULL DEFAULT TRUE,
+            status TEXT NOT NULL DEFAULT 'sending'
+                CHECK(status IN ('sending', 'sent', 'partial', 'no_recipients', 'failed')),
+            sent_count INTEGER NOT NULL DEFAULT 0,
+            failed_count INTEGER NOT NULL DEFAULT 0,
+            expired_count INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            completed_at TIMESTAMP
+        )
+    """)
+    _mcur.execute("""
+        CREATE INDEX IF NOT EXISTS ix_moeen_broadcasts_created
+        ON moeen_broadcast_notifications(created_at DESC)
+    """)
+    _mcur.execute("""
         CREATE TABLE IF NOT EXISTS moeen_reminders (
             id BIGSERIAL PRIMARY KEY,
             account_id INTEGER NOT NULL REFERENCES moeen_accounts(id) ON DELETE CASCADE,
@@ -1201,6 +1224,125 @@ def send_superadmin_push_notification(title, body, tag, url, icon="/static/rt_lo
         finally:
             conn.close()
     return {"sent": sent, "failed": failed, "configured": True}
+
+
+def send_moeen_broadcast_notification(
+    broadcast_id,
+    title_ar,
+    body_ar,
+    title_en="",
+    body_en="",
+    audience="active",
+    silent=True,
+):
+    """Send one administrative message to eligible Moeen push subscriptions."""
+    if not (VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY):
+        return {
+            "sent": 0,
+            "failed": 0,
+            "expired": 0,
+            "recipients": 0,
+            "configured": False,
+        }
+    try:
+        from pywebpush import webpush, WebPushException
+    except ImportError:
+        return {
+            "sent": 0,
+            "failed": 0,
+            "expired": 0,
+            "recipients": 0,
+            "configured": False,
+        }
+
+    audience_filter = ""
+    if audience == "paid":
+        audience_filter = "AND ma.plan_type <> 'trial'"
+    elif audience == "trial":
+        audience_filter = "AND ma.plan_type = 'trial'"
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(f"""
+            SELECT mps.id, mps.endpoint, mps.p256dh, mps.auth, mps.locale
+            FROM moeen_push_subscriptions mps
+            JOIN moeen_accounts ma ON ma.id = mps.account_id
+            WHERE ma.status = 'active'
+              AND (ma.subscription_end IS NULL OR ma.subscription_end >= NOW())
+              {audience_filter}
+            ORDER BY mps.id
+        """)
+        subscriptions = cur.fetchall()
+    finally:
+        cur.close()
+        conn.close()
+
+    sent = 0
+    failed = 0
+    expired = []
+    tag = f"moeen-message-{broadcast_id}"
+    for subscription in subscriptions:
+        english = str(subscription.get("locale") or "").lower().startswith("en")
+        title = (title_en if english and title_en else title_ar).strip()
+        body = (body_en if english and body_en else body_ar).strip()
+        payload = json.dumps({
+            "title": title,
+            "body": body,
+            "tag": tag,
+            "url": "/moeen-executive/",
+            "icon": "/static/moeen_exec/icon-192.png",
+            "badge": "/static/moeen_exec/icon-64.png",
+            "silent": bool(silent),
+        }, ensure_ascii=False)
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": subscription["endpoint"],
+                    "keys": {
+                        "p256dh": subscription["p256dh"],
+                        "auth": subscription["auth"],
+                    },
+                },
+                data=payload,
+                vapid_private_key=VAPID_PRIVATE_KEY,
+                vapid_claims={"sub": VAPID_SUBJECT},
+                timeout=5,
+            )
+            sent += 1
+        except WebPushException as exc:
+            failed += 1
+            if getattr(getattr(exc, "response", None), "status_code", None) in (404, 410):
+                expired.append(subscription["id"])
+            else:
+                logging.warning(
+                    "Moeen broadcast %s failed for a subscription: %s",
+                    broadcast_id,
+                    exc,
+                )
+        except Exception:
+            failed += 1
+            logging.exception("Moeen broadcast %s delivery failed", broadcast_id)
+
+    if expired:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                "DELETE FROM moeen_push_subscriptions WHERE id = ANY(%s)",
+                (expired,),
+            )
+            conn.commit()
+        finally:
+            cur.close()
+            conn.close()
+    return {
+        "sent": sent,
+        "failed": failed,
+        "expired": len(expired),
+        "recipients": len(subscriptions),
+        "configured": True,
+    }
 
 
 def send_due_moeen_reminders():
@@ -3976,6 +4118,24 @@ def super_admin():
         and account["subscription_end"]
         and account["subscription_end"] >= datetime.utcnow()
     )
+    cursor.execute("""
+        SELECT
+            COUNT(*) AS device_count,
+            COUNT(DISTINCT mps.account_id) AS account_count
+        FROM moeen_push_subscriptions mps
+        JOIN moeen_accounts ma ON ma.id = mps.account_id
+        WHERE ma.status = 'active'
+          AND (ma.subscription_end IS NULL OR ma.subscription_end >= NOW())
+    """)
+    moeen_push_stats = cursor.fetchone()
+    cursor.execute("""
+        SELECT id, title_ar, body_ar, audience, silent, status,
+               sent_count, failed_count, expired_count, created_at
+        FROM moeen_broadcast_notifications
+        ORDER BY created_at DESC
+        LIMIT 20
+    """)
+    moeen_broadcasts = cursor.fetchall()
     conn.close()
 
     return render_template('superadmin.html',
@@ -3995,6 +4155,8 @@ def super_admin():
                            moeen_payments=moeen_payments,
                            moeen_subscription_plans=MOEEN_SUBSCRIPTION_PLANS,
                            active_moeen_trial_count=active_moeen_trial_count,
+                           moeen_push_stats=moeen_push_stats,
+                           moeen_broadcasts=moeen_broadcasts,
                            push_configured=bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY),
                            vapid_public_key=VAPID_PUBLIC_KEY,
                            subscription_plans=SUBSCRIPTION_PLANS,
@@ -4048,6 +4210,145 @@ def superadmin_push_test():
     if result.get("sent", 0) < 1:
         return jsonify(error="NO_ACTIVE_SUBSCRIPTIONS", **result), 409
     return jsonify(ok=True, **result)
+
+
+@app.post('/superadmin/moeen/notifications/send')
+def superadmin_send_moeen_notification():
+    if not session.get('is_superadmin'):
+        return redirect(url_for('super_admin_login'))
+
+    title_ar = (request.form.get('title_ar') or '').strip()
+    body_ar = (request.form.get('body_ar') or '').strip()
+    title_en = (request.form.get('title_en') or '').strip()
+    body_en = (request.form.get('body_en') or '').strip()
+    audience = (request.form.get('audience') or 'active').strip()
+    silent = request.form.get('silent') == '1'
+
+    if audience not in {'active', 'paid', 'trial'}:
+        audience = 'active'
+    if not (3 <= len(title_ar) <= 70):
+        flash('عنوان الإشعار يجب أن يكون بين 3 و70 حرفًا.', 'error')
+        return redirect(url_for('super_admin') + '#notifications')
+    if not (3 <= len(body_ar) <= 240):
+        flash('نص الإشعار يجب أن يكون بين 3 و240 حرفًا.', 'error')
+        return redirect(url_for('super_admin') + '#notifications')
+    if len(title_en) > 70 or len(body_en) > 240:
+        flash('تجاوز النص الإنجليزي الحد المسموح للإشعار.', 'error')
+        return redirect(url_for('super_admin') + '#notifications')
+    if bool(title_en) != bool(body_en):
+        flash('أدخل العنوان والنص الإنجليزيين معًا، أو اتركهما فارغين.', 'error')
+        return redirect(url_for('super_admin') + '#notifications')
+    if title_en and (len(title_en) < 3 or len(body_en) < 3):
+        flash('العنوان والنص الإنجليزيان يجب أن يتضمنا 3 أحرف على الأقل.', 'error')
+        return redirect(url_for('super_admin') + '#notifications')
+    if not (VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY):
+        flash('خدمة إشعارات مُعين غير مهيأة على الخادم.', 'error')
+        return redirect(url_for('super_admin') + '#notifications')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT id
+            FROM moeen_broadcast_notifications
+            WHERE title_ar = %s
+              AND body_ar = %s
+              AND audience = %s
+              AND created_at >= NOW() - INTERVAL '10 minutes'
+            LIMIT 1
+        """, (title_ar, body_ar, audience))
+        if cur.fetchone():
+            flash('تم منع تكرار الرسالة نفسها؛ انتظر 10 دقائق قبل إعادة إرسالها.', 'error')
+            return redirect(url_for('super_admin') + '#notifications')
+        cur.execute("""
+            INSERT INTO moeen_broadcast_notifications(
+                title_ar, body_ar, title_en, body_en, audience, silent
+            )
+            VALUES(%s, %s, %s, %s, %s, %s)
+            RETURNING id
+        """, (
+            title_ar,
+            body_ar,
+            title_en or None,
+            body_en or None,
+            audience,
+            silent,
+        ))
+        broadcast_id = cur.fetchone()['id']
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
+
+    try:
+        result = send_moeen_broadcast_notification(
+            broadcast_id=broadcast_id,
+            title_ar=title_ar,
+            body_ar=body_ar,
+            title_en=title_en,
+            body_en=body_en,
+            audience=audience,
+            silent=silent,
+        )
+    except Exception:
+        logging.exception("Moeen broadcast %s could not start", broadcast_id)
+        result = {
+            'configured': True,
+            'sent': 0,
+            'failed': 1,
+            'expired': 0,
+            'recipients': 0,
+        }
+    if not result.get('configured'):
+        delivery_status = 'failed'
+    elif result['recipients'] == 0:
+        delivery_status = 'no_recipients'
+    elif result['failed'] == 0:
+        delivery_status = 'sent'
+    elif result['sent'] > 0:
+        delivery_status = 'partial'
+    else:
+        delivery_status = 'failed'
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            UPDATE moeen_broadcast_notifications
+            SET status = %s,
+                sent_count = %s,
+                failed_count = %s,
+                expired_count = %s,
+                completed_at = NOW()
+            WHERE id = %s
+        """, (
+            delivery_status,
+            result.get('sent', 0),
+            result.get('failed', 0),
+            result.get('expired', 0),
+            broadcast_id,
+        ))
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
+
+    if delivery_status == 'sent':
+        flash(
+            f"تم إرسال إشعار مُعين إلى {result['sent']} جهازًا بنجاح.",
+            'success',
+        )
+    elif delivery_status == 'partial':
+        flash(
+            f"تم الإرسال إلى {result['sent']} جهازًا، وتعذر على {result['failed']} جهازًا.",
+            'error',
+        )
+    elif delivery_status == 'no_recipients':
+        flash('لا توجد أجهزة مؤهلة ومفعّلة للإشعارات ضمن الفئة المختارة.', 'error')
+    else:
+        flash('تعذر تسليم الإشعار إلى الأجهزة المفعّلة.', 'error')
+    return redirect(url_for('super_admin') + '#notifications')
+
 
 @app.post('/superadmin/moeen/accounts')
 def super_admin_create_moeen_account():

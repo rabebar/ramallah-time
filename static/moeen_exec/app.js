@@ -714,7 +714,7 @@ $("#moeenPaymentForm").onsubmit=async e=>{
 };
 if("serviceWorker" in navigator){
   navigator.serviceWorker
-    .register("/moeen-executive/sw.js?v=31",{updateViaCache:"none"})
+    .register("/moeen-executive/sw.js?v=32",{updateViaCache:"none"})
     .then(registration=>registration.update())
     .catch(()=>{});
 }

@@ -410,6 +410,73 @@
             display: inline-flex; justify-content: center; align-items: center; gap: 8px;
         }
         .admin-password-form button i { width: 17px; height: 17px; }
+        .notification-center {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 28px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,.02);
+        }
+        .notification-stats {
+            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px; margin-bottom: 24px;
+        }
+        .notification-stat {
+            border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px;
+            background: #f8fafc;
+        }
+        .notification-stat strong { display: block; color: var(--navy); font-size: 24px; }
+        .notification-stat span { color: var(--text-muted); font-size: 11px; font-weight: 700; }
+        .notification-layout {
+            display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(280px, .92fr);
+            gap: 24px; align-items: start;
+        }
+        .broadcast-form {
+            display: grid; gap: 14px; padding: 22px; border: 1px solid #dfe7ee;
+            border-radius: 20px; background: linear-gradient(145deg, #fbfdff, #f6f9fc);
+        }
+        .broadcast-form label { color: var(--navy); font-size: 12px; font-weight: 800; }
+        .broadcast-form input[type="text"], .broadcast-form textarea, .broadcast-form select {
+            width: 100%; border: 1px solid #d8e1e9; border-radius: 12px;
+            padding: 12px 13px; font: inherit; background: #fff;
+        }
+        .broadcast-form textarea { resize: vertical; min-height: 100px; line-height: 1.8; }
+        .broadcast-form input:focus, .broadcast-form textarea:focus, .broadcast-form select:focus {
+            outline: 2px solid rgba(184,151,74,.18); border-color: var(--gold);
+        }
+        .broadcast-form details {
+            border: 1px dashed #cbd5e1; border-radius: 14px; padding: 12px 14px;
+            background: #fff;
+        }
+        .broadcast-form summary { cursor: pointer; color: var(--navy); font-size: 12px; font-weight: 800; }
+        .broadcast-form details > div { display: grid; gap: 11px; margin-top: 13px; direction: ltr; text-align: left; }
+        .broadcast-options { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: end; }
+        .broadcast-option { display: flex; align-items: center; gap: 9px; min-height: 44px; color: var(--navy); font-size: 12px; font-weight: 700; }
+        .broadcast-option input { width: 18px; height: 18px; accent-color: var(--navy); }
+        .broadcast-form button[type="submit"] {
+            border: 0; border-radius: 13px; padding: 14px 18px; cursor: pointer;
+            background: var(--navy); color: #fff; font: inherit; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .broadcast-form button[type="submit"]:hover { background: #132846; }
+        .broadcast-form button i { width: 18px; height: 18px; }
+        .notification-preview {
+            padding: 22px; border-radius: 20px; color: #fff;
+            background: linear-gradient(145deg, #0a192f, #173258);
+            box-shadow: 0 16px 35px rgba(10,25,47,.16);
+        }
+        .notification-preview small { color: #d5bd78; font-weight: 800; }
+        .notification-preview h3 { margin: 14px 0 7px; font-size: 17px; }
+        .notification-preview p { color: rgba(255,255,255,.78); font-size: 13px; line-height: 1.8; white-space: pre-wrap; }
+        .notification-note { margin-top: 13px; color: var(--text-muted); font-size: 11px; line-height: 1.8; }
+        .broadcast-history { margin-top: 28px; }
+        .broadcast-history h3 { color: var(--navy); font-size: 17px; margin-bottom: 13px; }
+        .broadcast-history-list { display: grid; gap: 10px; }
+        .broadcast-history-item {
+            display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px;
+            border: 1px solid #e2e8f0; border-radius: 15px; padding: 14px 16px; background: #fff;
+        }
+        .broadcast-history-item strong { color: var(--navy); font-size: 13px; }
+        .broadcast-history-item p { margin-top: 4px; color: var(--text-muted); font-size: 11px; line-height: 1.6; }
+        .broadcast-result { text-align: left; direction: rtl; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+        .broadcast-result b { display: block; color: var(--success); font-size: 13px; }
 
         .refill-input { 
             width: 60px; padding: 10px; border: 1px solid var(--border); 
@@ -428,7 +495,7 @@
             .processing-toggle { width: 100%; justify-content: center; }
             .orders-filter, .orders-filter select, .orders-filter button { width: 100%; }
             .payments-grid { grid-template-columns: 1fr; }
-            .security-layout { grid-template-columns: 1fr; }
+            .security-layout, .notification-layout { grid-template-columns: 1fr; }
         }
         @media (max-width: 640px) {
             .sidebar { width: 64px; padding: 22px 8px; }
@@ -436,7 +503,10 @@
             .header-area { align-items: stretch; flex-direction: column; gap: 12px; margin-bottom: 24px; }
             .header-area h1 { font-size: 25px; }
             .panel-intro { padding: 20px; }
-            .table-container, .payments-section, .visits-section, .orders-section, .security-center { padding: 20px 16px; border-radius: 20px; }
+            .table-container, .payments-section, .visits-section, .orders-section, .security-center, .notification-center { padding: 20px 16px; border-radius: 20px; }
+            .broadcast-options, .notification-stats { grid-template-columns: 1fr; }
+            .broadcast-history-item { grid-template-columns: 1fr; }
+            .broadcast-result { text-align: right; }
             .moeen-create { grid-template-columns: 1fr; }
             #moeen-executive tbody tr { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
@@ -463,6 +533,10 @@
                 <i data-lucide="briefcase-business"></i>
                 <span>مُعين التنفيذي</span>
                 {% if active_moeen_trial_count %}<b class="nav-count">{{ active_moeen_trial_count }}</b>{% endif %}
+            </a>
+            <a href="#notifications" class="nav-item" data-panel-link="notifications">
+                <i data-lucide="send"></i>
+                <span>إشعارات مُعين</span>
             </a>
             <a href="#security" class="nav-item" data-panel-link="security">
                 <i data-lucide="shield-check"></i>
@@ -521,6 +595,106 @@
                 <i data-lucide="briefcase-business"></i>
             </div>
         </div>
+
+        <div class="admin-panel notifications-admin" data-admin-panel="notifications">
+            <div class="panel-intro">
+                <div><h2>إشعارات مُعين</h2><p>إرسال رسالة مفيدة ومدروسة إلى أجهزة المشتركين الذين فعّلوا الإشعارات.</p></div>
+                <i data-lucide="megaphone"></i>
+            </div>
+        </div>
+
+        <section class="notification-center admin-panel notifications-admin" data-admin-panel="notifications">
+            <div class="notification-stats">
+                <div class="notification-stat">
+                    <strong>{{ moeen_push_stats.account_count or 0 }}</strong>
+                    <span>حسابات نشطة مرتبطة بالإشعارات</span>
+                </div>
+                <div class="notification-stat">
+                    <strong>{{ moeen_push_stats.device_count or 0 }}</strong>
+                    <span>أجهزة متاحة لاستقبال الرسائل</span>
+                </div>
+            </div>
+
+            <div class="notification-layout">
+                <form class="broadcast-form" method="POST" action="/superadmin/moeen/notifications/send" onsubmit="return confirmMoeenBroadcast(this)">
+                    <input type="hidden" name="_csrf_token" value="{{ admin_csrf_token }}">
+
+                    <label for="broadcastTitleAr">عنوان الإشعار</label>
+                    <input id="broadcastTitleAr" name="title_ar" type="text" value="رسالة من مُعين" minlength="3" maxlength="70" required>
+
+                    <label for="broadcastBodyAr">نص الرسالة</label>
+                    <textarea id="broadcastBodyAr" name="body_ar" minlength="3" maxlength="240" required placeholder="اكتب رسالة قصيرة ومفيدة للمشتركين…"></textarea>
+
+                    <details>
+                        <summary>نسخة إنجليزية للمستخدمين الإنجليز — اختياري</summary>
+                        <div>
+                            <label for="broadcastTitleEn">English title</label>
+                            <input id="broadcastTitleEn" name="title_en" type="text" minlength="3" maxlength="70" lang="en">
+                            <label for="broadcastBodyEn">English message</label>
+                            <textarea id="broadcastBodyEn" name="body_en" minlength="3" maxlength="240" lang="en"></textarea>
+                        </div>
+                    </details>
+
+                    <div class="broadcast-options">
+                        <div>
+                            <label for="broadcastAudience">المستلمون</label>
+                            <select id="broadcastAudience" name="audience">
+                                <option value="active">كل الحسابات النشطة</option>
+                                <option value="paid">المشتركون المدفوعون فقط</option>
+                                <option value="trial">أصحاب التجربة المجانية فقط</option>
+                            </select>
+                        </div>
+                        <label class="broadcast-option">
+                            <input name="silent" type="checkbox" value="1" checked>
+                            إرسال صامت قدر الإمكان
+                        </label>
+                    </div>
+
+                    <button type="submit" {% if not push_configured %}disabled{% endif %}>
+                        <i data-lucide="send"></i>
+                        إرسال الإشعار الآن
+                    </button>
+                </form>
+
+                <div>
+                    <div class="notification-preview">
+                        <small>معاينة الإشعار</small>
+                        <h3 id="broadcastPreviewTitle">رسالة من مُعين</h3>
+                        <p id="broadcastPreviewBody">سيظهر نص رسالتك هنا قبل الإرسال.</p>
+                    </div>
+                    <p class="notification-note">
+                        لا يصل الإشعار إلا إلى جهاز سمح لمُعين بإرسال الإشعارات. الوضع الصامت يُطلب من الجهاز، لكن الصوت النهائي قد يخضع لإعدادات نظام الهاتف.
+                    </p>
+                </div>
+            </div>
+
+            <div class="broadcast-history">
+                <h3>آخر الرسائل المرسلة</h3>
+                <div class="broadcast-history-list">
+                    {% for item in moeen_broadcasts %}
+                    <div class="broadcast-history-item">
+                        <div>
+                            <strong>{{ item.title_ar }}</strong>
+                            <p>{{ item.body_ar }}</p>
+                            <p>
+                                {{ item.created_at|palestine_time }} ·
+                                {% if item.audience == 'paid' %}المشتركون المدفوعون
+                                {% elif item.audience == 'trial' %}التجربة المجانية
+                                {% else %}كل الحسابات النشطة{% endif %}
+                                · {{ 'صامت' if item.silent else 'بصوت الجهاز' }}
+                            </p>
+                        </div>
+                        <div class="broadcast-result">
+                            <b>{{ item.sent_count }} تم</b>
+                            {% if item.failed_count %}{{ item.failed_count }} تعذر{% else %}دون أخطاء{% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="no-visits-msg">لم تُرسل رسائل عامة من لوحة الإدارة بعد.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
 
         <div class="admin-panel security-admin" data-admin-panel="security">
             <div class="panel-intro">
@@ -1250,8 +1424,9 @@
     });
     function showAdminPanel(){
       const isMoeen=location.hash.startsWith("#moeen");
+      const isNotifications=location.hash.startsWith("#notifications");
       const isSecurity=location.hash.startsWith("#security");
-      const selected=isSecurity?"security":isMoeen?"moeen":"stores";
+      const selected=isSecurity?"security":isNotifications?"notifications":isMoeen?"moeen":"stores";
       document.querySelectorAll("[data-admin-panel]").forEach(section=>{
         section.classList.toggle("is-visible",section.dataset.adminPanel===selected);
       });
@@ -1260,16 +1435,41 @@
       });
       const title=document.querySelector(".header-area h1");
       const subtitle=document.querySelector(".header-area p");
-      if(title)title.textContent=isSecurity?"أمان لوحة RT Studio":isMoeen?"إدارة مُعين التنفيذي":"إدارة المتاجر والتجار";
+      if(title)title.textContent=isSecurity
+        ?"أمان لوحة RT Studio"
+        :isNotifications
+          ?"إشعارات مُعين"
+          :isMoeen
+            ?"إدارة مُعين التنفيذي"
+            :"إدارة المتاجر والتجار";
       if(subtitle)subtitle.textContent=isSecurity
         ?"كلمة المرور والجلسات الإدارية"
-        :isMoeen
-          ?"المشتركون والدفعات والنشاط والسجلات"
-          :"الإحصائيات والطلبات والاشتراكات وطلبات التجار";
+        :isNotifications
+          ?"رسائل مفيدة للمشتركين وسجل نتائج الإرسال"
+          :isMoeen
+            ?"المشتركون والدفعات والنشاط والسجلات"
+            :"الإحصائيات والطلبات والاشتراكات وطلبات التجار";
       window.scrollTo({top:0,behavior:"auto"});
     }
     window.addEventListener("hashchange",showAdminPanel);
     showAdminPanel();
+    const broadcastTitle=document.getElementById("broadcastTitleAr");
+    const broadcastBody=document.getElementById("broadcastBodyAr");
+    const broadcastPreviewTitle=document.getElementById("broadcastPreviewTitle");
+    const broadcastPreviewBody=document.getElementById("broadcastPreviewBody");
+    function updateBroadcastPreview(){
+      if(broadcastPreviewTitle)broadcastPreviewTitle.textContent=broadcastTitle?.value.trim()||"رسالة من مُعين";
+      if(broadcastPreviewBody)broadcastPreviewBody.textContent=broadcastBody?.value.trim()||"سيظهر نص رسالتك هنا قبل الإرسال.";
+    }
+    broadcastTitle?.addEventListener("input",updateBroadcastPreview);
+    broadcastBody?.addEventListener("input",updateBroadcastPreview);
+    updateBroadcastPreview();
+    function confirmMoeenBroadcast(form){
+      const title=form.elements.title_ar.value.trim();
+      const body=form.elements.body_ar.value.trim();
+      const audience=form.elements.audience.options[form.elements.audience.selectedIndex].text;
+      return window.confirm(`سيتم إرسال هذا الإشعار الآن إلى: ${audience}\n\n${title}\n${body}\n\nهل تؤكد الإرسال؟`);
+    }
     const superadminPushButton=document.getElementById("superadminPushBtn");
     const superadminPushTestButton=document.getElementById("superadminPushTestBtn");
     function vapidBytes(value){const padding="=".repeat((4-value.length%4)%4),raw=atob((value+padding).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
