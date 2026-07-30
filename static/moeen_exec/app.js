@@ -173,6 +173,34 @@ function eventVisualState(value,done=false){
 const eventBadge=state=>state.badge?`<span class="event-status">${state.badge}</span>`:"";
 function setView(id){$$(".view,.nav").forEach(x=>x.classList.remove("active"));$("#"+id).classList.add("active");$(`.nav[data-view="${id}"]`).classList.add("active");render();installVoiceFields();}
 $$(".nav").forEach(b=>b.onclick=()=>setView(b.dataset.view));$$("[data-view-jump]").forEach(b=>b.onclick=()=>setView(b.dataset.viewJump));
+async function shareMoeenRegistration(){
+  const english=uiLocale().startsWith("en");
+  const url=new URL("/moeen-executive/register",window.location.origin).href;
+  const title=english?"Moeen — Your Executive Assistant":"مُعين — مساعدك التنفيذي";
+  const text=english
+    ?"Moeen helps organize appointments, notes, meetings, contacts, and follow-ups. Start your free trial:"
+    :"مُعين مساعد شخصي لتنظيم المواعيد والملاحظات والاجتماعات والاتصالات والمتابعات. ابدأ تجربتك المجانية:";
+  const status=$("#shareMoeenStatus");
+  if(status)status.textContent="";
+  try{
+    if(navigator.share){
+      await navigator.share({title,text,url});
+      if(status)status.textContent=english?"Registration link shared.":"تمت مشاركة رابط التسجيل.";
+      return;
+    }
+    if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(`${text}\n${url}`);
+    else{
+      const area=document.createElement("textarea");
+      area.value=`${text}\n${url}`;area.style.position="fixed";area.style.opacity="0";
+      document.body.appendChild(area);area.select();document.execCommand("copy");area.remove();
+    }
+    if(status)status.textContent=english?"Registration link copied.":"تم نسخ رابط التسجيل.";
+  }catch(err){
+    if(err?.name==="AbortError")return;
+    if(status)status.textContent=english?"Could not share the link. Please try again.":"تعذرت مشاركة الرابط. حاول مجددًا.";
+  }
+}
+$("#shareMoeenApp").onclick=shareMoeenRegistration;
 const now=new Date();$("#date").textContent=new Intl.DateTimeFormat(uiLocale(),{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(now);
 const hour=now.getHours();
 const timeGreeting=hour>=5&&hour<12?"صباح الخير":hour>=12&&hour<17?"طاب يومك":hour>=17&&hour<23?"مساء الخير":"أهلًا بعودتك";
@@ -686,7 +714,7 @@ $("#moeenPaymentForm").onsubmit=async e=>{
 };
 if("serviceWorker" in navigator){
   navigator.serviceWorker
-    .register("/moeen-executive/sw.js?v=30",{updateViaCache:"none"})
+    .register("/moeen-executive/sw.js?v=31",{updateViaCache:"none"})
     .then(registration=>registration.update())
     .catch(()=>{});
 }
