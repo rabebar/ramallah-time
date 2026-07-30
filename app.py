@@ -1021,14 +1021,32 @@ try:
             audience TEXT NOT NULL DEFAULT 'active'
                 CHECK(audience IN ('active', 'paid', 'trial')),
             silent BOOLEAN NOT NULL DEFAULT TRUE,
-            status TEXT NOT NULL DEFAULT 'sending'
-                CHECK(status IN ('sending', 'sent', 'partial', 'no_recipients', 'failed')),
+            status TEXT NOT NULL DEFAULT 'pending'
+                CHECK(status IN ('pending', 'sending', 'sent', 'partial', 'no_recipients', 'failed', 'interrupted')),
             sent_count INTEGER NOT NULL DEFAULT 0,
             failed_count INTEGER NOT NULL DEFAULT 0,
             expired_count INTEGER NOT NULL DEFAULT 0,
             created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            started_at TIMESTAMP,
             completed_at TIMESTAMP
         )
+    """)
+    _mcur.execute("""
+        ALTER TABLE moeen_broadcast_notifications
+        ADD COLUMN IF NOT EXISTS started_at TIMESTAMP
+    """)
+    _mcur.execute("""
+        ALTER TABLE moeen_broadcast_notifications
+        ALTER COLUMN status SET DEFAULT 'pending'
+    """)
+    _mcur.execute("""
+        ALTER TABLE moeen_broadcast_notifications
+        DROP CONSTRAINT IF EXISTS moeen_broadcast_notifications_status_check
+    """)
+    _mcur.execute("""
+        ALTER TABLE moeen_broadcast_notifications
+        ADD CONSTRAINT moeen_broadcast_notifications_status_check
+        CHECK(status IN ('pending', 'sending', 'sent', 'partial', 'no_recipients', 'failed', 'interrupted'))
     """)
     _mcur.execute("""
         CREATE INDEX IF NOT EXISTS ix_moeen_broadcasts_created
@@ -1036,9 +1054,9 @@ try:
     """)
     _mcur.execute("""
         UPDATE moeen_broadcast_notifications
-        SET status = 'failed', completed_at = NOW()
+        SET status = 'interrupted', completed_at = NOW()
         WHERE status = 'sending'
-          AND created_at < NOW() - INTERVAL '5 minutes'
+          AND COALESCE(started_at, created_at) < NOW() - INTERVAL '15 minutes'
     """)
     _mcur.execute("""
         CREATE TABLE IF NOT EXISTS moeen_reminders (
@@ -1361,6 +1379,7 @@ def process_moeen_broadcast_notification(
     silent=True,
 ):
     """Deliver and persist a broadcast outside the web request lifecycle."""
+    logging.info("Moeen broadcast %s delivery started", broadcast_id)
     try:
         result = send_moeen_broadcast_notification(
             broadcast_id=broadcast_id,
@@ -1417,6 +1436,69 @@ def process_moeen_broadcast_notification(
     finally:
         cur.close()
         conn.close()
+    logging.info(
+        "Moeen broadcast %s completed: status=%s sent=%s failed=%s expired=%s recipients=%s",
+        broadcast_id,
+        delivery_status,
+        result.get("sent", 0),
+        result.get("failed", 0),
+        result.get("expired", 0),
+        result.get("recipients", 0),
+    )
+    return delivery_status
+
+
+def process_next_moeen_broadcast_notification():
+    """Atomically claim one queued broadcast and deliver it."""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            UPDATE moeen_broadcast_notifications
+            SET status = 'interrupted',
+                completed_at = NOW()
+            WHERE status = 'sending'
+              AND COALESCE(started_at, created_at) < NOW() - INTERVAL '15 minutes'
+        """)
+        cur.execute("""
+            WITH next_broadcast AS (
+                SELECT id
+                FROM moeen_broadcast_notifications
+                WHERE status = 'pending'
+                ORDER BY id
+                FOR UPDATE SKIP LOCKED
+                LIMIT 1
+            )
+            UPDATE moeen_broadcast_notifications AS broadcast
+            SET status = 'sending',
+                started_at = NOW(),
+                completed_at = NULL
+            FROM next_broadcast
+            WHERE broadcast.id = next_broadcast.id
+            RETURNING broadcast.*
+        """)
+        broadcast = cur.fetchone()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+        conn.close()
+
+    if not broadcast:
+        return False
+
+    process_moeen_broadcast_notification(
+        broadcast_id=broadcast["id"],
+        title_ar=broadcast["title_ar"],
+        body_ar=broadcast["body_ar"],
+        title_en=broadcast.get("title_en") or "",
+        body_en=broadcast.get("body_en") or "",
+        audience=broadcast.get("audience") or "active",
+        silent=bool(broadcast.get("silent")),
+    )
+    return True
 
 
 def send_due_moeen_reminders():
@@ -1546,6 +1628,19 @@ def _moeen_reminder_worker():
 
 
 threading.Thread(target=_moeen_reminder_worker, daemon=True, name="moeen-reminders").start()
+
+
+def _moeen_broadcast_worker():
+    while True:
+        processed = False
+        try:
+            processed = process_next_moeen_broadcast_notification()
+        except Exception:
+            logging.exception("Moeen broadcast worker failed")
+        time.sleep(1 if processed else 5)
+
+
+threading.Thread(target=_moeen_broadcast_worker, daemon=True, name="moeen-broadcasts").start()
 
 
 def send_moeen_signup_notifications(account_id, full_name, job_title):
@@ -4336,9 +4431,9 @@ def superadmin_send_moeen_notification():
             return redirect(url_for('super_admin') + '#notifications')
         cur.execute("""
             INSERT INTO moeen_broadcast_notifications(
-                title_ar, body_ar, title_en, body_en, audience, silent
+                title_ar, body_ar, title_en, body_en, audience, silent, status
             )
-            VALUES(%s, %s, %s, %s, %s, %s)
+            VALUES(%s, %s, %s, %s, %s, %s, 'pending')
             RETURNING id
         """, (
             title_ar,
@@ -4354,21 +4449,8 @@ def superadmin_send_moeen_notification():
         cur.close()
         conn.close()
 
-    threading.Thread(
-        target=process_moeen_broadcast_notification,
-        kwargs={
-            "broadcast_id": broadcast_id,
-            "title_ar": title_ar,
-            "body_ar": body_ar,
-            "title_en": title_en,
-            "body_en": body_en,
-            "audience": audience,
-            "silent": silent,
-        },
-        daemon=True,
-    ).start()
     flash(
-        'بدأ إرسال إشعار مُعين في الخلفية. حدّث سجل الرسائل بعد قليل لرؤية النتيجة.',
+        'تمت إضافة إشعار مُعين إلى طابور الإرسال الآمن. حدّث السجل بعد قليل لرؤية النتيجة.',
         'success',
     )
     return redirect(url_for('super_admin') + '#notifications')

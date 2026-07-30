@@ -685,12 +685,21 @@
                             </p>
                         </div>
                         <div class="broadcast-result">
-                            {% if item.status == 'sending' %}
+                            {% if item.status == 'pending' %}
+                                <b style="color:var(--warning)">بانتظار الإرسال…</b>
+                                محفوظ في الطابور وسيبدأ تلقائيًا
+                            {% elif item.status == 'sending' %}
                                 <b style="color:var(--warning)">جارٍ الإرسال…</b>
                                 يمكنك تحديث الصفحة بعد قليل
                             {% elif item.status == 'no_recipients' %}
                                 <b style="color:var(--warning)">لا مستلمين</b>
                                 لا توجد أجهزة مؤهلة
+                            {% elif item.status == 'interrupted' %}
+                                <b style="color:var(--danger)">النتيجة غير مؤكدة</b>
+                                توقف التنفيذ؛ لن تُعاد الرسالة تلقائيًا منعًا للتكرار
+                            {% elif item.status == 'failed' and not item.failed_count %}
+                                <b style="color:var(--danger)">لم يكتمل</b>
+                                تعذر حفظ نتيجة الإرسال؛ لن تُعاد تلقائيًا
                             {% elif item.status == 'failed' %}
                                 <b style="color:var(--danger)">لم يكتمل</b>
                                 {{ item.failed_count }} تعذر

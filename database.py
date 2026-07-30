@@ -454,12 +454,13 @@ def init_db():
             audience TEXT NOT NULL DEFAULT 'active'
                 CHECK(audience IN ('active', 'paid', 'trial')),
             silent BOOLEAN NOT NULL DEFAULT TRUE,
-            status TEXT NOT NULL DEFAULT 'sending'
-                CHECK(status IN ('sending', 'sent', 'partial', 'no_recipients', 'failed')),
+            status TEXT NOT NULL DEFAULT 'pending'
+                CHECK(status IN ('pending', 'sending', 'sent', 'partial', 'no_recipients', 'failed', 'interrupted')),
             sent_count INTEGER NOT NULL DEFAULT 0,
             failed_count INTEGER NOT NULL DEFAULT 0,
             expired_count INTEGER NOT NULL DEFAULT 0,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            started_at TIMESTAMP,
             completed_at TIMESTAMP
         )''')
     cursor.execute('''CREATE INDEX IF NOT EXISTS ix_moeen_broadcasts_created
