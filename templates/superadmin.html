@@ -685,8 +685,19 @@
                             </p>
                         </div>
                         <div class="broadcast-result">
-                            <b>{{ item.sent_count }} تم</b>
-                            {% if item.failed_count %}{{ item.failed_count }} تعذر{% else %}دون أخطاء{% endif %}
+                            {% if item.status == 'sending' %}
+                                <b style="color:var(--warning)">جارٍ الإرسال…</b>
+                                يمكنك تحديث الصفحة بعد قليل
+                            {% elif item.status == 'no_recipients' %}
+                                <b style="color:var(--warning)">لا مستلمين</b>
+                                لا توجد أجهزة مؤهلة
+                            {% elif item.status == 'failed' %}
+                                <b style="color:var(--danger)">لم يكتمل</b>
+                                {{ item.failed_count }} تعذر
+                            {% else %}
+                                <b>{{ item.sent_count }} تم</b>
+                                {% if item.failed_count %}{{ item.failed_count }} تعذر{% else %}دون أخطاء{% endif %}
+                            {% endif %}
                         </div>
                     </div>
                     {% else %}

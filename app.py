@@ -1035,6 +1035,12 @@ try:
         ON moeen_broadcast_notifications(created_at DESC)
     """)
     _mcur.execute("""
+        UPDATE moeen_broadcast_notifications
+        SET status = 'failed', completed_at = NOW()
+        WHERE status = 'sending'
+          AND created_at < NOW() - INTERVAL '5 minutes'
+    """)
+    _mcur.execute("""
         CREATE TABLE IF NOT EXISTS moeen_reminders (
             id BIGSERIAL PRIMARY KEY,
             account_id INTEGER NOT NULL REFERENCES moeen_accounts(id) ON DELETE CASCADE,
@@ -1343,6 +1349,74 @@ def send_moeen_broadcast_notification(
         "recipients": len(subscriptions),
         "configured": True,
     }
+
+
+def process_moeen_broadcast_notification(
+    broadcast_id,
+    title_ar,
+    body_ar,
+    title_en="",
+    body_en="",
+    audience="active",
+    silent=True,
+):
+    """Deliver and persist a broadcast outside the web request lifecycle."""
+    try:
+        result = send_moeen_broadcast_notification(
+            broadcast_id=broadcast_id,
+            title_ar=title_ar,
+            body_ar=body_ar,
+            title_en=title_en,
+            body_en=body_en,
+            audience=audience,
+            silent=silent,
+        )
+    except Exception:
+        logging.exception("Moeen broadcast %s could not start", broadcast_id)
+        result = {
+            "configured": True,
+            "sent": 0,
+            "failed": 1,
+            "expired": 0,
+            "recipients": 0,
+        }
+
+    if not result.get("configured"):
+        delivery_status = "failed"
+    elif result["recipients"] == 0:
+        delivery_status = "no_recipients"
+    elif result["failed"] == 0:
+        delivery_status = "sent"
+    elif result["sent"] > 0:
+        delivery_status = "partial"
+    else:
+        delivery_status = "failed"
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            UPDATE moeen_broadcast_notifications
+            SET status = %s,
+                sent_count = %s,
+                failed_count = %s,
+                expired_count = %s,
+                completed_at = NOW()
+            WHERE id = %s
+        """, (
+            delivery_status,
+            result.get("sent", 0),
+            result.get("failed", 0),
+            result.get("expired", 0),
+            broadcast_id,
+        ))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        logging.exception("Moeen broadcast %s result could not be saved", broadcast_id)
+    finally:
+        cur.close()
+        conn.close()
 
 
 def send_due_moeen_reminders():
@@ -4280,73 +4354,23 @@ def superadmin_send_moeen_notification():
         cur.close()
         conn.close()
 
-    try:
-        result = send_moeen_broadcast_notification(
-            broadcast_id=broadcast_id,
-            title_ar=title_ar,
-            body_ar=body_ar,
-            title_en=title_en,
-            body_en=body_en,
-            audience=audience,
-            silent=silent,
-        )
-    except Exception:
-        logging.exception("Moeen broadcast %s could not start", broadcast_id)
-        result = {
-            'configured': True,
-            'sent': 0,
-            'failed': 1,
-            'expired': 0,
-            'recipients': 0,
-        }
-    if not result.get('configured'):
-        delivery_status = 'failed'
-    elif result['recipients'] == 0:
-        delivery_status = 'no_recipients'
-    elif result['failed'] == 0:
-        delivery_status = 'sent'
-    elif result['sent'] > 0:
-        delivery_status = 'partial'
-    else:
-        delivery_status = 'failed'
-
-    conn = get_db_connection()
-    cur = conn.cursor()
-    try:
-        cur.execute("""
-            UPDATE moeen_broadcast_notifications
-            SET status = %s,
-                sent_count = %s,
-                failed_count = %s,
-                expired_count = %s,
-                completed_at = NOW()
-            WHERE id = %s
-        """, (
-            delivery_status,
-            result.get('sent', 0),
-            result.get('failed', 0),
-            result.get('expired', 0),
-            broadcast_id,
-        ))
-        conn.commit()
-    finally:
-        cur.close()
-        conn.close()
-
-    if delivery_status == 'sent':
-        flash(
-            f"تم إرسال إشعار مُعين إلى {result['sent']} جهازًا بنجاح.",
-            'success',
-        )
-    elif delivery_status == 'partial':
-        flash(
-            f"تم الإرسال إلى {result['sent']} جهازًا، وتعذر على {result['failed']} جهازًا.",
-            'error',
-        )
-    elif delivery_status == 'no_recipients':
-        flash('لا توجد أجهزة مؤهلة ومفعّلة للإشعارات ضمن الفئة المختارة.', 'error')
-    else:
-        flash('تعذر تسليم الإشعار إلى الأجهزة المفعّلة.', 'error')
+    threading.Thread(
+        target=process_moeen_broadcast_notification,
+        kwargs={
+            "broadcast_id": broadcast_id,
+            "title_ar": title_ar,
+            "body_ar": body_ar,
+            "title_en": title_en,
+            "body_en": body_en,
+            "audience": audience,
+            "silent": silent,
+        },
+        daemon=True,
+    ).start()
+    flash(
+        'بدأ إرسال إشعار مُعين في الخلفية. حدّث سجل الرسائل بعد قليل لرؤية النتيجة.',
+        'success',
+    )
     return redirect(url_for('super_admin') + '#notifications')
 
 
