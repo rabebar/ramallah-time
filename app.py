@@ -516,7 +516,10 @@ def compose_final(cutout_path, name, price, theme, style, background_key, out_ba
 
 app = Flask(__name__)
 from moeen_multi import moeen_bp
+from mizan_app import register_mizan
+
 app.register_blueprint(moeen_bp)
+register_mizan(app)
 
 PALESTINE_TIMEZONE = ZoneInfo("Asia/Hebron")
 

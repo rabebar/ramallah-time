@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="مؤسسة الميزان السياسي للأبحاث والترجمة الإعلامية: ترجمات دقيقة وتحليل سياسي علمي بعيدًا عن الضجيج.">
+  <title>مؤسسة الميزان السياسي للأبحاث والترجمة الإعلامية</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="breaking-bar">
+    <div class="container breaking-inner">
+      <span class="breaking-label">متابعة</span>
+      <div class="breaking-track" aria-live="polite">
+        <span class="breaking-text" id="breakingText">تحليل رصين لما وراء الخبر · من الترجمة الدقيقة إلى الفهم العميق · قراءة المصادر والسياقات قبل الاستنتاج</span>
+      </div>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-top">
+      <div class="brand" data-view="home" role="button" tabindex="0">
+        <img class="brand-logo" src="/logo.svg" alt="شعار مؤسسة الميزان السياسي">
+        <div class="brand-text">
+          <strong>مؤسسة الميزان السياسي</strong>
+          <span>للأبحاث والترجمة الإعلامية</span>
+        </div>
+      </div>
+      <form class="search-box" id="searchForm" role="search">
+        <input id="searchInput" type="search" placeholder="ابحث في الأخبار والتحليلات">
+        <button type="submit">بحث</button>
+      </form>
+    </div>
+
+    <nav class="nav" aria-label="أقسام الموقع">
+      <div class="container nav__inner" id="categoryNav"></div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="container mission-strip">
+      <h1>من الترجمة الدقيقة إلى الفهم العميق</h1>
+      <p>
+        ترجمات إعلامية دقيقة وقراءات بحثية وتحليلات سياسية علمية تستند إلى المصادر والسياقات والمعطيات،
+        بعيدًا عن الانفعال الأيديولوجي والمهاترات المتداولة عبر وسائل التواصل الاجتماعي.
+      </p>
+    </section>
+
+    <section class="container hero-grid" id="leadGrid" aria-label="الأخبار الرئيسية"></section>
+
+    <section class="container latest-section">
+      <div class="section-head">
+        <h2 id="sectionHeading">آخر الأخبار والتحليلات</h2>
+        <span id="sectionCount"></span>
+      </div>
+      <div class="news-grid" id="newsList"></div>
+    </section>
+
+    <section class="container post-view hidden" id="postView" aria-live="polite"></section>
+
+    <section class="container support-view hidden" id="supportView" aria-live="polite"></section>
+
+    <section class="analysis-band">
+      <div class="container analysis-grid">
+        <article>
+          <span>المنهج</span>
+          <h2>الميزان ليس حيادًا باهتًا، بل اختبار للمعلومة.</h2>
+        </article>
+        <p>
+          نقرأ النص العبري والدولي والعربي ضمن سياقه السياسي والأمني والإعلامي،
+          ثم نقدّم للقارئ خلاصة قابلة للفهم والمراجعة، لا مادة صاخبة قابلة للتداول فقط.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <h3>مؤسسة الميزان السياسي</h3>
+        <p>منصة بحثية مستقلة للترجمة الإعلامية والتحليل السياسي العلمي.</p>
+      </div>
+      <div>
+        <h3>الأقسام</h3>
+        <p>سوريا · فلسطين · ترجمات عبرية · ترجمات دولية · الشرق الأوسط</p>
+      </div>
+      <div>
+        <h3>الشعار</h3>
+        <p>تحليل رصين لما وراء الخبر.</p>
+      </div>
+    </div>
+  </footer>
+
+  <dialog class="admin" id="adminDialog">
+    <div class="admin__head">
+      <div>
+        <p class="kicker">لوحة الإدارة</p>
+        <h2>إدارة المواد المنشورة</h2>
+      </div>
+      <button class="icon-button" type="button" data-close-admin aria-label="إغلاق">×</button>
+    </div>
+
+    <div class="auth-view" id="authView">
+      <form class="form" id="loginForm">
+        <label>اسم المستخدم
+          <input name="username" autocomplete="username" required>
+        </label>
+        <label>كلمة السر
+          <input name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="primary" type="submit">دخول اللوحة</button>
+      </form>
+
+      <p class="note" id="authMessage"></p>
+    </div>
+
+    <div class="dashboard hidden" id="dashboard">
+      <div class="dashboard__bar">
+        <strong id="currentAdmin"></strong>
+        <button class="ghost" type="button" data-logout>تسجيل خروج</button>
+      </div>
+
+      <aside class="admin-sidebar" aria-label="أقسام لوحة الإدارة">
+        <button class="admin-nav-item is-active" type="button" data-admin-tab="overview">نظرة عامة</button>
+        <button class="admin-nav-item" type="button" data-admin-tab="editor">تحرير مادة</button>
+        <button class="admin-nav-item" type="button" data-admin-tab="materials">كل المواد</button>
+        <button class="admin-nav-item" type="button" data-admin-tab="permissions" data-super-admin-nav>السوبر أدمن</button>
+      </aside>
+
+      <section class="admin-overview" id="adminOverviewPanel" data-admin-panel="overview">
+        <div class="panel-head">
+          <div>
+            <p class="kicker">غرفة التحرير</p>
+            <h3>نظرة عامة على الموقع</h3>
+          </div>
+          <span>ملخص سريع لحالة النشر قبل الدخول إلى التحرير أو الصلاحيات.</span>
+        </div>
+        <div class="summary-grid" id="adminSummaryCards"></div>
+      </section>
+
+      <div class="editor-state" id="editorState" data-admin-panel="editor">
+        <strong>إضافة مادة جديدة</strong>
+        <span>سيتم نشر مادة جديدة ولن يتم تعديل أي مادة منشورة.</span>
+      </div>
+
+      <section class="super-admin-panel hidden" id="superAdminPanel" data-admin-panel="permissions">
+        <section class="analytics-section" id="analyticsSection">
+          <div class="panel-head">
+            <div>
+              <p class="kicker">إحصائيات الزيارات</p>
+              <h3>نظرة السوبر أدمن</h3>
+            </div>
+            <span>تُحسب من السيرفر مع تقليل تكرار الزيارة السريعة لنفس الصفحة.</span>
+          </div>
+          <div class="analytics-grid" id="analyticsCards"></div>
+          <div class="analytics-columns">
+            <div>
+              <h4>الأكثر قراءة</h4>
+              <div id="topPostsList"></div>
+            </div>
+            <div>
+              <h4>حسب القسم</h4>
+              <div id="categoryStatsList"></div>
+            </div>
+          </div>
+          <p class="note" id="analyticsMessage"></p>
+        </section>
+
+        <div class="panel-head">
+          <div>
+            <p class="kicker">صلاحيات السوبر أدمن</p>
+            <h3>إدارة المدراء</h3>
+          </div>
+          <span>إضافة مدير جديد لا تتم إلا من هنا، ولا يوجد تسجيل عام.</span>
+        </div>
+
+        <form class="admin-user-form" id="adminUserForm">
+          <label>بريد أو اسم المدير
+            <input name="username" placeholder="editor@example.com" required>
+          </label>
+          <label>كلمة السر المؤقتة
+            <input name="password" type="password" minlength="8" required>
+          </label>
+          <label>الصلاحية
+            <select name="role">
+              <option value="admin">أدمن تحرير</option>
+              <option value="super_admin">سوبر أدمن</option>
+            </select>
+          </label>
+          <button class="primary" type="submit">منح الصلاحية</button>
+        </form>
+        <p class="note" id="adminUserMessage"></p>
+        <div id="adminUsersList"></div>
+      </section>
+
+      <form class="editor" id="newsForm" data-admin-panel="editor">
+        <input type="hidden" name="id">
+        <label>العنوان
+          <input name="title" required>
+        </label>
+        <label>القسم
+          <select name="category" required></select>
+        </label>
+        <label>اسم كاتب المقال
+          <input name="authorName" placeholder="مثال: د. أحمد الخطيب">
+        </label>
+        <label>رابط صورة الكاتب
+          <input name="authorImageUrl" type="url" placeholder="https://example.com/author.jpg">
+        </label>
+        <label>أو رفع صورة الكاتب
+          <input name="authorImageFile" type="file" accept="image/*">
+        </label>
+        <label>موقع الخبر
+          <select name="placement">
+            <option value="main">رئيسي</option>
+            <option value="after-main-1">أول بعد الرئيسي</option>
+            <option value="after-main-2">ثاني بعد الرئيسي</option>
+            <option value="normal">خبر عادي</option>
+          </select>
+        </label>
+        <label>رابط صورة من موقع آخر
+          <input name="imageUrl" type="url" placeholder="https://example.com/image.jpg">
+        </label>
+        <label>أو رفع صورة من الجهاز
+          <input name="imageFile" type="file" accept="image/*">
+        </label>
+        <label>ملخص قصير
+          <textarea name="summary" required rows="3"></textarea>
+        </label>
+        <label>نص الخبر أو التحليل
+          <textarea name="body" rows="6"></textarea>
+        </label>
+        <div class="editor__actions">
+          <button class="primary" type="submit" id="saveMaterialButton">نشر مادة جديدة</button>
+          <button class="ghost" type="reset" data-new-material>إلغاء التعديل وبدء مادة جديدة</button>
+        </div>
+      </form>
+
+      <div class="manage-list" data-admin-panel="materials">
+        <h3>كل المواد المنشورة</h3>
+        <div id="adminNewsList"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="/app.js"></script>
+</body>
+</html>
