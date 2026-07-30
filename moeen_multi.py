@@ -1,4 +1,5 @@
 import hashlib
+import json
 import os
 import re
 import secrets
@@ -230,29 +231,145 @@ def push_config():
     return jsonify(configured=bool(public_key), public_key=public_key)
 
 
+@moeen_bp.get("/api/push/status")
+@require_moeen_auth
+def push_status():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "SELECT COUNT(*) AS count FROM moeen_push_subscriptions WHERE account_id=%s",
+            (session[SESSION_ACCOUNT],),
+        )
+        subscription_count = cursor.fetchone()["count"]
+    finally:
+        cursor.close()
+        conn.close()
+    return jsonify(
+        configured=bool(
+            os.environ.get("VAPID_PUBLIC_KEY", "").strip()
+            and os.environ.get("VAPID_PRIVATE_KEY", "").strip()
+        ),
+        subscription_count=subscription_count,
+    )
+
+
 @moeen_bp.post("/api/push/subscribe")
 @require_moeen_auth
 def push_subscribe():
     data = request.get_json(silent=True) or {}
     endpoint = str(data.get("endpoint", ""))[:2000]
     keys = data.get("keys") or {}
-    if not endpoint or not keys.get("p256dh") or not keys.get("auth"):
+    locale = "en" if str(data.get("locale") or "").lower().startswith("en") else "ar"
+    if not endpoint.startswith("https://") or not keys.get("p256dh") or not keys.get("auth"):
         return jsonify(error="INVALID_SUBSCRIPTION"), 400
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            INSERT INTO moeen_push_subscriptions(account_id,endpoint,p256dh,auth,user_agent)
-            VALUES(%s,%s,%s,%s,%s)
+            INSERT INTO moeen_push_subscriptions(account_id,endpoint,p256dh,auth,user_agent,locale)
+            VALUES(%s,%s,%s,%s,%s,%s)
             ON CONFLICT(endpoint) DO UPDATE SET account_id=EXCLUDED.account_id,
-                p256dh=EXCLUDED.p256dh,auth=EXCLUDED.auth,user_agent=EXCLUDED.user_agent,updated_at=NOW()
+                p256dh=EXCLUDED.p256dh,auth=EXCLUDED.auth,user_agent=EXCLUDED.user_agent,
+                locale=EXCLUDED.locale,updated_at=NOW()
         """, (session[SESSION_ACCOUNT], endpoint, keys["p256dh"], keys["auth"],
-              request.headers.get("User-Agent", "")[:500]))
+              request.headers.get("User-Agent", "")[:500], locale))
+        # If a reminder was waiting because no device was subscribed, deliver
+        # it on the next worker pass rather than waiting for the retry window.
+        cursor.execute("""
+            UPDATE moeen_reminders
+            SET last_attempt_at=NULL
+            WHERE account_id=%s AND status='pending'
+        """, (session[SESSION_ACCOUNT],))
         conn.commit()
     finally:
         cursor.close()
         conn.close()
     return jsonify(ok=True)
+
+
+@moeen_bp.post("/api/push/test")
+@require_moeen_auth
+def push_test():
+    data = request.get_json(silent=True) or {}
+    endpoint = str(data.get("endpoint") or "")[:2000]
+    if not endpoint.startswith("https://"):
+        return jsonify(error="INVALID_SUBSCRIPTION"), 400
+    public_key = os.environ.get("VAPID_PUBLIC_KEY", "").strip()
+    private_key = os.environ.get("VAPID_PRIVATE_KEY", "").replace("\\n", "\n").strip()
+    subject = os.environ.get("VAPID_SUBJECT", "mailto:admin@rtstudio.store").strip()
+    if not (public_key and private_key):
+        return jsonify(error="PUSH_NOT_CONFIGURED"), 503
+    try:
+        from pywebpush import WebPushException, webpush
+    except ImportError:
+        return jsonify(error="PUSH_NOT_CONFIGURED"), 503
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT id, endpoint, p256dh, auth, locale
+            FROM moeen_push_subscriptions
+            WHERE account_id=%s AND endpoint=%s
+        """, (session[SESSION_ACCOUNT], endpoint))
+        subscriptions = cursor.fetchall()
+    finally:
+        cursor.close()
+        conn.close()
+
+    sent = 0
+    expired = []
+    for subscription in subscriptions:
+        english = str(subscription.get("locale") or "").lower().startswith("en")
+        payload = json.dumps({
+            "title": "Moeen notification test" if english else "اختبار إشعارات مُعين",
+            "body": (
+                "Notifications are working on this device."
+                if english else
+                "الإشعارات تعمل بنجاح على هذا الجهاز."
+            ),
+            "tag": f"moeen-test-{session[SESSION_ACCOUNT]}",
+            "url": "/moeen-executive/?view=security",
+            "icon": "/static/moeen_exec/icon-192.png",
+            "badge": "/static/moeen_exec/icon-64.png",
+        }, ensure_ascii=False)
+        try:
+            webpush(
+                subscription_info={
+                    "endpoint": subscription["endpoint"],
+                    "keys": {
+                        "p256dh": subscription["p256dh"],
+                        "auth": subscription["auth"],
+                    },
+                },
+                data=payload,
+                vapid_private_key=private_key,
+                vapid_claims={"sub": subject},
+                timeout=5,
+            )
+            sent += 1
+        except WebPushException as exc:
+            if getattr(getattr(exc, "response", None), "status_code", None) in (404, 410):
+                expired.append(subscription["id"])
+        except Exception:
+            current_app.logger.exception("Moeen push test failed")
+
+    if expired:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "DELETE FROM moeen_push_subscriptions WHERE id=ANY(%s)",
+                (expired,),
+            )
+            conn.commit()
+        finally:
+            cursor.close()
+            conn.close()
+    if sent < 1:
+        return jsonify(error="NO_ACTIVE_SUBSCRIPTIONS", expired=len(expired)), 409
+    return jsonify(ok=True, sent=sent, expired=len(expired))
 
 
 @moeen_bp.put("/api/reminders/<item_id>")
@@ -267,16 +384,108 @@ def reminder_upsert(item_id):
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            INSERT INTO moeen_reminders(account_id,item_id,item_type,remind_at,status)
-            VALUES(%s,%s,%s,%s::timestamptz,'pending')
+            INSERT INTO moeen_reminders(
+                account_id,item_id,item_type,remind_at,status,attempt_count,last_attempt_at,last_error
+            )
+            VALUES(%s,%s,%s,%s::timestamptz,'pending',0,NULL,NULL)
             ON CONFLICT(account_id,item_id) DO UPDATE SET item_type=EXCLUDED.item_type,
-                remind_at=EXCLUDED.remind_at,status='pending',sent_at=NULL
+                remind_at=EXCLUDED.remind_at,status='pending',sent_at=NULL,
+                attempt_count=0,last_attempt_at=NULL,last_error=NULL
         """, (session[SESSION_ACCOUNT], item_id, item_type, remind_at))
         conn.commit()
     finally:
         cursor.close()
         conn.close()
     return jsonify(ok=True)
+
+
+@moeen_bp.post("/api/reminders/reconcile")
+@require_moeen_auth
+def reminder_reconcile():
+    data = request.get_json(silent=True) or {}
+    raw_reminders = data.get("reminders")
+    if not isinstance(raw_reminders, list) or len(raw_reminders) > 500:
+        return jsonify(error="INVALID_REMINDERS"), 400
+
+    reminders = []
+    seen_ids = set()
+    for item in raw_reminders:
+        if not isinstance(item, dict):
+            return jsonify(error="INVALID_REMINDERS"), 400
+        item_id = str(item.get("item_id") or "").strip()
+        item_type = item.get("item_type")
+        remind_at = str(item.get("remind_at") or "").strip()
+        if (
+            not item_id
+            or len(item_id) > 120
+            or item_id in seen_ids
+            or item_type not in {"meeting", "task", "call"}
+            or len(remind_at) > 64
+        ):
+            return jsonify(error="INVALID_REMINDERS"), 400
+        try:
+            parsed = datetime.fromisoformat(remind_at.replace("Z", "+00:00"))
+        except ValueError:
+            return jsonify(error="INVALID_REMINDERS"), 400
+        if parsed.tzinfo is None:
+            return jsonify(error="INVALID_REMINDERS"), 400
+        seen_ids.add(item_id)
+        reminders.append((item_id, item_type, parsed))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        if seen_ids:
+            cursor.execute("""
+                DELETE FROM moeen_reminders
+                WHERE account_id=%s AND NOT (item_id = ANY(%s))
+            """, (session[SESSION_ACCOUNT], list(seen_ids)))
+        else:
+            cursor.execute(
+                "DELETE FROM moeen_reminders WHERE account_id=%s",
+                (session[SESSION_ACCOUNT],),
+            )
+        for item_id, item_type, remind_at in reminders:
+            cursor.execute("""
+                INSERT INTO moeen_reminders(
+                    account_id,item_id,item_type,remind_at,status,attempt_count,last_attempt_at,last_error
+                )
+                VALUES(%s,%s,%s,%s,'pending',0,NULL,NULL)
+                ON CONFLICT(account_id,item_id) DO UPDATE SET
+                    item_type=EXCLUDED.item_type,
+                    remind_at=EXCLUDED.remind_at,
+                    status=CASE
+                        WHEN moeen_reminders.remind_at=EXCLUDED.remind_at
+                             AND moeen_reminders.status='sent'
+                        THEN 'sent'
+                        ELSE 'pending'
+                    END,
+                    sent_at=CASE
+                        WHEN moeen_reminders.remind_at=EXCLUDED.remind_at
+                             AND moeen_reminders.status='sent'
+                        THEN moeen_reminders.sent_at
+                        ELSE NULL
+                    END,
+                    attempt_count=CASE
+                        WHEN moeen_reminders.remind_at=EXCLUDED.remind_at
+                        THEN moeen_reminders.attempt_count
+                        ELSE 0
+                    END,
+                    last_attempt_at=CASE
+                        WHEN moeen_reminders.remind_at=EXCLUDED.remind_at
+                        THEN moeen_reminders.last_attempt_at
+                        ELSE NULL
+                    END,
+                    last_error=NULL
+            """, (session[SESSION_ACCOUNT], item_id, item_type, remind_at))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cursor.close()
+        conn.close()
+    return jsonify(ok=True, count=len(reminders))
 
 
 @moeen_bp.delete("/api/reminders/<item_id>")

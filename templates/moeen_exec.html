@@ -11,8 +11,8 @@
   <link rel="manifest" href="{{ url_for('moeen_multi.moeen_manifest') }}">
   <link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='moeen_exec/icon-64.png') }}">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='moeen_exec/apple-touch-icon.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/styles.css') }}?v=29">
-  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/premium.css') }}?v=29">
+  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/styles.css') }}?v=30">
+  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/premium.css') }}?v=30">
 </head>
 <body class="locked">
   <section id="authGate" class="auth-gate">
@@ -150,7 +150,7 @@
         <div class="security-grid">
           <article class="security-card"><h3>تغيير كلمة المرور</h3><p>استخدم كلمة مرور طويلة وفريدة لهذا التطبيق.</p><form id="passwordForm"><input id="currentPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور الحالية" required><input id="newPassword" type="password" minlength="12" autocomplete="new-password" placeholder="كلمة المرور الجديدة" required><button class="primary" type="submit">تغيير كلمة المرور</button></form></article>
           <article class="security-card pairing-guide"><h3>ربط الهاتف والكمبيوتر</h3><p>1. من هذا الجهاز اضغط «إنشاء رمز ربط».<br>2. افتح مُعين على الجهاز الآخر وسجّل بنفس رقم الهاتف وكلمة المرور.<br>3. أدخل رمز الربط في خانته؛ الرمز صالح لخمس دقائق فقط.</p><button id="pairingBtn" class="primary">إنشاء رمز ربط لجهاز آخر</button><div id="pairingResult" class="pairing-result"></div></article>
-          <article class="security-card"><h3>إشعارات المواعيد</h3><p>استقبل تنبيهات الاجتماعات والمتابعات والاتصالات على هذا الجهاز حتى عند إغلاق التطبيق.</p><button id="enableMoeenPush" class="primary">تفعيل الإشعارات على هذا الجهاز</button><div id="moeenPushStatus" class="push-status"></div></article>
+          <article class="security-card"><h3>إشعارات المواعيد</h3><p>استقبل تنبيهات الاجتماعات والمتابعات والاتصالات على هذا الجهاز حتى عند إغلاق التطبيق.</p><div class="security-actions"><button id="enableMoeenPush" class="primary">تفعيل الإشعارات على هذا الجهاز</button><button id="testMoeenPush" class="security-secondary" type="button" hidden>إرسال إشعار تجريبي</button></div><div id="moeenPushStatus" class="push-status"></div></article>
         </div>
         <div class="security-grid security-lists">
           <article class="security-card"><div class="card-top"><h3>الأجهزة المصرح بها</h3><span id="deviceCount" class="tag">0</span></div><div id="deviceList"></div></article>
@@ -184,7 +184,7 @@
   </dialog>
 
   <dialog id="simpleDialog"><form method="dialog" class="modal" id="simpleForm"></form></dialog>
-  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}?v=29"></script>
-  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}?v=29"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}?v=30"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}?v=30"></script>
 </body>
 </html>

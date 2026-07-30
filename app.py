@@ -650,6 +650,10 @@ os.makedirs(PRIVATE_UPLOAD_FOLDER, exist_ok=True)
 app.config['PRIVATE_UPLOAD_FOLDER'] = PRIVATE_UPLOAD_FOLDER
 
 ADMIN_CSRF_SESSION = 'superadmin_csrf'
+ADMIN_SESSION_VERSION = 'superadmin_session_version'
+ADMIN_PASSWORD_HASH_SETTING = 'superadmin_password_hash'
+ADMIN_PASSWORD_VERSION_SETTING = 'superadmin_password_version'
+ADMIN_PASSWORD_CHANGED_AT_SETTING = 'superadmin_password_changed_at'
 ADMIN_LOGIN_WINDOW = timedelta(minutes=15)
 ADMIN_LOGIN_MAX_ATTEMPTS = 5
 _admin_login_attempts = defaultdict(list)
@@ -691,6 +695,26 @@ def clear_admin_login_failures(ip_address):
         _admin_login_attempts.pop(ip_address, None)
 
 
+def superadmin_password_version():
+    from database import get_app_setting
+    try:
+        return max(1, int(get_app_setting(ADMIN_PASSWORD_VERSION_SETTING, '1') or 1))
+    except (TypeError, ValueError):
+        return 1
+
+
+def verify_superadmin_password(password):
+    from database import get_app_setting
+    stored_hash = get_app_setting(ADMIN_PASSWORD_HASH_SETTING, '') or ''
+    if stored_hash:
+        try:
+            return check_password_hash(stored_hash, password)
+        except (TypeError, ValueError):
+            logging.error("Stored superadmin password hash is invalid")
+            return False
+    return secrets.compare_digest(password, MASTER_PASSWORD)
+
+
 @app.context_processor
 def inject_security_vars():
     if request.path.startswith('/superadmin') or session.get('is_superadmin'):
@@ -706,6 +730,14 @@ def protect_admin_requests():
     )
     if request.path.startswith(protected_receipt_prefixes):
         abort(404)
+
+    if session.get('is_superadmin') and request.path.startswith('/superadmin'):
+        expected_version = superadmin_password_version()
+        if session.get(ADMIN_SESSION_VERSION) != expected_version:
+            session.clear()
+            if request.path.startswith('/superadmin/push/'):
+                return jsonify(error='SESSION_EXPIRED'), 401
+            return redirect(url_for('super_admin_login', session_expired='1'))
 
     if request.method == 'POST' and request.path.startswith('/superadmin'):
         supplied = request.form.get('_csrf_token') or request.headers.get('X-CSRF-Token', '')
@@ -994,6 +1026,10 @@ try:
     """)
     _mcur.execute("""CREATE INDEX IF NOT EXISTS ix_moeen_reminders_due
                      ON moeen_reminders(status, remind_at)""")
+    _mcur.execute("ALTER TABLE moeen_push_subscriptions ADD COLUMN IF NOT EXISTS locale TEXT NOT NULL DEFAULT 'ar'")
+    _mcur.execute("ALTER TABLE moeen_reminders ADD COLUMN IF NOT EXISTS attempt_count INTEGER NOT NULL DEFAULT 0")
+    _mcur.execute("ALTER TABLE moeen_reminders ADD COLUMN IF NOT EXISTS last_attempt_at TIMESTAMPTZ")
+    _mcur.execute("ALTER TABLE moeen_reminders ADD COLUMN IF NOT EXISTS last_error TEXT")
     _mcur.execute("ALTER TABLE moeen_accounts ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMP")
     _mcur.execute("ALTER TABLE moeen_accounts ADD COLUMN IF NOT EXISTS terms_version TEXT")
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS admin_note TEXT")
@@ -1178,12 +1214,25 @@ def send_due_moeen_reminders():
     conn = get_db_connection()
     cur = conn.cursor()
     try:
+        # A process can stop after claiming a reminder. Return stale claims to
+        # the queue so a Render restart never leaves a reminder stuck forever.
         cur.execute("""
             UPDATE moeen_reminders
-            SET status='sending'
+            SET status='pending',
+                last_error=COALESCE(last_error, 'DELIVERY_INTERRUPTED')
+            WHERE status='sending'
+              AND (last_attempt_at IS NULL OR last_attempt_at <= NOW() - INTERVAL '5 minutes')
+        """)
+        cur.execute("""
+            UPDATE moeen_reminders
+            SET status='sending',
+                attempt_count=attempt_count + 1,
+                last_attempt_at=NOW(),
+                last_error=NULL
             WHERE id IN (
                 SELECT id FROM moeen_reminders
                 WHERE status='pending' AND remind_at <= NOW()
+                  AND (last_attempt_at IS NULL OR last_attempt_at <= NOW() - INTERVAL '5 minutes')
                 ORDER BY remind_at LIMIT 50 FOR UPDATE SKIP LOCKED
             )
             RETURNING id, account_id, item_id, item_type
@@ -1194,31 +1243,40 @@ def send_due_moeen_reminders():
         cur.close()
         conn.close()
     labels = {
-        "meeting": ("تذكير اجتماع", "حان موعد اجتماع محفوظ في مُعين."),
-        "task": ("تذكير متابعة", "لديك متابعة مستحقة الآن في مُعين."),
-        "call": ("تذكير اتصال", "حان موعد اتصال محفوظ في مُعين."),
+        "ar": {
+            "meeting": ("تذكير اجتماع", "حان موعد اجتماع محفوظ في مُعين."),
+            "task": ("تذكير متابعة", "لديك متابعة مستحقة الآن في مُعين."),
+            "call": ("تذكير اتصال", "حان موعد اتصال محفوظ في مُعين."),
+        },
+        "en": {
+            "meeting": ("Meeting reminder", "A saved meeting in Moeen is due now."),
+            "task": ("Follow-up reminder", "A saved follow-up in Moeen is due now."),
+            "call": ("Call reminder", "A saved call in Moeen is due now."),
+        },
     }
     for reminder in reminders:
         conn = get_db_connection()
         cur = conn.cursor()
         try:
-            cur.execute("""SELECT id,endpoint,p256dh,auth FROM moeen_push_subscriptions
+            cur.execute("""SELECT id,endpoint,p256dh,auth,locale FROM moeen_push_subscriptions
                            WHERE account_id=%s""", (reminder["account_id"],))
             subscriptions = cur.fetchall()
         finally:
             cur.close()
             conn.close()
-        title, body = labels[reminder["item_type"]]
-        payload = json.dumps({
-            "title": title, "body": body,
-            "tag": f"moeen-reminder-{reminder['item_id']}",
-            "url": f"/moeen-executive/?view={'meetings' if reminder['item_type']=='meeting' else 'tasks'}",
-            "icon": "/static/moeen_exec/icon-192.png",
-            "badge": "/static/moeen_exec/icon-64.png",
-        }, ensure_ascii=False)
         sent = False
         expired = []
+        delivery_error = "NO_ACTIVE_SUBSCRIPTIONS" if not subscriptions else "DELIVERY_FAILED"
         for subscription in subscriptions:
+            locale = "en" if str(subscription.get("locale") or "").lower().startswith("en") else "ar"
+            title, body = labels[locale][reminder["item_type"]]
+            payload = json.dumps({
+                "title": title, "body": body,
+                "tag": f"moeen-reminder-{reminder['item_id']}",
+                "url": f"/moeen-executive/?view={'meetings' if reminder['item_type']=='meeting' else 'tasks'}",
+                "icon": "/static/moeen_exec/icon-192.png",
+                "badge": "/static/moeen_exec/icon-64.png",
+            }, ensure_ascii=False)
             try:
                 webpush(
                     subscription_info={"endpoint": subscription["endpoint"],
@@ -1230,6 +1288,13 @@ def send_due_moeen_reminders():
             except WebPushException as exc:
                 if getattr(getattr(exc, "response", None), "status_code", None) in (404, 410):
                     expired.append(subscription["id"])
+                    delivery_error = "SUBSCRIPTION_EXPIRED"
+                else:
+                    logging.warning(
+                        "Moeen reminder push failed for reminder %s: %s",
+                        reminder["id"],
+                        exc,
+                    )
             except Exception:
                 logging.exception("Moeen reminder push failed")
         conn = get_db_connection()
@@ -1237,8 +1302,18 @@ def send_due_moeen_reminders():
         try:
             if expired:
                 cur.execute("DELETE FROM moeen_push_subscriptions WHERE id=ANY(%s)", (expired,))
-            cur.execute("""UPDATE moeen_reminders SET status=%s, sent_at=CASE WHEN %s THEN NOW() ELSE sent_at END
-                           WHERE id=%s""", ("sent" if sent else "pending", sent, reminder["id"]))
+            cur.execute("""
+                UPDATE moeen_reminders
+                SET status=%s,
+                    sent_at=CASE WHEN %s THEN NOW() ELSE sent_at END,
+                    last_error=%s
+                WHERE id=%s
+            """, (
+                "sent" if sent else "pending",
+                sent,
+                None if sent else delivery_error,
+                reminder["id"],
+            ))
             conn.commit()
         finally:
             cur.close()
@@ -3758,6 +3833,13 @@ def super_admin():
     visit_stats['sources_30d'] = attach_traffic_labels(visit_stats.get('sources_30d', []))
     join_visit_stats = get_join_visit_stats()
     removebg_enabled = get_app_setting('removebg_enabled', 'true') == 'true'
+    admin_password_changed_at = None
+    admin_password_changed_raw = get_app_setting(ADMIN_PASSWORD_CHANGED_AT_SETTING, '')
+    if admin_password_changed_raw:
+        try:
+            admin_password_changed_at = datetime.fromisoformat(admin_password_changed_raw)
+        except ValueError:
+            logging.warning("Invalid stored superadmin password change timestamp")
 
     cursor.execute("SELECT COUNT(*) as count FROM users")
     t_users = cursor.fetchone()['count']
@@ -3920,6 +4002,7 @@ def super_admin():
                            payment_settings=get_payment_settings(),
                            removebg_enabled=removebg_enabled,
                            removebg_configured=bool(REMOVEBG_API_KEY),
+                           admin_password_changed_at=admin_password_changed_at,
                            now=datetime.utcnow())  # <--- هذا هو السطر الذي كان ناقصاً
 
 @app.post('/superadmin/push/subscribe')
@@ -4222,6 +4305,63 @@ def super_admin_review_moeen_payment(payment_id, action):
         conn.close()
     return redirect(url_for('super_admin') + '#moeen-payments')
 
+@app.post('/superadmin/security/change-password')
+def superadmin_change_password():
+    if not session.get('is_superadmin'):
+        return redirect(url_for('super_admin_login'))
+
+    current_password = request.form.get('current_password') or ''
+    new_password = request.form.get('new_password') or ''
+    confirm_password = request.form.get('confirm_password') or ''
+
+    if not verify_superadmin_password(current_password):
+        flash('كلمة المرور الحالية غير صحيحة.', 'error')
+        return redirect(url_for('super_admin') + '#security')
+    if new_password != confirm_password:
+        flash('تأكيد كلمة المرور الجديدة غير مطابق.', 'error')
+        return redirect(url_for('super_admin') + '#security')
+    if (
+        len(new_password) < 12
+        or not any(character.isalpha() for character in new_password)
+        or not any(character.isdigit() for character in new_password)
+    ):
+        flash('استخدم 12 خانة على الأقل، تتضمن حروفًا وأرقامًا.', 'error')
+        return redirect(url_for('super_admin') + '#security')
+    if verify_superadmin_password(new_password):
+        flash('كلمة المرور الجديدة يجب أن تختلف عن الحالية.', 'error')
+        return redirect(url_for('super_admin') + '#security')
+
+    new_version = superadmin_password_version() + 1
+    security_settings = {
+        ADMIN_PASSWORD_HASH_SETTING: generate_password_hash(new_password, method='scrypt'),
+        ADMIN_PASSWORD_VERSION_SETTING: str(new_version),
+        ADMIN_PASSWORD_CHANGED_AT_SETTING: datetime.now(timezone.utc).isoformat(),
+    }
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        for setting_key, setting_value in security_settings.items():
+            cursor.execute("""
+                INSERT INTO app_settings(setting_key, setting_value, updated_at)
+                VALUES(%s, %s, CURRENT_TIMESTAMP)
+                ON CONFLICT(setting_key) DO UPDATE SET
+                    setting_value=EXCLUDED.setting_value,
+                    updated_at=CURRENT_TIMESTAMP
+            """, (setting_key, setting_value))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cursor.close()
+        conn.close()
+
+    # Flask sessions are signed client-side. Bumping the stored version makes
+    # every other existing admin session invalid immediately.
+    session.clear()
+    return redirect(url_for('super_admin_login', password_changed='1'))
+
+
 @app.route('/superadmin/login', methods=['GET', 'POST'])
 def super_admin_login():
     if request.method == 'POST':
@@ -4234,10 +4374,11 @@ def super_admin_login():
             )
             return response, 429, {'Retry-After': '900'}
         supplied_password = request.form.get('password') or ''
-        if secrets.compare_digest(supplied_password, MASTER_PASSWORD):
+        if verify_superadmin_password(supplied_password):
             clear_admin_login_failures(ip_address)
             session.clear()
             session['is_superadmin'] = True
+            session[ADMIN_SESSION_VERSION] = superadmin_password_version()
             session[ADMIN_CSRF_SESSION] = secrets.token_urlsafe(32)
             return redirect(url_for('super_admin'))
         record_admin_login_failure(ip_address)
@@ -4246,7 +4387,12 @@ def super_admin_login():
             superadmin=True,
             error='بيانات الدخول غير صحيحة.',
         ), 401
-    return render_template('login.html', superadmin=True)
+    success = None
+    if request.args.get('password_changed') == '1':
+        success = 'تم تغيير كلمة مرور الإدارة. سجّل الدخول بالكلمة الجديدة.'
+    elif request.args.get('session_expired') == '1':
+        success = 'انتهت جلسة الإدارة لأسباب أمنية. سجّل الدخول مجددًا.'
+    return render_template('login.html', superadmin=True, success=success)
 
 @app.post('/superadmin/approve/<int:user_id>')
 def approve_user(user_id):

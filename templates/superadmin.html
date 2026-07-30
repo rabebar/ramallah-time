@@ -377,6 +377,39 @@
         .panel-intro p { color: rgba(255,255,255,.7); font-size: 13px; }
         .panel-intro i { width: 34px; height: 34px; color: var(--gold); flex-shrink: 0; }
         .admin-panel + .admin-panel { margin-top: 0; }
+        .security-center {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 28px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,.02);
+        }
+        .security-layout {
+            display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, .85fr);
+            gap: 28px; align-items: start;
+        }
+        .security-copy h2 { color: var(--navy); font-size: 22px; margin-bottom: 10px; }
+        .security-copy p { color: var(--text-muted); font-size: 13px; line-height: 1.9; }
+        .security-points { display: grid; gap: 12px; margin-top: 22px; }
+        .security-point {
+            display: flex; align-items: flex-start; gap: 11px; padding: 13px 15px;
+            border-radius: 14px; background: #f8fafc; color: var(--navy); font-size: 12px; font-weight: 700;
+        }
+        .security-point i { width: 18px; height: 18px; color: var(--success); flex: 0 0 auto; }
+        .admin-password-form {
+            display: grid; gap: 13px; padding: 22px; border: 1px solid #dfe7ee;
+            border-radius: 20px; background: linear-gradient(145deg, #fbfdff, #f6f9fc);
+        }
+        .admin-password-form label { font-size: 12px; font-weight: 800; color: var(--navy); }
+        .admin-password-form input {
+            width: 100%; border: 1px solid #d8e1e9; border-radius: 12px;
+            padding: 12px 13px; font: inherit; background: #fff;
+        }
+        .admin-password-form input:focus { outline: 2px solid rgba(184,151,74,.18); border-color: var(--gold); }
+        .admin-password-form small { color: var(--text-muted); font-size: 11px; line-height: 1.7; }
+        .admin-password-form button {
+            border: 0; border-radius: 12px; padding: 13px 16px; cursor: pointer;
+            background: var(--navy); color: #fff; font: inherit; font-weight: 800;
+            display: inline-flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .admin-password-form button i { width: 17px; height: 17px; }
 
         .refill-input { 
             width: 60px; padding: 10px; border: 1px solid var(--border); 
@@ -395,6 +428,7 @@
             .processing-toggle { width: 100%; justify-content: center; }
             .orders-filter, .orders-filter select, .orders-filter button { width: 100%; }
             .payments-grid { grid-template-columns: 1fr; }
+            .security-layout { grid-template-columns: 1fr; }
         }
         @media (max-width: 640px) {
             .sidebar { width: 64px; padding: 22px 8px; }
@@ -402,7 +436,7 @@
             .header-area { align-items: stretch; flex-direction: column; gap: 12px; margin-bottom: 24px; }
             .header-area h1 { font-size: 25px; }
             .panel-intro { padding: 20px; }
-            .table-container, .payments-section, .visits-section, .orders-section { padding: 20px 16px; border-radius: 20px; }
+            .table-container, .payments-section, .visits-section, .orders-section, .security-center { padding: 20px 16px; border-radius: 20px; }
             .moeen-create { grid-template-columns: 1fr; }
             #moeen-executive tbody tr { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
@@ -429,6 +463,10 @@
                 <i data-lucide="briefcase-business"></i>
                 <span>مُعين التنفيذي</span>
                 {% if active_moeen_trial_count %}<b class="nav-count">{{ active_moeen_trial_count }}</b>{% endif %}
+            </a>
+            <a href="#security" class="nav-item" data-panel-link="security">
+                <i data-lucide="shield-check"></i>
+                <span>الأمان</span>
             </a>
             
             <a href="/logout" class="nav-item logout-btn">
@@ -483,6 +521,44 @@
                 <i data-lucide="briefcase-business"></i>
             </div>
         </div>
+
+        <div class="admin-panel security-admin" data-admin-panel="security">
+            <div class="panel-intro">
+                <div><h2>أمان لوحة RT Studio</h2><p>إدارة كلمة مرور لوحة التحكم المشتركة للمتاجر ومُعين التنفيذي.</p></div>
+                <i data-lucide="shield-check"></i>
+            </div>
+        </div>
+
+        <section class="security-center admin-panel security-admin" data-admin-panel="security">
+            <div class="security-layout">
+                <div class="security-copy">
+                    <h2>تغيير كلمة مرور الإدارة</h2>
+                    <p>تُستخدم هذه الكلمة للدخول إلى لوحة RT Studio التي تدير المتاجر ومشتركي مُعين. بعد التغيير ستنتهي كل جلسات الإدارة المفتوحة، وستحتاج إلى تسجيل الدخول بالكلمة الجديدة.</p>
+                    <div class="security-points">
+                        <div class="security-point"><i data-lucide="lock-keyhole"></i><span>تُحفظ الكلمة الجديدة كبصمة مشفّرة وليست كنص قابل للقراءة.</span></div>
+                        <div class="security-point"><i data-lucide="log-out"></i><span>يتم إلغاء اعتماد كل جلسات الإدارة القديمة فورًا.</span></div>
+                        <div class="security-point"><i data-lucide="key-round"></i><span>استخدم 12 خانة على الأقل تتضمن حروفًا وأرقامًا، ولا تستخدمها في خدمة أخرى.</span></div>
+                    </div>
+                </div>
+                <form class="admin-password-form" method="POST" action="/superadmin/security/change-password">
+                    <input type="hidden" name="_csrf_token" value="{{ admin_csrf_token }}">
+                    <label for="adminCurrentPassword">كلمة المرور الحالية</label>
+                    <input id="adminCurrentPassword" name="current_password" type="password" autocomplete="current-password" required>
+                    <label for="adminNewPassword">كلمة المرور الجديدة</label>
+                    <input id="adminNewPassword" name="new_password" type="password" autocomplete="new-password" minlength="12" required>
+                    <label for="adminConfirmPassword">تأكيد كلمة المرور الجديدة</label>
+                    <input id="adminConfirmPassword" name="confirm_password" type="password" autocomplete="new-password" minlength="12" required>
+                    <small>
+                        {% if admin_password_changed_at %}
+                            آخر تغيير محفوظ: {{ admin_password_changed_at|palestine_time }} بتوقيت فلسطين.
+                        {% else %}
+                            لم يتم تغيير كلمة مرور الإدارة من داخل اللوحة بعد.
+                        {% endif %}
+                    </small>
+                    <button type="submit"><i data-lucide="save"></i>حفظ كلمة المرور الجديدة</button>
+                </form>
+            </div>
+        </section>
 
         <section class="processing-control admin-panel stores-admin" data-admin-panel="stores">
             <div class="processing-info">
@@ -1174,7 +1250,8 @@
     });
     function showAdminPanel(){
       const isMoeen=location.hash.startsWith("#moeen");
-      const selected=isMoeen?"moeen":"stores";
+      const isSecurity=location.hash.startsWith("#security");
+      const selected=isSecurity?"security":isMoeen?"moeen":"stores";
       document.querySelectorAll("[data-admin-panel]").forEach(section=>{
         section.classList.toggle("is-visible",section.dataset.adminPanel===selected);
       });
@@ -1183,10 +1260,12 @@
       });
       const title=document.querySelector(".header-area h1");
       const subtitle=document.querySelector(".header-area p");
-      if(title)title.textContent=isMoeen?"إدارة مُعين التنفيذي":"إدارة المتاجر والتجار";
-      if(subtitle)subtitle.textContent=isMoeen
-        ?"المشتركون والدفعات والنشاط والسجلات"
-        :"الإحصائيات والطلبات والاشتراكات وطلبات التجار";
+      if(title)title.textContent=isSecurity?"أمان لوحة RT Studio":isMoeen?"إدارة مُعين التنفيذي":"إدارة المتاجر والتجار";
+      if(subtitle)subtitle.textContent=isSecurity
+        ?"كلمة المرور والجلسات الإدارية"
+        :isMoeen
+          ?"المشتركون والدفعات والنشاط والسجلات"
+          :"الإحصائيات والطلبات والاشتراكات وطلبات التجار";
       window.scrollTo({top:0,behavior:"auto"});
     }
     window.addEventListener("hashchange",showAdminPanel);

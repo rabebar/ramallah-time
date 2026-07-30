@@ -51,7 +51,7 @@ function urlBase64ToUint8Array(value){
 }
 async function enableMoeenPush(){
   const status=$("#moeenPushStatus"),button=$("#enableMoeenPush");
-  if(!("serviceWorker" in navigator)||!("PushManager" in window)){status.textContent="هذا المتصفح لا يدعم الإشعارات الخلفية.";return}
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){status.textContent="هذا المتصفح لا يدعم الإشعارات الخلفية.";return}
   try{
     const permission=await Notification.requestPermission();
     if(permission!=="granted"){status.textContent="لم يتم السماح بالإشعارات من إعدادات الجهاز.";return}
@@ -60,17 +60,72 @@ async function enableMoeenPush(){
     const registration=await navigator.serviceWorker.ready;
     let subscription=await registration.pushManager.getSubscription();
     if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(config.public_key)});
-    await api("/api/push/subscribe",{method:"POST",body:JSON.stringify(subscription.toJSON())});
-    status.textContent="الإشعارات مفعّلة على هذا الجهاز.";
-    button.textContent="الإشعارات مفعّلة";
+    await api("/api/push/subscribe",{method:"POST",body:JSON.stringify({...subscription.toJSON(),locale:uiLocale().startsWith("en")?"en":"ar"})});
+    await refreshMoeenPushStatus();
   }catch{status.textContent="تعذر تفعيل الإشعارات. تحقق من إعدادات المتصفح ثم حاول مجددًا."}
 }
 $("#enableMoeenPush").onclick=enableMoeenPush;
+async function refreshMoeenPushStatus(){
+  const status=$("#moeenPushStatus"),button=$("#enableMoeenPush"),testButton=$("#testMoeenPush");
+  if(!status||!button||!testButton)return false;
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){
+    status.textContent="هذا المتصفح لا يدعم الإشعارات الخلفية.";button.disabled=true;testButton.hidden=true;return false;
+  }
+  if(Notification.permission==="denied"){
+    status.textContent="الإشعارات محظورة من إعدادات الجهاز. اسمح بها من إعدادات الموقع.";button.textContent="الإشعارات محظورة";testButton.hidden=true;return false;
+  }
+  if(Notification.permission!=="granted"){
+    status.textContent="الإشعارات غير مفعّلة على هذا الجهاز.";button.textContent="تفعيل الإشعارات على هذا الجهاز";testButton.hidden=true;return false;
+  }
+  const registration=await navigator.serviceWorker.ready;
+  const subscription=await registration.pushManager.getSubscription();
+  if(!subscription){
+    status.textContent="يحتاج هذا الجهاز إلى إعادة ربط الإشعارات.";button.textContent="إعادة تفعيل الإشعارات";testButton.hidden=true;return false;
+  }
+  await api("/api/push/subscribe",{method:"POST",body:JSON.stringify({...subscription.toJSON(),locale:uiLocale().startsWith("en")?"en":"ar"})});
+  const serverStatus=await api("/api/push/status");
+  if(!serverStatus.configured)throw new Error("NOT_CONFIGURED");
+  status.textContent="الإشعارات مفعّلة ومتصلة بهذا الحساب.";
+  button.textContent="الإشعارات مفعّلة";
+  testButton.hidden=false;
+  return true;
+}
+$("#testMoeenPush").onclick=async()=>{
+  const button=$("#testMoeenPush"),status=$("#moeenPushStatus");
+  button.disabled=true;status.textContent="جارٍ إرسال إشعار تجريبي…";
+  try{
+    const registration=await navigator.serviceWorker.ready;
+    const subscription=await registration.pushManager.getSubscription();
+    if(!subscription)throw new Error("NO_ACTIVE_SUBSCRIPTIONS");
+    await api("/api/push/test",{method:"POST",body:JSON.stringify({endpoint:subscription.endpoint})});
+    status.textContent="تم إرسال الإشعار التجريبي. يفترض أن يظهر خلال لحظات.";
+  }catch(error){
+    status.textContent=error.message==="NO_ACTIVE_SUBSCRIPTIONS"
+      ?"لم يعد اشتراك هذا الجهاز صالحًا. أعد تفعيل الإشعارات."
+      :"تعذر إرسال الإشعار التجريبي الآن.";
+  }finally{button.disabled=false}
+};
 async function syncReminder(itemId,itemType,eventAt,offsetMinutes){
   if(!eventAt||offsetMinutes==="none")return api(`/api/reminders/${encodeURIComponent(itemId)}`,{method:"DELETE",body:"{}"}).catch(()=>{});
   const remindAt=new Date(new Date(eventAt).getTime()-Number(offsetMinutes)*60000);
   if(Number.isNaN(remindAt.getTime()))return;
   return api(`/api/reminders/${encodeURIComponent(itemId)}`,{method:"PUT",body:JSON.stringify({item_type:itemType,remind_at:remindAt.toISOString()})}).catch(()=>{});
+}
+function reminderPayload(){
+  const reminders=[];
+  const add=(item,itemType,eventAt)=>{
+    if(!item?.id||item.done||!eventAt||item.reminder==="none")return;
+    const offset=Number(item.reminder??0),remindAt=new Date(new Date(eventAt).getTime()-offset*60000);
+    if(Number.isNaN(remindAt.getTime()))return;
+    reminders.push({item_id:item.id,item_type:itemType,remind_at:remindAt.toISOString()});
+  };
+  secureState.tasks.forEach(item=>add(item,item.itemType==="call"?"call":"task",item.due));
+  secureState.meetings.forEach(item=>add(item,"meeting",item.date));
+  return reminders;
+}
+async function reconcileReminders(){
+  if(!vaultKey||!navigator.onLine)return;
+  await api("/api/reminders/reconcile",{method:"POST",body:JSON.stringify({reminders:reminderPayload()})});
 }
 const installButtons=()=>[$("#authInstallBtn"),$("#headerInstallBtn")].filter(Boolean);
 function isInstalled(){return window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true}
@@ -511,16 +566,19 @@ function legacyState(){
 }
 function hasData(state){return dataKinds.some(k=>(state[k]||[]).length)}
 async function loadAndSyncState(){
-  let local=emptyState(),cache=localStorage.getItem("moeen_exec_secure_cache");
+  let local=emptyState(),remoteLoaded=false,cache=localStorage.getItem("moeen_exec_secure_cache");
   if(cache){try{const parsed=JSON.parse(cache);local=normalizeState(await decryptObject(parsed));syncVersion=parsed.version||0}catch{local=emptyState()}}
   const legacy=legacyState();if(hasData(legacy))local=mergeStates(local,legacy);
   try{
     const remote=await api("/api/sync/state");
+    remoteLoaded=true;
     syncVersion=remote.version||0;
     if(remote.state)local=mergeStates(local,await decryptObject(remote.state));
   }catch{}
   secureState=normalizeState(local);await saveEncryptedCache();render();
   if(hasData(secureState)||syncVersion===0)await pushSync();
+  if(remoteLoaded)await reconcileReminders().catch(()=>{});
+  await refreshMoeenPushStatus().catch(()=>{});
 }
 async function saveEncryptedCache(){
   if(!vaultKey)return;
@@ -541,6 +599,7 @@ async function pushSync(retry=true){
     syncVersion=result.version;await saveEncryptedCache();
     dataKinds.forEach(k=>localStorage.removeItem("moeen_exec_"+k));
     setSyncStatus("تمت المزامنة","synced");
+    await reconcileReminders().catch(()=>{});
   }catch(err){
     if(err.status===409&&retry){
       const remote=await api("/api/sync/state");syncVersion=remote.version||0;
@@ -550,7 +609,7 @@ async function pushSync(retry=true){
   }finally{syncBusy=false}
 }
 function setSyncStatus(text,state=""){const el=$("#syncStatus");if(!el)return;el.textContent=text;el.className=`sync-status ${state}`}
-window.addEventListener("online",()=>pushSync());
+window.addEventListener("online",async()=>{await pushSync();await refreshMoeenPushStatus().catch(()=>{})});
 function deviceId(){let id=localStorage.getItem("moeen_exec_device_id");if(!id){id=crypto.randomUUID();localStorage.setItem("moeen_exec_device_id",id)}return id}
 function deviceName(){const mobile=/iPhone|iPad|Android/i.test(navigator.userAgent);return mobile?"هاتف شخصي":"حاسوب شخصي"}
 async function initAuth(){
@@ -627,7 +686,7 @@ $("#moeenPaymentForm").onsubmit=async e=>{
 };
 if("serviceWorker" in navigator){
   navigator.serviceWorker
-    .register("/moeen-executive/sw.js?v=29",{updateViaCache:"none"})
+    .register("/moeen-executive/sw.js?v=30",{updateViaCache:"none"})
     .then(registration=>registration.update())
     .catch(()=>{});
 }
