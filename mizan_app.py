@@ -572,7 +572,12 @@ def _analytics() -> dict:
 def _notify_telegram(item: dict) -> None:
     if not MIZAN_TELEGRAM_BOT_TOKEN or not MIZAN_TELEGRAM_CHAT_ID:
         return
-    post_url = f"{MIZAN_PUBLIC_URL}/post/{quote(item['id'])}"
+    request_host = request.host.split(":", 1)[0].lower()
+    if request_host == MIZAN_HOST:
+        public_url = request.host_url.rstrip("/")
+    else:
+        public_url = f"{request.host_url.rstrip('/')}/mizan-political"
+    post_url = f"{public_url}/post/{quote(item['id'])}"
     category = f"\nالقسم: {html.escape(item['category'])}" if item.get("category") else ""
     summary = f"\n\n{html.escape(item['summary'])}" if item.get("summary") else ""
     text = (
