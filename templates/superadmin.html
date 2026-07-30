@@ -512,6 +512,7 @@
                 </div>
             </div>
             <form method="POST" action="{{ url_for('super_admin_toggle_removebg') }}">
+                <input type="hidden" name="_csrf_token" value="{{ admin_csrf_token }}">
                 {% if removebg_enabled %}
                     <input type="hidden" name="enabled" value="false">
                     <button type="submit" class="processing-toggle stop">
@@ -543,6 +544,7 @@
 
             <div class="payments-grid">
                 <form method="POST" action="/superadmin/payment-settings" class="payment-settings-form">
+                    <input type="hidden" name="_csrf_token" value="{{ admin_csrf_token }}">
                     <div style="font-weight:800;color:var(--navy);margin-bottom:4px;">بيانات استقبال الدفعات</div>
                     <div>
                         <label>اسم الحساب المستفيد</label>
@@ -596,7 +598,7 @@
                         <div class="payment-meta">
                             رقم العملية: <strong>{{ payment.transaction_ref or 'غير مدخل' }}</strong>
                             {% if payment.receipt_url %}
-                                · <a href="/static/uploads/{{ payment.receipt_url }}" target="_blank" style="color:var(--gold);font-weight:800;">فتح الإيصال</a>
+                                · <a href="{{ url_for('superadmin_receipt', relative_path=payment.receipt_url) }}" target="_blank" style="color:var(--gold);font-weight:800;">تنزيل الإيصال الآمن</a>
                             {% endif %}
                             {% if payment.notes %}
                                 <br>ملاحظة التاجر: {{ payment.notes }}
@@ -608,6 +610,7 @@
                         {% if payment.status == 'pending' %}
                         <div class="payment-actions">
                             <form method="POST" action="/superadmin/subscription-payment/{{ payment.id }}/approve" style="display:flex;gap:8px;flex:1;">
+                                <input type="hidden" name="_csrf_token" value="{{ admin_csrf_token }}">
                                 <input type="text" name="admin_note" placeholder="ملاحظة اختيارية">
                                 <button type="submit" class="btn-sm btn-approve" onclick="return confirm('تأكيد الدفع وتمديد الاشتراك؟')">
                                     <i data-lucide="check"></i>
@@ -615,6 +618,7 @@
                                 </button>
                             </form>
                             <form method="POST" action="/superadmin/subscription-payment/{{ payment.id }}/reject" style="display:flex;gap:8px;flex:1;">
+                                <input type="hidden" name="_csrf_token" value="{{ admin_csrf_token }}">
                                 <input type="text" name="admin_note" placeholder="سبب الرفض">
                                 <button type="submit" class="btn-sm btn-reject" onclick="return confirm('رفض إثبات الدفع؟')">
                                     <i data-lucide="x"></i>
@@ -869,7 +873,7 @@
                     <span class="payment-status {{ payment.status }}">{{ 'مقبولة' if payment.status == 'approved' else ('مرفوضة' if payment.status == 'rejected' else 'قيد المراجعة') }}</span>
                 </div>
                 <div class="payment-meta">رقم العملية: <strong>{{ payment.transaction_ref or 'غير مدخل' }}</strong>
-                    {% if payment.receipt_url %} · <a href="/static/uploads/{{ payment.receipt_url }}" target="_blank">فتح الإيصال</a>{% endif %}
+                    {% if payment.receipt_url %} · <a href="{{ url_for('superadmin_receipt', relative_path=payment.receipt_url) }}" target="_blank">تنزيل الإيصال الآمن</a>{% endif %}
                     {% if payment.notes %}<br>ملاحظة المشترك: {{ payment.notes }}{% endif %}
                 </div>
                 {% if payment.status == 'pending' %}
@@ -887,6 +891,7 @@
         <section class="table-container admin-panel moeen-admin" data-admin-panel="moeen" id="moeen-executive">
             <div class="table-title">إدارة اشتراكات مُعين التنفيذي</div>
             <form class="moeen-create" method="POST" action="/superadmin/moeen/accounts">
+                <input type="hidden" name="_csrf_token" value="{{ admin_csrf_token }}">
                 <input name="full_name" required placeholder="اسم المشترك الكامل">
                 <input name="job_title" placeholder="المنصب">
                 <input name="phone" required placeholder="رقم الهاتف / اسم الدخول">
@@ -970,6 +975,7 @@
                         <td class="moeen-account-actions" data-label="الإجراءات">
                             <div class="moeen-actions">
                                 <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/subscription">
+                                    <input type="hidden" name="_csrf_token" value="{{ admin_csrf_token }}">
                                     <input type="hidden" name="action" value="renew">
                                     <select name="plan_type" title="الباقة المدفوعة">
                                         <option value="monthly">شهري · 60₪</option>
@@ -981,6 +987,7 @@
                                     </button>
                                 </form>
                                 <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/subscription">
+                                    <input type="hidden" name="_csrf_token" value="{{ admin_csrf_token }}">
                                     <input type="hidden" name="action" value="{% if account.status == 'active' %}suspended{% else %}active{% endif %}">
                                     <button class="btn-sm {% if account.status == 'active' %}btn-reject{% else %}btn-approve{% endif %}" type="submit">
                                         {% if account.status == 'active' %}إيقاف{% else %}تفعيل{% endif %}
@@ -1094,8 +1101,12 @@
                        <td style="width: 100px; padding: 5px;">
                             <div class="btn-group" style="gap: 3px;">
                                 {% if user.status == 'pending' %}
-                                    <a href="/superadmin/approve/{{ user.id }}" class="btn-sm btn-approve"><i data-lucide="check"></i> تفعيل الحساب</a>
-                                    <a href="/superadmin/reject/{{ user.id }}" class="btn-sm btn-reject" onclick="return confirm('حذف الطلب؟')"><i data-lucide="x"></i> رفض</a>
+                                    <form method="POST" action="/superadmin/approve/{{ user.id }}">
+                                        <button class="btn-sm btn-approve" type="submit"><i data-lucide="check"></i> تفعيل الحساب</button>
+                                    </form>
+                                    <form method="POST" action="/superadmin/reject/{{ user.id }}" onsubmit="return confirm('حذف الطلب؟')">
+                                        <button class="btn-sm btn-reject" type="submit"><i data-lucide="x"></i> رفض</button>
+                                    </form>
                                 {% else %}
                                     <!-- تفعيل باقة اشتراك -->
                                     <form action="/superadmin/set_subscription" method="POST" style="display:flex; gap:5px; align-items: center;">
@@ -1121,12 +1132,18 @@
 
                                     <!-- زر التجميد / إلغاء التجميد -->
                                     {% if user.is_frozen %}
-                                        <a href="/superadmin/unfreeze/{{ user.id }}" class="btn-sm btn-approve" style="background: #6366f1;"><i data-lucide="play" style="width:14px;"></i> فك التجميد</a>
+                                        <form method="POST" action="/superadmin/unfreeze/{{ user.id }}">
+                                            <button class="btn-sm btn-approve" type="submit" style="background: #6366f1;"><i data-lucide="play" style="width:14px;"></i> فك التجميد</button>
+                                        </form>
                                     {% else %}
-                                        <a href="/superadmin/freeze/{{ user.id }}" class="btn-sm btn-reject" style="background: #000; color: #fff;"><i data-lucide="pause" style="width:14px;"></i> تجميد</a>
+                                        <form method="POST" action="/superadmin/freeze/{{ user.id }}">
+                                            <button class="btn-sm btn-reject" type="submit" style="background: #000; color: #fff;"><i data-lucide="pause" style="width:14px;"></i> تجميد</button>
+                                        </form>
                                     {% endif %}
                                     
-                                    <a href="/superadmin/delete_user/{{ user.id }}" class="btn-sm btn-reject" onclick="return confirm('حذف نهائي؟')"><i data-lucide="trash-2" style="width: 14px;"></i></a>
+                                    <form method="POST" action="/superadmin/delete_user/{{ user.id }}" onsubmit="return confirm('حذف نهائي؟')">
+                                        <button class="btn-sm btn-reject" type="submit"><i data-lucide="trash-2" style="width: 14px;"></i></button>
+                                    </form>
                                 {% endif %}
                             </div>
                         </td>
@@ -1146,6 +1163,15 @@
 
     <script>
     const SUPERADMIN_VAPID_KEY={{ vapid_public_key|tojson }};
+    const SUPERADMIN_CSRF_TOKEN={{ admin_csrf_token|tojson }};
+    document.querySelectorAll('form[method="POST"],form[method="post"]').forEach(form=>{
+      if(form.querySelector('input[name="_csrf_token"]'))return;
+      const token=document.createElement("input");
+      token.type="hidden";
+      token.name="_csrf_token";
+      token.value=SUPERADMIN_CSRF_TOKEN;
+      form.appendChild(token);
+    });
     function showAdminPanel(){
       const isMoeen=location.hash.startsWith("#moeen");
       const selected=isMoeen?"moeen":"stores";
@@ -1191,7 +1217,7 @@
         await navigator.serviceWorker.ready;
         let sub=await reg.pushManager.getSubscription();
         if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:vapidBytes(SUPERADMIN_VAPID_KEY)});
-        const response=await fetch("/superadmin/push/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(sub.toJSON())});
+        const response=await fetch("/superadmin/push/subscribe",{method:"POST",headers:{"Content-Type":"application/json","X-CSRF-Token":SUPERADMIN_CSRF_TOKEN},body:JSON.stringify(sub.toJSON())});
         if(!response.ok)throw new Error("تعذر حفظ اشتراك الإشعارات.");
         if(!await refreshSuperadminPush())throw new Error("لم يكتمل ربط الجهاز. أعد تحميل الصفحة وحاول مجددًا.");
       }catch(error){alert(error.message||"تعذر تفعيل الإشعارات.")}
@@ -1202,7 +1228,7 @@
       superadminPushTestButton.disabled=true;
       label.textContent="جارٍ إرسال الاختبار…";
       try{
-        const response=await fetch("/superadmin/push/test",{method:"POST"});
+        const response=await fetch("/superadmin/push/test",{method:"POST",headers:{"X-CSRF-Token":SUPERADMIN_CSRF_TOKEN}});
         const result=await response.json().catch(()=>({}));
         if(!response.ok)throw new Error(result.error==="NO_ACTIVE_SUBSCRIPTIONS"?"لا يوجد جهاز مرتبط فعليًا بالإشعارات. أعد تفعيلها أولًا.":"تعذر إرسال الإشعار التجريبي.");
         label.textContent="تم إرسال الإشعار ✓";

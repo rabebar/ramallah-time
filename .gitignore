@@ -1,6 +1,8 @@
 venv/
 __pycache__/
 *.pyc
+*.db
 .vscode/
 static/uploads/*
 !static/uploads/.gitkeep
+private_uploads/

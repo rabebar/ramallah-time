@@ -11,8 +11,8 @@
   <link rel="manifest" href="{{ url_for('moeen_multi.moeen_manifest') }}">
   <link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='moeen_exec/icon-64.png') }}">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='moeen_exec/apple-touch-icon.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/styles.css') }}?v=28">
-  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/premium.css') }}?v=28">
+  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/styles.css') }}?v=29">
+  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/premium.css') }}?v=29">
 </head>
 <body class="locked">
   <section id="authGate" class="auth-gate">
@@ -184,15 +184,7 @@
   </dialog>
 
   <dialog id="simpleDialog"><form method="dialog" class="modal" id="simpleForm"></form></dialog>
-  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}?v=28"></script>
-  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}?v=28"></script>
-  <script>
-    if("serviceWorker" in navigator){
-      navigator.serviceWorker
-        .register("{{ url_for('moeen_multi.moeen_service_worker') }}?v=28",{updateViaCache:"none"})
-        .then(registration=>registration.update())
-        .catch(()=>{});
-    }
-  </script>
+  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}?v=29"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}?v=29"></script>
 </body>
 </html>

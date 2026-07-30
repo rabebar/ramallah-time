@@ -6,13 +6,14 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn --timeout 300 app:app
     envVars:
-      # استخدام الرابط الخارجي المباشر لحل مشكلة الاتصال تماماً
       - key: DATABASE_URL
-        value: postgresql://ramallah_time_db_eru0_user:YIfWPguYG7vZVasIqCGKuql7d4toUWIL@dpg-d783k37kijhs73fuvq7g-a.frankfurt-postgres.render.com/ramallah_time_db_eru0
+        fromDatabase:
+          name: ramallah-time-db
+          property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: MASTER_PASSWORD
-        value: Ruba2025!! # كلمة السر للوحة السوبر أدمن
+        sync: false
 
 databases:
   # 2. إعداد قاعدة البيانات (PostgreSQL)

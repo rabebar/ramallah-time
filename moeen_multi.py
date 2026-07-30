@@ -121,8 +121,12 @@ def _blocked(account_id, device_id):
             FROM moeen_login_attempts
             WHERE created_at >= NOW() - INTERVAL '15 minutes'
               AND outcome IN ('bad_password', 'bad_pairing')
-              AND (account_id = %s OR device_id = %s OR ip_address = %s)
-        """, (account_id, device_id, _client_ip()))
+              AND (
+                    (account_id = %s AND ip_address = %s)
+                    OR device_id = %s
+                    OR ip_address = %s
+              )
+        """, (account_id, _client_ip(), device_id, _client_ip()))
         return cursor.fetchone()["count"] >= 5
     finally:
         cursor.close()
@@ -326,12 +330,13 @@ def login():
     device_id = str(data.get("device_id", ""))[:120]
     device_name = str(data.get("device_name", "جهاز غير معروف"))[:120]
     account = _account(phone=phone)
+    account_id = account["id"] if account else None
+    if _blocked(account_id, device_id):
+        _record_attempt("temporarily_blocked", account_id, phone, device_id, device_name)
+        return jsonify(error="TEMPORARILY_BLOCKED"), 429
     if not account:
         _record_attempt("bad_password", phone=phone, device_id=device_id, device_name=device_name)
         return jsonify(error="INVALID_CREDENTIALS"), 401
-    if _blocked(account["id"], device_id):
-        _record_attempt("temporarily_blocked", account["id"], phone, device_id, device_name)
-        return jsonify(error="TEMPORARILY_BLOCKED"), 429
     if not check_password_hash(account["password_hash"], password):
         _record_attempt("bad_password", account["id"], phone, device_id, device_name)
         return jsonify(error="INVALID_CREDENTIALS"), 401
@@ -398,12 +403,16 @@ def pair_device():
     device_id = str(data.get("device_id", ""))[:120]
     device_name = str(data.get("device_name", "جهاز جديد"))[:120]
     account = _account(phone=phone)
+    account_id = account["id"] if account else None
+    if _blocked(account_id, device_id):
+        _record_attempt("temporarily_blocked", account_id, phone, device_id, device_name)
+        return jsonify(error="TEMPORARILY_BLOCKED"), 429
     if not account or not check_password_hash(account["password_hash"], password):
         _record_attempt("bad_pairing", account["id"] if account else None, phone, device_id, device_name)
         return jsonify(error="INVALID_CREDENTIALS"), 401
     if not _subscription_valid(account):
         return jsonify(error="SUBSCRIPTION_INACTIVE"), 403
-    digest = hashlib.sha256(code.encode()).hexdigest()
+    digest = hashlib.sha256(f"{current_app.secret_key}:{code}".encode()).hexdigest()
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
@@ -536,6 +545,8 @@ def change_password():
     if len(new) < 12 or new == current:
         return jsonify(error="WEAK_PASSWORD"), 400
     vault = data.get("vault") or {}
+    if not all(isinstance(vault.get(key), str) and vault[key] for key in ("salt", "wrapped_vault", "iv")):
+        return jsonify(error="INVALID_VAULT"), 400
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
@@ -543,11 +554,20 @@ def change_password():
             UPDATE moeen_accounts SET password_hash=%s,must_change_password=FALSE,updated_at=NOW()
             WHERE id=%s
         """, (generate_password_hash(new, method="scrypt"), account["id"]))
-        if vault.get("salt") and vault.get("wrapped_vault") and vault.get("iv"):
-            cursor.execute("""
-                UPDATE moeen_vaults SET vault_salt=%s,wrapped_vault=%s,wrap_iv=%s,updated_at=NOW()
-                WHERE account_id=%s
-            """, (vault["salt"], vault["wrapped_vault"], vault["iv"], account["id"]))
+        cursor.execute("""
+            UPDATE moeen_vaults SET vault_salt=%s,wrapped_vault=%s,wrap_iv=%s,updated_at=NOW()
+            WHERE account_id=%s
+        """, (vault["salt"], vault["wrapped_vault"], vault["iv"], account["id"]))
+        cursor.execute("""
+            UPDATE moeen_devices
+            SET authorized=FALSE,revoked_at=NOW()
+            WHERE account_id=%s AND device_id<>%s AND authorized=TRUE
+        """, (account["id"], session[SESSION_DEVICE]))
+        cursor.execute("""
+            UPDATE moeen_pairing_codes
+            SET used_at=NOW()
+            WHERE account_id=%s AND used_at IS NULL
+        """, (account["id"],))
         conn.commit()
     finally:
         cursor.close()
@@ -565,7 +585,10 @@ def create_pairing_code():
         cursor.execute("""
             INSERT INTO moeen_pairing_codes(account_id,code_hash,expires_at)
             VALUES(%s,%s,NOW()+INTERVAL '5 minutes')
-        """, (session[SESSION_ACCOUNT], hashlib.sha256(code.encode()).hexdigest()))
+        """, (
+            session[SESSION_ACCOUNT],
+            hashlib.sha256(f"{current_app.secret_key}:{code}".encode()).hexdigest(),
+        ))
         conn.commit()
     finally:
         cursor.close()

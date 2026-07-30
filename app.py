@@ -24,13 +24,14 @@ import urllib.parse
 import json
 import threading
 import time
+import secrets
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from collections import defaultdict
 from decimal import Decimal
 from xml.sax.saxutils import escape
 
-from flask import Flask, render_template, request, redirect, session, url_for, flash, g, send_from_directory, send_file, jsonify
+from flask import Flask, abort, render_template, request, redirect, session, url_for, flash, g, send_from_directory, send_file, jsonify
 import requests
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -533,7 +534,26 @@ def palestine_time(value, fmt="%Y-%m-%d %H:%M"):
     return utc_value.astimezone(PALESTINE_TIMEZONE).strftime(fmt)
 
 # Config
-app.secret_key = os.environ.get('SECRET_KEY', 'rt_studio_secure_2025_palestine_#99')
+IS_PRODUCTION = bool(os.environ.get('RENDER'))
+
+
+def required_runtime_secret(name):
+    value = (os.environ.get(name) or '').strip()
+    if value:
+        return value
+    if IS_PRODUCTION:
+        raise RuntimeError(f"{name} must be configured in the production environment")
+    logging.warning("%s is not configured; using an ephemeral local-development value", name)
+    return secrets.token_urlsafe(48)
+
+
+app.secret_key = required_runtime_secret('SECRET_KEY')
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SECURE=IS_PRODUCTION,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=timedelta(days=7),
+)
 
 BOT_USER_AGENT_PATTERN = re.compile(
     r'bot|crawler|spider|slurp|bingpreview|facebookexternalhit|'
@@ -621,10 +641,95 @@ def attach_traffic_labels(rows):
     return labeled
 
 
-MASTER_PASSWORD = os.environ.get('MASTER_PASSWORD', 'Ruba2025!!')
+MASTER_PASSWORD = required_runtime_secret('MASTER_PASSWORD')
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+PRIVATE_UPLOAD_FOLDER = os.environ.get('PRIVATE_UPLOAD_FOLDER', 'private_uploads')
+os.makedirs(PRIVATE_UPLOAD_FOLDER, exist_ok=True)
+app.config['PRIVATE_UPLOAD_FOLDER'] = PRIVATE_UPLOAD_FOLDER
+
+ADMIN_CSRF_SESSION = 'superadmin_csrf'
+ADMIN_LOGIN_WINDOW = timedelta(minutes=15)
+ADMIN_LOGIN_MAX_ATTEMPTS = 5
+_admin_login_attempts = defaultdict(list)
+_admin_login_attempts_lock = threading.Lock()
+
+
+def request_ip_address():
+    return (
+        request.headers.get('CF-Connecting-IP')
+        or request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
+        or request.remote_addr
+        or 'unknown'
+    )[:100]
+
+
+def admin_csrf_token():
+    token = session.get(ADMIN_CSRF_SESSION)
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session[ADMIN_CSRF_SESSION] = token
+    return token
+
+
+def admin_login_is_blocked(ip_address):
+    cutoff = datetime.utcnow() - ADMIN_LOGIN_WINDOW
+    with _admin_login_attempts_lock:
+        recent = [stamp for stamp in _admin_login_attempts[ip_address] if stamp >= cutoff]
+        _admin_login_attempts[ip_address] = recent
+        return len(recent) >= ADMIN_LOGIN_MAX_ATTEMPTS
+
+
+def record_admin_login_failure(ip_address):
+    with _admin_login_attempts_lock:
+        _admin_login_attempts[ip_address].append(datetime.utcnow())
+
+
+def clear_admin_login_failures(ip_address):
+    with _admin_login_attempts_lock:
+        _admin_login_attempts.pop(ip_address, None)
+
+
+@app.context_processor
+def inject_security_vars():
+    if request.path.startswith('/superadmin') or session.get('is_superadmin'):
+        return {'admin_csrf_token': admin_csrf_token()}
+    return {'admin_csrf_token': ''}
+
+
+@app.before_request
+def protect_admin_requests():
+    protected_receipt_prefixes = (
+        '/static/uploads/payment_receipts/',
+        '/static/uploads/moeen_payment_receipts/',
+    )
+    if request.path.startswith(protected_receipt_prefixes):
+        abort(404)
+
+    if request.method == 'POST' and request.path.startswith('/superadmin'):
+        supplied = request.form.get('_csrf_token') or request.headers.get('X-CSRF-Token', '')
+        expected = session.get(ADMIN_CSRF_SESSION, '')
+        if not supplied or not expected or not secrets.compare_digest(str(supplied), str(expected)):
+            abort(403)
+
+
+@app.after_request
+def apply_security_headers(response):
+    response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    response.headers.setdefault('X-Frame-Options', 'DENY')
+    response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+    if IS_PRODUCTION:
+        response.headers.setdefault('Strict-Transport-Security', 'max-age=15552000')
+    if request.path.startswith('/moeen-executive'):
+        response.headers.setdefault(
+            'Content-Security-Policy',
+            "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; "
+            "form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; "
+            "font-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'",
+        )
+    return response
 
 SUBSCRIPTION_PLANS = {
     'monthly': {'label': 'اشتراك شهري', 'days': 30, 'amount': Decimal('100.00'), 'currency': '₪'},
@@ -655,6 +760,7 @@ PAYMENT_SETTING_KEYS = [
 ]
 
 RECEIPT_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'pdf'}
+RECEIPT_MAX_BYTES = 10 * 1024 * 1024
 
 
 def get_subscription_plan(plan_type):
@@ -676,6 +782,71 @@ def get_payment_settings():
 
 def allowed_receipt_file(filename):
     return bool(filename and '.' in filename and filename.rsplit('.', 1)[1].lower() in RECEIPT_EXTENSIONS)
+
+
+def save_private_receipt(upload, folder_name, owner_id, filename_prefix):
+    if not allowed_receipt_file(upload.filename):
+        raise ValueError('INVALID_RECEIPT')
+    extension = secure_filename(upload.filename).rsplit('.', 1)[1].lower()
+    payload = upload.read(RECEIPT_MAX_BYTES + 1)
+    if not payload or len(payload) > RECEIPT_MAX_BYTES:
+        raise ValueError('INVALID_RECEIPT')
+
+    if extension == 'pdf':
+        if not payload.startswith(b'%PDF-'):
+            raise ValueError('INVALID_RECEIPT')
+    else:
+        expected_formats = {
+            'jpg': {'JPEG'},
+            'jpeg': {'JPEG'},
+            'png': {'PNG'},
+            'webp': {'WEBP'},
+        }
+        try:
+            with Image.open(io.BytesIO(payload)) as image:
+                image.verify()
+                if image.format not in expected_formats[extension]:
+                    raise ValueError('INVALID_RECEIPT')
+        except (OSError, ValueError):
+            raise ValueError('INVALID_RECEIPT')
+
+    receipt_dir = os.path.join(app.config['PRIVATE_UPLOAD_FOLDER'], folder_name)
+    os.makedirs(receipt_dir, exist_ok=True)
+    filename = f"{filename_prefix}_{owner_id}_{uuid.uuid4().hex[:16]}.{extension}"
+    destination = os.path.join(receipt_dir, filename)
+    with open(destination, 'xb') as receipt_file:
+        receipt_file.write(payload)
+    return f"{folder_name}/{filename}"
+
+
+@app.get('/superadmin/receipts/<path:relative_path>')
+def superadmin_receipt(relative_path):
+    if not session.get('is_superadmin'):
+        return redirect(url_for('super_admin_login'))
+    normalized = relative_path.replace('\\', '/').lstrip('/')
+    if not normalized.startswith(('payment_receipts/', 'moeen_payment_receipts/')):
+        abort(404)
+
+    private_candidate = os.path.join(app.config['PRIVATE_UPLOAD_FOLDER'], normalized)
+    if os.path.isfile(private_candidate):
+        response = send_from_directory(
+            app.config['PRIVATE_UPLOAD_FOLDER'],
+            normalized,
+            as_attachment=True,
+            download_name=os.path.basename(normalized),
+        )
+    else:
+        legacy_candidate = os.path.join(app.config['UPLOAD_FOLDER'], normalized)
+        if not os.path.isfile(legacy_candidate):
+            abort(404)
+        response = send_from_directory(
+            app.config['UPLOAD_FOLDER'],
+            normalized,
+            as_attachment=True,
+            download_name=os.path.basename(normalized),
+        )
+    response.headers['Cache-Control'] = 'private, no-store'
+    return response
 
 
 def make_invoice_code(user_id):
@@ -2062,15 +2233,16 @@ def admin_subscription_payment():
         receipt_url = None
 
         if receipt and receipt.filename:
-            if not allowed_receipt_file(receipt.filename):
+            try:
+                receipt_url = save_private_receipt(
+                    receipt,
+                    'payment_receipts',
+                    user_id,
+                    'receipt',
+                )
+            except ValueError:
                 flash("صيغة الإيصال غير مدعومة. استخدم صورة أو PDF.", "error")
                 return redirect(url_for('admin', active_tab='settings'))
-            receipt_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'payment_receipts')
-            os.makedirs(receipt_dir, exist_ok=True)
-            ext = secure_filename(receipt.filename).rsplit('.', 1)[1].lower()
-            receipt_filename = f"receipt_{user_id}_{uuid.uuid4().hex[:10]}.{ext}"
-            receipt.save(os.path.join(receipt_dir, receipt_filename))
-            receipt_url = f"payment_receipts/{receipt_filename}"
 
         if not transaction_ref and not receipt_url:
             flash("أدخل رقم العملية أو ارفع صورة الإيصال حتى نتمكن من مراجعة الدفع.", "error")
@@ -2123,14 +2295,15 @@ def moeen_subscription_payment():
     receipt = request.files.get('receipt')
     receipt_url = None
     if receipt and receipt.filename:
-        if not allowed_receipt_file(receipt.filename):
+        try:
+            receipt_url = save_private_receipt(
+                receipt,
+                'moeen_payment_receipts',
+                account_id,
+                'moeen',
+            )
+        except ValueError:
             return jsonify(error="INVALID_RECEIPT"), 400
-        receipt_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'moeen_payment_receipts')
-        os.makedirs(receipt_dir, exist_ok=True)
-        ext = secure_filename(receipt.filename).rsplit('.', 1)[1].lower()
-        filename = f"moeen_{account_id}_{uuid.uuid4().hex[:10]}.{ext}"
-        receipt.save(os.path.join(receipt_dir, filename))
-        receipt_url = f"moeen_payment_receipts/{filename}"
     if not transaction_ref and not receipt_url:
         return jsonify(error="PROOF_REQUIRED"), 400
 
@@ -3911,14 +4084,18 @@ def super_admin_delete_moeen_account(account_id):
         receipt_paths = [row["receipt_url"] for row in cursor.fetchall()]
         cursor.execute("DELETE FROM moeen_accounts WHERE id=%s", (account_id,))
         conn.commit()
-        uploads_root = os.path.abspath(app.config['UPLOAD_FOLDER'])
+        upload_roots = (
+            os.path.abspath(app.config['PRIVATE_UPLOAD_FOLDER']),
+            os.path.abspath(app.config['UPLOAD_FOLDER']),
+        )
         for relative_path in receipt_paths:
-            target = os.path.abspath(os.path.join(uploads_root, relative_path))
-            if target.startswith(uploads_root + os.sep) and os.path.isfile(target):
-                try:
-                    os.remove(target)
-                except OSError:
-                    logging.warning("Could not remove Moeen receipt file: %s", target)
+            for uploads_root in upload_roots:
+                target = os.path.abspath(os.path.join(uploads_root, relative_path))
+                if target.startswith(uploads_root + os.sep) and os.path.isfile(target):
+                    try:
+                        os.remove(target)
+                    except OSError:
+                        logging.warning("Could not remove Moeen receipt file: %s", target)
         flash(f"تم حذف حساب {account['full_name']} وبياناته نهائيًا.", "success")
     except Exception:
         conn.rollback()
@@ -4048,12 +4225,30 @@ def super_admin_review_moeen_payment(payment_id, action):
 @app.route('/superadmin/login', methods=['GET', 'POST'])
 def super_admin_login():
     if request.method == 'POST':
-        if request.form.get('password') == MASTER_PASSWORD:
+        ip_address = request_ip_address()
+        if admin_login_is_blocked(ip_address):
+            response = render_template(
+                'login.html',
+                superadmin=True,
+                error='تم حظر محاولات الدخول مؤقتًا. حاول بعد 15 دقيقة.',
+            )
+            return response, 429, {'Retry-After': '900'}
+        supplied_password = request.form.get('password') or ''
+        if secrets.compare_digest(supplied_password, MASTER_PASSWORD):
+            clear_admin_login_failures(ip_address)
+            session.clear()
             session['is_superadmin'] = True
+            session[ADMIN_CSRF_SESSION] = secrets.token_urlsafe(32)
             return redirect(url_for('super_admin'))
+        record_admin_login_failure(ip_address)
+        return render_template(
+            'login.html',
+            superadmin=True,
+            error='بيانات الدخول غير صحيحة.',
+        ), 401
     return render_template('login.html', superadmin=True)
 
-@app.route('/superadmin/approve/<int:user_id>')
+@app.post('/superadmin/approve/<int:user_id>')
 def approve_user(user_id):
     if not session.get('is_superadmin'): return redirect(url_for('login'))
     conn = get_db_connection()
@@ -4063,7 +4258,7 @@ def approve_user(user_id):
     conn.close()
     return redirect(url_for('super_admin'))
 
-@app.route('/superadmin/reject/<int:user_id>')
+@app.post('/superadmin/reject/<int:user_id>')
 def reject_user(user_id):
     if not session.get('is_superadmin'): return redirect(url_for('login'))
     conn = get_db_connection()
@@ -4073,7 +4268,7 @@ def reject_user(user_id):
     conn.close()
     return redirect(url_for('super_admin'))
 
-@app.route('/superadmin/delete_user/<int:user_id>')
+@app.post('/superadmin/delete_user/<int:user_id>')
 def delete_user_permanent(user_id):
     if not session.get('is_superadmin'): return redirect(url_for('login'))
     conn = get_db_connection()
@@ -4102,7 +4297,7 @@ def super_admin_set_subscription():
         
     return redirect(url_for('super_admin'))
 
-@app.route('/superadmin/freeze/<int:user_id>')
+@app.post('/superadmin/freeze/<int:user_id>')
 def super_admin_freeze(user_id):
     if not session.get('is_superadmin'): return redirect(url_for('login'))
     from database import toggle_freeze
@@ -4110,7 +4305,7 @@ def super_admin_freeze(user_id):
     flash("تم تجميد الحساب وتوقف المتجر عن العمل.", "warning")
     return redirect(url_for('super_admin'))
 
-@app.route('/superadmin/unfreeze/<int:user_id>')
+@app.post('/superadmin/unfreeze/<int:user_id>')
 def super_admin_unfreeze(user_id):
     if not session.get('is_superadmin'): return redirect(url_for('login'))
     from database import toggle_freeze

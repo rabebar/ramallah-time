@@ -15,11 +15,9 @@ SHIPLY_HOSTS = {
 
 
 def _fernet():
-    secret = (
-        os.environ.get('SHIPPING_ENCRYPTION_KEY')
-        or os.environ.get('SECRET_KEY')
-        or 'rt_studio_secure_2025_palestine_#99'
-    )
+    secret = os.environ.get('SHIPPING_ENCRYPTION_KEY') or os.environ.get('SECRET_KEY')
+    if not secret:
+        raise RuntimeError('SHIPPING_ENCRYPTION_KEY or SECRET_KEY must be configured')
     key = base64.urlsafe_b64encode(hashlib.sha256(secret.encode('utf-8')).digest())
     return Fernet(key)
 
