@@ -156,6 +156,8 @@ const store={
   }
 };
 let mediaRecorder, chunks=[], audioBlob=null, recognition=null;
+const CAPTURE_LIMIT_SECONDS=120;
+let captureTimer=null,captureDeadline=0,captureMode=null,captureLimitReached=false,captureWarned=false;
 let fieldRecognition=null, activeMic=null;
 let renewalPollTimer=null;
 const fmt=d=>new Intl.DateTimeFormat(uiLocale(),{dateStyle:"medium"}).format(new Date(d));
@@ -343,23 +345,61 @@ $("#addContact").onclick=()=>{
   installVoiceFields($("#simpleForm"));$("#simpleDialog").showModal();
 };
 window.addCallTask=id=>{const c=store.get("contacts").find(x=>x.id===id);if(!c)return;openSimple("task",{title:`الاتصال بـ ${c.name}`,person:c.org||c.role||"",notes:c.phone||c.email||"",itemType:"call"})};
-function openRecorder(){$("#noteText").value="";$("#noteTitle").value="";$("#noteCategory").value="memory";audioBlob=null;updateSmartRoute();$("#recordStatus").textContent="يمكنك التسجيل فقط، أو استخدام الإملاء لتحويل العربية إلى نص.";$("#recordDialog").showModal()}
+function updateCaptureCountdown(seconds=CAPTURE_LIMIT_SECONDS){
+  const safe=Math.max(0,seconds),minutes=Math.floor(safe/60),remaining=safe%60;
+  $("#recordCountdown").textContent=`${String(minutes).padStart(2,"0")}:${String(remaining).padStart(2,"0")}`;
+}
+function stopCaptureTimer(mode,{reset=false}={}){
+  if(mode&&captureMode&&captureMode!==mode)return;
+  if(captureTimer)clearInterval(captureTimer);
+  captureTimer=null;captureDeadline=0;captureMode=null;captureWarned=false;
+  $("#recordTimer").classList.remove("active","warning");
+  if(reset)updateCaptureCountdown();
+}
+function startCaptureTimer(mode){
+  stopCaptureTimer(null,{reset:true});
+  captureMode=mode;captureLimitReached=false;captureWarned=false;
+  captureDeadline=Date.now()+CAPTURE_LIMIT_SECONDS*1000;
+  $("#recordTimer").classList.add("active");
+  const tick=()=>{
+    const remaining=Math.max(0,Math.ceil((captureDeadline-Date.now())/1000));
+    updateCaptureCountdown(remaining);
+    if(remaining<=10&&remaining>0){
+      $("#recordTimer").classList.add("warning");
+      if(!captureWarned){captureWarned=true;$("#recordStatus").textContent="تبقّت 10 ثوانٍ وسيتم الإيقاف تلقائيًا مع الاحتفاظ بما تم تسجيله."}
+    }
+    if(remaining>0)return;
+    captureLimitReached=true;
+    stopCaptureTimer(mode);
+    if(mode==="audio"&&mediaRecorder?.state==="recording")mediaRecorder.stop();
+    if(mode==="dictation"&&recognition)recognition.stop();
+  };
+  tick();captureTimer=setInterval(tick,250);
+}
+function openRecorder(){$("#noteText").value="";$("#noteTitle").value="";$("#noteCategory").value="memory";audioBlob=null;stopCaptureTimer(null,{reset:true});updateSmartRoute();$("#recordStatus").textContent="يمكنك التسجيل فقط، أو استخدام الإملاء لتحويل العربية إلى نص لمدة تصل إلى دقيقتين.";$("#recordDialog").showModal()}
 $("#quickRecord").onclick=openRecorder;
 $("#heroRecord").onclick=openRecorder;
 $("#ahkihaStart").onclick=openRecorder;
 $("#addMemory").onclick=openRecorder;
 $("#recordBtn").onclick=async()=>{
   if(mediaRecorder?.state==="recording"){mediaRecorder.stop();return}
-  try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];mediaRecorder=new MediaRecorder(stream);mediaRecorder.ondataavailable=e=>chunks.push(e.data);mediaRecorder.onstop=()=>{audioBlob=new Blob(chunks,{type:mediaRecorder.mimeType});stream.getTracks().forEach(t=>t.stop());$("#recordBtn").textContent="إعادة التسجيل";$("#pulse").classList.remove("live");$("#recordStatus").textContent=`تم حفظ التسجيل مؤقتًا (${Math.ceil(audioBlob.size/1024)} كيلوبايت).`;};mediaRecorder.start();$("#recordBtn").textContent="إيقاف التسجيل";$("#pulse").classList.add("live");$("#recordStatus").textContent="التسجيل جارٍ…";}catch(e){$("#recordStatus").textContent="تعذر الوصول إلى الميكروفون. اسمح للتطبيق باستخدامه ثم حاول مجددًا."}
+  if(recognition){$("#recordStatus").textContent="أوقف الإملاء المباشر أولًا قبل بدء التسجيل الصوتي.";return}
+  try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];mediaRecorder=new MediaRecorder(stream);mediaRecorder.ondataavailable=e=>chunks.push(e.data);mediaRecorder.onstop=()=>{const timedOut=captureLimitReached;captureLimitReached=false;stopCaptureTimer("audio");audioBlob=new Blob(chunks,{type:mediaRecorder.mimeType});stream.getTracks().forEach(t=>t.stop());$("#recordBtn").textContent="إعادة التسجيل";$("#pulse").classList.remove("live");$("#recordStatus").textContent=timedOut?`اكتملت مدة الدقيقتين وتم إيقاف التسجيل تلقائيًا وحفظه مؤقتًا (${Math.ceil(audioBlob.size/1024)} كيلوبايت).`:`تم حفظ التسجيل مؤقتًا (${Math.ceil(audioBlob.size/1024)} كيلوبايت).`;};mediaRecorder.start();startCaptureTimer("audio");$("#recordBtn").textContent="إيقاف التسجيل";$("#pulse").classList.add("live");$("#recordStatus").textContent="التسجيل جارٍ… الحد الأقصى دقيقتان.";}catch(e){stopCaptureTimer("audio",{reset:true});$("#recordStatus").textContent="تعذر الوصول إلى الميكروفون. اسمح للتطبيق باستخدامه ثم حاول مجددًا."}
 };
 $("#transcribeBtn").onclick=()=>{
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$("#recordStatus").textContent="الإملاء الصوتي غير متاح في هذا المتصفح. لا يزال بإمكانك حفظ التسجيل.";return}
-  if(recognition){recognition.stop();recognition=null;return}
+  if(recognition){recognition.stop();return}
+  if(mediaRecorder?.state==="recording"){$("#recordStatus").textContent="أوقف التسجيل الصوتي أولًا قبل بدء الإملاء المباشر.";return}
   recognition=new SR();recognition.lang=speechLocale();recognition.continuous=true;recognition.interimResults=true;const baseText=$("#noteText").value.trim();
   recognition.onresult=e=>{$("#noteText").value=joinSpeechResult(baseText,e);updateSmartRoute()};
-  recognition.onend=()=>{recognition=null;$("#transcribeBtn").textContent="تحويل الكلام مباشرة";$("#pulse").classList.remove("live");$("#recordStatus").textContent="انتهى الإملاء. راجع النص قبل الحفظ."};
-  recognition.onerror=()=>{$("#recordStatus").textContent="تعذر تشغيل الإملاء. تحقق من الميكروفون والاتصال.";};recognition.start();$("#transcribeBtn").textContent="إيقاف الإملاء";$("#pulse").classList.add("live");$("#recordStatus").textContent="أتحدث الآن… سيظهر النص أثناء كلامك.";
+  recognition.onend=()=>{const timedOut=captureLimitReached;captureLimitReached=false;stopCaptureTimer("dictation");recognition=null;$("#transcribeBtn").textContent="تحويل الكلام مباشرة";$("#pulse").classList.remove("live");$("#recordStatus").textContent=timedOut?"اكتملت مدة الدقيقتين وتوقف الإملاء تلقائيًا. راجع النص ثم احفظه أو شاركه.":"انتهى الإملاء. راجع النص قبل الحفظ."};
+  recognition.onerror=()=>{$("#recordStatus").textContent="تعذر تشغيل الإملاء. تحقق من الميكروفون والاتصال.";};recognition.start();startCaptureTimer("dictation");$("#transcribeBtn").textContent="إيقاف الإملاء";$("#pulse").classList.add("live");$("#recordStatus").textContent="أتحدث الآن… سيظهر النص أثناء كلامك، والحد الأقصى دقيقتان.";
 };
+$("#recordDialog").addEventListener("close",()=>{
+  if(mediaRecorder?.state==="recording")mediaRecorder.stop();
+  if(recognition)recognition.stop();
+  stopCaptureTimer(null,{reset:true});
+});
 $("#shareNoteText").onclick=async()=>{
   const text=$("#noteText").value.trim(),title=$("#noteTitle").value.trim();
   if(!text){$("#recordStatus").textContent="تحدّث أو اكتب النص أولًا، ثم اضغط مشاركة.";return}
@@ -737,7 +777,7 @@ $("#moeenPaymentForm").onsubmit=async e=>{
 };
 if("serviceWorker" in navigator){
   navigator.serviceWorker
-    .register("/moeen-executive/sw.js?v=33",{updateViaCache:"none"})
+    .register("/moeen-executive/sw.js?v=34",{updateViaCache:"none"})
     .then(registration=>registration.update())
     .catch(()=>{});
 }
