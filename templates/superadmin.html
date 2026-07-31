@@ -1202,8 +1202,10 @@
                             <small style="display:block;color:var(--text-muted);">{{ account.email or '' }}</small>
                         </td>
                         <td data-label="الحالة">
-                            {% if account.status == 'active' and account.plan_type == 'trial' %}
-                                <span class="badge badge-pending">تجربة مجانية</span>
+                            {% if account.status == 'active' and account.plan_type == 'trial' and account.subscription_end and account.subscription_end < now %}
+                                <span class="badge badge-pending">انتهت التجربة · بانتظار الدفع</span>
+                            {% elif account.status == 'active' and account.plan_type == 'trial' %}
+                                <span class="badge badge-active">تجربة مجانية نشطة · لا تحتاج موافقة</span>
                             {% elif account.status == 'active' %}
                                 <span class="badge badge-active">نشط</span>
                             {% elif account.status == 'suspended' and account.plan_type == 'pending' %}
@@ -1253,7 +1255,7 @@
                                         <option value="annual">سنوي · 540₪</option>
                                     </select>
                                     <button class="btn-sm btn-approve" type="submit">
-                                        {% if account.plan_type == 'trial' %}تفعيل المدفوع{% else %}تجديد{% endif %}
+                                        {% if account.plan_type == 'trial' %}تحويل إلى مدفوع بعد الدفع{% else %}تجديد{% endif %}
                                     </button>
                                 </form>
                                 <form method="POST" action="/superadmin/moeen/accounts/{{ account.id }}/subscription">

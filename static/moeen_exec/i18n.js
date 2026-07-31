@@ -378,6 +378,7 @@
     "سجّل الدخول ثم حاول مجددًا.": "Sign In and Try Again.",
     "تعذر إرسال الإثبات الآن. حاول مرة أخرى.": "Could Not Submit the Proof. Try Again.",
     "انتهى اشتراكك. بياناتك محفوظة ومقفلة حتى اعتماد التجديد.": "Your Subscription Has Expired. Your Data Remains Safely Stored and Locked Until Renewal Is Approved.",
+    "انتهت الجلسة أو تم إيقاف الحساب. سجّل الدخول مجددًا.": "Your session ended or the account was suspended. Sign in again.",
     "تنتهي تجربتك المجانية": "Your Free Trial Ends",
     "ينتهي اشتراكك": "Your Subscription Ends",
     "· اضغط لعرض خيارات التجديد والدفع.": "· Select to View Renewal and Payment Options.",

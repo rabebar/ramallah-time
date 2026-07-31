@@ -161,7 +161,8 @@ let dictationActive=false,dictationStopRequested=false,dictationRestartTimer=nul
 const CAPTURE_LIMIT_SECONDS=120;
 let captureTimer=null,captureDeadline=0,captureMode=null,captureLimitReached=false,captureWarned=false;
 let fieldRecognition=null, activeMic=null;
-let renewalPollTimer=null;
+let renewalPollTimer=null,subscriptionGuardTimer=null,subscriptionDeadlineTimer=null;
+let currentProfile=null,currentSubscription=null,subscriptionCheckBusy=false;
 const fmt=d=>new Intl.DateTimeFormat(uiLocale(),{dateStyle:"medium"}).format(new Date(d));
 const fmtDateTime=d=>new Intl.DateTimeFormat(uiLocale(),{dateStyle:"medium",timeStyle:"short"}).format(new Date(d));
 const esc=s=>(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -211,10 +212,12 @@ const timeGreeting=hour>=5&&hour<12?"صباح الخير":hour>=12&&hour<17?"ط�
 $("#greeting").textContent=uiT(timeGreeting);
 function applyProfile(profile){
   if(!profile)return;
+  currentProfile=profile;
   const label=[profile.title,profile.name].filter(Boolean).join(" ");
   $("#greeting").textContent=`${uiT(timeGreeting)}${window.MoeenI18n?.language==="en"?", ":"، "}${label}`;
 }
 function applySubscription(subscription){
+  currentSubscription=subscription||null;
   const alert=$("#subscriptionAlert");
   if(!alert||!subscription||subscription.hours_left==null){if(alert)alert.hidden=true;return}
   const hours=Number(subscription.hours_left),isTrial=subscription.plan_type==="trial";
@@ -224,7 +227,47 @@ function applySubscription(subscription){
   alert.hidden=false;
 }
 $("#subscriptionAlert").onclick=()=>setView("subscription");
+function stopSubscriptionGuard(){
+  if(subscriptionGuardTimer)clearInterval(subscriptionGuardTimer);
+  if(subscriptionDeadlineTimer)clearTimeout(subscriptionDeadlineTimer);
+  subscriptionGuardTimer=null;subscriptionDeadlineTimer=null;subscriptionCheckBusy=false;
+}
+function armSubscriptionDeadline(){
+  if(subscriptionDeadlineTimer)clearTimeout(subscriptionDeadlineTimer);
+  const deadline=new Date(currentSubscription?.ends_at||"").getTime();
+  if(!Number.isFinite(deadline))return;
+  const remaining=deadline-Date.now();
+  if(remaining<=0){enterRenewalMode(currentProfile,{...currentSubscription,hours_left:0});return}
+  subscriptionDeadlineTimer=setTimeout(armSubscriptionDeadline,Math.min(remaining+500,24*60*60*1000));
+}
+async function verifySubscriptionAccess(){
+  if(subscriptionCheckBusy||document.body.classList.contains("locked")||document.body.classList.contains("renewal-only"))return;
+  subscriptionCheckBusy=true;
+  try{
+    const status=await api("/api/auth/status");
+    if(!status.authenticated){
+      stopSubscriptionGuard();vaultKey=null;secureState=emptyState();apiCsrf="";
+      document.body.classList.add("locked");$("#loginPane").hidden=false;
+      $("#authMessage").textContent="انتهت الجلسة أو تم إيقاف الحساب. سجّل الدخول مجددًا.";
+      return;
+    }
+    apiCsrf=status.csrf||apiCsrf;applyProfile(status.profile);applySubscription(status.subscription);
+    if(status.renewal_only){enterRenewalMode(status.profile,status.subscription);return}
+    armSubscriptionDeadline();
+  }catch{
+    const deadline=new Date(currentSubscription?.ends_at||"").getTime();
+    if(Number.isFinite(deadline)&&deadline<=Date.now())enterRenewalMode(currentProfile,{...currentSubscription,hours_left:0});
+  }finally{subscriptionCheckBusy=false}
+}
+function startSubscriptionGuard(subscription){
+  stopSubscriptionGuard();currentSubscription=subscription||currentSubscription;
+  armSubscriptionDeadline();
+  if(document.body.classList.contains("renewal-only"))return;
+  subscriptionGuardTimer=setInterval(verifySubscriptionAccess,60000);
+}
 function enterRenewalMode(profile,subscription){
+  if(document.body.classList.contains("renewal-only"))return;
+  stopSubscriptionGuard();
   applyProfile(profile);applySubscription(subscription);
   vaultKey=null;secureState=emptyState();
   document.body.classList.remove("locked");document.body.classList.add("renewal-only");
@@ -796,7 +839,9 @@ async function pushSync(retry=true){
   }finally{syncBusy=false}
 }
 function setSyncStatus(text,state=""){const el=$("#syncStatus");if(!el)return;el.textContent=text;el.className=`sync-status ${state}`}
-window.addEventListener("online",async()=>{await pushSync();await refreshMoeenPushStatus().catch(()=>{})});
+window.addEventListener("online",async()=>{await pushSync();await refreshMoeenPushStatus().catch(()=>{});await verifySubscriptionAccess()});
+window.addEventListener("focus",()=>verifySubscriptionAccess());
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")verifySubscriptionAccess()});
 function deviceId(){let id=localStorage.getItem("moeen_exec_device_id");if(!id){id=crypto.randomUUID();localStorage.setItem("moeen_exec_device_id",id)}return id}
 function deviceName(){const mobile=/iPhone|iPad|Android/i.test(navigator.userAgent);return mobile?"هاتف شخصي":"حاسوب شخصي"}
 async function initAuth(){
@@ -810,6 +855,7 @@ async function initAuth(){
         vaultKey=remembered;
         await loadAndSyncState();
         document.body.classList.remove("locked");
+        startSubscriptionGuard(status.subscription);
         $("#authMessage").textContent="";
         return;
       }
@@ -838,13 +884,14 @@ $("#loginForm").onsubmit=async e=>{
     applyProfile(result.profile);applySubscription(result.subscription);
     await initializeOrUnlockVault(password,result.vault,result.key_scope);
     document.body.classList.remove("locked","renewal-only");
+    startSubscriptionGuard(result.subscription);
     if(result.must_change){setView("security");alert("يرجى تغيير كلمة المرور المؤقتة.")}
   }catch(err){
     const messages={INVALID_CREDENTIALS:"بيانات الدخول غير صحيحة.",DEVICE_NOT_AUTHORIZED:"هذا الجهاز غير مصرح له. استخدم رمز ربط من الجهاز الرئيسي.",INVALID_PAIRING_CODE:"رمز الربط غير صحيح أو انتهت صلاحيته.",TEMPORARILY_BLOCKED:"تم حظر المحاولات مؤقتًا. حاول لاحقًا.",SUBSCRIPTION_INACTIVE:"الحساب موقوف أو ملغي. تواصل مع RT Studio.",OperationError:"تعذر فتح الخزنة. تحقق من كلمة المرور."};
     $("#authMessage").textContent=messages[err.message]||"تعذر تسجيل الدخول أو فتح الخزنة.";
   }
 };
-async function logoutNow(){try{await pushSync();await api("/api/auth/logout",{method:"POST",body:"{}"})}finally{clearInterval(renewalPollTimer);await trustedKeyStore.clear();apiCsrf="";vaultKey=null;secureState=emptyState();document.body.classList.remove("renewal-only");document.body.classList.add("locked");$("#loginPane").hidden=false;$("#loginPassword").value="";$("#pairingCode").value=""}}
+async function logoutNow(){try{await pushSync();await api("/api/auth/logout",{method:"POST",body:"{}"})}finally{clearInterval(renewalPollTimer);stopSubscriptionGuard();await trustedKeyStore.clear();apiCsrf="";vaultKey=null;secureState=emptyState();currentProfile=null;currentSubscription=null;document.body.classList.remove("renewal-only");document.body.classList.add("locked");$("#loginPane").hidden=false;$("#loginPassword").value="";$("#pairingCode").value=""}}
 $("#logoutBtn").onclick=logoutNow;
 $("#quickLogout").onclick=logoutNow;
 $("#passwordForm").onsubmit=async e=>{e.preventDefault();try{const current=$("#currentPassword").value,next=$("#newPassword").value,vault=await wrapCurrentVault(next);await api("/api/security/change-password",{method:"POST",body:JSON.stringify({current_password:current,new_password:next,vault})});$("#currentPassword").value="";$("#newPassword").value="";alert("تم تغيير كلمة المرور وإعادة حماية الخزنة. أُلغي اعتماد الأجهزة الأخرى لحماية الحساب، ويمكن ربطها مجددًا عند الحاجة.")}catch(err){alert(err.message==="INVALID_CURRENT_PASSWORD"?"كلمة المرور الحالية غير صحيحة.":"تعذر تغيير كلمة المرور. يجب أن تكون الجديدة 12 حرفًا على الأقل ومختلفة.")}};
@@ -873,7 +920,7 @@ $("#moeenPaymentForm").onsubmit=async e=>{
 };
 if("serviceWorker" in navigator){
   navigator.serviceWorker
-    .register("/moeen-executive/sw.js?v=34",{updateViaCache:"none"})
+    .register("/moeen-executive/sw.js?v=36",{updateViaCache:"none"})
     .then(registration=>registration.update())
     .catch(()=>{});
 }
