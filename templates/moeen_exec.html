@@ -11,8 +11,8 @@
   <link rel="manifest" href="{{ url_for('moeen_multi.moeen_manifest') }}">
   <link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='moeen_exec/icon-64.png') }}">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='moeen_exec/apple-touch-icon.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/styles.css') }}?v=32">
-  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/premium.css') }}?v=32">
+  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/styles.css') }}?v=33">
+  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/premium.css') }}?v=33">
 </head>
 <body class="locked">
   <section id="authGate" class="auth-gate">
@@ -73,19 +73,19 @@
           <div><small>موجز اليوم</small><h2>بداية واضحة ليومٍ أكثر تركيزًا</h2><p id="dailyLine">ابدأ بإضافة أول ملاحظة أو متابعة.</p><button id="heroRecord" class="hero-record" type="button">تحدث الآن <b>←</b></button></div>
           <div class="hero-mark"><span>م</span><small>ذاكرتك التنفيذية</small></div>
         </div>
-        <section class="trust-strip" aria-label="الخصوصية وربط الأجهزة">
-          <article class="trust-card privacy-assurance">
-            <span class="trust-icon" aria-hidden="true">◇</span>
-            <div><strong>محتواك الشخصي مشفّر</strong><p>الملاحظات والاجتماعات والمتابعات وجهات الاتصال والتسجيلات الصوتية تُشفّر على جهازك قبل المزامنة، ولا يظهر محتواها في لوحة إدارة RT Studio.</p></div>
-          </article>
-          <article class="trust-card device-reminder">
-            <span class="trust-icon" aria-hidden="true">⌘</span>
-            <div><strong>استخدم مُعين على الهاتف والكمبيوتر</strong><p>اربط جهازًا آخر برمز مؤقت من مركز الأمان لتظهر بياناتك المشفّرة على الجهازين.</p><button type="button" data-view-jump="security">طريقة ربط جهاز آخر ←</button></div>
-          </article>
-          <article class="trust-card share-moeen-card">
-            <span class="trust-icon" aria-hidden="true">↗</span>
-            <div><strong>رشّح مُعين لمن يحتاجه</strong><p>شارك رابط إنشاء الحساب ليبدأ زميلك تجربته المجانية ويُنظّم مواعيده وملاحظاته ومتابعاته.</p><button id="shareMoeenApp" type="button">مشاركة رابط التسجيل ←</button><small id="shareMoeenStatus" class="share-moeen-status" aria-live="polite"></small></div>
-          </article>
+        <section class="ahkiha-spotlight" aria-label="خدمة احكيها من مُعين">
+          <div class="ahkiha-visual" aria-hidden="true">
+            <span class="ahkiha-mic">🎙</span>
+            <i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="ahkiha-copy">
+            <small>خدمة من مُعين</small>
+            <h3>اِحكيها</h3>
+            <strong>كلامك يصبح نصًا مرتبًا وجاهزًا.</strong>
+            <p>تحدّث بالعربية، راجع النص، ثم احفظه في مكانه المناسب داخل مُعين أو شاركه مباشرةً مع من تريد.</p>
+            <div class="ahkiha-features"><span>تحويل فوري</span><span>ترتيب تلقائي</span><span>حفظ أو مشاركة</span></div>
+          </div>
+          <button id="ahkihaStart" class="ahkiha-start" type="button"><span>ابدأ «احكيها»</span><b>←</b></button>
         </section>
         <section id="homeAlerts" class="home-alerts" hidden>
           <div class="home-alerts-head"><div><small>يتطلب انتباهك</small><h3 id="homeAlertsTitle">مواعيد وتنبيهات اليوم</h3></div><span id="homeAlertsCount"></span></div>
@@ -162,6 +162,11 @@
         </div>
         <p class="legal-links"><a href="/moeen-executive/privacy" target="_blank">سياسة الخصوصية</a><span>·</span><a href="/moeen-executive/terms" target="_blank">شروط الاستخدام</a></p>
       </section>
+      <footer class="moeen-notice" aria-label="تنويه من مُعين">
+        <strong>تنويه من مُعين</strong>
+        <p>محتواك الشخصي مشفّر قبل المزامنة ولا يظهر في لوحة الإدارة. ويمكنك استخدام مُعين على الهاتف والكمبيوتر بعد ربط الجهاز الآخر من مركز الأمان. وإذا عرفت شخصًا قد يستفيد منه، يمكنك <button id="shareMoeenApp" type="button">مشاركة رابط التسجيل</button>.</p>
+        <small id="shareMoeenStatus" aria-live="polite"></small>
+      </footer>
     </main>
   </div>
 
@@ -183,12 +188,12 @@
           <option value="contact">الاتصالات</option>
         </select>
       </div>
-      <div class="modal-actions"><button value="cancel">إلغاء</button><button type="button" id="saveNote" class="primary">حفظ في الذاكرة</button></div>
+      <div class="modal-actions"><button value="cancel">إلغاء</button><button type="button" id="shareNoteText">مشاركة النص</button><button type="button" id="saveNote" class="primary">حفظ في الذاكرة</button></div>
     </form>
   </dialog>
 
   <dialog id="simpleDialog"><form method="dialog" class="modal" id="simpleForm"></form></dialog>
-  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}?v=32"></script>
-  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}?v=32"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}?v=33"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}?v=33"></script>
 </body>
 </html>

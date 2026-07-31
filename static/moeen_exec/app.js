@@ -346,6 +346,7 @@ window.addCallTask=id=>{const c=store.get("contacts").find(x=>x.id===id);if(!c)r
 function openRecorder(){$("#noteText").value="";$("#noteTitle").value="";$("#noteCategory").value="memory";audioBlob=null;updateSmartRoute();$("#recordStatus").textContent="يمكنك التسجيل فقط، أو استخدام الإملاء لتحويل العربية إلى نص.";$("#recordDialog").showModal()}
 $("#quickRecord").onclick=openRecorder;
 $("#heroRecord").onclick=openRecorder;
+$("#ahkihaStart").onclick=openRecorder;
 $("#addMemory").onclick=openRecorder;
 $("#recordBtn").onclick=async()=>{
   if(mediaRecorder?.state==="recording"){mediaRecorder.stop();return}
@@ -358,6 +359,28 @@ $("#transcribeBtn").onclick=()=>{
   recognition.onresult=e=>{$("#noteText").value=joinSpeechResult(baseText,e);updateSmartRoute()};
   recognition.onend=()=>{recognition=null;$("#transcribeBtn").textContent="تحويل الكلام مباشرة";$("#pulse").classList.remove("live");$("#recordStatus").textContent="انتهى الإملاء. راجع النص قبل الحفظ."};
   recognition.onerror=()=>{$("#recordStatus").textContent="تعذر تشغيل الإملاء. تحقق من الميكروفون والاتصال.";};recognition.start();$("#transcribeBtn").textContent="إيقاف الإملاء";$("#pulse").classList.add("live");$("#recordStatus").textContent="أتحدث الآن… سيظهر النص أثناء كلامك.";
+};
+$("#shareNoteText").onclick=async()=>{
+  const text=$("#noteText").value.trim(),title=$("#noteTitle").value.trim();
+  if(!text){$("#recordStatus").textContent="تحدّث أو اكتب النص أولًا، ثم اضغط مشاركة.";return}
+  const shareText=title?`${title}\n\n${text}`:text;
+  try{
+    if(navigator.share){
+      await navigator.share({title:"اِحكيها من مُعين",text:shareText});
+      $("#recordStatus").textContent="تمت مشاركة النص.";
+      return;
+    }
+    if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(shareText);
+    else{
+      const area=document.createElement("textarea");
+      area.value=shareText;area.style.position="fixed";area.style.opacity="0";
+      document.body.appendChild(area);area.select();document.execCommand("copy");area.remove();
+    }
+    $("#recordStatus").textContent="تم نسخ النص؛ أصبح جاهزًا للصقه في واتساب أو أي تطبيق.";
+  }catch(error){
+    if(error?.name==="AbortError")return;
+    $("#recordStatus").textContent="تعذرت مشاركة النص. حاول مجددًا.";
+  }
 };
 function extractArabicDateTime(value){
   let text=(value||"").toLowerCase().replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
@@ -714,7 +737,7 @@ $("#moeenPaymentForm").onsubmit=async e=>{
 };
 if("serviceWorker" in navigator){
   navigator.serviceWorker
-    .register("/moeen-executive/sw.js?v=32",{updateViaCache:"none"})
+    .register("/moeen-executive/sw.js?v=33",{updateViaCache:"none"})
     .then(registration=>registration.update())
     .catch(()=>{});
 }
