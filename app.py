@@ -1327,6 +1327,7 @@ def send_moeen_broadcast_notification(
             "body": body,
             "tag": tag,
             "url": "/moeen-executive/",
+            "kind": "broadcast",
             "icon": "/static/moeen_exec/icon-192.png",
             "badge": "/static/moeen_exec/icon-64.png",
             "silent": bool(silent),

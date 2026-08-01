@@ -1,5 +1,5 @@
-const CACHE="moeen-executive-v37";
-const ASSETS=["/moeen-executive/","/static/moeen_exec/styles.css?v=37","/static/moeen_exec/premium.css?v=37","/static/moeen_exec/i18n.js?v=37","/static/moeen_exec/app.js?v=37","/moeen-executive/manifest.webmanifest","/static/moeen_exec/icon-64.png","/static/moeen_exec/icon-192.png","/static/moeen_exec/icon-512.png","/static/moeen_exec/apple-touch-icon.png","/static/moeen_exec/fonts/noto-kufi-400.woff2","/static/moeen_exec/fonts/noto-kufi-500.woff2","/static/moeen_exec/fonts/noto-kufi-700.woff2"];
+const CACHE="moeen-executive-v38";
+const ASSETS=["/moeen-executive/","/static/moeen_exec/styles.css?v=38","/static/moeen_exec/premium.css?v=38","/static/moeen_exec/i18n.js?v=38","/static/moeen_exec/app.js?v=38","/moeen-executive/manifest.webmanifest","/static/moeen_exec/icon-64.png","/static/moeen_exec/icon-192.png","/static/moeen_exec/icon-512.png","/static/moeen_exec/apple-touch-icon.png","/static/moeen_exec/fonts/noto-kufi-400.woff2","/static/moeen_exec/fonts/noto-kufi-500.woff2","/static/moeen_exec/fonts/noto-kufi-700.woff2"];
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
   self.skipWaiting();
@@ -23,7 +23,8 @@ self.addEventListener("push",event=>{
   const silent=data.silent===true;
   const options={
     body:data.body,tag:data.tag,icon:data.icon||"/static/moeen_exec/icon-192.png",
-    badge:data.badge||"/static/moeen_exec/icon-64.png",data:{url:data.url},
+    badge:data.badge||"/static/moeen_exec/icon-64.png",
+    data:{url:data.url,title:data.title,body:data.body,kind:data.kind||""},
     renotify:!silent,silent,timestamp:Date.now()
   };
   if(!silent)options.vibrate=[180,90,180];
@@ -31,7 +32,15 @@ self.addEventListener("push",event=>{
 });
 self.addEventListener("notificationclick",event=>{
   event.notification.close();
-  const url=event.notification.data?.url||"/moeen-executive/";
+  const notificationData=event.notification.data||{};
+  let url=notificationData.url||"/moeen-executive/";
+  if(notificationData.kind==="broadcast"){
+    const message=encodeURIComponent(JSON.stringify({
+      title:String(notificationData.title||"مُعين").slice(0,100),
+      body:String(notificationData.body||"").slice(0,500)
+    }));
+    url=`/moeen-executive/#message=${message}`;
+  }
   event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{
     for(const client of list){if("focus" in client){client.navigate(url);return client.focus()}}
     return clients.openWindow(url);
