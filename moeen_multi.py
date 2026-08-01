@@ -231,6 +231,33 @@ def push_config():
     return jsonify(configured=bool(public_key), public_key=public_key)
 
 
+@moeen_bp.post("/api/activity")
+@require_moeen_auth
+def record_activity():
+    """Store a content-free, rate-limited daily activity summary."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            INSERT INTO moeen_activity_daily
+                (account_id, activity_date, first_at, last_at, activity_count)
+            VALUES (
+                %s,
+                (NOW() AT TIME ZONE 'Asia/Hebron')::date,
+                NOW(), NOW(), 1
+            )
+            ON CONFLICT (account_id, activity_date) DO UPDATE
+            SET last_at = NOW(),
+                activity_count = moeen_activity_daily.activity_count + 1
+            WHERE moeen_activity_daily.last_at <= NOW() - INTERVAL '5 minutes'
+        """, (session[SESSION_ACCOUNT],))
+        conn.commit()
+        return jsonify(ok=True)
+    finally:
+        cursor.close()
+        conn.close()
+
+
 @moeen_bp.get("/api/push/status")
 @require_moeen_auth
 def push_status():

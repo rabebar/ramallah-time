@@ -1079,6 +1079,18 @@ try:
     _mcur.execute("ALTER TABLE moeen_reminders ADD COLUMN IF NOT EXISTS last_error TEXT")
     _mcur.execute("ALTER TABLE moeen_accounts ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMP")
     _mcur.execute("ALTER TABLE moeen_accounts ADD COLUMN IF NOT EXISTS terms_version TEXT")
+    _mcur.execute("""
+        CREATE TABLE IF NOT EXISTS moeen_activity_daily (
+            account_id INTEGER NOT NULL REFERENCES moeen_accounts(id) ON DELETE CASCADE,
+            activity_date DATE NOT NULL,
+            first_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            last_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            activity_count INTEGER NOT NULL DEFAULT 1,
+            PRIMARY KEY(account_id, activity_date)
+        )
+    """)
+    _mcur.execute("""CREATE INDEX IF NOT EXISTS ix_moeen_activity_last
+                     ON moeen_activity_daily(account_id, last_at DESC)""")
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS admin_note TEXT")
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP")
     _mcur.execute("ALTER TABLE subscription_payments ADD COLUMN IF NOT EXISTS reviewed_by TEXT")
@@ -4256,10 +4268,21 @@ def super_admin():
     cursor.execute("""
         SELECT ma.*,
                COUNT(md.id) FILTER (WHERE md.authorized = TRUE) AS device_count,
-               MAX(md.last_seen) AS last_device_activity
+               MAX(md.last_seen) AS last_device_activity,
+               activity.last_activity_at,
+               COALESCE(activity.active_days_7, 0) AS active_days_7,
+               COALESCE(activity.active_days_30, 0) AS active_days_30
         FROM moeen_accounts ma
         LEFT JOIN moeen_devices md ON md.account_id = ma.id
-        GROUP BY ma.id
+        LEFT JOIN (
+            SELECT account_id,
+                   MAX(last_at) AS last_activity_at,
+                   COUNT(*) FILTER (WHERE activity_date >= CURRENT_DATE - 6) AS active_days_7,
+                   COUNT(*) FILTER (WHERE activity_date >= CURRENT_DATE - 29) AS active_days_30
+            FROM moeen_activity_daily
+            GROUP BY account_id
+        ) activity ON activity.account_id = ma.id
+        GROUP BY ma.id, activity.last_activity_at, activity.active_days_7, activity.active_days_30
         ORDER BY ma.created_at DESC
     """)
     moeen_accounts = cursor.fetchall()

@@ -436,6 +436,16 @@ def init_db():
                       ON moeen_login_attempts(account_id, created_at DESC)""")
     cursor.execute("""CREATE INDEX IF NOT EXISTS ix_moeen_accounts_subscription
                       ON moeen_accounts(status, subscription_end)""")
+    cursor.execute('''CREATE TABLE IF NOT EXISTS moeen_activity_daily (
+            account_id INTEGER NOT NULL REFERENCES moeen_accounts(id) ON DELETE CASCADE,
+            activity_date DATE NOT NULL,
+            first_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            last_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            activity_count INTEGER NOT NULL DEFAULT 1,
+            PRIMARY KEY(account_id, activity_date)
+        )''')
+    cursor.execute("""CREATE INDEX IF NOT EXISTS ix_moeen_activity_last
+                      ON moeen_activity_daily(account_id, last_at DESC)""")
     cursor.execute('''CREATE TABLE IF NOT EXISTS superadmin_push_subscriptions (
             id SERIAL PRIMARY KEY,
             endpoint TEXT NOT NULL UNIQUE,

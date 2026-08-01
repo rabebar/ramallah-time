@@ -1185,7 +1185,7 @@
                         <th>الحالة</th>
                         <th>انتهاء الاشتراك</th>
                         <th>الأجهزة</th>
-                        <th>آخر استخدام</th>
+                        <th>آخر تفاعل فعلي</th>
                         <th>النشاط</th>
                         <th>الإجراءات</th>
                     </tr>
@@ -1224,24 +1224,25 @@
                             {% else %}—{% endif %}
                         </td>
                         <td data-label="الأجهزة">{{ account.device_count or 0 }}</td>
-                        <td data-label="آخر استخدام — توقيت فلسطين">
-                            {% if account.last_device_activity %}
-                                <strong>{{ account.last_device_activity|palestine_time }}</strong>
+                        <td data-label="آخر تفاعل فعلي — توقيت فلسطين">
+                            {% if account.last_activity_at %}
+                                <strong>{{ account.last_activity_at|palestine_time }}</strong>
+                                <small style="display:block;color:var(--text-muted);">{{ account.active_days_7 }} أيام نشطة من آخر 7 · {{ account.active_days_30 }} من آخر 30</small>
                             {% else %}
-                                <span style="color:var(--text-muted)">لم يستخدم بعد</span>
+                                <span style="color:var(--text-muted)">لا يوجد تفاعل فعلي بعد</span>
                             {% endif %}
                         </td>
                         <td data-label="النشاط">
-                            {% if not account.last_device_activity %}
+                            {% if not account.last_activity_at %}
                                 <span class="usage-pill usage-never"><i class="usage-dot"></i> لم يستخدم</span>
-                            {% elif (now - account.last_device_activity).total_seconds() <= 900 %}
+                            {% elif (now - account.last_activity_at).total_seconds() <= 900 %}
                                 <span class="usage-pill usage-live"><i class="usage-dot"></i> نشط الآن</span>
-                            {% elif (now - account.last_device_activity).total_seconds() <= 86400 %}
+                            {% elif (now - account.last_activity_at).total_seconds() <= 86400 %}
                                 <span class="usage-pill usage-recent"><i class="usage-dot"></i> نشط اليوم</span>
-                            {% elif (now - account.last_device_activity).days <= 7 %}
+                            {% elif (now - account.last_activity_at).days <= 7 %}
                                 <span class="usage-pill usage-idle"><i class="usage-dot"></i> نشط هذا الأسبوع</span>
                             {% else %}
-                                <span class="usage-pill usage-never"><i class="usage-dot"></i> غير نشط {{ (now - account.last_device_activity).days }} يوم</span>
+                                <span class="usage-pill usage-never"><i class="usage-dot"></i> غير نشط {{ (now - account.last_activity_at).days }} يوم</span>
                             {% endif %}
                         </td>
                         <td class="moeen-account-actions" data-label="الإجراءات">

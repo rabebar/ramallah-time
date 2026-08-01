@@ -163,6 +163,8 @@ let captureTimer=null,captureDeadline=0,captureMode=null,captureLimitReached=fal
 let fieldRecognition=null, activeMic=null;
 let renewalPollTimer=null,subscriptionGuardTimer=null,subscriptionDeadlineTimer=null;
 let currentProfile=null,currentSubscription=null,subscriptionCheckBusy=false;
+let activityLastSent=0,activitySendBusy=false;
+const ACTIVITY_INTERVAL=5*60*1000;
 const fmt=d=>new Intl.DateTimeFormat(uiLocale(),{dateStyle:"medium"}).format(new Date(d));
 const fmtDateTime=d=>new Intl.DateTimeFormat(uiLocale(),{dateStyle:"medium",timeStyle:"short"}).format(new Date(d));
 const esc=s=>(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -732,6 +734,18 @@ async function api(path,options={}){
   if(data.csrf)apiCsrf=data.csrf;
   return data;
 }
+async function reportAnonymousActivity(force=false){
+  if(activitySendBusy||!apiCsrf||!vaultKey||document.body.classList.contains("locked")||document.body.classList.contains("renewal-only"))return;
+  const now=Date.now();
+  if(!force&&now-activityLastSent<ACTIVITY_INTERVAL)return;
+  activitySendBusy=true;activityLastSent=now;
+  try{await api("/api/activity",{method:"POST",body:"{}"})}
+  catch{activityLastSent=0}
+  finally{activitySendBusy=false}
+}
+["pointerdown","touchstart","keydown"].forEach(eventName=>{
+  document.addEventListener(eventName,()=>reportAnonymousActivity(),{passive:true,capture:true});
+});
 const enc=new TextEncoder(),dec=new TextDecoder();
 function toB64(bytes){let s="";for(let i=0;i<bytes.length;i+=0x8000)s+=String.fromCharCode(...bytes.subarray(i,i+0x8000));return btoa(s)}
 function fromB64(value){const s=atob(value),out=new Uint8Array(s.length);for(let i=0;i<s.length;i++)out[i]=s.charCodeAt(i);return out}
@@ -856,6 +870,7 @@ async function initAuth(){
         await loadAndSyncState();
         document.body.classList.remove("locked");
         startSubscriptionGuard(status.subscription);
+        reportAnonymousActivity(true);
         $("#authMessage").textContent="";
         return;
       }
@@ -885,6 +900,7 @@ $("#loginForm").onsubmit=async e=>{
     await initializeOrUnlockVault(password,result.vault,result.key_scope);
     document.body.classList.remove("locked","renewal-only");
     startSubscriptionGuard(result.subscription);
+    reportAnonymousActivity(true);
     if(result.must_change){setView("security");alert("يرجى تغيير كلمة المرور المؤقتة.")}
   }catch(err){
     const messages={INVALID_CREDENTIALS:"بيانات الدخول غير صحيحة.",DEVICE_NOT_AUTHORIZED:"هذا الجهاز غير مصرح له. استخدم رمز ربط من الجهاز الرئيسي.",INVALID_PAIRING_CODE:"رمز الربط غير صحيح أو انتهت صلاحيته.",TEMPORARILY_BLOCKED:"تم حظر المحاولات مؤقتًا. حاول لاحقًا.",SUBSCRIPTION_INACTIVE:"الحساب موقوف أو ملغي. تواصل مع RT Studio.",OperationError:"تعذر فتح الخزنة. تحقق من كلمة المرور."};
