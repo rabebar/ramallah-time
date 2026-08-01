@@ -1,5 +1,5 @@
-const CACHE="moeen-executive-v42";
-const ASSETS=["/moeen-executive/","/static/moeen_exec/styles.css?v=42","/static/moeen_exec/premium.css?v=42","/static/moeen_exec/i18n.js?v=42","/static/moeen_exec/app.js?v=42","/moeen-executive/manifest.webmanifest","/static/moeen_exec/icon-64.png","/static/moeen_exec/icon-192.png","/static/moeen_exec/icon-512.png","/static/moeen_exec/apple-touch-icon.png","/static/moeen_exec/fonts/noto-kufi-400.woff2","/static/moeen_exec/fonts/noto-kufi-500.woff2","/static/moeen_exec/fonts/noto-kufi-700.woff2"];
+const CACHE="moeen-executive-v43";
+const ASSETS=["/moeen-executive/","/static/moeen_exec/styles.css?v=43","/static/moeen_exec/premium.css?v=43","/static/moeen_exec/i18n.js?v=43","/static/moeen_exec/ui-feedback.js?v=43","/static/moeen_exec/app.js?v=43","/moeen-executive/manifest.webmanifest","/static/moeen_exec/icon-64.png","/static/moeen_exec/icon-192.png","/static/moeen_exec/icon-512.png","/static/moeen_exec/apple-touch-icon.png","/static/moeen_exec/fonts/noto-kufi-400.woff2","/static/moeen_exec/fonts/noto-kufi-500.woff2","/static/moeen_exec/fonts/noto-kufi-700.woff2"];
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
   self.skipWaiting();
