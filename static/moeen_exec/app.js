@@ -948,7 +948,7 @@ $("#moeenPaymentForm").onsubmit=async e=>{
     const response=await fetch("/moeen-executive/subscription-payment",{method:"POST",headers:{"X-CSRF-Token":apiCsrf},body:data});
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"FAILED");
-    form.reset();document.querySelector('input[name="moeenPlan"][value="monthly"]').checked=true;document.querySelector('input[name="moeenPaymentMethod"][value="reflect"]').checked=true;
+    form.reset();document.querySelector('input[name="moeenPlan"][value="quarterly"]').checked=true;document.querySelector('input[name="moeenPaymentMethod"][value="reflect"]').checked=true;
     message.className="payment-message success";message.textContent=`تم إرسال الإثبات بنجاح. رقم المتابعة: ${result.invoice_code}`;
   }catch(err){
     const labels={PROOF_REQUIRED:"أدخل رقم العملية أو ارفع الإيصال.",INVALID_RECEIPT:"صيغة الإيصال غير مدعومة.",AUTH_REQUIRED:"سجّل الدخول ثم حاول مجددًا."};
@@ -957,7 +957,7 @@ $("#moeenPaymentForm").onsubmit=async e=>{
 };
 if("serviceWorker" in navigator){
   navigator.serviceWorker
-    .register("/moeen-executive/sw.js?v=41",{updateViaCache:"none"})
+    .register("/moeen-executive/sw.js?v=42",{updateViaCache:"none"})
     .then(registration=>registration.update())
     .catch(()=>{});
 }

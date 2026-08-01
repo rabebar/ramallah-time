@@ -776,10 +776,14 @@ PAYMENT_METHOD_LABELS = {
 }
 
 MOEEN_SUBSCRIPTION_PLANS = {
-    'monthly': {'label': 'اشتراك شهري', 'days': 30, 'amount': Decimal('60.00'), 'currency': '₪'},
-    'quarterly': {'label': 'اشتراك 3 أشهر', 'days': 90, 'amount': Decimal('160.00'), 'currency': '₪'},
-    'annual': {'label': 'اشتراك سنوي', 'days': 365, 'amount': Decimal('540.00'), 'currency': '₪'},
+    # Keep the legacy monthly plan readable for existing records, but do not
+    # offer it for new purchases. The minimum new subscription is 3 months.
+    'monthly': {'label': 'اشتراك شهري قديم', 'days': 30, 'amount': Decimal('15.00'), 'currency': '₪'},
+    'quarterly': {'label': 'اشتراك 3 أشهر', 'days': 90, 'amount': Decimal('45.00'), 'currency': '₪'},
+    'biannual': {'label': 'اشتراك 6 أشهر', 'days': 180, 'amount': Decimal('90.00'), 'currency': '₪'},
+    'annual': {'label': 'اشتراك سنوي', 'days': 365, 'amount': Decimal('180.00'), 'currency': '₪'},
 }
+MOEEN_PURCHASABLE_PLAN_TYPES = {'quarterly', 'biannual', 'annual'}
 MOEEN_TERMS_VERSION = "2026-07-28"
 
 PAYMENT_SETTING_KEYS = [
@@ -2684,9 +2688,9 @@ def moeen_subscription_payment():
     if request.headers.get("X-CSRF-Token") != session.get("moeen_csrf"):
         return jsonify(error="INVALID_CSRF"), 403
 
-    plan_type = (request.form.get('plan_type') or 'monthly').strip()
+    plan_type = (request.form.get('plan_type') or 'quarterly').strip()
     payment_method = (request.form.get('payment_method') or 'reflect').strip()
-    if plan_type not in MOEEN_SUBSCRIPTION_PLANS or payment_method not in {'reflect', 'iban'}:
+    if plan_type not in MOEEN_PURCHASABLE_PLAN_TYPES or payment_method not in {'reflect', 'iban'}:
         return jsonify(error="INVALID_PAYMENT_DATA"), 400
 
     transaction_ref = (request.form.get('transaction_ref') or '').strip()[:160]
@@ -4489,16 +4493,14 @@ def super_admin_create_moeen_account():
     phone = (request.form.get('phone') or '').strip()
     email = (request.form.get('email') or '').strip()
     temporary_password = request.form.get('temporary_password') or ''
-    plan_type = (request.form.get('plan_type') or 'monthly').strip()
-    try:
-        months = max(1, min(int(request.form.get('months') or 1), 36))
-    except ValueError:
-        months = 1
+    plan_type = (request.form.get('plan_type') or 'quarterly').strip()
+    if plan_type not in MOEEN_PURCHASABLE_PLAN_TYPES:
+        plan_type = 'quarterly'
     if not full_name or not phone or len(temporary_password) < 12:
         flash("الاسم والهاتف وكلمة مرور مؤقتة من 12 حرفًا مطلوبة.", "error")
         return redirect(url_for('super_admin') + '#moeen-executive')
     start = datetime.utcnow()
-    end = start + timedelta(days=30 * months)
+    end = start + timedelta(days=MOEEN_SUBSCRIPTION_PLANS[plan_type]['days'])
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
@@ -4532,8 +4534,8 @@ def super_admin_update_moeen_subscription(account_id):
     cursor = conn.cursor()
     try:
         if action == 'renew':
-            plan_type = (request.form.get('plan_type') or 'monthly').strip()
-            plan_days = {'monthly': 30, 'quarterly': 90, 'annual': 365}
+            plan_type = (request.form.get('plan_type') or 'quarterly').strip()
+            plan_days = {'quarterly': 90, 'biannual': 180, 'annual': 365}
             if plan_type not in plan_days:
                 raise ValueError("unknown plan")
             cursor.execute("""

@@ -11,8 +11,8 @@
   <link rel="manifest" href="{{ url_for('moeen_multi.moeen_manifest') }}">
   <link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='moeen_exec/icon-64.png') }}">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='moeen_exec/apple-touch-icon.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/styles.css') }}?v=40">
-  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/premium.css') }}?v=41">
+  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/styles.css') }}?v=42">
+  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/premium.css') }}?v=42">
 </head>
 <body class="locked">
   <section id="authGate" class="auth-gate">
@@ -131,9 +131,9 @@
           <span>يتم تفعيل الاشتراك بعد مراجعة إثبات الدفع من RT Studio.</span>
         </div>
         <div class="moeen-plans">
-          <label><input type="radio" name="moeenPlan" value="monthly" checked><b>شهري</b><strong>60₪</strong><small>30 يومًا</small></label>
-          <label><input type="radio" name="moeenPlan" value="quarterly"><b>3 أشهر</b><strong>160₪</strong><small>90 يومًا</small></label>
-          <label><input type="radio" name="moeenPlan" value="annual"><b>سنوي</b><strong>540₪</strong><small>365 يومًا</small></label>
+          <label><input type="radio" name="moeenPlan" value="quarterly" checked><b>3 أشهر</b><strong>45₪</strong><small>90 يومًا</small></label>
+          <label><input type="radio" name="moeenPlan" value="biannual"><b>6 أشهر</b><strong>90₪</strong><small>180 يومًا</small></label>
+          <label><input type="radio" name="moeenPlan" value="annual"><b>سنة</b><strong>180₪</strong><small>365 يومًا</small></label>
         </div>
         <div class="payment-method-grid">
           <label class="payment-option"><input type="radio" name="moeenPaymentMethod" value="reflect" checked><div><b>محفظة Reflect</b><span>الاسم: {{ payment_settings.wallet_name or payment_settings.account_name }}</span><strong>{{ payment_settings.wallet_number or 'سيتم توفير رقم المحفظة قريبًا' }}</strong></div></label>
@@ -205,7 +205,7 @@
       <div class="modal-actions"><button type="submit" class="primary" id="notificationDialogClose">تمت القراءة</button></div>
     </form>
   </dialog>
-  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}?v=40"></script>
-  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}?v=41"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}?v=42"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}?v=42"></script>
 </body>
 </html>
