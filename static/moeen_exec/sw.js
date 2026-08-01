@@ -1,5 +1,5 @@
-const CACHE="moeen-executive-v38";
-const ASSETS=["/moeen-executive/","/static/moeen_exec/styles.css?v=38","/static/moeen_exec/premium.css?v=38","/static/moeen_exec/i18n.js?v=38","/static/moeen_exec/app.js?v=38","/moeen-executive/manifest.webmanifest","/static/moeen_exec/icon-64.png","/static/moeen_exec/icon-192.png","/static/moeen_exec/icon-512.png","/static/moeen_exec/apple-touch-icon.png","/static/moeen_exec/fonts/noto-kufi-400.woff2","/static/moeen_exec/fonts/noto-kufi-500.woff2","/static/moeen_exec/fonts/noto-kufi-700.woff2"];
+const CACHE="moeen-executive-v39";
+const ASSETS=["/moeen-executive/","/static/moeen_exec/styles.css?v=39","/static/moeen_exec/premium.css?v=39","/static/moeen_exec/i18n.js?v=39","/static/moeen_exec/app.js?v=39","/moeen-executive/manifest.webmanifest","/static/moeen_exec/icon-64.png","/static/moeen_exec/icon-192.png","/static/moeen_exec/icon-512.png","/static/moeen_exec/apple-touch-icon.png","/static/moeen_exec/fonts/noto-kufi-400.woff2","/static/moeen_exec/fonts/noto-kufi-500.woff2","/static/moeen_exec/fonts/noto-kufi-700.woff2"];
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
   self.skipWaiting();
@@ -34,15 +34,24 @@ self.addEventListener("notificationclick",event=>{
   event.notification.close();
   const notificationData=event.notification.data||{};
   let url=notificationData.url||"/moeen-executive/";
-  if(notificationData.kind==="broadcast"){
-    const message=encodeURIComponent(JSON.stringify({
+  const isBroadcast=notificationData.kind==="broadcast"||String(event.notification.tag||"").startsWith("moeen-message-");
+  const messageData=isBroadcast?{
       title:String(notificationData.title||"مُعين").slice(0,100),
       body:String(notificationData.body||"").slice(0,500)
-    }));
-    url=`/moeen-executive/#message=${message}`;
+    }:null;
+  if(messageData){
+    url=`/moeen-executive/#message=${encodeURIComponent(JSON.stringify(messageData))}`;
   }
-  event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{
-    for(const client of list){if("focus" in client){client.navigate(url);return client.focus()}}
-    return clients.openWindow(url);
-  }));
+  event.waitUntil((async()=>{
+    const absoluteUrl=new URL(url,self.location.origin).href;
+    const list=await clients.matchAll({type:"window",includeUncontrolled:true});
+    for(const client of list){
+      if(!("focus" in client))continue;
+      let target=client;
+      try{if("navigate" in client)target=await client.navigate(absoluteUrl)||client}catch{}
+      if(messageData&&"postMessage" in target)target.postMessage({type:"MOEEN_OPEN_MESSAGE",message:messageData});
+      return target.focus();
+    }
+    return clients.openWindow(absoluteUrl);
+  })());
 });

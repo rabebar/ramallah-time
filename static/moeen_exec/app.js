@@ -168,19 +168,26 @@ const ACTIVITY_INTERVAL=5*60*1000;
 const fmt=d=>new Intl.DateTimeFormat(uiLocale(),{dateStyle:"medium"}).format(new Date(d));
 const fmtDateTime=d=>new Intl.DateTimeFormat(uiLocale(),{dateStyle:"medium",timeStyle:"short"}).format(new Date(d));
 const esc=s=>(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
-function openNotificationFromHash(){
-  if(!location.hash.startsWith("#message="))return;
+function showNotificationMessage(message){
   try{
-    const message=JSON.parse(decodeURIComponent(location.hash.slice(9)));
     $("#notificationDialogLabel").textContent=uiLocale().startsWith("en")?"Message from Moeen":"رسالة من مُعين";
     $("#notificationDialogTitle").textContent=String(message.title||"مُعين").slice(0,100);
     $("#notificationDialogBody").textContent=String(message.body||"").slice(0,500);
     $("#notificationDialogClose").textContent=uiLocale().startsWith("en")?"Read":"تمت القراءة";
-    $("#notificationDialog").showModal();
+    if(!$("#notificationDialog").open)$("#notificationDialog").showModal();
   }catch{}
+}
+function openNotificationFromHash(){
+  if(!location.hash.startsWith("#message="))return;
+  try{showNotificationMessage(JSON.parse(decodeURIComponent(location.hash.slice(9))))}catch{}
   history.replaceState(null,"",`${location.pathname}${location.search}`);
 }
 window.addEventListener("hashchange",openNotificationFromHash);
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.addEventListener("message",event=>{
+    if(event.data?.type==="MOEEN_OPEN_MESSAGE"&&event.data.message)showNotificationMessage(event.data.message);
+  });
+}
 openNotificationFromHash();
 function eventVisualState(value,done=false){
   if(done||!value)return{className:"",badge:""};
@@ -950,7 +957,7 @@ $("#moeenPaymentForm").onsubmit=async e=>{
 };
 if("serviceWorker" in navigator){
   navigator.serviceWorker
-    .register("/moeen-executive/sw.js?v=38",{updateViaCache:"none"})
+    .register("/moeen-executive/sw.js?v=39",{updateViaCache:"none"})
     .then(registration=>registration.update())
     .catch(()=>{});
 }
