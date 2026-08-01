@@ -133,10 +133,10 @@ function refreshInstallButtons(){const installed=isInstalled();installButtons().
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;refreshInstallButtons()});
 window.addEventListener("appinstalled",()=>{installPrompt=null;refreshInstallButtons()});
 async function installMoeen(){
-  if(isInstalled()){alert("مُعين مثبت بالفعل على هذا الجهاز.");return}
+  if(isInstalled()){moeenToast("مُعين مثبت بالفعل على هذا الجهاز.");return}
   if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;refreshInstallButtons();return}
   const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent);
-  alert(ios
+  moeenToast(ios
     ?"على iPhone: اضغط زر المشاركة في Safari، ثم اختر «إضافة إلى الشاشة الرئيسية»، وبعدها اضغط «إضافة»."
     :"من قائمة المتصفح اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».");
 }
@@ -165,6 +165,7 @@ let renewalPollTimer=null,subscriptionGuardTimer=null,subscriptionDeadlineTimer=
 let currentProfile=null,currentSubscription=null,subscriptionCheckBusy=false;
 let activityLastSent=0,activitySendBusy=false;
 const ACTIVITY_INTERVAL=5*60*1000;
+const TOMBSTONE_RETENTION_MS=365*24*60*60*1000;
 const fmt=d=>new Intl.DateTimeFormat(uiLocale(),{dateStyle:"medium"}).format(new Date(d));
 const fmtDateTime=d=>new Intl.DateTimeFormat(uiLocale(),{dateStyle:"medium",timeStyle:"short"}).format(new Date(d));
 const esc=s=>(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -199,8 +200,10 @@ function eventVisualState(value,done=false){
   return{className:"",badge:""};
 }
 const eventBadge=state=>state.badge?`<span class="event-status">${state.badge}</span>`:"";
-function setView(id){$$(".view,.nav").forEach(x=>x.classList.remove("active"));$("#"+id).classList.add("active");$(`.nav[data-view="${id}"]`).classList.add("active");render();installVoiceFields();}
+function setView(id){$$(".view,.nav").forEach(x=>x.classList.remove("active"));$("#"+id).classList.add("active");const direct=$(`.nav[data-view="${id}"]`);if(direct)direct.classList.add("active");if(["contacts","subscription","security"].includes(id))$("#moreNav")?.classList.add("active");if($("#moreDialog")?.open)$("#moreDialog").close();render();installVoiceFields();}
 $$(".nav").forEach(b=>b.onclick=()=>setView(b.dataset.view));$$("[data-view-jump]").forEach(b=>b.onclick=()=>setView(b.dataset.viewJump));
+$("#moreNav").onclick=()=>$("#moreDialog").showModal();
+$$("[data-more-view]").forEach(button=>button.onclick=()=>setView(button.dataset.moreView));
 async function shareMoeenRegistration(){
   const english=uiLocale().startsWith("en");
   const url=new URL("/moeen-executive/register",window.location.origin).href;
@@ -391,7 +394,7 @@ window.shareWhatsApp=async(kind,id)=>{
   }
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank","noopener");
 };
-window.removeItem=(k,id)=>{if(confirm("حذف هذا العنصر؟")){store.set(k,store.get(k).filter(x=>x.id!==id));if(k==="tasks"||k==="meetings")syncReminder(id,k==="tasks"?"task":"meeting",null,"none");render()}};
+window.removeItem=async(k,id)=>{if(confirm("حذف هذا العنصر؟")){const item=store.get(k).find(x=>x.id===id);store.set(k,store.get(k).filter(x=>x.id!==id));if(item?.audioId)await audioDb.remove(item.audioId);if(k==="tasks"||k==="meetings")syncReminder(id,k==="tasks"?"task":"meeting",null,"none");render()}};
 window.removeMemory=async id=>{if(confirm("حذف الملاحظة وتسجيلها الصوتي؟")){store.set("memories",store.get("memories").filter(x=>x.id!==id));await audioDb.remove(id);render()}};
 
 function openSimple(kind,prefill={}){
@@ -854,6 +857,18 @@ function scheduleSecureSave(){
   clearTimeout(syncTimer);saveEncryptedCache();setSyncStatus(navigator.onLine?"بانتظار المزامنة":"محفوظ دون اتصال",navigator.onLine?"":"offline");
   syncTimer=setTimeout(()=>pushSync(),650);
 }
+function pruneAcknowledgedTombstones(){
+  const cutoff=Date.now()-TOMBSTONE_RETENTION_MS;
+  let changed=false;
+  dataKinds.forEach(kind=>{
+    const deleted=secureState._deleted?.[kind]||{};
+    Object.entries(deleted).forEach(([id,stamp])=>{
+      const time=Date.parse(stamp);
+      if(Number.isFinite(time)&&time<cutoff){delete deleted[id];changed=true}
+    });
+  });
+  return changed;
+}
 async function pushSync(retry=true){
   if(!vaultKey||syncBusy)return;
   if(!navigator.onLine){setSyncStatus("محفوظ دون اتصال","offline");return}
@@ -861,7 +876,13 @@ async function pushSync(retry=true){
   try{
     const payload=await encryptObject(secureState);
     const result=await api("/api/sync/state",{method:"PUT",body:JSON.stringify({...payload,base_version:syncVersion})});
-    syncVersion=result.version;await saveEncryptedCache();
+    syncVersion=result.version;
+    if(pruneAcknowledgedTombstones()){
+      const compacted=await encryptObject(secureState);
+      const compactResult=await api("/api/sync/state",{method:"PUT",body:JSON.stringify({...compacted,base_version:syncVersion})});
+      syncVersion=compactResult.version;
+    }
+    await saveEncryptedCache();
     dataKinds.forEach(k=>localStorage.removeItem("moeen_exec_"+k));
     setSyncStatus("تمت المزامنة","synced");
     await reconcileReminders().catch(()=>{});
@@ -922,7 +943,7 @@ $("#loginForm").onsubmit=async e=>{
     document.body.classList.remove("locked","renewal-only");
     startSubscriptionGuard(result.subscription);
     reportAnonymousActivity(true);
-    if(result.must_change){setView("security");alert("يرجى تغيير كلمة المرور المؤقتة.")}
+    if(result.must_change){setView("security");moeenToast("يرجى تغيير كلمة المرور المؤقتة.","error")}
   }catch(err){
     const messages={INVALID_CREDENTIALS:"بيانات الدخول غير صحيحة.",DEVICE_NOT_AUTHORIZED:"هذا الجهاز غير مصرح له. استخدم رمز ربط من الجهاز الرئيسي.",INVALID_PAIRING_CODE:"رمز الربط غير صحيح أو انتهت صلاحيته.",TEMPORARILY_BLOCKED:"تم حظر المحاولات مؤقتًا. حاول لاحقًا.",SUBSCRIPTION_INACTIVE:"الحساب موقوف أو ملغي. تواصل مع RT Studio.",OperationError:"تعذر فتح الخزنة. تحقق من كلمة المرور."};
     $("#authMessage").textContent=messages[err.message]||"تعذر تسجيل الدخول أو فتح الخزنة.";
@@ -931,8 +952,8 @@ $("#loginForm").onsubmit=async e=>{
 async function logoutNow(){try{await pushSync();await api("/api/auth/logout",{method:"POST",body:"{}"})}finally{clearInterval(renewalPollTimer);stopSubscriptionGuard();await trustedKeyStore.clear();apiCsrf="";vaultKey=null;secureState=emptyState();currentProfile=null;currentSubscription=null;document.body.classList.remove("renewal-only");document.body.classList.add("locked");$("#loginPane").hidden=false;$("#loginPassword").value="";$("#pairingCode").value=""}}
 $("#logoutBtn").onclick=logoutNow;
 $("#quickLogout").onclick=logoutNow;
-$("#passwordForm").onsubmit=async e=>{e.preventDefault();try{const current=$("#currentPassword").value,next=$("#newPassword").value,vault=await wrapCurrentVault(next);await api("/api/security/change-password",{method:"POST",body:JSON.stringify({current_password:current,new_password:next,vault})});$("#currentPassword").value="";$("#newPassword").value="";alert("تم تغيير كلمة المرور وإعادة حماية الخزنة. أُلغي اعتماد الأجهزة الأخرى لحماية الحساب، ويمكن ربطها مجددًا عند الحاجة.")}catch(err){alert(err.message==="INVALID_CURRENT_PASSWORD"?"كلمة المرور الحالية غير صحيحة.":"تعذر تغيير كلمة المرور. يجب أن تكون الجديدة 12 حرفًا على الأقل ومختلفة.")}};
-$("#pairingBtn").onclick=async()=>{try{const r=await api("/api/security/pairing-code",{method:"POST",body:"{}"});$("#pairingResult").textContent=r.code;$("#pairingResult").title="صالح لخمس دقائق"}catch{alert("تعذر إنشاء رمز الربط.")}};
+$("#passwordForm").onsubmit=async e=>{e.preventDefault();try{const current=$("#currentPassword").value,next=$("#newPassword").value,vault=await wrapCurrentVault(next);await api("/api/security/change-password",{method:"POST",body:JSON.stringify({current_password:current,new_password:next,vault})});$("#currentPassword").value="";$("#newPassword").value="";moeenToast("تم تغيير كلمة المرور وإعادة حماية الخزنة. أُلغي اعتماد الأجهزة الأخرى، ويمكن ربطها مجددًا عند الحاجة.")}catch(err){moeenToast(err.message==="INVALID_CURRENT_PASSWORD"?"كلمة المرور الحالية غير صحيحة.":"تعذر تغيير كلمة المرور. يجب أن تكون الجديدة 12 حرفًا على الأقل ومختلفة.","error")}};
+$("#pairingBtn").onclick=async()=>{try{const r=await api("/api/security/pairing-code",{method:"POST",body:"{}"});$("#pairingResult").textContent=r.code;$("#pairingResult").title="صالح لخمس دقائق"}catch{moeenToast("تعذر إنشاء رمز الربط.","error")}};
 $("#reviewAttempts").onclick=async()=>{await api("/api/security/attempts/review",{method:"POST",body:"{}"});loadSecurity()};
 async function loadSecurity(){try{const r=await api("/api/security/overview");$("#deviceCount").textContent=r.devices.filter(d=>!d.revoked_at).length;$("#deviceList").innerHTML=r.devices.map(d=>`<div class="security-row"><div><b>${esc(d.name)}${d.id===r.current_device_id?" · هذا الجهاز":""}</b><small>آخر نشاط: ${fmt(d.last_seen_at)}</small></div>${!d.revoked_at&&d.id!==r.current_device_id?`<button class="security-secondary" data-action="revoke-device" data-id="${esc(d.id)}">إلغاء الجهاز</button>`:d.revoked_at?'<span class="tag">ملغى</span>':'<span class="tag">نشط</span>'}</div>`).join("")||'<div class="empty">لا توجد أجهزة.</div>';$("#attemptList").innerHTML=r.attempts.map(a=>`<div class="security-row alert-row ${a.reviewed?"reviewed":""}"><div><b>${attemptLabel(a.outcome)} · ${esc(a.device_name||"جهاز غير معروف")}</b><small>${fmt(a.created_at)} · ${esc(a.ip_address)}</small></div></div>`).join("")||'<div class="empty">لا توجد محاولات مريبة.</div>'}catch(err){if(err.status===401){document.body.classList.add("locked")}}}
 function attemptLabel(o){return({bad_password:"كلمة مرور خاطئة",unknown_device_blocked:"جهاز غير مصرح",bad_pairing:"رمز ربط خاطئ",temporarily_blocked:"محاولة أثناء الحظر"})[o]||"محاولة مرفوضة"}

@@ -51,12 +51,13 @@
       <div class="brand"><span>م</span><div><strong>مُعين</strong><small>الذاكرة التنفيذية</small></div></div>
       <nav>
         <button class="nav active" data-view="home" data-icon="⌂"><span>اليوم</span></button>
-        <button class="nav" data-view="memory" data-icon="◇"><span>الذاكرة</span></button>
+        <button class="nav" data-view="memory" data-icon="◇"><span>الملاحظات</span></button>
         <button class="nav" data-view="tasks" data-icon="✓"><span>المتابعات</span></button>
         <button class="nav" data-view="meetings" data-icon="◎"><span>الاجتماعات</span></button>
-        <button class="nav" data-view="contacts" data-icon="♧"><span>الاتصالات</span></button>
-        <button class="nav" data-view="subscription" data-icon="₪"><span>الاشتراك</span></button>
-        <button class="nav" data-view="security" data-icon="◈"><span>الأمان</span></button>
+        <button class="nav nav-secondary" data-view="contacts" data-icon="♧"><span>الاتصالات</span></button>
+        <button class="nav nav-secondary" data-view="subscription" data-icon="₪"><span>الاشتراك</span></button>
+        <button class="nav nav-secondary" data-view="security" data-icon="◈"><span>الأمان</span></button>
+        <button class="nav nav-more" id="moreNav" type="button" data-icon="•••"><span>المزيد</span></button>
       </nav>
       <div class="privacy">🔒 البيانات محفوظة على هذا الجهاز</div>
     </aside>
@@ -98,7 +99,7 @@
         </div>
         <div class="grid">
           <section class="panel"><div class="panel-head"><h3>الأولوية اليوم</h3><button data-view-jump="tasks">عرض الكل</button></div><div id="todayTasks" class="empty">لا توجد متابعات بعد.</div></section>
-          <section class="panel"><div class="panel-head"><h3>آخر ما حفظته</h3><button data-view-jump="memory">فتح الذاكرة</button></div><div id="recentMemories" class="empty">ذاكرتك جاهزة لأول ملاحظة.</div></section>
+          <section class="panel"><div class="panel-head"><h3>آخر ما حفظته</h3><button data-view-jump="memory">فتح الملاحظات</button></div><div id="recentMemories" class="empty">الملاحظات جاهزة لأول إضافة.</div></section>
         </div>
       </section>
 
@@ -185,7 +186,7 @@
       <div class="smart-route">
         <div><span>مكان الحفظ</span><small id="routeReason">سيُحدد تلقائيًا من مضمون الكلام.</small></div>
         <select id="noteCategory">
-          <option value="memory">الذاكرة</option>
+          <option value="memory">الملاحظات</option>
           <option value="meeting">الاجتماعات</option>
           <option value="task">المتابعات</option>
           <option value="contact">الاتصالات</option>
@@ -196,6 +197,15 @@
   </dialog>
 
   <dialog id="simpleDialog"><form method="dialog" class="modal" id="simpleForm"></form></dialog>
+  <dialog id="moreDialog" class="more-dialog">
+    <form method="dialog" class="modal more-menu">
+      <button type="submit" class="close" aria-label="إغلاق">×</button>
+      <p class="eyebrow">أقسام مُعين</p><h2>المزيد</h2>
+      <button type="button" data-more-view="contacts"><b>♧</b><span>الاتصالات</span></button>
+      <button type="button" data-more-view="subscription"><b>₪</b><span>الاشتراك</span></button>
+      <button type="button" data-more-view="security"><b>◈</b><span>الأمان والأجهزة</span></button>
+    </form>
+  </dialog>
   <dialog id="notificationDialog">
     <form method="dialog" class="modal notification-reader">
       <button type="submit" class="close" aria-label="إغلاق">×</button>
@@ -205,7 +215,8 @@
       <div class="modal-actions"><button type="submit" class="primary" id="notificationDialogClose">تمت القراءة</button></div>
     </form>
   </dialog>
-  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}?v=42"></script>
-  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}?v=42"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}?v=43"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/ui-feedback.js') }}?v=43"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}?v=43"></script>
 </body>
 </html>

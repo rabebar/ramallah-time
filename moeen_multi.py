@@ -10,6 +10,13 @@ from flask import Blueprint, Response, current_app, jsonify, render_template, re
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from database import get_app_setting, get_db_connection
+from moeen_limits import (
+    MAX_AUDIO_BYTES,
+    MAX_SYNC_REQUEST_BYTES,
+    content_length_exceeds,
+    valid_audio_metadata,
+    valid_encrypted_state,
+)
 
 
 moeen_bp = Blueprint("moeen_multi", __name__, url_prefix="/moeen-executive")
@@ -738,13 +745,15 @@ def get_sync_state():
 @moeen_bp.put("/api/sync/state")
 @require_moeen_auth
 def put_sync_state():
+    if content_length_exceeds(request.content_length, MAX_SYNC_REQUEST_BYTES):
+        return jsonify(error="SYNC_STATE_TOO_LARGE"), 413
     data = request.get_json(silent=True) or {}
     try:
         base_version = int(data.get("base_version", 0))
     except (TypeError, ValueError):
         return jsonify(error="INVALID_VERSION"), 400
     ciphertext, iv = data.get("ciphertext", ""), data.get("iv", "")
-    if not ciphertext or not iv:
+    if not valid_encrypted_state(ciphertext, iv):
         return jsonify(error="INVALID_ENCRYPTED_STATE"), 400
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -897,10 +906,14 @@ def review_attempts():
 @moeen_bp.put("/api/sync/audio/<audio_id>")
 @require_moeen_auth
 def put_audio(audio_id):
-    payload = request.get_data()
     iv = request.headers.get("X-Audio-IV", "")
     mime = request.headers.get("X-Audio-Type", "audio/webm")[:100]
-    if not payload or len(payload) > 25 * 1024 * 1024 or not iv or len(audio_id) > 120:
+    if content_length_exceeds(request.content_length, MAX_AUDIO_BYTES):
+        return jsonify(error="AUDIO_TOO_LARGE"), 413
+    if not valid_audio_metadata(audio_id, iv):
+        return jsonify(error="INVALID_AUDIO"), 400
+    payload = request.get_data(cache=False)
+    if not payload or len(payload) > MAX_AUDIO_BYTES:
         return jsonify(error="INVALID_AUDIO"), 400
     conn = get_db_connection()
     cursor = conn.cursor()
