@@ -394,8 +394,8 @@ window.shareWhatsApp=async(kind,id)=>{
   }
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank","noopener");
 };
-window.removeItem=async(k,id)=>{if(confirm("حذف هذا العنصر؟")){const item=store.get(k).find(x=>x.id===id);store.set(k,store.get(k).filter(x=>x.id!==id));if(item?.audioId)await audioDb.remove(item.audioId);if(k==="tasks"||k==="meetings")syncReminder(id,k==="tasks"?"task":"meeting",null,"none");render()}};
-window.removeMemory=async id=>{if(confirm("حذف الملاحظة وتسجيلها الصوتي؟")){store.set("memories",store.get("memories").filter(x=>x.id!==id));await audioDb.remove(id);render()}};
+window.removeItem=async(k,id)=>{if(await moeenConfirm("سيُحذف هذا العنصر نهائيًا من أجهزتك المتزامنة.",{title:"حذف العنصر؟",confirmText:"تأكيد الحذف"})){const item=store.get(k).find(x=>x.id===id);store.set(k,store.get(k).filter(x=>x.id!==id));if(item?.audioId)await audioDb.remove(item.audioId);if(k==="tasks"||k==="meetings")syncReminder(id,k==="tasks"?"task":"meeting",null,"none");render();moeenToast("تم حذف العنصر.")}};
+window.removeMemory=async id=>{if(await moeenConfirm("سيتم حذف الملاحظة وتسجيلها الصوتي نهائيًا من أجهزتك المتزامنة.",{title:"حذف الملاحظة؟",confirmText:"تأكيد الحذف"})){store.set("memories",store.get("memories").filter(x=>x.id!==id));await audioDb.remove(id);render();moeenToast("تم حذف الملاحظة.")}};
 
 function openSimple(kind,prefill={}){
   const task=kind==="task", title=task?"متابعة جديدة":"اجتماع جديد";
@@ -957,7 +957,7 @@ $("#pairingBtn").onclick=async()=>{try{const r=await api("/api/security/pairing-
 $("#reviewAttempts").onclick=async()=>{await api("/api/security/attempts/review",{method:"POST",body:"{}"});loadSecurity()};
 async function loadSecurity(){try{const r=await api("/api/security/overview");$("#deviceCount").textContent=r.devices.filter(d=>!d.revoked_at).length;$("#deviceList").innerHTML=r.devices.map(d=>`<div class="security-row"><div><b>${esc(d.name)}${d.id===r.current_device_id?" · هذا الجهاز":""}</b><small>آخر نشاط: ${fmt(d.last_seen_at)}</small></div>${!d.revoked_at&&d.id!==r.current_device_id?`<button class="security-secondary" data-action="revoke-device" data-id="${esc(d.id)}">إلغاء الجهاز</button>`:d.revoked_at?'<span class="tag">ملغى</span>':'<span class="tag">نشط</span>'}</div>`).join("")||'<div class="empty">لا توجد أجهزة.</div>';$("#attemptList").innerHTML=r.attempts.map(a=>`<div class="security-row alert-row ${a.reviewed?"reviewed":""}"><div><b>${attemptLabel(a.outcome)} · ${esc(a.device_name||"جهاز غير معروف")}</b><small>${fmt(a.created_at)} · ${esc(a.ip_address)}</small></div></div>`).join("")||'<div class="empty">لا توجد محاولات مريبة.</div>'}catch(err){if(err.status===401){document.body.classList.add("locked")}}}
 function attemptLabel(o){return({bad_password:"كلمة مرور خاطئة",unknown_device_blocked:"جهاز غير مصرح",bad_pairing:"رمز ربط خاطئ",temporarily_blocked:"محاولة أثناء الحظر"})[o]||"محاولة مرفوضة"}
-window.revokeDevice=async id=>{if(!confirm("إلغاء تصريح هذا الجهاز؟"))return;await api(`/api/security/devices/${encodeURIComponent(id)}/revoke`,{method:"POST",body:"{}"});loadSecurity()};
+window.revokeDevice=async id=>{if(!await moeenConfirm("لن يتمكن هذا الجهاز من فتح الحساب حتى تعيد ربطه برمز جديد.",{title:"إلغاء تصريح الجهاز؟",confirmText:"إلغاء الجهاز"}))return;await api(`/api/security/devices/${encodeURIComponent(id)}/revoke`,{method:"POST",body:"{}"});loadSecurity();moeenToast("تم إلغاء تصريح الجهاز.")};
 $("#moeenPaymentForm").onsubmit=async e=>{
   e.preventDefault();
   const form=e.currentTarget,message=$("#paymentMessage"),button=form.querySelector('button[type="submit"]');
@@ -978,7 +978,7 @@ $("#moeenPaymentForm").onsubmit=async e=>{
 };
 if("serviceWorker" in navigator){
   navigator.serviceWorker
-    .register("/moeen-executive/sw.js?v=44",{updateViaCache:"none"})
+    .register("/moeen-executive/sw.js?v=45",{updateViaCache:"none"})
     .then(registration=>registration.update())
     .catch(()=>{});
 }
