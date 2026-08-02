@@ -2,6 +2,9 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const uiT=value=>window.MoeenI18n?.t(value)??value;
 const uiLocale=()=>window.MoeenI18n?.locale||"ar-PS";
 const speechLocale=()=>window.MoeenI18n?.speechLocale||"ar-PS";
+const notice=(target,message,tone="info",options={})=>window.moeenNotice?.(target,message,tone,options)??message;
+const initialAuthMessage=$("#authMessage")?.textContent.trim();
+if(initialAuthMessage)requestAnimationFrame(()=>notice("#authMessage",initialAuthMessage,"success"));
 let apiCsrf="";
 const API_BASE="/moeen-executive";
 const dataKinds=["memories","tasks","meetings","contacts"];
@@ -51,10 +54,10 @@ function urlBase64ToUint8Array(value){
 }
 async function enableMoeenPush(){
   const status=$("#moeenPushStatus"),button=$("#enableMoeenPush");
-  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){status.textContent="هذا المتصفح لا يدعم الإشعارات الخلفية.";return}
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){notice(status,"هذا المتصفح لا يدعم الإشعارات الخلفية.","warning");return}
   try{
     const permission=await Notification.requestPermission();
-    if(permission!=="granted"){status.textContent="لم يتم السماح بالإشعارات من إعدادات الجهاز.";return}
+    if(permission!=="granted"){notice(status,"لم يتم السماح بالإشعارات من إعدادات الجهاز.","warning");return}
     const config=await api("/api/push/config");
     if(!config.configured)throw new Error("NOT_CONFIGURED");
     const registration=await navigator.serviceWorker.ready;
@@ -62,30 +65,30 @@ async function enableMoeenPush(){
     if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(config.public_key)});
     await api("/api/push/subscribe",{method:"POST",body:JSON.stringify({...subscription.toJSON(),locale:uiLocale().startsWith("en")?"en":"ar"})});
     await refreshMoeenPushStatus();
-  }catch{status.textContent="تعذر تفعيل الإشعارات. تحقق من إعدادات المتصفح ثم حاول مجددًا."}
+  }catch{notice(status,"تعذر تفعيل الإشعارات. تحقق من إعدادات المتصفح ثم حاول مجددًا.","error")}
 }
 $("#enableMoeenPush").onclick=enableMoeenPush;
 async function refreshMoeenPushStatus(){
   const status=$("#moeenPushStatus"),button=$("#enableMoeenPush"),testButton=$("#testMoeenPush");
   if(!status||!button||!testButton)return false;
   if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){
-    status.textContent="هذا المتصفح لا يدعم الإشعارات الخلفية.";button.disabled=true;testButton.hidden=true;return false;
+    notice(status,"هذا المتصفح لا يدعم الإشعارات الخلفية.","warning",{toast:false});button.disabled=true;testButton.hidden=true;return false;
   }
   if(Notification.permission==="denied"){
-    status.textContent="الإشعارات محظورة من إعدادات الجهاز. اسمح بها من إعدادات الموقع.";button.textContent="الإشعارات محظورة";testButton.hidden=true;return false;
+    notice(status,"الإشعارات محظورة من إعدادات الجهاز. اسمح بها من إعدادات الموقع.","warning",{toast:false});button.textContent="الإشعارات محظورة";testButton.hidden=true;return false;
   }
   if(Notification.permission!=="granted"){
-    status.textContent="الإشعارات غير مفعّلة على هذا الجهاز.";button.textContent="تفعيل الإشعارات على هذا الجهاز";testButton.hidden=true;return false;
+    notice(status,"الإشعارات غير مفعّلة على هذا الجهاز.","info",{toast:false});button.textContent="تفعيل الإشعارات على هذا الجهاز";testButton.hidden=true;return false;
   }
   const registration=await navigator.serviceWorker.ready;
   const subscription=await registration.pushManager.getSubscription();
   if(!subscription){
-    status.textContent="يحتاج هذا الجهاز إلى إعادة ربط الإشعارات.";button.textContent="إعادة تفعيل الإشعارات";testButton.hidden=true;return false;
+    notice(status,"يحتاج هذا الجهاز إلى إعادة ربط الإشعارات.","warning",{toast:false});button.textContent="إعادة تفعيل الإشعارات";testButton.hidden=true;return false;
   }
   await api("/api/push/subscribe",{method:"POST",body:JSON.stringify({...subscription.toJSON(),locale:uiLocale().startsWith("en")?"en":"ar"})});
   const serverStatus=await api("/api/push/status");
   if(!serverStatus.configured)throw new Error("NOT_CONFIGURED");
-  status.textContent="الإشعارات مفعّلة ومتصلة بهذا الحساب.";
+  notice(status,"الإشعارات مفعّلة ومتصلة بهذا الحساب.","success",{toast:false});
   button.textContent="الإشعارات مفعّلة";
   testButton.hidden=false;
   return true;
@@ -98,11 +101,11 @@ $("#testMoeenPush").onclick=async()=>{
     const subscription=await registration.pushManager.getSubscription();
     if(!subscription)throw new Error("NO_ACTIVE_SUBSCRIPTIONS");
     await api("/api/push/test",{method:"POST",body:JSON.stringify({endpoint:subscription.endpoint})});
-    status.textContent="تم إرسال الإشعار التجريبي. يفترض أن يظهر خلال لحظات.";
+    notice(status,"تم إرسال الإشعار التجريبي. يفترض أن يظهر خلال لحظات.","success");
   }catch(error){
-    status.textContent=error.message==="NO_ACTIVE_SUBSCRIPTIONS"
+    notice(status,error.message==="NO_ACTIVE_SUBSCRIPTIONS"
       ?"لم يعد اشتراك هذا الجهاز صالحًا. أعد تفعيل الإشعارات."
-      :"تعذر إرسال الإشعار التجريبي الآن.";
+      :"تعذر إرسال الإشعار التجريبي الآن.","error");
   }finally{button.disabled=false}
 };
 async function syncReminder(itemId,itemType,eventAt,offsetMinutes){
@@ -216,7 +219,7 @@ async function shareMoeenRegistration(){
   try{
     if(navigator.share){
       await navigator.share({title,text,url});
-      if(status)status.textContent=english?"Registration link shared.":"تمت مشاركة رابط التسجيل.";
+      notice(status,english?"Registration link shared.":"تمت مشاركة رابط التسجيل.","success");
       return;
     }
     if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(`${text}\n${url}`);
@@ -225,10 +228,10 @@ async function shareMoeenRegistration(){
       area.value=`${text}\n${url}`;area.style.position="fixed";area.style.opacity="0";
       document.body.appendChild(area);area.select();document.execCommand("copy");area.remove();
     }
-    if(status)status.textContent=english?"Registration link copied.":"تم نسخ رابط التسجيل.";
+    notice(status,english?"Registration link copied.":"تم نسخ رابط التسجيل.","success");
   }catch(err){
     if(err?.name==="AbortError")return;
-    if(status)status.textContent=english?"Could not share the link. Please try again.":"تعذرت مشاركة الرابط. حاول مجددًا.";
+    notice(status,english?"Could not share the link. Please try again.":"تعذرت مشاركة الرابط. حاول مجددًا.","error");
   }
 }
 $("#shareMoeenApp").onclick=shareMoeenRegistration;
@@ -274,7 +277,7 @@ async function verifySubscriptionAccess(){
     if(!status.authenticated){
       stopSubscriptionGuard();vaultKey=null;secureState=emptyState();apiCsrf="";
       document.body.classList.add("locked");$("#loginPane").hidden=false;
-      $("#authMessage").textContent="انتهت الجلسة أو تم إيقاف الحساب. سجّل الدخول مجددًا.";
+      notice("#authMessage","انتهت الجلسة أو تم إيقاف الحساب. سجّل الدخول مجددًا.","warning");
       return;
     }
     apiCsrf=status.csrf||apiCsrf;applyProfile(status.profile);applySubscription(status.subscription);
@@ -299,7 +302,7 @@ function enterRenewalMode(profile,subscription){
   document.body.classList.remove("locked");document.body.classList.add("renewal-only");
   setView("subscription");
   const message=$("#paymentMessage");
-  if(message&&!message.textContent)message.textContent="انتهى اشتراكك. بياناتك محفوظة ومقفلة حتى اعتماد التجديد.";
+  if(message&&!message.textContent)notice(message,"انتهى اشتراكك. بياناتك محفوظة ومقفلة حتى اعتماد التجديد.","warning");
   clearInterval(renewalPollTimer);
   renewalPollTimer=setInterval(async()=>{
     try{
@@ -502,8 +505,8 @@ $("#recordBtn").onclick=async()=>{
     else finishAudioCapture(false);
     return;
   }
-  if(dictationActive||recognition){$("#recordStatus").textContent="أوقف الإملاء المباشر أولًا قبل بدء التسجيل الصوتي.";return}
-  try{audioStream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];audioBlob=null;audioMimeType="";audioStopRequested=false;startCaptureTimer("audio");startAudioSegment();$("#recordBtn").textContent="إيقاف التسجيل";$("#pulse").classList.add("live");$("#recordStatus").textContent="التسجيل جارٍ… الحد الأقصى دقيقتان.";}catch(e){audioStopRequested=true;if(audioStream){audioStream.getTracks().forEach(track=>track.stop());audioStream=null}stopCaptureTimer("audio",{reset:true});$("#recordStatus").textContent="تعذر الوصول إلى الميكروفون. اسمح للتطبيق باستخدامه ثم حاول مجددًا."}
+  if(dictationActive||recognition){notice("#recordStatus","أوقف الإملاء المباشر أولًا قبل بدء التسجيل الصوتي.","warning");return}
+  try{audioStream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];audioBlob=null;audioMimeType="";audioStopRequested=false;startCaptureTimer("audio");startAudioSegment();$("#recordBtn").textContent="إيقاف التسجيل";$("#pulse").classList.add("live");$("#recordStatus").textContent="التسجيل جارٍ… الحد الأقصى دقيقتان.";}catch(e){audioStopRequested=true;if(audioStream){audioStream.getTracks().forEach(track=>track.stop());audioStream=null}stopCaptureTimer("audio",{reset:true});notice("#recordStatus","تعذر الوصول إلى الميكروفون. اسمح للتطبيق باستخدامه ثم حاول مجددًا.","error")}
 };
 function finishDictation(timedOut=false,failed=false){
   if(dictationRestartTimer)clearTimeout(dictationRestartTimer);
@@ -511,7 +514,8 @@ function finishDictation(timedOut=false,failed=false){
   captureLimitReached=false;stopCaptureTimer("dictation");recognition=null;
   $("#transcribeBtn").textContent="تحويل الكلام مباشرة";
   $("#pulse").classList.remove("live");
-  $("#recordStatus").textContent=timedOut?"اكتملت مدة الدقيقتين وتوقف الإملاء تلقائيًا. راجع النص ثم احفظه أو شاركه.":failed?"تعذر استمرار الإملاء. تحقق من إذن الميكروفون والاتصال ثم حاول مجددًا.":"انتهى الإملاء. راجع النص قبل الحفظ.";
+  const outcome=timedOut?"اكتملت مدة الدقيقتين وتوقف الإملاء تلقائيًا. راجع النص ثم احفظه أو شاركه.":failed?"تعذر استمرار الإملاء. تحقق من إذن الميكروفون والاتصال ثم حاول مجددًا.":"انتهى الإملاء. راجع النص قبل الحفظ.";
+  notice("#recordStatus",outcome,failed?"error":"success");
 }
 function startDictationSession(SR){
   const session=new SR(),baseText=$("#noteText").value.trim();
@@ -542,7 +546,7 @@ function startDictationSession(SR){
   session.start();
 }
 $("#transcribeBtn").onclick=()=>{
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$("#recordStatus").textContent="الإملاء الصوتي غير متاح في هذا المتصفح. لا يزال بإمكانك حفظ التسجيل.";return}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){notice("#recordStatus","الإملاء الصوتي غير متاح في هذا المتصفح. لا يزال بإمكانك حفظ التسجيل.","warning");return}
   if(dictationActive||recognition){
     dictationStopRequested=true;dictationActive=false;
     if(dictationRestartTimer){clearTimeout(dictationRestartTimer);dictationRestartTimer=null}
@@ -550,7 +554,7 @@ $("#transcribeBtn").onclick=()=>{
     else finishDictation(false);
     return;
   }
-  if(captureMode==="audio"||mediaRecorder?.state==="recording"){$("#recordStatus").textContent="أوقف التسجيل الصوتي أولًا قبل بدء الإملاء المباشر.";return}
+  if(captureMode==="audio"||mediaRecorder?.state==="recording"){notice("#recordStatus","أوقف التسجيل الصوتي أولًا قبل بدء الإملاء المباشر.","warning");return}
   dictationActive=true;dictationStopRequested=false;dictationLastError="";
   startCaptureTimer("dictation");
   try{startDictationSession(SR)}catch(error){finishDictation(false,true);return}
@@ -567,12 +571,12 @@ $("#recordDialog").addEventListener("close",()=>{
 });
 $("#shareNoteText").onclick=async()=>{
   const text=$("#noteText").value.trim(),title=$("#noteTitle").value.trim();
-  if(!text){$("#recordStatus").textContent="تحدّث أو اكتب النص أولًا، ثم اضغط مشاركة.";return}
+  if(!text){notice("#recordStatus","تحدّث أو اكتب النص أولًا، ثم اضغط مشاركة.","warning");return}
   const shareText=title?`${title}\n\n${text}`:text;
   try{
     if(navigator.share){
       await navigator.share({title:"اِحكيها من مُعين",text:shareText});
-      $("#recordStatus").textContent="تمت مشاركة النص.";
+      notice("#recordStatus","تمت مشاركة النص.","success");
       return;
     }
     if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(shareText);
@@ -581,10 +585,10 @@ $("#shareNoteText").onclick=async()=>{
       area.value=shareText;area.style.position="fixed";area.style.opacity="0";
       document.body.appendChild(area);area.select();document.execCommand("copy");area.remove();
     }
-    $("#recordStatus").textContent="تم نسخ النص؛ أصبح جاهزًا للصقه في واتساب أو أي تطبيق.";
+    notice("#recordStatus","تم نسخ النص؛ أصبح جاهزًا للصقه في واتساب أو أي تطبيق.","success");
   }catch(error){
     if(error?.name==="AbortError")return;
-    $("#recordStatus").textContent="تعذرت مشاركة النص. حاول مجددًا.";
+    notice("#recordStatus","تعذرت مشاركة النص. حاول مجددًا.","error");
   }
 };
 function extractArabicDateTime(value){
@@ -919,9 +923,9 @@ async function initAuth(){
     }
     $("#setupPane").hidden=status.configured;$("#loginPane").hidden=!status.configured;document.body.classList.add("locked");
     if(status.authenticated)$("#authMessage").textContent="أدخل كلمة المرور لفتح الخزنة المشفرة.";
-  }catch{$("#authMessage").textContent="تعذر الاتصال بخادم مُعين المحلي."}
+  }catch{notice("#authMessage","تعذر الاتصال بخادم مُعين.","error")}
 }
-$("#setupForm").onsubmit=async e=>{e.preventDefault();const p=$("#setupPassword").value,c=$("#setupPasswordConfirm").value;if(p!==c){$("#authMessage").textContent="كلمتا المرور غير متطابقتين.";return}try{const raw=crypto.getRandomValues(new Uint8Array(32)),vault=await createWrappedVault(p,raw);await api("/api/setup",{method:"POST",body:JSON.stringify({password:p,vault})});$("#authMessage").textContent="تم الإعداد. سجّل الدخول الآن.";$("#setupPane").hidden=true;$("#loginPane").hidden=false}catch(err){$("#authMessage").textContent=err.message==="WEAK_PASSWORD"?"استخدم 12 حرفًا على الأقل.":"تعذر إكمال الإعداد."}};
+$("#setupForm").onsubmit=async e=>{e.preventDefault();const p=$("#setupPassword").value,c=$("#setupPasswordConfirm").value;if(p!==c){notice("#authMessage","كلمتا المرور غير متطابقتين.","error");return}try{const raw=crypto.getRandomValues(new Uint8Array(32)),vault=await createWrappedVault(p,raw);await api("/api/setup",{method:"POST",body:JSON.stringify({password:p,vault})});notice("#authMessage","تم الإعداد. سجّل الدخول الآن.","success");$("#setupPane").hidden=true;$("#loginPane").hidden=false}catch(err){notice("#authMessage",err.message==="WEAK_PASSWORD"?"استخدم 12 حرفًا على الأقل.":"تعذر إكمال الإعداد.","error")}};
 $("#loginForm").onsubmit=async e=>{
   e.preventDefault();
   const prefix=$("#loginPhonePrefix").value;
@@ -929,7 +933,7 @@ $("#loginForm").onsubmit=async e=>{
   if(local.startsWith(`00${prefix}`))local=local.slice(prefix.length+2);
   else if(local.startsWith(prefix))local=local.slice(prefix.length);
   local=local.replace(/^0+/,"");
-  if(local.length<7||local.length>10){$("#authMessage").textContent="اكتب الرقم المحلي فقط بصورة صحيحة.";return}
+  if(local.length<7||local.length>10){notice("#authMessage","اكتب الرقم المحلي فقط بصورة صحيحة.","warning");return}
   const phone=`00${prefix}${local}`,password=$("#loginPassword").value;
   const payload={phone,password,device_id:deviceId(),device_name:deviceName()},code=$("#pairingCode").value.trim();
   try{
@@ -946,7 +950,7 @@ $("#loginForm").onsubmit=async e=>{
     if(result.must_change){setView("security");moeenToast("يرجى تغيير كلمة المرور المؤقتة.","error")}
   }catch(err){
     const messages={INVALID_CREDENTIALS:"بيانات الدخول غير صحيحة.",DEVICE_NOT_AUTHORIZED:"هذا الجهاز غير مصرح له. استخدم رمز ربط من الجهاز الرئيسي.",INVALID_PAIRING_CODE:"رمز الربط غير صحيح أو انتهت صلاحيته.",TEMPORARILY_BLOCKED:"تم حظر المحاولات مؤقتًا. حاول لاحقًا.",SUBSCRIPTION_INACTIVE:"الحساب موقوف أو ملغي. تواصل مع RT Studio.",OperationError:"تعذر فتح الخزنة. تحقق من كلمة المرور."};
-    $("#authMessage").textContent=messages[err.message]||"تعذر تسجيل الدخول أو فتح الخزنة.";
+    notice("#authMessage",messages[err.message]||"تعذر تسجيل الدخول أو فتح الخزنة.","error");
   }
 };
 async function logoutNow(){try{await pushSync();await api("/api/auth/logout",{method:"POST",body:"{}"})}finally{clearInterval(renewalPollTimer);stopSubscriptionGuard();await trustedKeyStore.clear();apiCsrf="";vaultKey=null;secureState=emptyState();currentProfile=null;currentSubscription=null;document.body.classList.remove("renewal-only");document.body.classList.add("locked");$("#loginPane").hidden=false;$("#loginPassword").value="";$("#pairingCode").value=""}}
@@ -970,15 +974,15 @@ $("#moeenPaymentForm").onsubmit=async e=>{
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||"FAILED");
     form.reset();document.querySelector('input[name="moeenPlan"][value="quarterly"]').checked=true;document.querySelector('input[name="moeenPaymentMethod"][value="reflect"]').checked=true;
-    message.className="payment-message success";message.textContent=`تم إرسال الإثبات بنجاح. رقم المتابعة: ${result.invoice_code}`;
+    message.className="payment-message success";notice(message,`تم إرسال الإثبات بنجاح. رقم المتابعة: ${result.invoice_code}`,"success");
   }catch(err){
     const labels={PROOF_REQUIRED:"أدخل رقم العملية أو ارفع الإيصال.",INVALID_RECEIPT:"صيغة الإيصال غير مدعومة.",AUTH_REQUIRED:"سجّل الدخول ثم حاول مجددًا."};
-    message.className="payment-message error";message.textContent=labels[err.message]||"تعذر إرسال الإثبات الآن. حاول مرة أخرى.";
+    message.className="payment-message error";notice(message,labels[err.message]||"تعذر إرسال الإثبات الآن. حاول مرة أخرى.","error");
   }finally{button.disabled=false}
 };
 if("serviceWorker" in navigator){
   navigator.serviceWorker
-    .register("/moeen-executive/sw.js?v=45",{updateViaCache:"none"})
+    .register("/moeen-executive/sw.js?v=46",{updateViaCache:"none"})
     .then(registration=>registration.update())
     .catch(()=>{});
 }

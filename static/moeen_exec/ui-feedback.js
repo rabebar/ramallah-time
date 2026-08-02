@@ -10,6 +10,12 @@
     }
     const current=details[tone]||details.info;toast.querySelector(".moeen-toast-icon").textContent=current.icon;toast.querySelector("strong").textContent=title||current.title;toast.querySelector("small").textContent=message;toast.dataset.tone=tone;toast.classList.remove("visible");void toast.offsetWidth;toast.classList.add("visible");clearTimeout(timer);timer=setTimeout(()=>toast.classList.remove("visible"),5200);
   };
+  window.moeenNotice=(target,message,tone="info",{toast=true,title=""}={})=>{
+    const element=typeof target==="string"?document.querySelector(target):target;
+    if(element){element.textContent=message;element.dataset.tone=tone;}
+    if(toast&&message)window.moeenToast(message,tone,title);
+    return message;
+  };
   window.moeenConfirm=(message,{title="تأكيد الإجراء",confirmText="تأكيد",danger=true}={})=>new Promise(resolve=>{
     let dialog=document.getElementById("moeenConfirmDialog");
     if(!dialog){
