@@ -1292,16 +1292,27 @@
         </section>
 
         <section class="table-container admin-panel moeen-admin" data-admin-panel="moeen" id="moeen-logs">
-            <div class="table-title">سجل مُعين للدخول والأخطاء</div>
+            <div class="table-title">سجل مُعين للتشغيل والدخول والأخطاء</div>
             <div class="logs-toolbar">
-                <p>آخر 120 محاولة دخول أو ربط جهاز. جميع الساعات بتوقيت فلسطين المحلي. انسخ السجل وأرسله عند ظهور مشكلة.</p>
+                <p>آخر 120 حدثًا مختصرًا دون محتوى المستخدم. جميع الساعات بتوقيت فلسطين المحلي. انسخ السجل وأرسله عند ظهور مشكلة.</p>
                 <button id="copyMoeenLogs" class="logs-copy" type="button">نسخ السجل كاملًا</button>
             </div>
             <div id="moeenLogsText" class="system-logs">
                 {% for log in moeen_logs %}
-                <div class="log-line {% if log.outcome in ('success','paired_success') %}log-success{% endif %}">
+                <div class="log-line {% if log.outcome in ('success','paired_success','account_created','session_restored','app_open') %}log-success{% endif %}">
                     <span class="log-time">{{ log.created_at|palestine_time('%Y-%m-%d %H:%M:%S') }}</span>
-                    <span class="log-outcome">{{ log.outcome }}</span>
+                    <span class="log-outcome">{{ {
+                        'success':'دخول ناجح',
+                        'paired_success':'ربط جهاز ناجح',
+                        'account_created':'إنشاء حساب',
+                        'session_restored':'استعادة جلسة',
+                        'app_open':'فتح التطبيق بنجاح',
+                        'ui_error':'خطأ في واجهة التطبيق',
+                        'unknown_device_blocked':'جهاز غير مصرح',
+                        'bad_password':'كلمة مرور خاطئة',
+                        'bad_pairing':'رمز ربط خاطئ',
+                        'temporarily_blocked':'محاولة أثناء الحظر'
+                    }.get(log.outcome, log.outcome) }}</span>
                     <span class="log-detail">{{ log.full_name or log.phone or 'حساب غير معروف' }}</span>
                     <span class="log-detail">{{ log.device_name or 'جهاز غير معروف' }}</span>
                 </div>

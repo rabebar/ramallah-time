@@ -23,6 +23,9 @@ moeen_bp = Blueprint("moeen_multi", __name__, url_prefix="/moeen-executive")
 SESSION_ACCOUNT = "moeen_account_id"
 SESSION_DEVICE = "moeen_device_id"
 SESSION_CSRF = "moeen_csrf"
+SESSION_RESTORE_RECORDED = "moeen_restore_recorded"
+SESSION_OPEN_RECORDED = "moeen_open_recorded"
+SESSION_ERROR_RECORDED = "moeen_error_recorded"
 
 
 def _phone_variants(phone):
@@ -263,6 +266,35 @@ def record_activity():
     finally:
         cursor.close()
         conn.close()
+
+
+@moeen_bp.post("/api/client-event")
+def record_client_event():
+    """Record a bounded, content-free client health event for support diagnostics."""
+    account_id = session.get(SESSION_ACCOUNT)
+    device_id = session.get(SESSION_DEVICE)
+    account = _account(account_id=account_id) if account_id else None
+    device = _device(account_id, device_id) if account and device_id else None
+    if not account or not device:
+        return jsonify(error="AUTH_REQUIRED"), 401
+    data = request.get_json(silent=True) or {}
+    event_name = str(data.get("event", ""))
+    session_key = {
+        "app_open": SESSION_OPEN_RECORDED,
+        "ui_error": SESSION_ERROR_RECORDED,
+    }.get(event_name)
+    if not session_key:
+        return jsonify(error="INVALID_EVENT"), 400
+    if not session.get(session_key):
+        _record_attempt(
+            event_name,
+            account_id,
+            account["phone"],
+            device_id,
+            device.get("device_name") or "جهاز مسجل",
+        )
+        session[session_key] = True
+    return jsonify(ok=True)
 
 
 @moeen_bp.get("/api/push/status")
@@ -548,6 +580,15 @@ def auth_status():
     )
     if authenticated:
         _touch_device(account_id, device)
+        if not session.get(SESSION_RESTORE_RECORDED):
+            _record_attempt(
+                "session_restored",
+                account_id,
+                account["phone"],
+                device_id,
+                device.get("device_name") or "جهاز مسجل",
+            )
+            session[SESSION_RESTORE_RECORDED] = True
     renewal_only = bool(authenticated and not _subscription_valid(account))
     return jsonify(
         configured=True,
@@ -613,6 +654,9 @@ def login():
     session[SESSION_ACCOUNT] = account["id"]
     session[SESSION_DEVICE] = device_id
     session[SESSION_CSRF] = secrets.token_urlsafe(24)
+    session[SESSION_RESTORE_RECORDED] = True
+    session.pop(SESSION_OPEN_RECORDED, None)
+    session.pop(SESSION_ERROR_RECORDED, None)
     session.permanent = True
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -682,6 +726,11 @@ def pair_device():
     session[SESSION_ACCOUNT] = account["id"]
     session[SESSION_DEVICE] = device_id
     session[SESSION_CSRF] = secrets.token_urlsafe(24)
+    session[SESSION_RESTORE_RECORDED] = True
+    session.pop(SESSION_OPEN_RECORDED, None)
+    session.pop(SESSION_ERROR_RECORDED, None)
+    session.permanent = True
+    _record_attempt("paired_success", account["id"], phone, device_id, device_name)
     return jsonify(
         ok=True, csrf=session[SESSION_CSRF], key_scope=str(account["id"]),
         vault=_vault(account["id"]),
@@ -693,7 +742,10 @@ def pair_device():
 @moeen_bp.post("/api/auth/logout")
 @require_moeen_auth
 def logout():
-    for key in (SESSION_ACCOUNT, SESSION_DEVICE, SESSION_CSRF):
+    for key in (
+        SESSION_ACCOUNT, SESSION_DEVICE, SESSION_CSRF,
+        SESSION_RESTORE_RECORDED, SESSION_OPEN_RECORDED, SESSION_ERROR_RECORDED,
+    ):
         session.pop(key, None)
     return jsonify(ok=True)
 

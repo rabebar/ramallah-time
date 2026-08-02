@@ -516,7 +516,7 @@ def compose_final(cutout_path, name, price, theme, style, background_key, out_ba
         return None
 
 app = Flask(__name__)
-from moeen_multi import moeen_bp
+from moeen_multi import moeen_bp, _record_attempt
 from mizan_app import register_mizan
 
 app.register_blueprint(moeen_bp)
@@ -2060,6 +2060,7 @@ def moeen_public_register():
             ))
             account_id = cursor.fetchone()["id"]
             conn.commit()
+            _record_attempt("account_created", account_id, phone, "", "هاتف التسجيل")
             threading.Thread(
                 target=send_moeen_signup_notifications,
                 args=(account_id, full_name, job_title),

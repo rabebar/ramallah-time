@@ -7,6 +7,18 @@ const initialAuthMessage=$("#authMessage")?.textContent.trim();
 if(initialAuthMessage)requestAnimationFrame(()=>notice("#authMessage",initialAuthMessage,"success"));
 let apiCsrf="";
 const API_BASE="/moeen-executive";
+let clientHealthSent=false;
+function reportClientHealth(event){
+  if(clientHealthSent&&event==="ui_error")return;
+  if(event==="ui_error")clientHealthSent=true;
+  const headers={"Content-Type":"application/json"};
+  if(apiCsrf)headers["X-CSRF-Token"]=apiCsrf;
+  fetch(`${API_BASE}/api/client-event`,{
+    method:"POST",headers,body:JSON.stringify({event}),keepalive:true,credentials:"same-origin"
+  }).catch(()=>{});
+}
+window.addEventListener("error",()=>reportClientHealth("ui_error"));
+window.addEventListener("unhandledrejection",()=>reportClientHealth("ui_error"));
 const dataKinds=["memories","tasks","meetings","contacts"];
 let secureState={memories:[],tasks:[],meetings:[],contacts:[],_deleted:{}};
 let vaultKey=null,syncVersion=0,syncTimer=null,syncBusy=false;
@@ -916,6 +928,7 @@ async function initAuth(){
         await loadAndSyncState();
         document.body.classList.remove("locked");
         startSubscriptionGuard(status.subscription);
+        reportClientHealth("app_open");
         reportAnonymousActivity(true);
         $("#authMessage").textContent="";
         return;
@@ -945,6 +958,7 @@ $("#loginForm").onsubmit=async e=>{
     applyProfile(result.profile);applySubscription(result.subscription);
     await initializeOrUnlockVault(password,result.vault,result.key_scope);
     document.body.classList.remove("locked","renewal-only");
+    reportClientHealth("app_open");
     startSubscriptionGuard(result.subscription);
     reportAnonymousActivity(true);
     if(result.must_change){setView("security");moeenToast("يرجى تغيير كلمة المرور المؤقتة.","error")}
@@ -982,7 +996,7 @@ $("#moeenPaymentForm").onsubmit=async e=>{
 };
 if("serviceWorker" in navigator){
   navigator.serviceWorker
-    .register("/moeen-executive/sw.js?v=46",{updateViaCache:"none"})
+    .register("/moeen-executive/sw.js?v=47",{updateViaCache:"none"})
     .then(registration=>registration.update())
     .catch(()=>{});
 }
