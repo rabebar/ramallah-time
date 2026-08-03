@@ -609,8 +609,18 @@ function localDateTimeValue(date){
   return local.toISOString().slice(0,16);
 }
 function normalizeSpokenNumbers(value){
-  const words={"صفر":0,"واحد":1,"واحدة":1,"وحده":1,"اثنين":2,"إثنين":2,"اتنين":2,"ثلاث":3,"ثلاثة":3,"اربعة":4,"أربعة":4,"خمسة":5,"ستة":6,"سبعة":7,"ثمانية":8,"تسعة":9,"عشرة":10,"عشر":10,"احدعشر":11,"إحدىعشرة":11,"احدىعشرة":11,"اثناعشر":12,"اثنتاعشرة":12};
-  return (value||"").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).split(/(\s+|[^\u0621-\u064A]+)/).map(word=>Object.prototype.hasOwnProperty.call(words,word)?String(words[word]):word).join("");
+  const words={
+    "صفر":0,"واحد":1,"واحدة":1,"واحده":1,"وحدة":1,"وحده":1,
+    "اثنين":2,"إثنين":2,"اتنين":2,"اثنان":2,"إثنان":2,"ثنتين":2,
+    "ثلاث":3,"ثلاثة":3,"ثلاثه":3,"تلات":3,"تلاتة":3,"تلاته":3,
+    "اربع":4,"أربع":4,"اربعة":4,"أربعة":4,"اربعه":4,"أربعه":4,
+    "خمس":5,"خمسة":5,"خمسه":5,"ست":6,"ستة":6,"سته":6,
+    "سبع":7,"سبعة":7,"سبعه":7,"ثمان":8,"ثمانية":8,"ثمانيه":8,"تمانية":8,"تمانيه":8,
+    "تسع":9,"تسعة":9,"تسعه":9,"عشر":10,"عشرة":10,"عشره":10,
+    "احدعشر":11,"أحدعشر":11,"احدىعشرة":11,"إحدىعشرة":11,"احدىعشره":11,"إحدىعشره":11,
+    "اثناعشر":12,"إثناعشر":12,"اثنتاعشرة":12,"إثنتاعشرة":12,"اثنتاعشره":12,"إثنتاعشره":12
+  };
+  return (value||"").normalize("NFKC").replace(/[\u064B-\u065F\u0670]/g,"").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).split(/(\s+|[^\u0621-\u064A]+)/).map(word=>Object.prototype.hasOwnProperty.call(words,word)?String(words[word]):word).join("");
 }
 function extractArabicDateTime(value){
   let text=(value||"").toLowerCase().replace(/[،,.]/g," ").replace(/\s+/g," ").trim();
@@ -625,21 +635,28 @@ function extractArabicDateTime(value){
     else if(english[1]==="two hours")relativeMs=120*60000;
     else{const amount=Number(english[2]),unit=english[3];relativeMs=amount*(unit.startsWith("hour")?3600000:60000)}
   }
-  let match=text.match(/(?:بعد|كمان)\s+(نصف)\s+ساعة/);
+  const relativePrefix="(?:بعد|كمان|خلال)";
+  let match=text.match(new RegExp(`${relativePrefix}\\s+(نصف)\\s+(?:ساعة|ساعه)`));
   if(match)relativeMs=30*60000;
-  else if((match=text.match(/(?:بعد|كمان)\s+(ربع)\s+ساعة/)))relativeMs=15*60000;
-  else if((match=text.match(/(?:بعد|كمان)\s+(ساعة|ساعه)(?:\s+واحدة)?/)))relativeMs=60*60000;
-  else if((match=text.match(/(?:بعد|كمان)\s+(ساعتين|ساعتان)/)))relativeMs=120*60000;
-  else if((match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(دقيقة|دقيقه|دقائق)/)))relativeMs=Number(match[1])*60000;
-  else if((match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(ساعة|ساعه|ساعات)/)))relativeMs=Number(match[1])*3600000;
-  else if((match=text.match(/(?:بعد|كمان)\s+(يومين|يومان)/)))relativeMs=2*86400000;
-  else if((match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(يوم|ايام|أيام)/)))relativeMs=Number(match[1])*86400000;
+  else if((match=text.match(new RegExp(`${relativePrefix}\\s+(ربع)\\s+(?:ساعة|ساعه)`))))relativeMs=15*60000;
+  else if((match=text.match(new RegExp(`${relativePrefix}\\s+(?:ساعة|ساعه)(?:\\s+(?:واحدة|واحده))?`))))relativeMs=60*60000;
+  else if((match=text.match(new RegExp(`${relativePrefix}\\s+(?:ساعتين|ساعتان)`))))relativeMs=120*60000;
+  else if((match=text.match(new RegExp(`${relativePrefix}\\s+(\\d+)\\s*(?:دقيقة|دقيقه|دقائق)`))))relativeMs=Number(match[1])*60000;
+  else if((match=text.match(new RegExp(`${relativePrefix}\\s+(\\d+)\\s*(?:ساعة|ساعه|ساعات)`))))relativeMs=Number(match[1])*3600000;
+  else if((match=text.match(new RegExp(`${relativePrefix}\\s+(?:يومين|يومان)`))))relativeMs=2*86400000;
+  else if((match=text.match(new RegExp(`${relativePrefix}\\s+(?:يوم)(?:\\s+(?:واحد|واحدة|واحده))?`))))relativeMs=86400000;
+  else if((match=text.match(new RegExp(`${relativePrefix}\\s+(\\d+)\\s*(?:يوم|يومًا|يوما|ايام|أيام|تيام)`))))relativeMs=Number(match[1])*86400000;
+  else if((match=text.match(new RegExp(`${relativePrefix}\\s+(?:أسبوعين|اسبوعين|أسبوعان|اسبوعان)`))))relativeMs=14*86400000;
+  else if((match=text.match(new RegExp(`${relativePrefix}\\s+(?:أسبوع|اسبوع)(?:\\s+(?:واحد|واحدة|واحده))?`))))relativeMs=7*86400000;
+  else if((match=text.match(new RegExp(`${relativePrefix}\\s+(\\d+)\\s*(?:أسبوع|اسبوع|أسابيع|اسابيع)`))))relativeMs=Number(match[1])*7*86400000;
   if(relativeMs!==null){result.setTime(now.getTime()+relativeMs);hasDate=true}
   const dayNames={الأحد:0,الاحد:0,الإثنين:1,الاثنين:1,الثلاثاء:2,الأربعاء:3,الاربعاء:3,الخميس:4,الجمعة:5,الجمعه:5,السبت:6,sunday:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6};
   if(relativeMs===null&&/غدا|غدًا|بكرة|بكره|\btomorrow\b/.test(text)){result.setDate(result.getDate()+1);hasDate=true}
   if(relativeMs===null)for(const [name,day] of Object.entries(dayNames)){
     if(text.includes(name)){let add=(day-result.getDay()+7)%7;if(add===0)add=7;result.setDate(result.getDate()+add);hasDate=true;break}
   }
+  const unresolvedDuration=relativeMs===null&&/(?:بعد|كمان|خلال)\s+[^\s]+(?:\s+[^\s]+)?\s*(?:يوم|يومين|ايام|أيام|تيام|أسبوع|اسبوع|أسبوعين|اسبوعين|أسابيع|اسابيع|ساعة|ساعه|ساعات|دقيقة|دقيقه|دقائق)/.test(text);
+  if(unresolvedDuration)return null;
   if(/اليوم|\btoday\b/.test(text))hasDate=true;
   match=text.match(/(?:الساعة|الساعه|\bat\b)\s*(\d{1,2})(?::(\d{1,2}))?\s*(am|pm)?/);
   if(match){
