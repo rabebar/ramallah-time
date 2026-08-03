@@ -617,35 +617,27 @@ function extractArabicDateTime(value){
   const hourNames={"الواحدة":1,"الاولى":1,"الأولى":1,"الثانية":2,"الثالثة":3,"الرابعة":4,"الخامسة":5,"السادسة":6,"السابعة":7,"الثامنة":8,"التاسعة":9,"العاشرة":10,"الحادية عشرة":11,"الثانية عشرة":12};
   for(const [name,hour] of Object.entries(hourNames).sort((a,b)=>b[0].length-a[0].length))text=text.replace(name,String(hour));
   text=normalizeSpokenNumbers(text);
-  const now=new Date(),result=new Date(now);
+  const now=new Date(),result=new Date(now);let hasDate=false,relativeMs=null;
   let english=text.match(/\bin\s+(half an hour|an hour|one hour|two hours|(\d+)\s*(minutes?|hours?))\b/);
   if(english){
-    if(english[1]==="half an hour")return new Date(now.getTime()+30*60000);
-    if(english[1]==="an hour"||english[1]==="one hour")return new Date(now.getTime()+60*60000);
-    if(english[1]==="two hours")return new Date(now.getTime()+120*60000);
-    const amount=Number(english[2]),unit=english[3];
-    return new Date(now.getTime()+amount*(unit.startsWith("hour")?3600000:60000));
+    if(english[1]==="half an hour")relativeMs=30*60000;
+    else if(english[1]==="an hour"||english[1]==="one hour")relativeMs=60*60000;
+    else if(english[1]==="two hours")relativeMs=120*60000;
+    else{const amount=Number(english[2]),unit=english[3];relativeMs=amount*(unit.startsWith("hour")?3600000:60000)}
   }
   let match=text.match(/(?:بعد|كمان)\s+(نصف)\s+ساعة/);
-  if(match)return new Date(now.getTime()+30*60000);
-  match=text.match(/(?:بعد|كمان)\s+(ربع)\s+ساعة/);
-  if(match)return new Date(now.getTime()+15*60000);
-  match=text.match(/(?:بعد|كمان)\s+(ساعة|ساعه)(?:\s+واحدة)?/);
-  if(match)return new Date(now.getTime()+60*60000);
-  match=text.match(/(?:بعد|كمان)\s+(ساعتين|ساعتان)/);
-  if(match)return new Date(now.getTime()+120*60000);
-  match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(دقيقة|دقيقه|دقائق)/);
-  if(match)return new Date(now.getTime()+Number(match[1])*60000);
-  match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(ساعة|ساعه|ساعات)/);
-  if(match)return new Date(now.getTime()+Number(match[1])*3600000);
-  match=text.match(/(?:بعد|كمان)\s+(يومين|يومان)/);
-  if(match)return new Date(now.getTime()+2*86400000);
-  match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(يوم|ايام|أيام)/);
-  if(match)return new Date(now.getTime()+Number(match[1])*86400000);
+  if(match)relativeMs=30*60000;
+  else if((match=text.match(/(?:بعد|كمان)\s+(ربع)\s+ساعة/)))relativeMs=15*60000;
+  else if((match=text.match(/(?:بعد|كمان)\s+(ساعة|ساعه)(?:\s+واحدة)?/)))relativeMs=60*60000;
+  else if((match=text.match(/(?:بعد|كمان)\s+(ساعتين|ساعتان)/)))relativeMs=120*60000;
+  else if((match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(دقيقة|دقيقه|دقائق)/)))relativeMs=Number(match[1])*60000;
+  else if((match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(ساعة|ساعه|ساعات)/)))relativeMs=Number(match[1])*3600000;
+  else if((match=text.match(/(?:بعد|كمان)\s+(يومين|يومان)/)))relativeMs=2*86400000;
+  else if((match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(يوم|ايام|أيام)/)))relativeMs=Number(match[1])*86400000;
+  if(relativeMs!==null){result.setTime(now.getTime()+relativeMs);hasDate=true}
   const dayNames={الأحد:0,الاحد:0,الإثنين:1,الاثنين:1,الثلاثاء:2,الأربعاء:3,الاربعاء:3,الخميس:4,الجمعة:5,الجمعه:5,السبت:6,sunday:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6};
-  let hasDate=false;
-  if(/غدا|غدًا|بكرة|بكره|\btomorrow\b/.test(text)){result.setDate(result.getDate()+1);hasDate=true}
-  for(const [name,day] of Object.entries(dayNames)){
+  if(relativeMs===null&&/غدا|غدًا|بكرة|بكره|\btomorrow\b/.test(text)){result.setDate(result.getDate()+1);hasDate=true}
+  if(relativeMs===null)for(const [name,day] of Object.entries(dayNames)){
     if(text.includes(name)){let add=(day-result.getDay()+7)%7;if(add===0)add=7;result.setDate(result.getDate()+add);hasDate=true;break}
   }
   if(/اليوم|\btoday\b/.test(text))hasDate=true;
@@ -658,24 +650,28 @@ function extractArabicDateTime(value){
     if(/صباح|الصباح/.test(text)&&hour===12)hour=0;
     result.setHours(hour,minute,0,0);hasDate=true;
     if(result<=now&&!/غدا|غدًا|بكرة|بكره|\btomorrow\b/.test(text)&&!Object.keys(dayNames).some(d=>text.includes(d)))result.setDate(result.getDate()+1);
-  }else if(hasDate){
+  }else if(hasDate&&relativeMs===null){
     result.setHours(/مساء/.test(text)?18:9,0,0,0);
   }
   return hasDate?result:null;
 }
 function updateSchedulePreview(){
   const category=$("#noteCategory").value,text=$("#noteText").value,date=extractArabicDateTime(text),isEvent=category==="meeting"||category==="task";
-  const panel=$("#spokenSchedule");panel.hidden=!(isEvent&&date);
+  const panel=$("#spokenSchedule");panel.hidden=!isEvent;
   if(panel.hidden)return;
-  $("#spokenEventAt").value=localDateTimeValue(date);
+  if(date)$("#spokenEventAt").value=localDateTimeValue(date);
+  else $("#spokenEventAt").value="";
+  $("#spokenScheduleTitle").textContent=date?"فهمت الموعد التالي":"حدد موعد الحدث";
+  $("#spokenScheduleHelp").textContent=date?"راجعه قبل الحفظ، ويمكنك تعديله.":"لم يُذكر موعد واضح؛ أدخله يدويًا قبل الحفظ.";
   $("#spokenScheduleKind").textContent=category==="meeting"?"اجتماع":/اتصال|اتصل|كلم/.test(text)?"اتصال":"متابعة";
 }
 $("#saveNote").onclick=async()=>{
   const text=$("#noteText").value.trim();if(!text&&!audioBlob){moeenToast("سجّل صوتًا أو اكتب ملاحظة أولًا.","warning","الملاحظة فارغة");return}
   const id=crypto.randomUUID(),title=$("#noteTitle").value.trim()||text.slice(0,45)||"ملاحظة صوتية",category=$("#noteCategory").value;
-  const confirmedDate=!$("#spokenSchedule").hidden&&$("#spokenEventAt").value?new Date($("#spokenEventAt").value):null;
-  if(confirmedDate&&Number.isNaN(confirmedDate.getTime())){moeenToast("راجع التاريخ والوقت قبل الحفظ.","warning","الموعد غير صحيح");return}
-  const spokenDate=confirmedDate||extractArabicDateTime(text),eventAt=(spokenDate||new Date()).toISOString(),reminder=spokenDate?$("#spokenReminder").value:"none";
+  const isEvent=category==="meeting"||category==="task",confirmedDate=isEvent&&$("#spokenEventAt").value?new Date($("#spokenEventAt").value):null;
+  if(isEvent&&(!confirmedDate||Number.isNaN(confirmedDate.getTime()))){moeenToast("حدد التاريخ والوقت الصحيحين قبل الحفظ.","warning","الموعد مطلوب");return}
+  if(confirmedDate&&confirmedDate<=new Date()){moeenToast("اختر موعدًا لاحقًا؛ لا يمكن تفعيل إشعار لموعد منتهٍ.","warning","الموعد مضى");return}
+  const spokenDate=confirmedDate,eventAt=(spokenDate||new Date()).toISOString(),reminder=spokenDate?$("#spokenReminder").value:"none";
   if(category==="meeting"){const arr=store.get("meetings");arr.unshift({id,title,people:"",date:eventAt,notes:text,audioId:audioBlob?id:null,reminder});store.set("meetings",arr);if(spokenDate)await syncReminder(id,"meeting",eventAt,reminder)}
   else if(category==="task"){const arr=store.get("tasks"),itemType=/اتصال|اتصل|كلم/.test(text)?"call":"task";arr.unshift({id,title,person:"",due:eventAt,notes:text,done:false,audioId:audioBlob?id:null,reminder,itemType});store.set("tasks",arr);if(spokenDate)await syncReminder(id,itemType,eventAt,reminder)}
   else if(category==="contact"){const arr=store.get("contacts"),phone=(text.match(/(?:\\+?\\d[\\d\\s-]{6,}\\d)/)||[""])[0].replace(/[\\s-]/g,""),email=(text.match(/[\\w.+-]+@[\\w.-]+\\.[a-z]{2,}/i)||[""])[0];arr.unshift({id,name:$("#noteTitle").value.trim()||"جهة اتصال صوتية",role:"",org:"",phone,email,notes:text,audioId:audioBlob?id:null});store.set("contacts",arr)}
