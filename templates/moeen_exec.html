@@ -11,8 +11,8 @@
   <link rel="manifest" href="{{ url_for('moeen_multi.moeen_manifest') }}">
   <link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='moeen_exec/icon-64.png') }}">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='moeen_exec/apple-touch-icon.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/styles.css') }}?v=46">
-  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/premium.css') }}?v=46">
+  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/styles.css') }}?v=48">
+  <link rel="stylesheet" href="{{ url_for('static', filename='moeen_exec/premium.css') }}?v=48">
 </head>
 <body class="locked">
   <section id="authGate" class="auth-gate">
@@ -192,6 +192,23 @@
           <option value="contact">الاتصالات</option>
         </select>
       </div>
+      <section id="spokenSchedule" class="spoken-schedule" hidden aria-live="polite">
+        <div class="spoken-schedule-head">
+          <div><span>فهمت الموعد التالي</span><small>راجعه قبل الحفظ، ويمكنك تعديله.</small></div>
+          <b id="spokenScheduleKind">موعد</b>
+        </div>
+        <label for="spokenEventAt">التاريخ والوقت</label>
+        <input id="spokenEventAt" type="datetime-local">
+        <label for="spokenReminder">موعد الإشعار</label>
+        <select id="spokenReminder">
+          <option value="0">عند الموعد</option>
+          <option value="15">قبل 15 دقيقة</option>
+          <option value="30" selected>قبل 30 دقيقة</option>
+          <option value="60">قبل ساعة</option>
+          <option value="1440">قبل يوم</option>
+          <option value="none">دون إشعار</option>
+        </select>
+      </section>
       <div class="modal-actions"><button value="cancel">إلغاء</button><button type="button" id="shareNoteText">مشاركة النص</button><button type="button" id="saveNote" class="primary">حفظ في الذاكرة</button></div>
     </form>
   </dialog>
@@ -215,8 +232,8 @@
       <div class="modal-actions"><button type="submit" class="primary" id="notificationDialogClose">تمت القراءة</button></div>
     </form>
   </dialog>
-  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}?v=47"></script>
-  <script src="{{ url_for('static', filename='moeen_exec/ui-feedback.js') }}?v=47"></script>
-  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}?v=47"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/i18n.js') }}?v=48"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/ui-feedback.js') }}?v=48"></script>
+  <script src="{{ url_for('static', filename='moeen_exec/app.js') }}?v=48"></script>
 </body>
 </html>

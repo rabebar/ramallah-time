@@ -603,8 +603,20 @@ $("#shareNoteText").onclick=async()=>{
     notice("#recordStatus","تعذرت مشاركة النص. حاول مجددًا.","error");
   }
 };
+function localDateTimeValue(date){
+  if(!(date instanceof Date)||Number.isNaN(date.getTime()))return"";
+  const local=new Date(date.getTime()-date.getTimezoneOffset()*60000);
+  return local.toISOString().slice(0,16);
+}
+function normalizeSpokenNumbers(value){
+  const words={"صفر":0,"واحد":1,"واحدة":1,"وحده":1,"اثنين":2,"إثنين":2,"اتنين":2,"ثلاث":3,"ثلاثة":3,"اربعة":4,"أربعة":4,"خمسة":5,"ستة":6,"سبعة":7,"ثمانية":8,"تسعة":9,"عشرة":10,"عشر":10,"احدعشر":11,"إحدىعشرة":11,"احدىعشرة":11,"اثناعشر":12,"اثنتاعشرة":12};
+  return (value||"").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).split(/(\s+|[^\u0621-\u064A]+)/).map(word=>Object.prototype.hasOwnProperty.call(words,word)?String(words[word]):word).join("");
+}
 function extractArabicDateTime(value){
-  let text=(value||"").toLowerCase().replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
+  let text=(value||"").toLowerCase().replace(/[،,.]/g," ").replace(/\s+/g," ").trim();
+  const hourNames={"الواحدة":1,"الاولى":1,"الأولى":1,"الثانية":2,"الثالثة":3,"الرابعة":4,"الخامسة":5,"السادسة":6,"السابعة":7,"الثامنة":8,"التاسعة":9,"العاشرة":10,"الحادية عشرة":11,"الثانية عشرة":12};
+  for(const [name,hour] of Object.entries(hourNames).sort((a,b)=>b[0].length-a[0].length))text=text.replace(name,String(hour));
+  text=normalizeSpokenNumbers(text);
   const now=new Date(),result=new Date(now);
   let english=text.match(/\bin\s+(half an hour|an hour|one hour|two hours|(\d+)\s*(minutes?|hours?))\b/);
   if(english){
@@ -616,6 +628,8 @@ function extractArabicDateTime(value){
   }
   let match=text.match(/(?:بعد|كمان)\s+(نصف)\s+ساعة/);
   if(match)return new Date(now.getTime()+30*60000);
+  match=text.match(/(?:بعد|كمان)\s+(ربع)\s+ساعة/);
+  if(match)return new Date(now.getTime()+15*60000);
   match=text.match(/(?:بعد|كمان)\s+(ساعة|ساعه)(?:\s+واحدة)?/);
   if(match)return new Date(now.getTime()+60*60000);
   match=text.match(/(?:بعد|كمان)\s+(ساعتين|ساعتان)/);
@@ -624,6 +638,10 @@ function extractArabicDateTime(value){
   if(match)return new Date(now.getTime()+Number(match[1])*60000);
   match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(ساعة|ساعه|ساعات)/);
   if(match)return new Date(now.getTime()+Number(match[1])*3600000);
+  match=text.match(/(?:بعد|كمان)\s+(يومين|يومان)/);
+  if(match)return new Date(now.getTime()+2*86400000);
+  match=text.match(/(?:بعد|كمان)\s+(\d+)\s*(يوم|ايام|أيام)/);
+  if(match)return new Date(now.getTime()+Number(match[1])*86400000);
   const dayNames={الأحد:0,الاحد:0,الإثنين:1,الاثنين:1,الثلاثاء:2,الأربعاء:3,الاربعاء:3,الخميس:4,الجمعة:5,الجمعه:5,السبت:6,sunday:0,monday:1,tuesday:2,wednesday:3,thursday:4,friday:5,saturday:6};
   let hasDate=false;
   if(/غدا|غدًا|بكرة|بكره|\btomorrow\b/.test(text)){result.setDate(result.getDate()+1);hasDate=true}
@@ -645,25 +663,35 @@ function extractArabicDateTime(value){
   }
   return hasDate?result:null;
 }
+function updateSchedulePreview(){
+  const category=$("#noteCategory").value,text=$("#noteText").value,date=extractArabicDateTime(text),isEvent=category==="meeting"||category==="task";
+  const panel=$("#spokenSchedule");panel.hidden=!(isEvent&&date);
+  if(panel.hidden)return;
+  $("#spokenEventAt").value=localDateTimeValue(date);
+  $("#spokenScheduleKind").textContent=category==="meeting"?"اجتماع":/اتصال|اتصل|كلم/.test(text)?"اتصال":"متابعة";
+}
 $("#saveNote").onclick=async()=>{
   const text=$("#noteText").value.trim();if(!text&&!audioBlob){moeenToast("سجّل صوتًا أو اكتب ملاحظة أولًا.","warning","الملاحظة فارغة");return}
-  const id=crypto.randomUUID(),title=$("#noteTitle").value.trim()||text.slice(0,45)||"ملاحظة صوتية",category=$("#noteCategory").value,spokenDate=extractArabicDateTime(text),eventAt=(spokenDate||new Date()).toISOString();
-  if(category==="meeting"){const arr=store.get("meetings");arr.unshift({id,title,people:"",date:eventAt,notes:text,audioId:audioBlob?id:null,reminder:spokenDate?"0":"none"});store.set("meetings",arr);if(spokenDate)await syncReminder(id,"meeting",eventAt,"0")}
-  else if(category==="task"){const arr=store.get("tasks");arr.unshift({id,title,person:"",due:eventAt,notes:text,done:false,audioId:audioBlob?id:null,reminder:spokenDate?"0":"none"});store.set("tasks",arr);if(spokenDate)await syncReminder(id,/اتصال|اتصل/.test(text)?"call":"task",eventAt,"0")}
+  const id=crypto.randomUUID(),title=$("#noteTitle").value.trim()||text.slice(0,45)||"ملاحظة صوتية",category=$("#noteCategory").value;
+  const confirmedDate=!$("#spokenSchedule").hidden&&$("#spokenEventAt").value?new Date($("#spokenEventAt").value):null;
+  if(confirmedDate&&Number.isNaN(confirmedDate.getTime())){moeenToast("راجع التاريخ والوقت قبل الحفظ.","warning","الموعد غير صحيح");return}
+  const spokenDate=confirmedDate||extractArabicDateTime(text),eventAt=(spokenDate||new Date()).toISOString(),reminder=spokenDate?$("#spokenReminder").value:"none";
+  if(category==="meeting"){const arr=store.get("meetings");arr.unshift({id,title,people:"",date:eventAt,notes:text,audioId:audioBlob?id:null,reminder});store.set("meetings",arr);if(spokenDate)await syncReminder(id,"meeting",eventAt,reminder)}
+  else if(category==="task"){const arr=store.get("tasks"),itemType=/اتصال|اتصل|كلم/.test(text)?"call":"task";arr.unshift({id,title,person:"",due:eventAt,notes:text,done:false,audioId:audioBlob?id:null,reminder,itemType});store.set("tasks",arr);if(spokenDate)await syncReminder(id,itemType,eventAt,reminder)}
   else if(category==="contact"){const arr=store.get("contacts"),phone=(text.match(/(?:\\+?\\d[\\d\\s-]{6,}\\d)/)||[""])[0].replace(/[\\s-]/g,""),email=(text.match(/[\\w.+-]+@[\\w.-]+\\.[a-z]{2,}/i)||[""])[0];arr.unshift({id,name:$("#noteTitle").value.trim()||"جهة اتصال صوتية",role:"",org:"",phone,email,notes:text,audioId:audioBlob?id:null});store.set("contacts",arr)}
   else{const mem=store.get("memories");mem.unshift({id,title,text,created:new Date().toISOString(),hasAudio:!!audioBlob});store.set("memories",mem)}
-  if(audioBlob)await audioDb.put(id,audioBlob);$("#recordDialog").close();setView(category==="memory"?"memory":category==="meeting"?"meetings":category==="task"?"tasks":"contacts");if(spokenDate&&(category==="meeting"||category==="task"))moeenToast(`تم ضبط الموعد والتنبيه تلقائيًا: ${spokenDate.toLocaleString(uiLocale())}`,"success","تم حفظ الموعد");
+  if(audioBlob)await audioDb.put(id,audioBlob);$("#recordDialog").close();setView(category==="memory"?"memory":category==="meeting"?"meetings":category==="task"?"tasks":"contacts");if(spokenDate&&(category==="meeting"||category==="task"))moeenToast(`تم حفظ الموعد: ${spokenDate.toLocaleString(uiLocale())}${reminder==="none"?" دون إشعار":` · الإشعار قبل ${reminder==="0"?"الموعد مباشرة":reminder+" دقيقة"}`}`,"success","تم تأكيد الموعد");
 };
 $("#noteText").oninput=updateSmartRoute;
-$("#noteCategory").onchange=updateSaveLabel;
+$("#noteCategory").onchange=()=>{updateSchedulePreview();updateSaveLabel()};
 function classifyText(text){
   const t=(text||"").toLowerCase();
   if(/اجتماع|اجتمعت|اجتمعنا|الحاضرون|ناقشنا|محضر|جلسة|\bmeeting\b|\battendees?\b|\bminutes\b|\bsession\b/.test(t))return{type:"meeting",reason:uiT("تم التعرف على مضمون متعلق باجتماع.")};
-  if(/ذكّرني|ذكرني|متابعة|تابع|يجب|موعد|إنجاز|انجاز|مطلوب|\bremind\b|\bfollow[\s-]?up\b|\btask\b|\bdue\b|\bappointment\b|\bmust\b/.test(t))return{type:"task",reason:uiT("تم التعرف على التزام أو متابعة.")};
-  if(/هاتف|رقم|اتصال|ايميل|إيميل|بريد|@|\\+?\\d[\\d\\s-]{6,}|\bphone\b|\bnumber\b|\bcall\b|\bemail\b|\bcontact\b/.test(t))return{type:"contact",reason:uiT("تم التعرف على بيانات اتصال.")};
+  if(/ذكّرني|ذكرني|متابعة|تابع|يجب|موعد|إنجاز|انجاز|مطلوب|اتصل|اتصال ب|كلم|\bremind\b|\bfollow[\s-]?up\b|\btask\b|\bdue\b|\bappointment\b|\bmust\b|\bcall\b/.test(t))return{type:"task",reason:uiT(/اتصل|اتصال ب|كلم|\bcall\b/.test(t)?"تم التعرف على اتصال يحتاج إلى تذكير.":"تم التعرف على التزام أو متابعة.")};
+  if(/هاتف|رقم|ايميل|إيميل|بريد|@|\\+?\\d[\\d\\s-]{6,}|\bphone\b|\bnumber\b|\bemail\b|\bcontact\b/.test(t))return{type:"contact",reason:uiT("تم التعرف على بيانات اتصال.")};
   return{type:"memory",reason:uiT("ستُحفظ كملاحظة في الذاكرة.")};
 }
-function updateSmartRoute(){const result=classifyText($("#noteText").value);$("#noteCategory").value=result.type;$("#routeReason").textContent=result.reason;updateSaveLabel()}
+function updateSmartRoute(){const result=classifyText($("#noteText").value);$("#noteCategory").value=result.type;$("#routeReason").textContent=result.reason;updateSchedulePreview();updateSaveLabel()}
 function updateSaveLabel(){const names={memory:uiT("الذاكرة"),meeting:uiT("الاجتماعات"),task:uiT("المتابعات"),contact:uiT("الاتصالات")};$("#saveNote").textContent=window.MoeenI18n?.language==="en"?`Save to ${names[$("#noteCategory").value]}`:`حفظ في ${names[$("#noteCategory").value]}`}
 const audioDb={
   db:null,
