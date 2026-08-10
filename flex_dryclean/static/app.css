@@ -649,6 +649,11 @@ dialog::backdrop {
 .customer-first-note a { color: var(--primary); font-weight: 700; }
 .phone-field { display: grid; grid-template-columns: 110px 1fr; direction: ltr; gap: 8px; }
 .password-hint { display: block; margin-top: 5px; color: var(--muted); line-height: 1.5; }
+.live-order-total { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 14px 0; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--wash); }
+.live-order-total span,.live-order-total strong { display: grid; gap: 4px; color: var(--muted); }
+.live-order-total b { color: var(--ink); font-size: 20px; }
+.live-order-total strong { padding: 9px 12px; border-radius: 11px; background: var(--primary); color: #fff; }
+.live-order-total strong b { color: #fff; }
 .customer-directory { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
 .customer-directory-card { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; color: var(--ink); text-decoration: none; background: #fff; }
 .customer-directory-card:hover { border-color: var(--primary); background: var(--wash); }
@@ -672,4 +677,5 @@ dialog::backdrop {
   .customer-result { grid-template-columns: 1fr auto; }
   .customer-open-orders { grid-column: 1 / -1; }
   .customer-directory { grid-template-columns: 1fr; }
+  .live-order-total { grid-template-columns: 1fr; }
 }

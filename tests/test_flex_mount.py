@@ -52,6 +52,7 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertIn('id="manual-service-form"'.encode(), dashboard.data)
         self.assertIn('id="service-quantity"'.encode(), dashboard.data)
         self.assertIn('id="service-note"'.encode(), dashboard.data)
+        self.assertIn('id="live-order-total"'.encode(), dashboard.data)
         self.assertIn("زبون جديد".encode(), dashboard.data)
         with self.module.db() as connection:
             self.assertEqual(connection.execute("SELECT phone FROM users WHERE id=1").fetchone()["phone"], "+972599000011")

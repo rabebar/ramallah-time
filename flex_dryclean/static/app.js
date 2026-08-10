@@ -11,12 +11,24 @@ const appScript=document.querySelector('script[src*="/static/app.js"]');
 const appBase=appScript?new URL('../',appScript.src).pathname:'./';
 const quantityRules=unit=>unit==='قطعة'?{min:1,step:1}:{min:0.1,step:0.1};
 const applyQuantityRules=(input,unit)=>{const rules=quantityRules(unit);input.min=String(rules.min);input.step=String(rules.step);if(Number(input.value)<rules.min)input.value=String(rules.min)};
+const money=value=>`${Math.max(Number(value)||0,0).toFixed(2)} ₪`;
+function updateOrderTotal(){
+  const subtotal=cartItems.reduce((sum,item)=>sum+(Number(item.price)||0)*(Number(item.quantity)||0),0);
+  const discount=Math.max(Number(document.querySelector('#new-order [name="discount"]')?.value)||0,0);
+  const paid=Math.max(Number(document.querySelector('#new-order [name="paid"]')?.value)||0,0);
+  const total=Math.max(subtotal-discount,0);
+  const balance=Math.max(total-paid,0);
+  const subtotalView=document.getElementById('live-subtotal'); if(subtotalView)subtotalView.textContent=money(subtotal);
+  const totalView=document.getElementById('live-total'); if(totalView)totalView.textContent=money(total);
+  const balanceView=document.getElementById('live-balance'); if(balanceView)balanceView.textContent=money(balance);
+}
 function renderCart(){
   if(!cart)return;
-  if(!cartItems.length){cart.innerHTML='<p class="empty">لم تتم إضافة قطع بعد.</p>';return;}
+  if(!cartItems.length){cart.innerHTML='<p class="empty">لم تتم إضافة قطع بعد.</p>';updateOrderTotal();return;}
   cart.innerHTML=cartItems.map((item,index)=>{const rules=quantityRules(item.unit);return `<div class="cart-line"><span><b>${escapeHtml(item.name)}${item.treatment&&item.treatment!=='حسب الوصف'?` — ${escapeHtml(item.treatment)}`:''}</b><small>${Number(item.price).toFixed(2)} ₪ / ${escapeHtml(item.unit)}</small>${item.note?`<small class="item-note">ملاحظة: ${escapeHtml(item.note)}</small>`:''}</span><input type="hidden" name="item_type[]" value="${item.manual?'manual':'catalog'}"><input type="hidden" name="service_id[]" value="${item.manual?'':item.id}"><input type="hidden" name="manual_name[]" value="${escapeHtml(item.manual?item.name:'')}"><input type="hidden" name="item_treatment[]" value="${escapeHtml(item.treatment||'حسب الوصف')}"><input type="hidden" name="item_unit[]" value="${escapeHtml(item.unit)}"><input type="hidden" name="item_price[]" value="${Number(item.price)}"><input type="hidden" name="item_note[]" value="${escapeHtml(item.note||'')}"><input type="hidden" name="save_manual[]" value="${item.save?'1':'0'}"><input aria-label="الكمية" name="quantity[]" type="number" min="${rules.min}" step="${rules.step}" value="${item.quantity}"><b>${(item.price*item.quantity).toFixed(2)} ₪</b><button type="button" data-remove="${index}">×</button></div>`}).join('');
   cart.querySelectorAll('input[name="quantity[]"]').forEach((input,index)=>input.addEventListener('input',()=>{cartItems[index].quantity=Number(input.value||1);renderCart()}));
   cart.querySelectorAll('[data-remove]').forEach(button=>button.addEventListener('click',()=>{cartItems.splice(Number(button.dataset.remove),1);renderCart()}));
+  updateOrderTotal();
 }
 const servicePicker=document.getElementById('service-picker');
 if(servicePicker){
@@ -57,6 +69,8 @@ if(servicePicker){
     renderCart(); document.getElementById('manual-service-name').value=''; document.getElementById('manual-service-price').value='0'; document.getElementById('manual-service-quantity').value='1'; document.getElementById('manual-service-note').value='';
   });
 }
+document.querySelectorAll('#new-order [name="discount"],#new-order [name="paid"]').forEach(input=>input.addEventListener('input',updateOrderTotal));
+updateOrderTotal();
 
 const customerLookupInput=document.getElementById('customer-lookup-input');
 const customerLookupResults=document.getElementById('customer-lookup-results');
