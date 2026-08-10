@@ -734,6 +734,7 @@ def protect_admin_requests():
     protected_receipt_prefixes = (
         '/static/uploads/payment_receipts/',
         '/static/uploads/moeen_payment_receipts/',
+        '/static/uploads/.flex_private/',
     )
     if request.path.startswith(protected_receipt_prefixes):
         abort(404)

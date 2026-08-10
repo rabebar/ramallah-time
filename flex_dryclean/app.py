@@ -16,7 +16,11 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 
 BASE_DIR = Path(__file__).resolve().parent
-DEFAULT_DB_PATH = Path("/var/data/flex/flex.db") if os.getenv("RENDER") else BASE_DIR / "flex.db"
+DEFAULT_DB_PATH = (
+    Path("/opt/render/project/src/static/uploads/.flex_private/flex.db")
+    if os.getenv("RENDER")
+    else BASE_DIR / "flex.db"
+)
 DB_PATH = Path(os.getenv("FLEX_DB_PATH", DEFAULT_DB_PATH))
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
