@@ -94,6 +94,34 @@ if(servicePicker){
 document.querySelectorAll('#new-order [name="discount"],#new-order [name="paid"]').forEach(input=>input.addEventListener('input',updateOrderTotal));
 updateOrderTotal();
 
+const cashClosingForm=document.getElementById('cash-closing-form');
+if(cashClosingForm){
+  const openingInput=document.getElementById('opening-cash');
+  const actualInput=document.getElementById('actual-cash');
+  const expectedView=document.getElementById('expected-cash');
+  const differenceView=document.getElementById('cash-difference');
+  const differenceBox=differenceView?.closest('.cash-difference');
+  const cashReceived=Number(cashClosingForm.dataset.cashReceived)||0;
+  const expenses=Number(cashClosingForm.dataset.expenses)||0;
+  const updateCashClosing=()=>{
+    const opening=Math.max(Number(openingInput?.value)||0,0);
+    const expected=opening+cashReceived-expenses;
+    if(expectedView)expectedView.textContent=money(expected);
+    if(!actualInput?.value){
+      if(differenceView)differenceView.textContent='—';
+      differenceBox?.classList.remove('is-balanced','has-difference');
+      return;
+    }
+    const difference=(Number(actualInput.value)||0)-expected;
+    if(differenceView)differenceView.textContent=money(difference);
+    differenceBox?.classList.toggle('is-balanced',Math.abs(difference)<0.01);
+    differenceBox?.classList.toggle('has-difference',Math.abs(difference)>=0.01);
+  };
+  openingInput?.addEventListener('input',updateCashClosing);
+  actualInput?.addEventListener('input',updateCashClosing);
+  updateCashClosing();
+}
+
 const customerLookupInput=document.getElementById('customer-lookup-input');
 const customerLookupResults=document.getElementById('customer-lookup-results');
 const orderCustomerName=document.getElementById('order-customer-name');

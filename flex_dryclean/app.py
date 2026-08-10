@@ -251,6 +251,12 @@ def init_db():
         closing_date TEXT NOT NULL,
         opening_cash REAL NOT NULL DEFAULT 0,
         actual_cash REAL,
+        total_received REAL NOT NULL DEFAULT 0,
+        cash_received REAL NOT NULL DEFAULT 0,
+        non_cash_received REAL NOT NULL DEFAULT 0,
+        expense_total REAL NOT NULL DEFAULT 0,
+        expected_cash REAL NOT NULL DEFAULT 0,
+        cash_difference REAL NOT NULL DEFAULT 0,
         note TEXT,
         closed_at TEXT,
         UNIQUE(business_id,closing_date),
@@ -268,6 +274,10 @@ def init_db():
             connection.execute("ALTER TABLE businesses ADD COLUMN last_seen TEXT")
         if "setup_paid" not in business_columns:
             connection.execute("ALTER TABLE businesses ADD COLUMN setup_paid INTEGER NOT NULL DEFAULT 1")
+        cash_day_columns = {row[1] for row in connection.execute("PRAGMA table_info(cash_days)")}
+        for column in ("total_received", "cash_received", "non_cash_received", "expense_total", "expected_cash", "cash_difference"):
+            if column not in cash_day_columns:
+                connection.execute(f"ALTER TABLE cash_days ADD COLUMN {column} REAL NOT NULL DEFAULT 0")
         for table in ("services", "customers", "orders", "expenses", "payments", "audit_log"):
             columns = {row[1] for row in connection.execute(f"PRAGMA table_info({table})")}
             if "business_id" not in columns:
@@ -509,6 +519,11 @@ def dashboard():
         received = connection.execute(
             "SELECT COALESCE(SUM(amount),0) FROM payments WHERE business_id=? AND date(paid_at)=?", (business_id, selected_date)
         ).fetchone()[0]
+        cash_received = connection.execute(
+            "SELECT COALESCE(SUM(amount),0) FROM payments WHERE business_id=? AND date(paid_at)=? AND payment_method='نقدي'",
+            (business_id, selected_date),
+        ).fetchone()[0]
+        non_cash_received = received - cash_received
         outstanding = connection.execute(
             "SELECT COALESCE(SUM(total-paid),0) FROM orders WHERE business_id=? AND (status!='تم التسليم' OR total>paid)", (business_id,)
         ).fetchone()[0]
@@ -519,6 +534,10 @@ def dashboard():
         expense_total = sum(row["amount"] for row in expenses)
         closing = connection.execute(
             "SELECT * FROM cash_days WHERE business_id=? AND closing_date=?", (business_id, selected_date)
+        ).fetchone()
+        previous_closing = connection.execute(
+            "SELECT actual_cash FROM cash_days WHERE business_id=? AND closing_date<? ORDER BY closing_date DESC LIMIT 1",
+            (business_id, selected_date),
         ).fetchone()
         reminders = connection.execute(
             """SELECT o.id,o.order_no,o.due_date,o.status,c.name customer_name,c.phone customer_phone,
@@ -531,10 +550,23 @@ def dashboard():
     grouped = {}
     for item in services:
         grouped.setdefault(item["category"], []).append(dict(item))
+    suggested_opening_cash = previous_closing["actual_cash"] if previous_closing and previous_closing["actual_cash"] is not None else 0
+    opening_cash = closing["opening_cash"] if closing else suggested_opening_cash
+    cash_summary = {
+        "total_received": received,
+        "cash_received": cash_received,
+        "non_cash_received": non_cash_received,
+        "expense_total": expense_total,
+        "opening_cash": opening_cash,
+        "net_cash_movement": cash_received - expense_total,
+        "expected_cash": opening_cash + cash_received - expense_total,
+        "actual_cash": closing["actual_cash"] if closing else None,
+        "difference": closing["cash_difference"] if closing else None,
+    }
     return render_template(
         "dashboard.html", services=[dict(item) for item in services], grouped_services=grouped, orders=orders,
         summary=summary, expenses=expenses, expense_total=expense_total,
-        selected_date=selected_date, query=query, closing=closing, reminders=reminders,
+        selected_date=selected_date, query=query, closing=closing, cash_summary=cash_summary, reminders=reminders,
         selected_customer=selected_customer, auto_open_order=bool(selected_customer and request.args.get("new_order")),
     )
 
@@ -906,12 +938,36 @@ def close_cash():
     actual = float(request.form.get("actual_cash") or 0)
     opening = float(request.form.get("opening_cash") or 0)
     with db() as connection:
+        total_received = connection.execute(
+            "SELECT COALESCE(SUM(amount),0) FROM payments WHERE business_id=? AND date(paid_at)=?",
+            (business_id, selected_date),
+        ).fetchone()[0]
+        cash_received = connection.execute(
+            "SELECT COALESCE(SUM(amount),0) FROM payments WHERE business_id=? AND date(paid_at)=? AND payment_method='نقدي'",
+            (business_id, selected_date),
+        ).fetchone()[0]
+        expense_total = connection.execute(
+            "SELECT COALESCE(SUM(amount),0) FROM expenses WHERE business_id=? AND expense_date=?",
+            (business_id, selected_date),
+        ).fetchone()[0]
+        non_cash_received = total_received - cash_received
+        expected_cash = opening + cash_received - expense_total
+        cash_difference = actual - expected_cash
         connection.execute(
-            """INSERT INTO cash_days(business_id,closing_date,opening_cash,actual_cash,note,closed_at)
-               VALUES(?,?,?,?,?,?) ON CONFLICT(business_id,closing_date) DO UPDATE SET
+            """INSERT INTO cash_days(
+                   business_id,closing_date,opening_cash,actual_cash,total_received,cash_received,
+                   non_cash_received,expense_total,expected_cash,cash_difference,note,closed_at
+               ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(business_id,closing_date) DO UPDATE SET
                opening_cash=excluded.opening_cash,actual_cash=excluded.actual_cash,
+               total_received=excluded.total_received,cash_received=excluded.cash_received,
+               non_cash_received=excluded.non_cash_received,expense_total=excluded.expense_total,
+               expected_cash=excluded.expected_cash,cash_difference=excluded.cash_difference,
                note=excluded.note,closed_at=excluded.closed_at""",
-            (business_id, selected_date, opening, actual, request.form.get("note", ""), datetime.now().isoformat(timespec="seconds")),
+            (
+                business_id, selected_date, opening, actual, total_received, cash_received,
+                non_cash_received, expense_total, expected_cash, cash_difference,
+                request.form.get("note", ""), datetime.now().isoformat(timespec="seconds"),
+            ),
         )
     flash("تم إقفال الصندوق وحفظ المبلغ الفعلي.", "success")
     return redirect(url_for("dashboard", date=selected_date))

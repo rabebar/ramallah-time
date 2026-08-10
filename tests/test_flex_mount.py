@@ -95,6 +95,36 @@ class FlexMountedAppTest(unittest.TestCase):
         with self.module.db() as connection:
             saved_item = connection.execute("SELECT service_name FROM order_items ORDER BY id DESC LIMIT 1").fetchone()
         self.assertEqual(saved_item["service_name"], "قميص — كوي فقط")
+        closing_date = self.module.today()
+        with self.module.db() as connection:
+            order_id = connection.execute("SELECT id FROM orders ORDER BY id DESC LIMIT 1").fetchone()["id"]
+            connection.execute(
+                "INSERT INTO payments(business_id,order_id,amount,payment_method,paid_at) VALUES(?,?,?,?,?)",
+                (1, order_id, 80, "نقدي", f"{closing_date} 10:00:00"),
+            )
+            connection.execute(
+                "INSERT INTO payments(business_id,order_id,amount,payment_method,paid_at) VALUES(?,?,?,?,?)",
+                (1, order_id, 20, "بطاقة", f"{closing_date} 11:00:00"),
+            )
+            connection.execute(
+                "INSERT INTO expenses(business_id,expense_date,category,amount,note) VALUES(?,?,?,?,?)",
+                (1, closing_date, "مواد تنظيف", 30, "Daily closing test"),
+            )
+        closing_page = self.client.get(f"/flex/?date={closing_date}")
+        self.assertIn('id="cash-closing-form"'.encode(), closing_page.data)
+        self.assertIn('data-cash-received="80.0"'.encode(), closing_page.data)
+        closed = self.client.post("/flex/cash/close", data={
+            "closing_date": closing_date, "opening_cash": "10", "actual_cash": "61", "note": "Counted",
+        })
+        self.assertEqual(closed.status_code, 302)
+        with self.module.db() as connection:
+            cash_day = connection.execute("SELECT * FROM cash_days WHERE business_id=1 AND closing_date=?", (closing_date,)).fetchone()
+        self.assertEqual(cash_day["total_received"], 100)
+        self.assertEqual(cash_day["cash_received"], 80)
+        self.assertEqual(cash_day["non_cash_received"], 20)
+        self.assertEqual(cash_day["expense_total"], 30)
+        self.assertEqual(cash_day["expected_cash"], 60)
+        self.assertEqual(cash_day["cash_difference"], 1)
         self.assertEqual(self.client.get("/flex/health").json["app"], "FLEX")
         self.client.post("/flex/logout")
         login = self.client.post("/flex/login?next=/", data={
