@@ -16,6 +16,7 @@ class FlexMountedAppTest(unittest.TestCase):
         os.environ["FLEX_DB_PATH"] = os.path.join(self.temp_dir.name, "flex.db")
         sys.modules.pop("flex_dryclean.app", None)
         module = importlib.import_module("flex_dryclean.app")
+        self.module = module
         parent = Flask("test-parent")
         mounted = DispatcherMiddleware(parent, {"/flex": module.app})
         self.client = Client(mounted, Response, use_cookies=True)
@@ -39,7 +40,36 @@ class FlexMountedAppTest(unittest.TestCase):
         dashboard = self.client.get("/flex/")
         self.assertEqual(dashboard.status_code, 200)
         self.assertIn(b"/flex/static/app.css", dashboard.data)
+        self.assertIn('id="service-category"'.encode(), dashboard.data)
+        self.assertIn('id="manual-service-form"'.encode(), dashboard.data)
         self.assertEqual(self.client.get("/flex/health").json["app"], "FLEX")
+
+    def test_create_order_with_manual_service(self):
+        self.client.post("/flex/register", data={
+            "business_name": "Manual Test",
+            "full_name": "Owner",
+            "phone": "0599000022",
+            "password": "StrongPass123",
+        })
+        response = self.client.post("/flex/orders", data={
+            "customer_name": "Customer",
+            "customer_phone": "0599111222",
+            "item_type[]": "manual",
+            "service_id[]": "",
+            "manual_name[]": "Special item",
+            "item_unit[]": "قطعة",
+            "item_price[]": "17.5",
+            "save_manual[]": "1",
+            "quantity[]": "2",
+            "discount": "0",
+            "paid": "0",
+        })
+        self.assertEqual(response.status_code, 302)
+        with self.module.db() as connection:
+            item = connection.execute("SELECT * FROM order_items ORDER BY id DESC LIMIT 1").fetchone()
+            saved = connection.execute("SELECT * FROM services WHERE name='Special item'").fetchone()
+        self.assertEqual(item["line_total"], 35)
+        self.assertIsNotNone(saved)
 
 
 if __name__ == "__main__":

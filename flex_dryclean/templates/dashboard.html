@@ -37,7 +37,21 @@
 
 <dialog id="new-order"><form method="post" action="{{ url_for('create_order') }}" class="modal-card"><div class="modal-head"><div><span class="eyebrow">الكاشير</span><h2>طلب جديد</h2></div><button type="button" class="icon-close" data-close>×</button></div>
   <div class="form-grid"><label>اسم الزبون<input name="customer_name" required></label><label>رقم الهاتف<input name="customer_phone" inputmode="tel" required></label><label>موعد التسليم<input name="due_date" type="datetime-local"></label><label>طريقة الدفع<select name="payment_method"><option>نقدي</option><option>بطاقة</option><option>آجل</option></select></label></div>
-  <div class="service-picker"><div class="picker-head"><h3>الخدمات</h3><span>اضغط لإضافة القطعة</span></div>{% for category,items in grouped_services.items() %}<div class="service-group"><b>{{ category }}</b><div>{% for service in items %}<button type="button" class="service-chip" data-service='{{ service|tojson }}'>{{ service.name }}<small>{{ service.price|money }} ₪ / {{ service.unit }}</small></button>{% endfor %}</div></div>{% endfor %}</div>
+  <div class="service-picker" id="service-picker" data-services='{{ services|tojson }}'>
+    <div class="picker-head"><div><h3>اختيار الخدمة</h3><span>اختر الفئة ثم الخدمة، أو أضف خدمة استثنائية يدوياً.</span></div><button type="button" class="soft" id="show-manual-service">+ إضافة يدوية</button></div>
+    <div class="service-selectors">
+      <label>الفئة<select id="service-category"><option value="">اختر الفئة</option>{% for category in grouped_services %}<option value="{{ category }}">{{ category }}</option>{% endfor %}</select></label>
+      <label>الخدمة<select id="service-choice" disabled><option value="">اختر الخدمة</option></select></label>
+      <button type="button" class="primary" id="add-selected-service" disabled>إضافة للطلب</button>
+    </div>
+    <div class="manual-service-form" id="manual-service-form" hidden>
+      <label>اسم الخدمة<input id="manual-service-name" placeholder="مثال: تنظيف قطعة خاصة"></label>
+      <label>الوحدة<select id="manual-service-unit"><option>قطعة</option><option>كيلو</option><option>متر</option><option>متر مربع</option></select></label>
+      <label>السعر<input id="manual-service-price" type="number" min="0" step="0.01" value="0"></label>
+      <label class="manual-save"><input id="manual-service-save" type="checkbox"> حفظها ضمن خدمات المغسلة</label>
+      <button type="button" class="outline" id="add-manual-service">إضافة للطلب</button>
+    </div>
+  </div>
   <div id="cart" class="cart"><p class="empty">لم تتم إضافة قطع بعد.</p></div>
   <div class="form-grid totals"><label>خصم<input name="discount" type="number" min="0" step="0.01" value="0"></label><label>المدفوع الآن<input name="paid" type="number" min="0" step="0.01" value="0"></label><label class="wide">ملاحظات الطلب<textarea name="notes" rows="2"></textarea></label></div>
   <button class="primary full" type="submit">حفظ الطلب وإصدار رقمه</button>

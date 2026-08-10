@@ -28,7 +28,7 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLEX_SECRET_KEY") or os.getenv("SECRET_KEY") or "local-flex-prototype-key"
 app.config.update(
     SESSION_COOKIE_NAME="flex_session",
-    SESSION_COOKIE_PATH="/flex",
+    SESSION_COOKIE_PATH="/flex" if os.getenv("RENDER") else "/",
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=bool(os.getenv("RENDER")),
@@ -344,7 +344,7 @@ def dashboard():
     for item in services:
         grouped.setdefault(item["category"], []).append(dict(item))
     return render_template(
-        "dashboard.html", services=services, grouped_services=grouped, orders=orders,
+        "dashboard.html", services=[dict(item) for item in services], grouped_services=grouped, orders=orders,
         summary=summary, expenses=expenses, expense_total=expense_total,
         selected_date=selected_date, query=query, closing=closing, reminders=reminders,
     )
@@ -356,9 +356,14 @@ def create_order():
     business_id = current_business_id()
     name = request.form.get("customer_name", "").strip()
     phone = re.sub(r"[^0-9+]", "", request.form.get("customer_phone", ""))
+    item_types = request.form.getlist("item_type[]")
     service_ids = request.form.getlist("service_id[]")
+    manual_names = request.form.getlist("manual_name[]")
+    item_units = request.form.getlist("item_unit[]")
+    item_prices = request.form.getlist("item_price[]")
     quantities = request.form.getlist("quantity[]")
-    if not name or not phone or not service_ids:
+    save_manual = request.form.getlist("save_manual[]")
+    if not name or not phone or not item_types:
         flash("أدخل بيانات الزبون وأضف خدمة واحدة على الأقل.", "error")
         return redirect(url_for("dashboard"))
     with db() as connection:
@@ -380,17 +385,45 @@ def create_order():
              request.form.get("payment_method", "نقدي"), request.form.get("notes", "").strip()),
         ).lastrowid
         subtotal = 0
-        for index, service_id in enumerate(service_ids):
-            service = connection.execute("SELECT * FROM services WHERE id=? AND business_id=?", (service_id, business_id)).fetchone()
-            if not service:
-                continue
+        for index, item_type in enumerate(item_types):
             quantity = max(float(quantities[index] or 1), 0.01)
-            line_total = quantity * service["price"]
+            if item_type == "manual":
+                service_name = (manual_names[index] if index < len(manual_names) else "").strip()
+                unit = (item_units[index] if index < len(item_units) else "قطعة").strip() or "قطعة"
+                unit_price = max(float(item_prices[index] or 0), 0)
+                service_id = None
+                if not service_name:
+                    continue
+                if index < len(save_manual) and save_manual[index] == "1":
+                    existing = connection.execute(
+                        "SELECT id FROM services WHERE business_id=? AND name=? AND unit=?",
+                        (business_id, service_name, unit),
+                    ).fetchone()
+                    if existing:
+                        service_id = existing["id"]
+                    else:
+                        service_id = connection.execute(
+                            "INSERT INTO services(business_id,category,name,unit,price) VALUES(?,?,?,?,?)",
+                            (business_id, "خدمات خاصة", service_name, unit, unit_price),
+                        ).lastrowid
+            else:
+                raw_service_id = service_ids[index] if index < len(service_ids) else ""
+                service = connection.execute(
+                    "SELECT * FROM services WHERE id=? AND business_id=? AND active=1",
+                    (raw_service_id, business_id),
+                ).fetchone()
+                if not service:
+                    continue
+                service_id = service["id"]
+                service_name = service["name"]
+                unit = service["unit"]
+                unit_price = service["price"]
+            line_total = quantity * unit_price
             subtotal += line_total
             connection.execute(
                 """INSERT INTO order_items(order_id,service_id,service_name,quantity,unit,unit_price,line_total)
                    VALUES(?,?,?,?,?,?,?)""",
-                (order_id, service["id"], service["name"], quantity, service["unit"], service["price"], line_total),
+                (order_id, service_id, service_name, quantity, unit, unit_price, line_total),
             )
         total = max(subtotal - discount, 0)
         paid = min(paid, total)
@@ -505,7 +538,8 @@ def close_cash():
 def service_settings():
     with db() as connection:
         services = connection.execute("SELECT * FROM services WHERE business_id=? ORDER BY category,sort_order,id", (current_business_id(),)).fetchall()
-    return render_template("services.html", services=services)
+    categories = list(dict.fromkeys(service["category"] for service in services))
+    return render_template("services.html", services=services, categories=categories)
 
 
 @app.get("/settings/business")
