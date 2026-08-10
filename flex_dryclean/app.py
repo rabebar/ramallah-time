@@ -337,7 +337,7 @@ def login_post():
     session["user_id"] = user["id"]
     session["business_id"] = user["business_id"]
     session["role"] = user["role"]
-    return redirect(request.args.get("next") or url_for("dashboard"))
+    return redirect(url_for("dashboard"))
 
 
 @app.get("/register")

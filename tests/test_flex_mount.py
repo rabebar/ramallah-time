@@ -78,6 +78,12 @@ class FlexMountedAppTest(unittest.TestCase):
             saved_item = connection.execute("SELECT service_name FROM order_items ORDER BY id DESC LIMIT 1").fetchone()
         self.assertEqual(saved_item["service_name"], "قميص — كوي فقط")
         self.assertEqual(self.client.get("/flex/health").json["app"], "FLEX")
+        self.client.post("/flex/logout")
+        login = self.client.post("/flex/login?next=/", data={
+            "phone_prefix": "00972", "phone": "0599000011", "password": "StrongPass123",
+        })
+        self.assertEqual(login.status_code, 302)
+        self.assertTrue(login.headers["Location"].endswith("/flex/"))
 
     def test_create_order_with_manual_service(self):
         self.client.post("/flex/register", data={
