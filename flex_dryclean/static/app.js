@@ -145,3 +145,26 @@ const serviceTableSearch=document.getElementById('service-table-search');
 if(serviceTableSearch)serviceTableSearch.addEventListener('input',()=>{const query=serviceTableSearch.value.trim().toLowerCase();document.querySelectorAll('[data-service-row]').forEach(row=>{const values=[row.textContent,...[...row.querySelectorAll('input,select')].map(field=>field.value)].join(' ').toLowerCase();row.hidden=Boolean(query&&!values.includes(query))})});
 const customerDirectorySearch=document.getElementById('customer-directory-search');
 if(customerDirectorySearch)customerDirectorySearch.addEventListener('input',()=>{const query=customerDirectorySearch.value.trim().toLowerCase();document.querySelectorAll('[data-customer-card]').forEach(card=>card.hidden=Boolean(query&&!card.textContent.toLowerCase().includes(query)))});
+
+const invoiceEditList=document.getElementById('invoice-edit-list');
+const updateInvoiceEditTotal=()=>{
+  if(!invoiceEditList)return;
+  let subtotal=0;
+  invoiceEditList.querySelectorAll('.invoice-edit-row').forEach(row=>{
+    const quantity=Math.max(Number(row.querySelector('[name="quantity[]"]').value)||0,0);
+    const price=Math.max(Number(row.querySelector('[name="unit_price[]"]').value)||0,0);
+    const lineTotal=quantity*price; subtotal+=lineTotal;
+    row.querySelector('.invoice-edit-line-total').textContent=money(lineTotal);
+  });
+  const discount=Math.max(Number(document.querySelector('#edit-invoice [name="discount"]')?.value)||0,0);
+  document.getElementById('edit-invoice-subtotal').textContent=money(subtotal);
+  document.getElementById('edit-invoice-total').textContent=money(Math.max(subtotal-discount,0));
+};
+if(invoiceEditList){
+  invoiceEditList.addEventListener('input',updateInvoiceEditTotal);
+  invoiceEditList.addEventListener('change',event=>{if(event.target.matches('[name="unit[]"]'))applyQuantityRules(event.target.closest('.invoice-edit-row').querySelector('[name="quantity[]"]'),event.target.value);updateInvoiceEditTotal()});
+  invoiceEditList.addEventListener('click',event=>{const remove=event.target.closest('.remove-invoice-row');if(remove){remove.closest('.invoice-edit-row').remove();updateInvoiceEditTotal()}});
+  document.querySelector('#edit-invoice [name="discount"]')?.addEventListener('input',updateInvoiceEditTotal);
+  document.getElementById('add-invoice-row')?.addEventListener('click',()=>{invoiceEditList.insertAdjacentHTML('beforeend','<div class="invoice-edit-row"><input name="item_name[]" aria-label="الخدمة" placeholder="اسم الخدمة" required><input name="quantity[]" type="number" min="1" step="1" value="1" aria-label="الكمية" required><select name="unit[]" aria-label="الوحدة"><option>قطعة</option><option>كيلو</option><option>متر</option><option>متر مربع</option></select><input name="unit_price[]" type="number" min="0" step="0.01" value="0" aria-label="السعر" required><input name="item_note[]" aria-label="الملاحظة" placeholder="ملاحظة"><b class="invoice-edit-line-total">0.00 ₪</b><button type="button" class="icon-close remove-invoice-row" aria-label="حذف البند">×</button></div>');updateInvoiceEditTotal()});
+  updateInvoiceEditTotal();
+}

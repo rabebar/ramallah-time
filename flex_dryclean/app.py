@@ -661,6 +661,62 @@ def order_detail(order_id):
     return render_template("order.html", order=order, items=items)
 
 
+@app.post("/orders/<int:order_id>/edit")
+@login_required
+def edit_order(order_id):
+    business_id = current_business_id()
+    names = request.form.getlist("item_name[]")
+    quantities = request.form.getlist("quantity[]")
+    units = request.form.getlist("unit[]")
+    prices = request.form.getlist("unit_price[]")
+    notes = request.form.getlist("item_note[]")
+    prepared = []
+    for index, raw_name in enumerate(names):
+        name = raw_name.strip()
+        if not name:
+            continue
+        unit = (units[index] if index < len(units) else "قطعة").strip() or "قطعة"
+        try:
+            quantity = max(float(quantities[index]), 0.01)
+            unit_price = max(float(prices[index]), 0)
+        except (ValueError, IndexError):
+            flash("تحقق من الكمية والسعر في بنود الفاتورة.", "error")
+            return redirect(url_for("order_detail", order_id=order_id))
+        if unit == "قطعة":
+            quantity = float(max(int(round(quantity)), 1))
+        note = (notes[index] if index < len(notes) else "").strip()
+        prepared.append((name, quantity, unit, unit_price, quantity * unit_price, note))
+    if not prepared:
+        flash("يجب أن تحتوي الفاتورة على بند واحد على الأقل.", "error")
+        return redirect(url_for("order_detail", order_id=order_id))
+    discount = max(float(request.form.get("discount") or 0), 0)
+    subtotal = sum(item[4] for item in prepared)
+    total = max(subtotal - discount, 0)
+    with db() as connection:
+        order = connection.execute("SELECT * FROM orders WHERE id=? AND business_id=?", (order_id, business_id)).fetchone()
+        if not order:
+            return "الطلب غير موجود", 404
+        if total < order["paid"]:
+            flash("لا يمكن جعل إجمالي الفاتورة أقل من المبلغ المقبوض. عدّل الدفعات أولاً.", "error")
+            return redirect(url_for("order_detail", order_id=order_id))
+        connection.execute("DELETE FROM order_items WHERE order_id=?", (order_id,))
+        connection.executemany(
+            """INSERT INTO order_items(order_id,service_name,quantity,unit,unit_price,line_total,item_note)
+               VALUES(?,?,?,?,?,?,?)""",
+            [(order_id, name, quantity, unit, price, line_total, note) for name, quantity, unit, price, line_total, note in prepared],
+        )
+        connection.execute(
+            "UPDATE orders SET due_date=?,discount=?,subtotal=?,total=?,notes=? WHERE id=?",
+            (request.form.get("due_date") or None, discount, subtotal, total, request.form.get("notes", "").strip(), order_id),
+        )
+        connection.execute(
+            "INSERT INTO audit_log(business_id,event_type,summary) VALUES(?,'order_edited',?)",
+            (business_id, f"تعديل الفاتورة {order['order_no']} من {order['total']:.2f} إلى {total:.2f}"),
+        )
+    flash("تم تحديث الفاتورة وإعادة احتساب المبلغ.", "success")
+    return redirect(url_for("order_detail", order_id=order_id))
+
+
 @app.post("/orders/<int:order_id>/status")
 @login_required
 def update_status(order_id):

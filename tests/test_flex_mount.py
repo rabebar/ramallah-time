@@ -114,6 +114,9 @@ class FlexMountedAppTest(unittest.TestCase):
             "paid": "0",
         })
         self.assertEqual(response.status_code, 302)
+        order_page = self.client.get(response.headers["Location"])
+        self.assertIn("تعديل الفاتورة".encode(), order_page.data)
+        self.assertIn('id="invoice-edit-list"'.encode(), order_page.data)
         with self.module.db() as connection:
             item = connection.execute("SELECT * FROM order_items ORDER BY id DESC LIMIT 1").fetchone()
             saved = connection.execute("SELECT * FROM services WHERE name='Special item'").fetchone()
@@ -147,8 +150,24 @@ class FlexMountedAppTest(unittest.TestCase):
         with self.module.db() as connection:
             self.assertEqual(connection.execute("SELECT COUNT(*) count FROM customers").fetchone()["count"], 1)
             weighted = connection.execute("SELECT * FROM order_items ORDER BY id DESC LIMIT 1").fetchone()
+            latest_order = connection.execute("SELECT id FROM orders ORDER BY id DESC LIMIT 1").fetchone()
         self.assertEqual(weighted["quantity"], 1.5)
         self.assertEqual(weighted["line_total"], 15)
+
+        edited = self.client.post(f"/flex/orders/{latest_order['id']}/edit", data={
+            "item_name[]": "Edited item", "quantity[]": "3", "unit[]": "قطعة",
+            "unit_price[]": "7", "item_note[]": "Updated", "discount": "1",
+            "due_date": "2026-08-12T10:00", "notes": "Invoice edited",
+        })
+        self.assertEqual(edited.status_code, 302)
+        with self.module.db() as connection:
+            edited_order = connection.execute("SELECT * FROM orders WHERE id=?", (latest_order["id"],)).fetchone()
+            edited_item = connection.execute("SELECT * FROM order_items WHERE order_id=?", (latest_order["id"],)).fetchone()
+        self.assertEqual(edited_order["subtotal"], 21)
+        self.assertEqual(edited_order["total"], 20)
+        self.assertEqual(edited_order["due_date"], "2026-08-12T10:00")
+        self.assertEqual(edited_item["service_name"], "Edited item")
+        self.assertEqual(edited_item["item_note"], "Updated")
 
 
 if __name__ == "__main__":
