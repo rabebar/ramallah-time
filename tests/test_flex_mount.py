@@ -110,7 +110,10 @@ class FlexMountedAppTest(unittest.TestCase):
                 "INSERT INTO expenses(business_id,expense_date,category,amount,note) VALUES(?,?,?,?,?)",
                 (1, closing_date, "مواد تنظيف", 30, "Daily closing test"),
             )
-        closing_page = self.client.get(f"/flex/?date={closing_date}")
+        closing_page = self.client.get(f"/flex/cash-accounts?date={closing_date}")
+        self.assertEqual(closing_page.status_code, 200)
+        self.assertIn(b'href="/flex/cash-accounts"', closing_page.data)
+        self.assertIn('مقبوضات غير نقدية'.encode(), closing_page.data)
         self.assertIn('id="cash-closing-form"'.encode(), closing_page.data)
         self.assertIn('data-cash-received="80.0"'.encode(), closing_page.data)
         closed = self.client.post("/flex/cash/close", data={

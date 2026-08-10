@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}حسابات الصندوق — FLEX{% endblock %}
+{% block content %}
+<section class="hero-row cash-accounts-hero">
+  <div><span class="eyebrow">الرقابة اليومية</span><h1>حسابات الصندوق</h1><p>النقد منفصل عن مدفوعات البطاقة والتحويل حتى يكون الإقفال واضحًا.</p></div>
+  <form method="get" class="cash-date-filter"><label>تاريخ الحساب<input type="date" name="date" value="{{ selected_date }}" onchange="this.form.submit()"></label></form>
+</section>
+
+<section class="cash-account-stats">
+  <article><span>إجمالي المقبوض من الخدمات</span><strong>{{ cash_summary.total_received|money }} <small>₪</small></strong><small>يشمل كل طرق الدفع</small></article>
+  <article class="cash-primary"><span>النقد الداخل إلى الصندوق</span><strong>{{ cash_summary.cash_received|money }} <small>₪</small></strong><small>هذا المبلغ يدخل في حساب الكاش</small></article>
+  <article class="non-cash-card"><span>بطاقة وتحويل</span><strong>{{ cash_summary.non_cash_received|money }} <small>₪</small></strong><small>مقبوضات غير نقدية — لا تدخل في الصندوق</small></article>
+  <article><span>المصروفات المدفوعة</span><strong>{{ cash_summary.expense_total|money }} <small>₪</small></strong><small>تُخصم من النقد</small></article>
+</section>
+
+<section class="cash-accounts-grid">
+  <div class="panel cash-ledger-panel">
+    <div class="panel-head"><div><span class="eyebrow">حركة {{ selected_date }}</span><h2>نتيجة الصندوق</h2></div>{% if closing %}<span class="status done">تم الإقفال</span>{% else %}<span class="status ready">اليوم مفتوح</span>{% endif %}</div>
+    <div class="cash-equation">
+      <span><small>رصيد افتتاح اليوم</small><b>{{ cash_summary.opening_cash|money }} ₪</b></span>
+      <i>+</i>
+      <span><small>المقبوض نقدًا</small><b>{{ cash_summary.cash_received|money }} ₪</b></span>
+      <i>−</i>
+      <span><small>المصروفات</small><b>{{ cash_summary.expense_total|money }} ₪</b></span>
+      <i>=</i>
+      <strong><small>المتوقع في الكاش</small><b>{{ cash_summary.expected_cash|money }} ₪</b></strong>
+    </div>
+    {% if closing %}
+      <div class="closed-cash-result">
+        <span>الموجود فعليًا <b>{{ closing.actual_cash|money }} ₪</b></span>
+        <strong class="{{ 'cash-ok' if closing.cash_difference|abs < 0.01 else 'cash-warning' }}">الفرق <b>{{ closing.cash_difference|money }} ₪</b></strong>
+      </div>
+      {% if closing.note %}<p class="closing-note">ملاحظة الإقفال: {{ closing.note }}</p>{% endif %}
+    {% else %}
+      <button class="primary" data-open="cash">إقفال اليوم وإدخال الموجود فعليًا</button>
+    {% endif %}
+  </div>
+
+  <aside class="cash-side-stack">
+    <div class="panel compact"><div class="panel-head"><div><span class="eyebrow">المدفوعات الخارجة</span><h2>المصروفات</h2></div><button class="soft" data-open="expense">+ إضافة مصروف</button></div>
+      <div class="expense-total">{{ cash_summary.expense_total|money }} <small>₪</small></div>
+      {% for expense in expenses %}<div class="mini-row"><span>{{ expense.category }}<small>{{ expense.note or expense.expense_date }}</small></span><b>{{ expense.amount|money }} ₪</b></div>{% else %}<p class="empty">لا توجد مصروفات في هذا اليوم.</p>{% endfor %}
+    </div>
+    <div class="panel compact"><span class="eyebrow">التقرير اليومي</span><h2>ملف الحسابات</h2><p>الطلبات والمقبوضات والمصروفات في ملف Excel مرتب.</p><a class="outline full" href="{{ url_for('export_report',start=selected_date,end=selected_date) }}">تحميل تقرير اليوم</a></div>
+  </aside>
+</section>
+
+<dialog id="expense"><form method="post" action="{{ url_for('create_expense') }}" class="modal-card small"><div class="modal-head"><h2>مصروف جديد</h2><button type="button" class="icon-close" data-close>×</button></div><label>التصنيف<select name="category"><option>مواد تنظيف</option><option>معطرات</option><option>أكياس وشماعات</option><option>وقود وتوصيل</option><option>صيانة</option><option>كهرباء ومياه</option><option>أخرى</option></select></label><label>المبلغ<input name="amount" type="number" min="0.01" step="0.01" required></label><label>التاريخ<input name="expense_date" type="date" value="{{ selected_date }}" required></label><label>ملاحظة<input name="note"></label><button class="primary full">حفظ المصروف</button></form></dialog>
+
+<dialog id="cash"><form method="post" action="{{ url_for('close_cash') }}" class="modal-card small" id="cash-closing-form" data-cash-received="{{ cash_summary.cash_received }}" data-expenses="{{ cash_summary.expense_total }}"><div class="modal-head"><div><span class="eyebrow">التسوية اليومية</span><h2>إقفال الصندوق</h2></div><button type="button" class="icon-close" data-close>×</button></div><input type="hidden" name="closing_date" value="{{ selected_date }}"><div class="cash-closing-breakdown"><span>إجمالي المقبوض من الخدمات <b>{{ cash_summary.total_received|money }} ₪</b></span><span>المقبوض نقدًا — يدخل في الكاش <b>{{ cash_summary.cash_received|money }} ₪</b></span><span>بطاقة وتحويل — لا تدخل في الكاش <b>{{ cash_summary.non_cash_received|money }} ₪</b></span><span>المصروفات المدفوعة <b>{{ cash_summary.expense_total|money }} ₪</b></span></div><label>رصيد افتتاح اليوم<input id="opening-cash" name="opening_cash" type="number" min="0" step="0.01" value="{{ cash_summary.opening_cash }}"></label><div class="cash-expected"><span>المتوقع وجوده في الكاش</span><b id="expected-cash">{{ cash_summary.expected_cash|money }} ₪</b></div><label>الموجود فعليًا في الكاش<input id="actual-cash" name="actual_cash" type="number" min="0" step="0.01" required></label><div class="cash-difference"><span>الفرق الفعلي</span><b id="cash-difference">—</b></div><label>ملاحظة<input name="note" placeholder="اختياري: سبب الزيادة أو النقص"></label><button class="primary full">حفظ إقفال اليوم</button></form></dialog>
+{% endblock %}

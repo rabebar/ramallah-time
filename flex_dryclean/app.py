@@ -571,6 +571,58 @@ def dashboard():
     )
 
 
+@app.get("/cash-accounts")
+@login_required
+def cash_accounts():
+    business_id = current_business_id()
+    selected_date = request.args.get("date", today())
+    with db() as connection:
+        order_summary = connection.execute(
+            """SELECT COUNT(*) order_count,COALESCE(SUM(total),0) sales
+               FROM orders WHERE business_id=? AND date(created_at)=?""",
+            (business_id, selected_date),
+        ).fetchone()
+        total_received = connection.execute(
+            "SELECT COALESCE(SUM(amount),0) FROM payments WHERE business_id=? AND date(paid_at)=?",
+            (business_id, selected_date),
+        ).fetchone()[0]
+        cash_received = connection.execute(
+            "SELECT COALESCE(SUM(amount),0) FROM payments WHERE business_id=? AND date(paid_at)=? AND payment_method='نقدي'",
+            (business_id, selected_date),
+        ).fetchone()[0]
+        non_cash_received = total_received - cash_received
+        expenses = connection.execute(
+            "SELECT * FROM expenses WHERE business_id=? AND expense_date=? ORDER BY id DESC",
+            (business_id, selected_date),
+        ).fetchall()
+        expense_total = sum(row["amount"] for row in expenses)
+        closing = connection.execute(
+            "SELECT * FROM cash_days WHERE business_id=? AND closing_date=?",
+            (business_id, selected_date),
+        ).fetchone()
+        previous_closing = connection.execute(
+            "SELECT actual_cash FROM cash_days WHERE business_id=? AND closing_date<? ORDER BY closing_date DESC LIMIT 1",
+            (business_id, selected_date),
+        ).fetchone()
+    suggested_opening_cash = previous_closing["actual_cash"] if previous_closing and previous_closing["actual_cash"] is not None else 0
+    opening_cash = closing["opening_cash"] if closing else suggested_opening_cash
+    cash_summary = {
+        "order_count": order_summary["order_count"],
+        "sales": order_summary["sales"],
+        "total_received": total_received,
+        "cash_received": cash_received,
+        "non_cash_received": non_cash_received,
+        "expense_total": expense_total,
+        "opening_cash": opening_cash,
+        "net_cash_movement": cash_received - expense_total,
+        "expected_cash": opening_cash + cash_received - expense_total,
+    }
+    return render_template(
+        "cash_accounts.html", selected_date=selected_date, cash_summary=cash_summary,
+        expenses=expenses, closing=closing,
+    )
+
+
 @app.post("/orders")
 @login_required
 def create_order():
@@ -920,14 +972,14 @@ def create_expense():
     amount = float(request.form.get("amount") or 0)
     if amount <= 0:
         flash("أدخل مبلغ مصروف صحيحًا.", "error")
-        return redirect(url_for("dashboard", date=request.form.get("expense_date", today())))
+        return redirect(url_for("cash_accounts", date=request.form.get("expense_date", today())))
     with db() as connection:
         connection.execute(
             "INSERT INTO expenses(business_id,expense_date,category,amount,note) VALUES(?,?,?,?,?)",
             (business_id, request.form.get("expense_date", today()), request.form.get("category", "أخرى"), amount, request.form.get("note", "").strip()),
         )
     flash("تم تسجيل المصروف.", "success")
-    return redirect(url_for("dashboard", date=request.form.get("expense_date", today())))
+    return redirect(url_for("cash_accounts", date=request.form.get("expense_date", today())))
 
 
 @app.post("/cash/close")
@@ -970,7 +1022,7 @@ def close_cash():
             ),
         )
     flash("تم إقفال الصندوق وحفظ المبلغ الفعلي.", "success")
-    return redirect(url_for("dashboard", date=selected_date))
+    return redirect(url_for("cash_accounts", date=selected_date))
 
 
 @app.get("/settings/services")

@@ -287,6 +287,52 @@ td small {
   display: grid;
   gap: 18px;
 }
+.grid-main.orders-only { grid-template-columns: minmax(0,1fr); }
+.cash-accounts-hero p { color: var(--muted); margin-bottom: 0; }
+.cash-date-filter { align-self: end; }
+.cash-date-filter label { display: grid; gap: 6px; font-weight: 700; color: var(--muted); }
+.cash-account-stats {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.cash-account-stats article {
+  display: grid;
+  gap: 7px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+}
+.cash-account-stats article > span { color: var(--muted); font-weight: 700; }
+.cash-account-stats article > strong { color: var(--navy); font-size: 27px; }
+.cash-account-stats article > small { color: var(--muted); line-height: 1.45; }
+.cash-account-stats .cash-primary { border-color: #a8ddec; background: #eefaff; }
+.cash-account-stats .non-cash-card { border-color: #eadcaa; background: #fffaf0; }
+.cash-account-stats .non-cash-card > strong { color: #9b7411; }
+.cash-accounts-grid { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(300px,.7fr); gap: 20px; align-items: start; }
+.cash-side-stack { display: grid; gap: 18px; }
+.cash-equation {
+  display: grid;
+  grid-template-columns: minmax(120px,1fr) auto minmax(120px,1fr) auto minmax(120px,1fr) auto minmax(150px,1.2fr);
+  align-items: stretch;
+  gap: 9px;
+  margin: 20px 0;
+}
+.cash-equation > span,
+.cash-equation > strong { display: grid; gap: 7px; padding: 16px; border-radius: 13px; background: var(--wash); }
+.cash-equation > strong { background: var(--navy); color: #fff; }
+.cash-equation small { color: var(--muted); }
+.cash-equation strong small { color: #cce8f0; }
+.cash-equation b { font-size: 20px; white-space: nowrap; }
+.cash-equation i { display: grid; place-items: center; color: var(--sky-dark); font-size: 23px; font-style: normal; font-weight: 800; }
+.closed-cash-result { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+.closed-cash-result > span,
+.closed-cash-result > strong { display: flex; justify-content: space-between; gap: 12px; padding: 15px; border-radius: 12px; background: var(--wash); }
+.closed-cash-result .cash-ok { background: #e1f7f1; color: #087965; }
+.closed-cash-result .cash-warning { background: #fff2cf; color: #9b7411; }
+.closing-note { color: var(--muted); }
 .compact {
   padding: 20px;
 }
@@ -568,6 +614,10 @@ dialog::backdrop {
   .side-stack {
     grid-template-columns: repeat(3, 1fr);
   }
+  .cash-account-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .cash-accounts-grid { grid-template-columns: 1fr; }
+  .cash-equation { grid-template-columns: 1fr; }
+  .cash-equation i { min-height: 20px; }
 }
 @media (max-width: 700px) {
   .topbar {
@@ -620,6 +670,8 @@ dialog::backdrop {
   .top-date {
     display: none;
   }
+  .cash-account-stats { grid-template-columns: 1fr; }
+  .closed-cash-result { grid-template-columns: 1fr; }
 }
 @page {
   size: A4;
