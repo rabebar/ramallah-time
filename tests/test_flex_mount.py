@@ -185,6 +185,9 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertIn(b'name="due_day" type="number" min="1" max="31" value="14"', order_page.data)
         self.assertIn(b'name="due_month" type="number" min="1" max="12" value="08"', order_page.data)
         self.assertIn(b'name="due_year" type="number" min="2026" max="2100" value="2026"', order_page.data)
+        self.assertIn(b'class="print-delivery"', order_page.data)
+        self.assertIn(b'14/08/2026', order_page.data)
+        self.assertIn(b'class="print-footer"', order_page.data)
 
 
 if __name__ == "__main__":

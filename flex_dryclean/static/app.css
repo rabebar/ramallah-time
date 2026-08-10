@@ -551,20 +551,99 @@ dialog::backdrop {
     display: none;
   }
 }
+@page {
+  size: A4;
+  margin: 14mm;
+}
+.print-delivery,
+.print-footer {
+  display: none;
+}
 @media print {
+  html,
+  body {
+    width: 100%;
+    background: #fff;
+  }
   .topbar,
+  .toast,
   .hero-row button,
   .invoice-actions,
-  .order-detail aside form {
+  .order-detail aside {
     display: none;
   }
   .shell {
     width: 100%;
     margin: 0;
+    padding: 0;
+    overflow: visible;
   }
   .panel {
     box-shadow: none;
     border: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .hero-row {
+    margin-bottom: 18px;
+  }
+  .hero-row h1 {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  .print-delivery {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    margin-top: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--ink);
+  }
+  .print-delivery small {
+    margin-inline-start: auto;
+    color: var(--muted);
+  }
+  .order-detail {
+    display: block;
+    width: 100%;
+  }
+  .order-detail table {
+    width: 100%;
+    table-layout: fixed;
+  }
+  .order-detail th,
+  .order-detail td {
+    padding-inline: 8px;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+  .order-detail .panel-head {
+    flex-direction: row;
+    align-items: center;
+  }
+  .invoice-total {
+    margin-inline-start: auto;
+    margin-inline-end: 0;
+  }
+  .print-footer {
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    align-items: start;
+    gap: 24px;
+    margin-top: 28px;
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+  }
+  .print-footer .barcode-visual {
+    margin: 0;
+  }
+  .print-footer p {
+    margin: 0;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
   }
 }
 .service-selectors {
