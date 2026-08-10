@@ -70,25 +70,15 @@ const fetchCustomers=async query=>{
   const response=await fetch(`${appBase}api/customers?q=${encodeURIComponent(query.trim())}`);
   return response.ok?(await response.json()).customers:[];
 };
-const customerMarkup=(customers,compact=false)=>customers.length?customers.map(customer=>`<article class="customer-result" data-customer-id="${customer.id}" data-customer-name="${escapeHtml(customer.name)}" data-customer-phone="${escapeHtml(customer.phone)}"><div><b>${escapeHtml(customer.name)}</b><span>${escapeHtml(customer.phone)} · ${customer.open_count} طلب مفتوح</span></div>${compact?'<button type="button" class="soft customer-select">اختيار</button>':`<div class="customer-open-orders">${customer.orders.length?customer.orders.map(order=>`<a href="${appBase}orders/${order.id}">${escapeHtml(order.order_no)} · ${escapeHtml(order.status)}${order.due_date?` · ${escapeHtml(order.due_date.replace('T',' '))}`:''}</a>`).join(''):'<span>لا توجد طلبات مفتوحة</span>'}</div><button type="button" class="soft customer-new-order">طلب جديد</button>`}</article>`).join(''):'<p class="empty">لم يُعثر على زبون مطابق. يمكنك إنشاء زبون جديد.</p>';
+const customerMarkup=customers=>customers.length?customers.map(customer=>`<article class="customer-result"><div><b>${escapeHtml(customer.name)}</b><span>${escapeHtml(customer.phone)} · ${escapeHtml(customer.address||'')} · ${customer.open_count} طلب مفتوح</span></div><div class="customer-open-orders">${customer.orders.length?customer.orders.map(order=>`<a href="${appBase}orders/${order.id}">${escapeHtml(order.order_no)} · ${escapeHtml(order.status)}${order.due_date?` · ${escapeHtml(order.due_date.replace('T',' '))}`:''}</a>`).join(''):'<span>لا توجد طلبات مفتوحة</span>'}</div><a class="soft" href="${appBase}customers/${customer.id}">فتح ملف الزبون</a></article>`).join(''):'<p class="empty">لم يُعثر على زبون مطابق. أضفه أولاً من زر «زبون جديد».</p>';
 const runCustomerSearch=(input,results,compact=false)=>{
   clearTimeout(customerTimer);
   const query=input.value;
   if(query.trim().length<2){results.hidden=true;results.innerHTML='';return;}
-  customerTimer=setTimeout(async()=>{const customers=await fetchCustomers(query);results.innerHTML=customerMarkup(customers,compact);results.hidden=false;},220);
+  customerTimer=setTimeout(async()=>{const customers=await fetchCustomers(query);results.innerHTML=customerMarkup(customers);results.hidden=false;},220);
 };
 if(customerLookupInput)customerLookupInput.addEventListener('input',()=>runCustomerSearch(customerLookupInput,customerLookupResults));
 [orderCustomerName,orderCustomerPhone].filter(Boolean).forEach(input=>input.addEventListener('input',()=>{selectedCustomerId.value='';runCustomerSearch(input,orderCustomerSuggestions,true)}));
-document.addEventListener('click',event=>{
-  const card=event.target.closest('.customer-result'); if(!card)return;
-  if(event.target.closest('.customer-select,.customer-new-order')){
-    selectedCustomerId.value=card.dataset.customerId;
-    orderCustomerName.value=card.dataset.customerName;
-    orderCustomerPhone.value=card.dataset.customerPhone;
-    orderCustomerSuggestions.hidden=true;
-    document.getElementById('new-order')?.showModal();
-  }
-});
 
 if('serviceWorker' in navigator){
   if(appScript){

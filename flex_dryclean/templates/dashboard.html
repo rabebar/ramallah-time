@@ -2,7 +2,7 @@
 {% block content %}
 <section class="hero-row">
   <div><span class="eyebrow">لوحة العمل</span><h1>يوم عمل واضح من أول طلب حتى إقفال الصندوق</h1></div>
-  <button class="primary" data-open="new-order">+ طلب جديد</button>
+  <a class="primary" href="{{ url_for('customers',new=1) }}">+ زبون جديد</a>
 </section>
 
 {% if reminders %}<section class="reminders" id="due-reminders" data-count="{{ reminders|length }}"><div class="reminder-title"><span>!</span><div><b>مواعيد تسليم تحتاج انتباهك</b><small>المواعيد القريبة والمتأخرة</small></div></div><div class="reminder-list">{% for reminder in reminders %}<a href="{{ url_for('order_detail',order_id=reminder.id) }}" class="reminder-item {{ 'overdue' if reminder.minutes_left < 0 }}"><b>{{ reminder.customer_name }}</b><span>{{ reminder.order_no }} · {{ reminder.due_date.replace('T',' ') }}</span><strong>{% if reminder.minutes_left < 0 %}متأخر {{ (-reminder.minutes_left)//60 }} س{% elif reminder.minutes_left < 60 %}متبقي {{ reminder.minutes_left }} د{% else %}متبقي {{ reminder.minutes_left//60 }} س{% endif %}</strong></a>{% endfor %}</div></section>{% endif %}
@@ -42,7 +42,7 @@
 
 <dialog id="new-order" {{ 'data-auto-open=1' if auto_open_order }}><form method="post" action="{{ url_for('create_order') }}" class="modal-card"><div class="modal-head"><div><span class="eyebrow">الكاشير</span><h2>طلب جديد</h2></div><button type="button" class="icon-close" data-close>×</button></div>
   <input type="hidden" name="customer_id" id="selected-customer-id" value="{{ selected_customer.id if selected_customer else '' }}">
-  <div class="form-grid"><label>الزبون المسجل<input id="order-customer-name" name="customer_name" autocomplete="off" placeholder="ابحث بالاسم" value="{{ selected_customer.name if selected_customer else '' }}" required></label><label>رقم الهاتف<input id="order-customer-phone" name="customer_phone" autocomplete="off" placeholder="ابحث برقم الهاتف" value="{{ selected_customer.phone if selected_customer else '' }}" inputmode="tel" required></label><div id="order-customer-suggestions" class="customer-results wide" hidden></div><p class="wide customer-first-note">الزبون غير موجود؟ <a href="{{ url_for('customers') }}">أنشئ ملف زبون أولاً</a> ثم أضف طلبه.</p><label>موعد التسليم<input name="due_date" type="datetime-local"></label><label>طريقة الدفع<select name="payment_method"><option>نقدي</option><option>بطاقة</option><option>آجل</option></select></label></div>
+  <div class="form-grid"><label>الزبون<input id="order-customer-name" name="customer_name" value="{{ selected_customer.name if selected_customer else '' }}" readonly required></label><label>رقم الهاتف<input id="order-customer-phone" name="customer_phone" value="{{ selected_customer.phone if selected_customer else '' }}" readonly required></label><label>موعد التسليم<input name="due_date" type="datetime-local"></label><label>طريقة الدفع<select name="payment_method"><option>نقدي</option><option>بطاقة</option><option>آجل</option></select></label></div>
   <div class="service-picker" id="service-picker" data-services='{{ services|tojson }}'>
     <div class="picker-head"><div><h3>اختيار الخدمة</h3><span>اختر الفئة ثم الخدمة، أو أضف خدمة استثنائية يدوياً.</span></div><button type="button" class="soft" id="show-manual-service">+ إضافة يدوية</button></div>
     <div class="service-selectors">

@@ -29,9 +29,17 @@ class FlexMountedAppTest(unittest.TestCase):
         asset = self.client.get("/flex/static/flex-app-icon.png")
         self.assertEqual(asset.status_code, 200)
         asset.close()
+        weak = self.client.post("/flex/register", data={
+            "business_name": "مغسلة ضعيفة", "full_name": "مالك",
+            "phone_prefix": "00972", "phone": "599999999", "password": "weakpass1",
+        })
+        self.assertEqual(weak.status_code, 302)
+        with self.module.db() as connection:
+            self.assertEqual(connection.execute("SELECT COUNT(*) count FROM businesses").fetchone()["count"], 0)
         registered = self.client.post("/flex/register", data={
             "business_name": "مغسلة الاختبار",
             "full_name": "مالك المغسلة",
+            "phone_prefix": "00972",
             "phone": "0599000011",
             "password": "StrongPass123",
         })
@@ -44,7 +52,9 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertIn('id="manual-service-form"'.encode(), dashboard.data)
         self.assertIn('id="service-quantity"'.encode(), dashboard.data)
         self.assertIn('id="service-note"'.encode(), dashboard.data)
+        self.assertIn("زبون جديد".encode(), dashboard.data)
         with self.module.db() as connection:
+            self.assertEqual(connection.execute("SELECT phone FROM users WHERE id=1").fetchone()["phone"], "+972599000011")
             sweater = connection.execute("SELECT id FROM services WHERE business_id=1 AND name='كنزة / سويتر'").fetchone()
             shirt_treatments = connection.execute("SELECT treatment FROM services WHERE business_id=1 AND name='قميص'").fetchall()
             iron_shirt = connection.execute("SELECT id FROM services WHERE business_id=1 AND name='قميص' AND treatment='كوي فقط'").fetchone()

@@ -278,6 +278,12 @@ def money(value):
     return f"{float(value or 0):,.2f}"
 
 
+def normalized_phone(prefix, local_phone):
+    digits = re.sub(r"\D", "", local_phone or "").lstrip("0")
+    country = "972" if str(prefix).replace("+", "").replace("00", "") == "972" else "970"
+    return f"+{country}{digits}", digits
+
+
 app.jinja_env.filters["money"] = money
 
 
@@ -317,9 +323,12 @@ def login():
 
 @app.post("/login")
 def login_post():
-    phone = re.sub(r"[^0-9+]", "", request.form.get("phone", ""))
+    raw_phone = re.sub(r"[^0-9+]", "", request.form.get("phone", ""))
+    phone, _ = normalized_phone(request.form.get("phone_prefix", "00970"), raw_phone)
     with db() as connection:
         user = connection.execute("SELECT * FROM users WHERE phone=? AND active=1", (phone,)).fetchone()
+        if not user:
+            user = connection.execute("SELECT * FROM users WHERE phone=? AND active=1", (raw_phone,)).fetchone()
     if not user or not check_password_hash(user["password_hash"], request.form.get("password", "")):
         flash("رقم الهاتف أو كلمة المرور غير صحيحة.", "error")
         return redirect(url_for("login"))
@@ -340,10 +349,11 @@ def register():
 def register_post():
     business_name = request.form.get("business_name", "").strip()
     full_name = request.form.get("full_name", "").strip()
-    phone = re.sub(r"[^0-9+]", "", request.form.get("phone", ""))
+    phone, local_phone = normalized_phone(request.form.get("phone_prefix", "00970"), request.form.get("phone", ""))
     password = request.form.get("password", "")
-    if not business_name or not full_name or len(phone) < 8 or len(password) < 8:
-        flash("أكمل البيانات، ويجب ألا تقل كلمة المرور عن 8 أحرف.", "error")
+    strong_password = len(password) >= 12 and re.search(r"[A-Z]", password) and re.search(r"[A-Za-z]", password) and re.search(r"\d", password)
+    if not business_name or not full_name or len(local_phone) < 8 or not strong_password:
+        flash("أكمل البيانات. كلمة المرور يجب أن تكون 12 خانة على الأقل وتضم حرفاً ورقماً وحرفاً إنجليزياً كبيراً.", "error")
         return redirect(url_for("register"))
     with db() as connection:
         if connection.execute("SELECT 1 FROM users WHERE phone=?", (phone,)).fetchone():
@@ -600,12 +610,9 @@ def customers():
 @login_required
 def create_customer():
     name = " ".join(request.form.get("name", "").split())
-    prefix = request.form.get("phone_prefix", "+970")
-    local_phone = re.sub(r"\D", "", request.form.get("phone", "")).lstrip("0")
+    prefix = request.form.get("phone_prefix", "00970")
     address = request.form.get("address", "").strip()
-    if prefix not in {"+970", "+972"}:
-        prefix = "+970"
-    phone = f"{prefix}{local_phone}"
+    phone, local_phone = normalized_phone(prefix, request.form.get("phone", ""))
     if len(name.split()) < 4 or len(local_phone) < 8 or not address:
         flash("أدخل الاسم الرباعي ورقم هاتف صحيح وعنوان السكن.", "error")
         return redirect(url_for("customers"))
