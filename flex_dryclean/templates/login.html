@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block title %}الدخول — FLEX{% endblock %}
+{% block content %}<section class="auth-wrap"><form method="post" class="auth-card"><img class="auth-logo" src="{{ url_for('static',filename='flex-logo-light.png') }}" alt="FLEX"><h1>الدخول إلى FLEX</h1><p>أدخل بيانات حساب المغسلة.</p><label>رقم الهاتف<input name="phone" inputmode="tel" autocomplete="username" required autofocus></label><label>كلمة المرور<input name="password" type="password" autocomplete="current-password" required></label><button class="primary full">دخول</button><a href="{{ url_for('register') }}">مغسلة جديدة؟ أنشئ حسابًا</a></form></section>{% endblock %}

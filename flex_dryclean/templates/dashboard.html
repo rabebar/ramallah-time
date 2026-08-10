@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="hero-row">
+  <div><span class="eyebrow">لوحة العمل</span><h1>يوم عمل واضح من أول طلب حتى إقفال الصندوق</h1></div>
+  <button class="primary" data-open="new-order">+ طلب جديد</button>
+</section>
+
+{% if reminders %}<section class="reminders" id="due-reminders" data-count="{{ reminders|length }}"><div class="reminder-title"><span>!</span><div><b>مواعيد تسليم تحتاج انتباهك</b><small>المواعيد القريبة والمتأخرة</small></div></div><div class="reminder-list">{% for reminder in reminders %}<a href="{{ url_for('order_detail',order_id=reminder.id) }}" class="reminder-item {{ 'overdue' if reminder.minutes_left < 0 }}"><b>{{ reminder.customer_name }}</b><span>{{ reminder.order_no }} · {{ reminder.due_date.replace('T',' ') }}</span><strong>{% if reminder.minutes_left < 0 %}متأخر {{ (-reminder.minutes_left)//60 }} س{% elif reminder.minutes_left < 60 %}متبقي {{ reminder.minutes_left }} د{% else %}متبقي {{ reminder.minutes_left//60 }} س{% endif %}</strong></a>{% endfor %}</div></section>{% endif %}
+
+<section class="stats">
+  <article><span>طلبات اليوم</span><strong>{{ summary.order_count }}</strong></article>
+  <article><span>إجمالي المبيعات</span><strong>{{ summary.sales|money }} <small>₪</small></strong></article>
+  <article><span>المقبوض</span><strong>{{ summary.received|money }} <small>₪</small></strong></article>
+  <article><span>المتبقي</span><strong>{{ summary.outstanding|money }} <small>₪</small></strong></article>
+  <article class="accent"><span>صافي النقد</span><strong>{{ (summary.received-expense_total)|money }} <small>₪</small></strong></article>
+</section>
+
+<section class="grid-main">
+  <div class="panel orders-panel">
+    <div class="panel-head"><div><span class="eyebrow">الطلبات</span><h2>متابعة القطع</h2></div>
+      <form class="scan-search" id="scan-form"><input id="scan-input" value="{{ query }}" placeholder="رقم الطلب، الهاتف أو امسح الباركود" autocomplete="off"><button>بحث</button></form>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>الطلب</th><th>الزبون</th><th>الحالة</th><th>القيمة</th><th>المتبقي</th><th>الموعد</th></tr></thead><tbody>
+      {% for order in orders %}<tr data-href="{{ url_for('order_detail',order_id=order.id) }}"><td><b>{{ order.order_no }}</b><small>{{ order.created_at[:16] }}</small></td><td>{{ order.customer_name }}<small>{{ order.customer_phone }}</small></td><td><span class="status {{ 'done' if order.status=='تم التسليم' else 'ready' if order.status=='جاهز' else '' }}">{{ order.status }}</span></td><td>{{ order.total|money }} ₪</td><td>{{ (order.total-order.paid)|money }} ₪</td><td>{{ order.due_date or '—' }}</td></tr>
+      {% else %}<tr><td colspan="6" class="empty">لا توجد طلبات بعد.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </div>
+  <aside class="side-stack">
+    <div class="panel compact"><div class="panel-head"><div><span class="eyebrow">اليوم</span><h2>المصروفات</h2></div><button class="soft" data-open="expense">+ إضافة</button></div>
+      <div class="expense-total">{{ expense_total|money }} <small>₪</small></div>
+      {% for expense in expenses[:5] %}<div class="mini-row"><span>{{ expense.category }}<small>{{ expense.note }}</small></span><b>{{ expense.amount|money }} ₪</b></div>{% else %}<p class="empty">لا توجد مصروفات.</p>{% endfor %}
+    </div>
+    <div class="panel compact"><span class="eyebrow">التقارير</span><h2>نتائج اليوم</h2><p>نزّل الطلبات والمقبوضات والمصروفات في ملف Excel مرتب.</p><a class="outline full" href="{{ url_for('export_report',start=selected_date,end=selected_date) }}">تحميل Excel</a></div>
+    <div class="panel compact"><span class="eyebrow">الصندوق</span><h2>{{ 'مغلق' if closing else 'إقفال اليوم' }}</h2>{% if closing %}<p>المبلغ الفعلي المسجل</p><div class="expense-total">{{ closing.actual_cash|money }} ₪</div>{% else %}<button class="outline full" data-open="cash">إدخال النقد الفعلي</button>{% endif %}</div>
+  </aside>
+</section>
+
+<dialog id="new-order"><form method="post" action="{{ url_for('create_order') }}" class="modal-card"><div class="modal-head"><div><span class="eyebrow">الكاشير</span><h2>طلب جديد</h2></div><button type="button" class="icon-close" data-close>×</button></div>
+  <div class="form-grid"><label>اسم الزبون<input name="customer_name" required></label><label>رقم الهاتف<input name="customer_phone" inputmode="tel" required></label><label>موعد التسليم<input name="due_date" type="datetime-local"></label><label>طريقة الدفع<select name="payment_method"><option>نقدي</option><option>بطاقة</option><option>آجل</option></select></label></div>
+  <div class="service-picker"><div class="picker-head"><h3>الخدمات</h3><span>اضغط لإضافة القطعة</span></div>{% for category,items in grouped_services.items() %}<div class="service-group"><b>{{ category }}</b><div>{% for service in items %}<button type="button" class="service-chip" data-service='{{ service|tojson }}'>{{ service.name }}<small>{{ service.price|money }} ₪ / {{ service.unit }}</small></button>{% endfor %}</div></div>{% endfor %}</div>
+  <div id="cart" class="cart"><p class="empty">لم تتم إضافة قطع بعد.</p></div>
+  <div class="form-grid totals"><label>خصم<input name="discount" type="number" min="0" step="0.01" value="0"></label><label>المدفوع الآن<input name="paid" type="number" min="0" step="0.01" value="0"></label><label class="wide">ملاحظات الطلب<textarea name="notes" rows="2"></textarea></label></div>
+  <button class="primary full" type="submit">حفظ الطلب وإصدار رقمه</button>
+</form></dialog>
+
+<dialog id="expense"><form method="post" action="{{ url_for('create_expense') }}" class="modal-card small"><div class="modal-head"><h2>مصروف جديد</h2><button type="button" class="icon-close" data-close>×</button></div><label>التصنيف<select name="category"><option>مواد تنظيف</option><option>معطرات</option><option>أكياس وشماعات</option><option>وقود وتوصيل</option><option>صيانة</option><option>كهرباء ومياه</option><option>أخرى</option></select></label><label>المبلغ<input name="amount" type="number" min="0.01" step="0.01" required></label><label>التاريخ<input name="expense_date" type="date" value="{{ selected_date }}" required></label><label>ملاحظة<input name="note"></label><button class="primary full">حفظ المصروف</button></form></dialog>
+
+<dialog id="cash"><form method="post" action="{{ url_for('close_cash') }}" class="modal-card small"><div class="modal-head"><h2>إقفال الصندوق</h2><button type="button" class="icon-close" data-close>×</button></div><input type="hidden" name="closing_date" value="{{ selected_date }}"><label>رصيد افتتاح اليوم<input name="opening_cash" type="number" step="0.01" value="0"></label><label>النقد الفعلي في الصندوق<input name="actual_cash" type="number" step="0.01" required></label><label>ملاحظة<input name="note"></label><button class="primary full">حفظ الإقفال</button></form></dialog>
+{% endblock %}

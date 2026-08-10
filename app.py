@@ -555,6 +555,13 @@ app.config.update(
     PERMANENT_SESSION_LIFETIME=timedelta(days=7),
 )
 
+# FLEX runs as an isolated application under the existing RT Studio service.
+# It deliberately uses a separate session cookie and the same Render process;
+# no additional Render service is required.
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from flex_dryclean.app import app as flex_app
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {"/flex": flex_app})
+
 BOT_USER_AGENT_PATTERN = re.compile(
     r'bot|crawler|spider|slurp|bingpreview|facebookexternalhit|'
     r'whatsapp|telegrambot|discordbot|linkedinbot|preview',
