@@ -606,6 +606,12 @@ def cash_accounts():
         ).fetchone()
     suggested_opening_cash = previous_closing["actual_cash"] if previous_closing and previous_closing["actual_cash"] is not None else 0
     opening_cash = closing["opening_cash"] if closing else suggested_opening_cash
+    current_expected_cash = opening_cash + cash_received - expense_total
+    closing_stale = bool(closing and (
+        abs(float(closing["total_received"] or 0) - float(total_received or 0)) >= 0.01
+        or abs(float(closing["cash_received"] or 0) - float(cash_received or 0)) >= 0.01
+        or abs(float(closing["expense_total"] or 0) - float(expense_total or 0)) >= 0.01
+    ))
     cash_summary = {
         "order_count": order_summary["order_count"],
         "sales": order_summary["sales"],
@@ -615,7 +621,9 @@ def cash_accounts():
         "expense_total": expense_total,
         "opening_cash": opening_cash,
         "net_cash_movement": cash_received - expense_total,
-        "expected_cash": opening_cash + cash_received - expense_total,
+        "expected_cash": current_expected_cash,
+        "current_difference": (float(closing["actual_cash"] or 0) - current_expected_cash) if closing else None,
+        "closing_stale": closing_stale,
     }
     return render_template(
         "cash_accounts.html", selected_date=selected_date, cash_summary=cash_summary,

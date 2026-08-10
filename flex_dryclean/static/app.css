@@ -333,6 +333,17 @@ td small {
 .closed-cash-result .cash-ok { background: #e1f7f1; color: #087965; }
 .closed-cash-result .cash-warning { background: #fff2cf; color: #9b7411; }
 .closing-note { color: var(--muted); }
+.closing-stale-warning {
+  display: grid;
+  gap: 5px;
+  margin: 16px 0 12px;
+  padding: 14px 16px;
+  border: 1px solid #ead38d;
+  border-radius: 12px;
+  background: #fff8df;
+  color: #805f0b;
+}
+.closing-stale-warning span { line-height: 1.55; }
 .compact {
   padding: 20px;
 }

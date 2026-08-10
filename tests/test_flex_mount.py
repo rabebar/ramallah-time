@@ -128,6 +128,15 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertEqual(cash_day["expense_total"], 30)
         self.assertEqual(cash_day["expected_cash"], 60)
         self.assertEqual(cash_day["cash_difference"], 1)
+        with self.module.db() as connection:
+            connection.execute(
+                "INSERT INTO expenses(business_id,expense_date,category,amount,note) VALUES(?,?,?,?,?)",
+                (1, closing_date, "مواد تنظيف", 6, "Added after closing"),
+            )
+        stale_closing = self.client.get(f"/flex/cash-accounts?date={closing_date}")
+        self.assertIn("الحركة تغيّرت بعد الإقفال".encode(), stale_closing.data)
+        self.assertIn("إعادة عدّ الكاش وتحديث الإقفال".encode(), stale_closing.data)
+        self.assertIn("7.00".encode(), stale_closing.data)
         self.assertEqual(self.client.get("/flex/health").json["app"], "FLEX")
         self.client.post("/flex/logout")
         login = self.client.post("/flex/login?next=/", data={
