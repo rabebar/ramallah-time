@@ -13,7 +13,7 @@ const applyQuantityRules=(input,unit)=>{const rules=quantityRules(unit);input.mi
 function renderCart(){
   if(!cart)return;
   if(!cartItems.length){cart.innerHTML='<p class="empty">لم تتم إضافة قطع بعد.</p>';return;}
-  cart.innerHTML=cartItems.map((item,index)=>{const rules=quantityRules(item.unit);return `<div class="cart-line"><span><b>${escapeHtml(item.name)}</b><small>${Number(item.price).toFixed(2)} ₪ / ${escapeHtml(item.unit)}</small>${item.note?`<small class="item-note">ملاحظة: ${escapeHtml(item.note)}</small>`:''}</span><input type="hidden" name="item_type[]" value="${item.manual?'manual':'catalog'}"><input type="hidden" name="service_id[]" value="${item.manual?'':item.id}"><input type="hidden" name="manual_name[]" value="${escapeHtml(item.manual?item.name:'')}"><input type="hidden" name="item_unit[]" value="${escapeHtml(item.unit)}"><input type="hidden" name="item_price[]" value="${Number(item.price)}"><input type="hidden" name="item_note[]" value="${escapeHtml(item.note||'')}"><input type="hidden" name="save_manual[]" value="${item.save?'1':'0'}"><input aria-label="الكمية" name="quantity[]" type="number" min="${rules.min}" step="${rules.step}" value="${item.quantity}"><b>${(item.price*item.quantity).toFixed(2)} ₪</b><button type="button" data-remove="${index}">×</button></div>`}).join('');
+  cart.innerHTML=cartItems.map((item,index)=>{const rules=quantityRules(item.unit);return `<div class="cart-line"><span><b>${escapeHtml(item.name)}${item.treatment&&item.treatment!=='حسب الوصف'?` — ${escapeHtml(item.treatment)}`:''}</b><small>${Number(item.price).toFixed(2)} ₪ / ${escapeHtml(item.unit)}</small>${item.note?`<small class="item-note">ملاحظة: ${escapeHtml(item.note)}</small>`:''}</span><input type="hidden" name="item_type[]" value="${item.manual?'manual':'catalog'}"><input type="hidden" name="service_id[]" value="${item.manual?'':item.id}"><input type="hidden" name="manual_name[]" value="${escapeHtml(item.manual?item.name:'')}"><input type="hidden" name="item_treatment[]" value="${escapeHtml(item.treatment||'حسب الوصف')}"><input type="hidden" name="item_unit[]" value="${escapeHtml(item.unit)}"><input type="hidden" name="item_price[]" value="${Number(item.price)}"><input type="hidden" name="item_note[]" value="${escapeHtml(item.note||'')}"><input type="hidden" name="save_manual[]" value="${item.save?'1':'0'}"><input aria-label="الكمية" name="quantity[]" type="number" min="${rules.min}" step="${rules.step}" value="${item.quantity}"><b>${(item.price*item.quantity).toFixed(2)} ₪</b><button type="button" data-remove="${index}">×</button></div>`}).join('');
   cart.querySelectorAll('input[name="quantity[]"]').forEach((input,index)=>input.addEventListener('input',()=>{cartItems[index].quantity=Number(input.value||1);renderCart()}));
   cart.querySelectorAll('[data-remove]').forEach(button=>button.addEventListener('click',()=>{cartItems.splice(Number(button.dataset.remove),1);renderCart()}));
 }
@@ -28,7 +28,7 @@ if(servicePicker){
   const manualForm=document.getElementById('manual-service-form');
   categorySelect.addEventListener('change',()=>{
     const options=services.filter(service=>service.category===categorySelect.value);
-    serviceSelect.innerHTML='<option value="">اختر الخدمة</option>'+options.map(service=>`<option value="${service.id}">${escapeHtml(service.name)} — ${Number(service.price).toFixed(2)} ₪ / ${escapeHtml(service.unit)}</option>`).join('');
+    serviceSelect.innerHTML='<option value="">اختر الخدمة</option>'+options.map(service=>`<option value="${service.id}">${escapeHtml(service.name)}${service.treatment&&service.treatment!=='حسب الوصف'?` — ${escapeHtml(service.treatment)}`:''} — ${Number(service.price).toFixed(2)} ₪ / ${escapeHtml(service.unit)}</option>`).join('');
     serviceSelect.disabled=!options.length; addSelected.disabled=true;
   });
   serviceSelect.addEventListener('change',()=>{const service=services.find(item=>String(item.id)===serviceSelect.value);addSelected.disabled=!service;if(service)applyQuantityRules(serviceQuantity,service.unit)});
@@ -46,12 +46,13 @@ if(servicePicker){
   manualUnit.addEventListener('change',()=>applyQuantityRules(manualQuantity,manualUnit.value));
   document.getElementById('add-manual-service').addEventListener('click',()=>{
     const name=document.getElementById('manual-service-name').value.trim();
+    const treatment=document.getElementById('manual-service-treatment').value;
     const unit=document.getElementById('manual-service-unit').value;
     const price=Math.max(Number(document.getElementById('manual-service-price').value||0),0);
     const quantity=Math.max(Number(manualQuantity.value||1),quantityRules(unit).min);
     const note=document.getElementById('manual-service-note').value.trim();
     if(!name){document.getElementById('manual-service-name').focus();return;}
-    cartItems.push({id:`manual-${Date.now()}`,name,unit,price,quantity,note,manual:true,save:document.getElementById('manual-service-save').checked});
+    cartItems.push({id:`manual-${Date.now()}`,name,treatment,unit,price,quantity,note,manual:true,save:document.getElementById('manual-service-save').checked});
     renderCart(); document.getElementById('manual-service-name').value=''; document.getElementById('manual-service-price').value='0'; document.getElementById('manual-service-quantity').value='1'; document.getElementById('manual-service-note').value='';
   });
 }
@@ -135,3 +136,5 @@ if(newCategorySelect){
   newCategorySelect.addEventListener('change',syncCategory);
   categoryInput.addEventListener('input',syncCategory);
 }
+const serviceTableSearch=document.getElementById('service-table-search');
+if(serviceTableSearch)serviceTableSearch.addEventListener('input',()=>{const query=serviceTableSearch.value.trim().toLowerCase();document.querySelectorAll('[data-service-row]').forEach(row=>{const values=[row.textContent,...[...row.querySelectorAll('input,select')].map(field=>field.value)].join(' ').toLowerCase();row.hidden=Boolean(query&&!values.includes(query))})});

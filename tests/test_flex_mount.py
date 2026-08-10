@@ -46,7 +46,21 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertIn('id="service-note"'.encode(), dashboard.data)
         with self.module.db() as connection:
             sweater = connection.execute("SELECT id FROM services WHERE business_id=1 AND name='كنزة / سويتر'").fetchone()
+            shirt_treatments = connection.execute("SELECT treatment FROM services WHERE business_id=1 AND name='قميص'").fetchall()
+            iron_shirt = connection.execute("SELECT id FROM services WHERE business_id=1 AND name='قميص' AND treatment='كوي فقط'").fetchone()
         self.assertIsNotNone(sweater)
+        self.assertEqual({row["treatment"] for row in shirt_treatments}, {"غسيل وكوي", "غسيل فقط", "كوي فقط", "تنظيف جاف"})
+        order = self.client.post("/flex/orders", data={
+            "customer_name": "زبون المعالجة", "customer_phone": "0599111000",
+            "item_type[]": "catalog", "service_id[]": str(iron_shirt["id"]),
+            "manual_name[]": "", "item_treatment[]": "كوي فقط", "item_unit[]": "قطعة",
+            "item_price[]": "4.4", "item_note[]": "", "save_manual[]": "0", "quantity[]": "2",
+            "discount": "0", "paid": "0",
+        })
+        self.assertEqual(order.status_code, 302)
+        with self.module.db() as connection:
+            saved_item = connection.execute("SELECT service_name FROM order_items ORDER BY id DESC LIMIT 1").fetchone()
+        self.assertEqual(saved_item["service_name"], "قميص — كوي فقط")
         self.assertEqual(self.client.get("/flex/health").json["app"], "FLEX")
 
     def test_create_order_with_manual_service(self):

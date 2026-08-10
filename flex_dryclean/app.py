@@ -78,6 +78,25 @@ SERVICE_CATALOG = [
     ("خدمات", "غسيل بالكيلو", "كيلو", 10),
 ]
 
+GARMENT_TREATMENTS = (
+    ("غسيل وكوي", 1.00),
+    ("غسيل فقط", 0.75),
+    ("كوي فقط", 0.55),
+    ("تنظيف جاف", 1.25),
+)
+
+
+def service_catalog_rows():
+    rows = []
+    for category, name, unit, price in SERVICE_CATALOG:
+        if category == "ملابس":
+            for treatment, factor in GARMENT_TREATMENTS:
+                calculated_price = round(max(price * factor, 1) * 2) / 2
+                rows.append((category, name, treatment, unit, calculated_price))
+        else:
+            rows.append((category, name, "حسب الوصف", unit, price))
+    return rows
+
 
 @contextmanager
 def db():
@@ -123,6 +142,7 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         category TEXT NOT NULL,
         name TEXT NOT NULL,
+        treatment TEXT NOT NULL DEFAULT 'حسب الوصف',
         unit TEXT NOT NULL DEFAULT 'قطعة',
         price REAL NOT NULL DEFAULT 0,
         active INTEGER NOT NULL DEFAULT 1,
@@ -216,29 +236,34 @@ def init_db():
         customer_columns = {row[1] for row in connection.execute("PRAGMA table_info(customers)")}
         if "display_phone" not in customer_columns:
             connection.execute("ALTER TABLE customers ADD COLUMN display_phone TEXT")
+        service_columns = {row[1] for row in connection.execute("PRAGMA table_info(services)")}
+        if "treatment" not in service_columns:
+            connection.execute("ALTER TABLE services ADD COLUMN treatment TEXT NOT NULL DEFAULT 'حسب الوصف'")
+        connection.execute("UPDATE services SET treatment='غسيل وكوي' WHERE category='ملابس' AND (treatment IS NULL OR treatment='' OR treatment='حسب الوصف')")
         connection.execute("UPDATE services SET name='بنطال قماش' WHERE category='ملابس' AND name='بنطال'")
         connection.execute("UPDATE services SET name='فستان عادي' WHERE category='ملابس' AND name='فستان'")
         connection.execute("UPDATE services SET name='جاكيت / بليزر' WHERE category='ملابس' AND name='جاكيت'")
         connection.execute("UPDATE services SET category='سجاد وستائر' WHERE name='سجاد' AND category='مفروشات'")
-        for sort_order, service in enumerate(SERVICE_CATALOG):
-            category, name, unit, price = service
+        connection.execute("UPDATE services SET active=0 WHERE category='خدمات' AND name='كوي فقط'")
+        for sort_order, service in enumerate(service_catalog_rows()):
+            category, name, treatment, unit, price = service
             connection.execute(
-                """INSERT INTO services(category,name,unit,price,sort_order)
-                   SELECT ?,?,?,?,? WHERE NOT EXISTS (
-                       SELECT 1 FROM services WHERE business_id IS NULL AND category=? AND name=?
+                """INSERT INTO services(category,name,treatment,unit,price,sort_order)
+                   SELECT ?,?,?,?,?,? WHERE NOT EXISTS (
+                       SELECT 1 FROM services WHERE business_id IS NULL AND category=? AND name=? AND treatment=?
                    )""",
-                (category, name, unit, price, sort_order, category, name),
+                (category, name, treatment, unit, price, sort_order, category, name, treatment),
             )
         business_ids = [row[0] for row in connection.execute("SELECT id FROM businesses")]
         for business_id in business_ids:
-            for sort_order, service in enumerate(SERVICE_CATALOG):
-                category, name, unit, price = service
+            for sort_order, service in enumerate(service_catalog_rows()):
+                category, name, treatment, unit, price = service
                 connection.execute(
-                    """INSERT INTO services(business_id,category,name,unit,price,sort_order)
-                       SELECT ?,?,?,?,?,? WHERE NOT EXISTS (
-                           SELECT 1 FROM services WHERE business_id=? AND category=? AND name=?
+                    """INSERT INTO services(business_id,category,name,treatment,unit,price,sort_order)
+                       SELECT ?,?,?,?,?,?,? WHERE NOT EXISTS (
+                           SELECT 1 FROM services WHERE business_id=? AND category=? AND name=? AND treatment=?
                        )""",
-                    (business_id, category, name, unit, price, sort_order, business_id, category, name),
+                    (business_id, category, name, treatment, unit, price, sort_order, business_id, category, name, treatment),
                 )
 
 
@@ -326,10 +351,10 @@ def register_post():
             "INSERT INTO users(business_id,full_name,phone,password_hash) VALUES(?,?,?,?)",
             (business_id, full_name, phone, generate_password_hash(password)),
         ).lastrowid
-        templates = connection.execute("SELECT category,name,unit,price,sort_order FROM services WHERE business_id IS NULL").fetchall()
+        templates = connection.execute("SELECT category,name,treatment,unit,price,sort_order FROM services WHERE business_id IS NULL").fetchall()
         connection.executemany(
-            "INSERT INTO services(business_id,category,name,unit,price,sort_order) VALUES(?,?,?,?,?,?)",
-            [(business_id, row["category"], row["name"], row["unit"], row["price"], row["sort_order"]) for row in templates],
+            "INSERT INTO services(business_id,category,name,treatment,unit,price,sort_order) VALUES(?,?,?,?,?,?,?)",
+            [(business_id, row["category"], row["name"], row["treatment"], row["unit"], row["price"], row["sort_order"]) for row in templates],
         )
     session.clear()
     session["user_id"] = user_id
@@ -412,6 +437,7 @@ def create_order():
     service_ids = request.form.getlist("service_id[]")
     manual_names = request.form.getlist("manual_name[]")
     item_units = request.form.getlist("item_unit[]")
+    item_treatments = request.form.getlist("item_treatment[]")
     item_prices = request.form.getlist("item_price[]")
     quantities = request.form.getlist("quantity[]")
     item_notes = request.form.getlist("item_note[]")
@@ -450,21 +476,22 @@ def create_order():
             if item_type == "manual":
                 service_name = (manual_names[index] if index < len(manual_names) else "").strip()
                 unit = (item_units[index] if index < len(item_units) else "قطعة").strip() or "قطعة"
+                treatment = (item_treatments[index] if index < len(item_treatments) else "حسب الوصف").strip() or "حسب الوصف"
                 unit_price = max(float(item_prices[index] or 0), 0)
                 service_id = None
                 if not service_name:
                     continue
                 if index < len(save_manual) and save_manual[index] == "1":
                     existing = connection.execute(
-                        "SELECT id FROM services WHERE business_id=? AND name=? AND unit=?",
-                        (business_id, service_name, unit),
+                        "SELECT id FROM services WHERE business_id=? AND name=? AND treatment=? AND unit=?",
+                        (business_id, service_name, treatment, unit),
                     ).fetchone()
                     if existing:
                         service_id = existing["id"]
                     else:
                         service_id = connection.execute(
-                            "INSERT INTO services(business_id,category,name,unit,price) VALUES(?,?,?,?,?)",
-                            (business_id, "خدمات خاصة", service_name, unit, unit_price),
+                            "INSERT INTO services(business_id,category,name,treatment,unit,price) VALUES(?,?,?,?,?,?)",
+                            (business_id, "خدمات خاصة", service_name, treatment, unit, unit_price),
                         ).lastrowid
             else:
                 raw_service_id = service_ids[index] if index < len(service_ids) else ""
@@ -476,17 +503,19 @@ def create_order():
                     continue
                 service_id = service["id"]
                 service_name = service["name"]
+                treatment = service["treatment"]
                 unit = service["unit"]
                 unit_price = service["price"]
             if unit == "قطعة":
                 quantity = float(max(int(round(quantity)), 1))
+            stored_service_name = service_name if treatment == "حسب الوصف" else f"{service_name} — {treatment}"
             line_total = quantity * unit_price
             item_note = (item_notes[index] if index < len(item_notes) else "").strip()
             subtotal += line_total
             connection.execute(
                 """INSERT INTO order_items(order_id,service_id,service_name,quantity,unit,unit_price,line_total,item_note)
                    VALUES(?,?,?,?,?,?,?,?)""",
-                (order_id, service_id, service_name, quantity, unit, unit_price, line_total, item_note),
+                (order_id, service_id, stored_service_name, quantity, unit, unit_price, line_total, item_note),
             )
         total = max(subtotal - discount, 0)
         paid = min(paid, total)
@@ -681,8 +710,8 @@ def save_business_settings():
 def add_service():
     with db() as connection:
         connection.execute(
-            "INSERT INTO services(business_id,category,name,unit,price) VALUES(?,?,?,?,?)",
-            (current_business_id(), request.form["category"].strip(), request.form["name"].strip(), request.form["unit"], float(request.form["price"])),
+            "INSERT INTO services(business_id,category,name,treatment,unit,price) VALUES(?,?,?,?,?,?)",
+            (current_business_id(), request.form["category"].strip(), request.form["name"].strip(), request.form.get("treatment", "حسب الوصف").strip(), request.form["unit"], float(request.form["price"])),
         )
     flash("تمت إضافة الخدمة.", "success")
     return redirect(url_for("service_settings"))
@@ -696,8 +725,8 @@ def edit_service(service_id):
         if not old:
             return "الخدمة غير موجودة", 404
         connection.execute(
-            "UPDATE services SET category=?,name=?,unit=?,price=?,active=? WHERE id=? AND business_id=?",
-            (request.form["category"].strip(), request.form["name"].strip(), request.form["unit"], float(request.form["price"]), 1 if request.form.get("active") else 0, service_id, current_business_id()),
+            "UPDATE services SET category=?,name=?,treatment=?,unit=?,price=?,active=? WHERE id=? AND business_id=?",
+            (request.form["category"].strip(), request.form["name"].strip(), request.form.get("treatment", "حسب الوصف").strip(), request.form["unit"], float(request.form["price"]), 1 if request.form.get("active") else 0, service_id, current_business_id()),
         )
         connection.execute("INSERT INTO audit_log(business_id,event_type,summary) VALUES(?,'price_changed',?)", (current_business_id(), f"تعديل {old['name']} من {old['price']:.2f} إلى {float(request.form['price']):.2f}"))
     flash("تم تحديث الخدمة والسعر الجديد سيطبق على الطلبات الجديدة فقط.", "success")

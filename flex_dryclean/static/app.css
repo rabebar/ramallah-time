@@ -644,6 +644,7 @@ dialog::backdrop {
 .customer-result span { color: var(--muted); font-size: 13px; }
 .customer-open-orders { display: flex; flex-wrap: wrap; gap: 6px; }
 .customer-open-orders a { padding: 7px 9px; border-radius: 9px; background: var(--wash); color: var(--ink); font-size: 13px; text-decoration: none; }
+.service-table-search { width: min(420px,100%); }
 #order-customer-suggestions .customer-result { grid-template-columns: 1fr auto; }
 @media (max-width: 800px) {
   .service-selectors,

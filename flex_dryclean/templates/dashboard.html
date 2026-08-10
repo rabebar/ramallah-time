@@ -47,13 +47,14 @@
     <div class="picker-head"><div><h3>اختيار الخدمة</h3><span>اختر الفئة ثم الخدمة، أو أضف خدمة استثنائية يدوياً.</span></div><button type="button" class="soft" id="show-manual-service">+ إضافة يدوية</button></div>
     <div class="service-selectors">
       <label>الفئة<select id="service-category"><option value="">اختر الفئة</option>{% for category in grouped_services %}<option value="{{ category }}">{{ category }}</option>{% endfor %}</select></label>
-      <label>الخدمة<select id="service-choice" disabled><option value="">اختر الخدمة</option></select></label>
+      <label>القطعة وطريقة المعالجة<select id="service-choice" disabled><option value="">اختر الخدمة</option></select></label>
       <label class="service-quantity">العدد / الكمية<input id="service-quantity" type="number" min="1" step="1" value="1"></label>
       <label class="service-note">ملاحظة على الخدمة<input id="service-note" placeholder="مثال: بقعة على الكم، بدون عطر"></label>
       <button type="button" class="primary" id="add-selected-service" disabled>إضافة للطلب</button>
     </div>
     <div class="manual-service-form" id="manual-service-form" hidden>
       <label>اسم الخدمة<input id="manual-service-name" placeholder="مثال: تنظيف قطعة خاصة"></label>
+      <label>طريقة المعالجة<select id="manual-service-treatment"><option>غسيل وكوي</option><option>غسيل فقط</option><option>كوي فقط</option><option>تنظيف جاف</option><option>حسب الوصف</option></select></label>
       <label>الوحدة<select id="manual-service-unit"><option>قطعة</option><option>كيلو</option><option>متر</option><option>متر مربع</option></select></label>
       <label>السعر<input id="manual-service-price" type="number" min="0" step="0.01" value="0"></label>
       <label>العدد / الكمية<input id="manual-service-quantity" type="number" min="1" step="1" value="1"></label>
