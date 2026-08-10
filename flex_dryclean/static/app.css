@@ -461,6 +461,27 @@ dialog::backdrop {
   grid-template-columns: 1fr 330px;
   gap: 20px;
 }
+.invoice-items-table {
+  table-layout: fixed;
+}
+.invoice-items-table .invoice-service-col { width: 32%; }
+.invoice-items-table .invoice-quantity-col { width: 14%; }
+.invoice-items-table .invoice-note-col { width: 26%; }
+.invoice-items-table .invoice-price-col { width: 14%; }
+.invoice-items-table .invoice-total-col { width: 14%; }
+.invoice-items-table th,
+.invoice-items-table td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  vertical-align: top;
+  line-height: 1.55;
+}
+.invoice-items-table td:nth-child(2),
+.invoice-items-table td:nth-child(4),
+.invoice-items-table td:nth-child(5) {
+  white-space: nowrap;
+}
 .invoice-total {
   margin-right: auto;
   width: min(350px, 100%);
@@ -624,9 +645,18 @@ dialog::backdrop {
   }
   .order-detail th,
   .order-detail td {
-    padding-inline: 8px;
+    padding: 12px 8px;
+    white-space: normal;
     overflow-wrap: anywhere;
     word-break: normal;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .invoice-items-table td:nth-child(2),
+  .invoice-items-table td:nth-child(4),
+  .invoice-items-table td:nth-child(5) {
+    white-space: nowrap;
+    overflow-wrap: normal;
   }
   .order-detail .panel-head {
     flex-direction: row;
