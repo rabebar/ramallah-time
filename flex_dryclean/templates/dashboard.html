@@ -42,12 +42,16 @@
     <div class="service-selectors">
       <label>الفئة<select id="service-category"><option value="">اختر الفئة</option>{% for category in grouped_services %}<option value="{{ category }}">{{ category }}</option>{% endfor %}</select></label>
       <label>الخدمة<select id="service-choice" disabled><option value="">اختر الخدمة</option></select></label>
+      <label class="service-quantity">العدد / الكمية<input id="service-quantity" type="number" min="0.01" step="0.01" value="1"></label>
+      <label class="service-note">ملاحظة على الخدمة<input id="service-note" placeholder="مثال: بقعة على الكم، بدون عطر"></label>
       <button type="button" class="primary" id="add-selected-service" disabled>إضافة للطلب</button>
     </div>
     <div class="manual-service-form" id="manual-service-form" hidden>
       <label>اسم الخدمة<input id="manual-service-name" placeholder="مثال: تنظيف قطعة خاصة"></label>
       <label>الوحدة<select id="manual-service-unit"><option>قطعة</option><option>كيلو</option><option>متر</option><option>متر مربع</option></select></label>
       <label>السعر<input id="manual-service-price" type="number" min="0" step="0.01" value="0"></label>
+      <label>العدد / الكمية<input id="manual-service-quantity" type="number" min="0.01" step="0.01" value="1"></label>
+      <label>ملاحظة على الخدمة<input id="manual-service-note" placeholder="اختيارية"></label>
       <label class="manual-save"><input id="manual-service-save" type="checkbox"> حفظها ضمن خدمات المغسلة</label>
       <button type="button" class="outline" id="add-manual-service">إضافة للطلب</button>
     </div>

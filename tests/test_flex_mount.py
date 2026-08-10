@@ -42,6 +42,11 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertIn(b"/flex/static/app.css", dashboard.data)
         self.assertIn('id="service-category"'.encode(), dashboard.data)
         self.assertIn('id="manual-service-form"'.encode(), dashboard.data)
+        self.assertIn('id="service-quantity"'.encode(), dashboard.data)
+        self.assertIn('id="service-note"'.encode(), dashboard.data)
+        with self.module.db() as connection:
+            sweater = connection.execute("SELECT id FROM services WHERE business_id=1 AND name='كنزة / سويتر'").fetchone()
+        self.assertIsNotNone(sweater)
         self.assertEqual(self.client.get("/flex/health").json["app"], "FLEX")
 
     def test_create_order_with_manual_service(self):
@@ -59,6 +64,7 @@ class FlexMountedAppTest(unittest.TestCase):
             "manual_name[]": "Special item",
             "item_unit[]": "قطعة",
             "item_price[]": "17.5",
+            "item_note[]": "Handle carefully",
             "save_manual[]": "1",
             "quantity[]": "2",
             "discount": "0",
@@ -69,6 +75,7 @@ class FlexMountedAppTest(unittest.TestCase):
             item = connection.execute("SELECT * FROM order_items ORDER BY id DESC LIMIT 1").fetchone()
             saved = connection.execute("SELECT * FROM services WHERE name='Special item'").fetchone()
         self.assertEqual(item["line_total"], 35)
+        self.assertEqual(item["item_note"], "Handle carefully")
         self.assertIsNotNone(saved)
 
 

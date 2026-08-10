@@ -9,7 +9,7 @@ const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;'
 function renderCart(){
   if(!cart)return;
   if(!cartItems.length){cart.innerHTML='<p class="empty">لم تتم إضافة قطع بعد.</p>';return;}
-  cart.innerHTML=cartItems.map((item,index)=>`<div class="cart-line"><span><b>${escapeHtml(item.name)}</b><small>${Number(item.price).toFixed(2)} ₪ / ${escapeHtml(item.unit)}</small></span><input type="hidden" name="item_type[]" value="${item.manual?'manual':'catalog'}"><input type="hidden" name="service_id[]" value="${item.manual?'':item.id}"><input type="hidden" name="manual_name[]" value="${escapeHtml(item.manual?item.name:'')}"><input type="hidden" name="item_unit[]" value="${escapeHtml(item.unit)}"><input type="hidden" name="item_price[]" value="${Number(item.price)}"><input type="hidden" name="save_manual[]" value="${item.save?'1':'0'}"><input aria-label="الكمية" name="quantity[]" type="number" min="0.01" step="0.01" value="${item.quantity}"><b>${(item.price*item.quantity).toFixed(2)} ₪</b><button type="button" data-remove="${index}">×</button></div>`).join('');
+  cart.innerHTML=cartItems.map((item,index)=>`<div class="cart-line"><span><b>${escapeHtml(item.name)}</b><small>${Number(item.price).toFixed(2)} ₪ / ${escapeHtml(item.unit)}</small>${item.note?`<small class="item-note">ملاحظة: ${escapeHtml(item.note)}</small>`:''}</span><input type="hidden" name="item_type[]" value="${item.manual?'manual':'catalog'}"><input type="hidden" name="service_id[]" value="${item.manual?'':item.id}"><input type="hidden" name="manual_name[]" value="${escapeHtml(item.manual?item.name:'')}"><input type="hidden" name="item_unit[]" value="${escapeHtml(item.unit)}"><input type="hidden" name="item_price[]" value="${Number(item.price)}"><input type="hidden" name="item_note[]" value="${escapeHtml(item.note||'')}"><input type="hidden" name="save_manual[]" value="${item.save?'1':'0'}"><input aria-label="الكمية" name="quantity[]" type="number" min="0.01" step="0.01" value="${item.quantity}"><b>${(item.price*item.quantity).toFixed(2)} ₪</b><button type="button" data-remove="${index}">×</button></div>`).join('');
   cart.querySelectorAll('input[name="quantity[]"]').forEach((input,index)=>input.addEventListener('input',()=>{cartItems[index].quantity=Number(input.value||1);renderCart()}));
   cart.querySelectorAll('[data-remove]').forEach(button=>button.addEventListener('click',()=>{cartItems.splice(Number(button.dataset.remove),1);renderCart()}));
 }
@@ -18,6 +18,8 @@ if(servicePicker){
   const services=JSON.parse(servicePicker.dataset.services||'[]');
   const categorySelect=document.getElementById('service-category');
   const serviceSelect=document.getElementById('service-choice');
+  const serviceQuantity=document.getElementById('service-quantity');
+  const serviceNote=document.getElementById('service-note');
   const addSelected=document.getElementById('add-selected-service');
   const manualForm=document.getElementById('manual-service-form');
   categorySelect.addEventListener('change',()=>{
@@ -28,18 +30,22 @@ if(servicePicker){
   serviceSelect.addEventListener('change',()=>addSelected.disabled=!serviceSelect.value);
   addSelected.addEventListener('click',()=>{
     const service=services.find(item=>String(item.id)===serviceSelect.value); if(!service)return;
-    const found=cartItems.find(item=>!item.manual&&item.id===service.id);
-    if(found)found.quantity+=1;else cartItems.push({...service,quantity:1,manual:false,save:false});
-    renderCart();
+    const quantity=Math.max(Number(serviceQuantity.value||1),0.01);
+    const note=serviceNote.value.trim();
+    const found=cartItems.find(item=>!item.manual&&item.id===service.id&&item.note===note);
+    if(found)found.quantity+=quantity;else cartItems.push({...service,quantity,note,manual:false,save:false});
+    renderCart(); serviceQuantity.value='1'; serviceNote.value='';
   });
   document.getElementById('show-manual-service').addEventListener('click',()=>{manualForm.hidden=!manualForm.hidden; if(!manualForm.hidden)document.getElementById('manual-service-name').focus()});
   document.getElementById('add-manual-service').addEventListener('click',()=>{
     const name=document.getElementById('manual-service-name').value.trim();
     const unit=document.getElementById('manual-service-unit').value;
     const price=Math.max(Number(document.getElementById('manual-service-price').value||0),0);
+    const quantity=Math.max(Number(document.getElementById('manual-service-quantity').value||1),0.01);
+    const note=document.getElementById('manual-service-note').value.trim();
     if(!name){document.getElementById('manual-service-name').focus();return;}
-    cartItems.push({id:`manual-${Date.now()}`,name,unit,price,quantity:1,manual:true,save:document.getElementById('manual-service-save').checked});
-    renderCart(); document.getElementById('manual-service-name').value=''; document.getElementById('manual-service-price').value='0';
+    cartItems.push({id:`manual-${Date.now()}`,name,unit,price,quantity,note,manual:true,save:document.getElementById('manual-service-save').checked});
+    renderCart(); document.getElementById('manual-service-name').value=''; document.getElementById('manual-service-price').value='0'; document.getElementById('manual-service-quantity').value='1'; document.getElementById('manual-service-note').value='';
   });
 }
 

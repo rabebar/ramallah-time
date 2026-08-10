@@ -568,10 +568,16 @@ dialog::backdrop {
 }
 .service-selectors {
   display: grid;
-  grid-template-columns: 1fr 1.4fr auto;
+  grid-template-columns: 1fr 1.5fr 0.65fr;
   gap: 12px;
   align-items: end;
   margin-top: 18px;
+}
+.service-selectors .service-note {
+  grid-column: 1 / 3;
+}
+.service-selectors #add-selected-service {
+  grid-column: 3;
 }
 .service-selectors label,
 .manual-service-form label {
@@ -581,7 +587,7 @@ dialog::backdrop {
 }
 .manual-service-form {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr auto;
+  grid-template-columns: 1.4fr 1fr 0.8fr;
   gap: 12px;
   align-items: end;
   margin-top: 14px;
@@ -602,6 +608,11 @@ dialog::backdrop {
 }
 .manual-service-form .manual-save input {
   width: auto;
+}
+.item-note {
+  color: var(--danger) !important;
+  margin-top: 4px;
+  white-space: normal;
 }
 @media (max-width: 800px) {
   .service-selectors,

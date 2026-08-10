@@ -34,6 +34,50 @@ app.config.update(
     SESSION_COOKIE_SECURE=bool(os.getenv("RENDER")),
 )
 
+SERVICE_CATALOG = [
+    ("ملابس", "قميص", "قطعة", 8),
+    ("ملابس", "تيشيرت", "قطعة", 7),
+    ("ملابس", "قميص بولو", "قطعة", 8),
+    ("ملابس", "بلوزة", "قطعة", 9),
+    ("ملابس", "كنزة / سويتر", "قطعة", 12),
+    ("ملابس", "هودي", "قطعة", 14),
+    ("ملابس", "فيست / سترة", "قطعة", 10),
+    ("ملابس", "بنطال قماش", "قطعة", 10),
+    ("ملابس", "جينز", "قطعة", 10),
+    ("ملابس", "شورت", "قطعة", 8),
+    ("ملابس", "تنورة", "قطعة", 12),
+    ("ملابس", "فستان عادي", "قطعة", 25),
+    ("ملابس", "فستان سهرة", "قطعة", 40),
+    ("ملابس", "بدلة قطعتان", "قطعة", 30),
+    ("ملابس", "بدلة ثلاث قطع", "قطعة", 40),
+    ("ملابس", "جاكيت / بليزر", "قطعة", 20),
+    ("ملابس", "معطف", "قطعة", 25),
+    ("ملابس", "عباءة / جلابية", "قطعة", 20),
+    ("ملابس", "ثوب / دشداشة", "قطعة", 15),
+    ("ملابس", "وشاح / شال", "قطعة", 7),
+    ("ملابس", "ربطة عنق", "قطعة", 6),
+    ("مفروشات", "شرشف مفرد", "قطعة", 10),
+    ("مفروشات", "شرشف مزدوج", "قطعة", 15),
+    ("مفروشات", "غطاء لحاف", "قطعة", 18),
+    ("مفروشات", "لحاف مفرد", "قطعة", 25),
+    ("مفروشات", "لحاف مزدوج", "قطعة", 35),
+    ("مفروشات", "بطانية مفرد", "قطعة", 20),
+    ("مفروشات", "بطانية مزدوج", "قطعة", 30),
+    ("مفروشات", "كيس وسادة", "قطعة", 5),
+    ("مفروشات", "منشفة", "قطعة", 6),
+    ("مفروشات", "مفرش طاولة", "قطعة", 15),
+    ("سجاد وستائر", "سجاد", "متر مربع", 12),
+    ("سجاد وستائر", "موكيت", "متر مربع", 10),
+    ("سجاد وستائر", "ستائر خفيفة", "متر", 10),
+    ("سجاد وستائر", "ستائر ثقيلة", "متر", 15),
+    ("أحذية وحقائب", "حذاء رياضي", "قطعة", 20),
+    ("أحذية وحقائب", "حذاء جلدي", "قطعة", 25),
+    ("أحذية وحقائب", "حقيبة قماش", "قطعة", 20),
+    ("أحذية وحقائب", "حقيبة جلد", "قطعة", 30),
+    ("خدمات", "كوي فقط", "قطعة", 5),
+    ("خدمات", "غسيل بالكيلو", "كيلو", 10),
+]
+
 
 @contextmanager
 def db():
@@ -172,22 +216,30 @@ def init_db():
         customer_columns = {row[1] for row in connection.execute("PRAGMA table_info(customers)")}
         if "display_phone" not in customer_columns:
             connection.execute("ALTER TABLE customers ADD COLUMN display_phone TEXT")
-        count = connection.execute("SELECT COUNT(*) FROM services").fetchone()[0]
-        if not count:
-            defaults = [
-                ("ملابس", "قميص", "قطعة", 8),
-                ("ملابس", "بنطال", "قطعة", 10),
-                ("ملابس", "بدلة قطعتان", "قطعة", 30),
-                ("ملابس", "فستان", "قطعة", 25),
-                ("ملابس", "جاكيت", "قطعة", 20),
-                ("مفروشات", "بطانية مفرد", "قطعة", 20),
-                ("مفروشات", "بطانية مزدوج", "قطعة", 30),
-                ("مفروشات", "سجاد", "متر مربع", 12),
-                ("خدمات", "كوي فقط", "قطعة", 5),
-            ]
-            connection.executemany(
-                "INSERT INTO services(category,name,unit,price) VALUES(?,?,?,?)", defaults
+        connection.execute("UPDATE services SET name='بنطال قماش' WHERE category='ملابس' AND name='بنطال'")
+        connection.execute("UPDATE services SET name='فستان عادي' WHERE category='ملابس' AND name='فستان'")
+        connection.execute("UPDATE services SET name='جاكيت / بليزر' WHERE category='ملابس' AND name='جاكيت'")
+        connection.execute("UPDATE services SET category='سجاد وستائر' WHERE name='سجاد' AND category='مفروشات'")
+        for sort_order, service in enumerate(SERVICE_CATALOG):
+            category, name, unit, price = service
+            connection.execute(
+                """INSERT INTO services(category,name,unit,price,sort_order)
+                   SELECT ?,?,?,?,? WHERE NOT EXISTS (
+                       SELECT 1 FROM services WHERE business_id IS NULL AND category=? AND name=?
+                   )""",
+                (category, name, unit, price, sort_order, category, name),
             )
+        business_ids = [row[0] for row in connection.execute("SELECT id FROM businesses")]
+        for business_id in business_ids:
+            for sort_order, service in enumerate(SERVICE_CATALOG):
+                category, name, unit, price = service
+                connection.execute(
+                    """INSERT INTO services(business_id,category,name,unit,price,sort_order)
+                       SELECT ?,?,?,?,?,? WHERE NOT EXISTS (
+                           SELECT 1 FROM services WHERE business_id=? AND category=? AND name=?
+                       )""",
+                    (business_id, category, name, unit, price, sort_order, business_id, category, name),
+                )
 
 
 def today():
@@ -362,6 +414,7 @@ def create_order():
     item_units = request.form.getlist("item_unit[]")
     item_prices = request.form.getlist("item_price[]")
     quantities = request.form.getlist("quantity[]")
+    item_notes = request.form.getlist("item_note[]")
     save_manual = request.form.getlist("save_manual[]")
     if not name or not phone or not item_types:
         flash("أدخل بيانات الزبون وأضف خدمة واحدة على الأقل.", "error")
@@ -419,11 +472,12 @@ def create_order():
                 unit = service["unit"]
                 unit_price = service["price"]
             line_total = quantity * unit_price
+            item_note = (item_notes[index] if index < len(item_notes) else "").strip()
             subtotal += line_total
             connection.execute(
-                """INSERT INTO order_items(order_id,service_id,service_name,quantity,unit,unit_price,line_total)
-                   VALUES(?,?,?,?,?,?,?)""",
-                (order_id, service_id, service_name, quantity, unit, unit_price, line_total),
+                """INSERT INTO order_items(order_id,service_id,service_name,quantity,unit,unit_price,line_total,item_note)
+                   VALUES(?,?,?,?,?,?,?,?)""",
+                (order_id, service_id, service_name, quantity, unit, unit_price, line_total, item_note),
             )
         total = max(subtotal - discount, 0)
         paid = min(paid, total)
