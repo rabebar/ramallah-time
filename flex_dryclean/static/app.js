@@ -43,7 +43,14 @@ if(servicePicker){
   });
 }
 
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(()=>{});
+if('serviceWorker' in navigator){
+  const appScript=document.querySelector('script[src*="/static/app.js"]');
+  if(appScript){
+    const workerUrl=new URL('../sw.js',appScript.src);
+    const workerScope=new URL('../',appScript.src).pathname;
+    navigator.serviceWorker.register(workerUrl.pathname,{scope:workerScope}).catch(()=>{});
+  }
+}
 const dueReminders=document.getElementById('due-reminders');
 if(dueReminders&&'Notification' in window&&Notification.permission==='granted'){
   const noticeKey=`flex-reminder-${new Date().toISOString().slice(0,13)}`;
