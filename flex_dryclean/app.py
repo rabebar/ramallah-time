@@ -153,6 +153,7 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         phone TEXT NOT NULL UNIQUE,
+        address TEXT,
         notes TEXT,
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
@@ -236,6 +237,8 @@ def init_db():
         customer_columns = {row[1] for row in connection.execute("PRAGMA table_info(customers)")}
         if "display_phone" not in customer_columns:
             connection.execute("ALTER TABLE customers ADD COLUMN display_phone TEXT")
+        if "address" not in customer_columns:
+            connection.execute("ALTER TABLE customers ADD COLUMN address TEXT")
         service_columns = {row[1] for row in connection.execute("PRAGMA table_info(services)")}
         if "treatment" not in service_columns:
             connection.execute("ALTER TABLE services ADD COLUMN treatment TEXT NOT NULL DEFAULT 'حسب الوصف'")
@@ -376,10 +379,15 @@ def dashboard():
     business_id = current_business_id()
     selected_date = request.args.get("date", today())
     query = request.args.get("q", "").strip()
+    selected_customer_id = request.args.get("customer", type=int)
     with db() as connection:
         services = connection.execute(
             "SELECT * FROM services WHERE business_id=? AND active=1 ORDER BY category,sort_order,id", (business_id,)
         ).fetchall()
+        selected_customer = connection.execute(
+            "SELECT id,name,COALESCE(display_phone,'') phone,address FROM customers WHERE id=? AND business_id=?",
+            (selected_customer_id, business_id),
+        ).fetchone() if selected_customer_id else None
         params = [business_id]
         where = "WHERE o.business_id=?"
         if query:
@@ -424,6 +432,7 @@ def dashboard():
         "dashboard.html", services=[dict(item) for item in services], grouped_services=grouped, orders=orders,
         summary=summary, expenses=expenses, expense_total=expense_total,
         selected_date=selected_date, query=query, closing=closing, reminders=reminders,
+        selected_customer=selected_customer, auto_open_order=bool(selected_customer and request.args.get("new_order")),
     )
 
 
@@ -443,25 +452,23 @@ def create_order():
     item_notes = request.form.getlist("item_note[]")
     save_manual = request.form.getlist("save_manual[]")
     selected_customer_id = request.form.get("customer_id", type=int)
+    if not selected_customer_id:
+        flash("اختر زبوناً مسجلاً قبل إنشاء الطلب.", "error")
+        return redirect(url_for("dashboard"))
     if not name or not phone or not item_types:
         flash("أدخل بيانات الزبون وأضف خدمة واحدة على الأقل.", "error")
         return redirect(url_for("dashboard"))
     with db() as connection:
         customer_key = f"{business_id}:{phone}"
-        customer = None
-        if selected_customer_id:
-            customer = connection.execute(
-                "SELECT id FROM customers WHERE business_id=? AND id=?", (business_id, selected_customer_id)
-            ).fetchone()
+        customer = connection.execute(
+            "SELECT id,name,COALESCE(display_phone,'') phone FROM customers WHERE business_id=? AND id=?",
+            (business_id, selected_customer_id),
+        ).fetchone()
         if not customer:
-            customer = connection.execute("SELECT id FROM customers WHERE business_id=? AND phone=?", (business_id, customer_key)).fetchone()
-        if customer:
-            customer_id = customer["id"]
-            connection.execute("UPDATE customers SET name=?,phone=?,display_phone=? WHERE id=?", (name, customer_key, phone, customer_id))
-        else:
-            customer_id = connection.execute(
-                "INSERT INTO customers(business_id,name,phone,display_phone) VALUES(?,?,?,?)", (business_id, name, customer_key, phone)
-            ).lastrowid
+            flash("ملف الزبون غير موجود.", "error")
+            return redirect(url_for("dashboard"))
+        customer_id = customer["id"]
+        name, phone = customer["name"], customer["phone"]
         discount = max(float(request.form.get("discount") or 0), 0)
         paid = max(float(request.form.get("paid") or 0), 0)
         order_id = connection.execute(
@@ -549,7 +556,7 @@ def customer_lookup():
     phone_term = f"%{digits}%" if digits else term
     with db() as connection:
         customers = connection.execute(
-            """SELECT c.id,c.name,COALESCE(c.display_phone,'') phone,
+            """SELECT c.id,c.name,COALESCE(c.display_phone,'') phone,COALESCE(c.address,'') address,
                       COUNT(o.id) order_count,
                       SUM(CASE WHEN o.id IS NOT NULL AND o.status!='تم التسليم' THEN 1 ELSE 0 END) open_count,
                       MAX(o.created_at) last_order_at
@@ -568,11 +575,69 @@ def customer_lookup():
                 (business_id, customer["id"]),
             ).fetchall()
             result.append({
-                "id": customer["id"], "name": customer["name"], "phone": customer["phone"],
+                "id": customer["id"], "name": customer["name"], "phone": customer["phone"], "address": customer["address"],
                 "order_count": customer["order_count"], "open_count": customer["open_count"] or 0,
                 "orders": [dict(order) for order in open_orders],
             })
     return jsonify(customers=result)
+
+
+@app.get("/customers")
+@login_required
+def customers():
+    with db() as connection:
+        rows = connection.execute(
+            """SELECT c.id,c.name,COALESCE(c.display_phone,'') phone,COALESCE(c.address,'') address,
+                      COUNT(o.id) order_count,MAX(o.created_at) last_order_at
+               FROM customers c LEFT JOIN orders o ON o.customer_id=c.id AND o.business_id=c.business_id
+               WHERE c.business_id=? GROUP BY c.id ORDER BY c.name""",
+            (current_business_id(),),
+        ).fetchall()
+    return render_template("customers.html", customers=rows)
+
+
+@app.post("/customers")
+@login_required
+def create_customer():
+    name = " ".join(request.form.get("name", "").split())
+    prefix = request.form.get("phone_prefix", "+970")
+    local_phone = re.sub(r"\D", "", request.form.get("phone", "")).lstrip("0")
+    address = request.form.get("address", "").strip()
+    if prefix not in {"+970", "+972"}:
+        prefix = "+970"
+    phone = f"{prefix}{local_phone}"
+    if len(name.split()) < 4 or len(local_phone) < 8 or not address:
+        flash("أدخل الاسم الرباعي ورقم هاتف صحيح وعنوان السكن.", "error")
+        return redirect(url_for("customers"))
+    business_id = current_business_id()
+    customer_key = f"{business_id}:{phone}"
+    with db() as connection:
+        if connection.execute("SELECT 1 FROM customers WHERE business_id=? AND phone=?", (business_id, customer_key)).fetchone():
+            flash("رقم الهاتف مسجل لزبون سابق.", "error")
+            return redirect(url_for("customers"))
+        customer_id = connection.execute(
+            "INSERT INTO customers(business_id,name,phone,display_phone,address) VALUES(?,?,?,?,?)",
+            (business_id, name, customer_key, phone, address),
+        ).lastrowid
+    flash("تم إنشاء ملف الزبون. يمكنك الآن إضافة طلب له.", "success")
+    return redirect(url_for("customer_detail", customer_id=customer_id))
+
+
+@app.get("/customers/<int:customer_id>")
+@login_required
+def customer_detail(customer_id):
+    with db() as connection:
+        customer = connection.execute(
+            "SELECT id,name,COALESCE(display_phone,'') phone,COALESCE(address,'') address FROM customers WHERE id=? AND business_id=?",
+            (customer_id, current_business_id()),
+        ).fetchone()
+        if not customer:
+            return "الزبون غير موجود", 404
+        orders = connection.execute(
+            "SELECT * FROM orders WHERE customer_id=? AND business_id=? ORDER BY id DESC",
+            (customer_id, current_business_id()),
+        ).fetchall()
+    return render_template("customer.html", customer=customer, orders=orders)
 
 
 @app.get("/orders/<int:order_id>")

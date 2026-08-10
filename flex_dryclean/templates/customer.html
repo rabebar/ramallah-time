@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}{{ customer.name }} — FLEX{% endblock %}
+{% block content %}
+<section class="hero-row"><div><span class="eyebrow">ملف الزبون</span><h1>{{ customer.name }}</h1><p>{{ customer.phone }} · {{ customer.address }}</p></div><a class="primary" href="{{ url_for('dashboard',customer=customer.id,new_order=1) }}">+ إضافة طلب لهذا الزبون</a></section>
+<div class="panel"><div class="panel-head"><div><span class="eyebrow">سجل التعامل</span><h2>طلبات الزبون</h2></div><a class="outline" href="{{ url_for('customers') }}">العودة إلى دليل الزبائن</a></div><div class="table-wrap"><table><thead><tr><th>الطلب</th><th>التاريخ</th><th>الحالة</th><th>الإجمالي</th><th>المتبقي</th><th>موعد التسليم</th></tr></thead><tbody>{% for order in orders %}<tr data-href="{{ url_for('order_detail',order_id=order.id) }}"><td><b>{{ order.order_no }}</b></td><td>{{ order.created_at[:16] }}</td><td><span class="status">{{ order.status }}</span></td><td>{{ order.total|money }} ₪</td><td>{{ (order.total-order.paid)|money }} ₪</td><td>{{ order.due_date or '—' }}</td></tr>{% else %}<tr><td colspan="6" class="empty">لا توجد طلبات لهذا الزبون بعد.</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

@@ -50,8 +50,14 @@ class FlexMountedAppTest(unittest.TestCase):
             iron_shirt = connection.execute("SELECT id FROM services WHERE business_id=1 AND name='قميص' AND treatment='كوي فقط'").fetchone()
         self.assertIsNotNone(sweater)
         self.assertEqual({row["treatment"] for row in shirt_treatments}, {"غسيل وكوي", "غسيل فقط", "كوي فقط", "تنظيف جاف"})
+        customer_response = self.client.post("/flex/customers", data={
+            "name": "زبون اختبار كامل أول", "phone_prefix": "+970", "phone": "599111000", "address": "رام الله، المصيون",
+        })
+        self.assertEqual(customer_response.status_code, 302)
+        with self.module.db() as connection:
+            catalog_customer = connection.execute("SELECT id FROM customers WHERE display_phone='+970599111000'").fetchone()
         order = self.client.post("/flex/orders", data={
-            "customer_name": "زبون المعالجة", "customer_phone": "0599111000",
+            "customer_id": str(catalog_customer["id"]), "customer_name": "زبون اختبار كامل أول", "customer_phone": "+970599111000",
             "item_type[]": "catalog", "service_id[]": str(iron_shirt["id"]),
             "manual_name[]": "", "item_treatment[]": "كوي فقط", "item_unit[]": "قطعة",
             "item_price[]": "4.4", "item_note[]": "", "save_manual[]": "0", "quantity[]": "2",
@@ -70,9 +76,15 @@ class FlexMountedAppTest(unittest.TestCase):
             "phone": "0599000022",
             "password": "StrongPass123",
         })
+        self.client.post("/flex/customers", data={
+            "name": "Customer Full Four Name", "phone_prefix": "+970", "phone": "599111222", "address": "Ramallah",
+        })
+        with self.module.db() as connection:
+            customer_id = connection.execute("SELECT id FROM customers WHERE display_phone='+970599111222'").fetchone()["id"]
         response = self.client.post("/flex/orders", data={
+            "customer_id": str(customer_id),
             "customer_name": "Customer",
-            "customer_phone": "0599111222",
+            "customer_phone": "+970599111222",
             "item_type[]": "manual",
             "service_id[]": "",
             "manual_name[]": "Special item",
@@ -102,7 +114,7 @@ class FlexMountedAppTest(unittest.TestCase):
         second = self.client.post("/flex/orders", data={
             "customer_id": str(customer["id"]),
             "customer_name": "Customer",
-            "customer_phone": "0599111222",
+            "customer_phone": "+970599111222",
             "item_type[]": "manual",
             "service_id[]": "",
             "manual_name[]": "Second item",

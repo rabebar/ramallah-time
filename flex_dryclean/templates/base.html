@@ -18,6 +18,7 @@
     <a class="brand" href="{{ url_for('dashboard') }}"><img class="brand-logo" src="{{ url_for('static', filename='flex-app-icon.png') }}" alt="FLEX"><span class="brand-text"><b>{{ business.business_name }}</b><small>FLEX</small></span></a>
     {% if session.get('user_id') %}<nav>
       <a href="{{ url_for('dashboard') }}">العمل اليومي</a>
+      <a href="{{ url_for('customers') }}">الزبائن</a>
       <a href="{{ url_for('service_settings') }}">الخدمات والأسعار</a>
       <a href="{{ url_for('business_settings') }}">بيانات المغسلة</a>
     </nav><form class="logout-form" method="post" action="{{ url_for('logout') }}"><button>خروج</button></form>{% endif %}

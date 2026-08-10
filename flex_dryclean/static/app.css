@@ -645,6 +645,15 @@ dialog::backdrop {
 .customer-open-orders { display: flex; flex-wrap: wrap; gap: 6px; }
 .customer-open-orders a { padding: 7px 9px; border-radius: 9px; background: var(--wash); color: var(--ink); font-size: 13px; text-decoration: none; }
 .service-table-search { width: min(420px,100%); }
+.customer-first-note { margin: -4px 0 2px; color: var(--muted); }
+.customer-first-note a { color: var(--primary); font-weight: 700; }
+.phone-field { display: grid; grid-template-columns: 110px 1fr; direction: ltr; gap: 8px; }
+.customer-directory { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.customer-directory-card { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; color: var(--ink); text-decoration: none; background: #fff; }
+.customer-directory-card:hover { border-color: var(--primary); background: var(--wash); }
+.customer-directory-card > div { display: grid; gap: 3px; }
+.customer-directory-card span,.customer-directory-card small { color: var(--muted); }
+.customer-directory-card strong { color: var(--primary); white-space: nowrap; }
 #order-customer-suggestions .customer-result { grid-template-columns: 1fr auto; }
 @media (max-width: 800px) {
   .service-selectors,
@@ -661,4 +670,5 @@ dialog::backdrop {
   .customer-lookup-panel { grid-template-columns: 1fr; gap: 14px; }
   .customer-result { grid-template-columns: 1fr auto; }
   .customer-open-orders { grid-column: 1 / -1; }
+  .customer-directory { grid-template-columns: 1fr; }
 }

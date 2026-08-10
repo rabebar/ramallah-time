@@ -40,9 +40,9 @@
   </aside>
 </section>
 
-<dialog id="new-order"><form method="post" action="{{ url_for('create_order') }}" class="modal-card"><div class="modal-head"><div><span class="eyebrow">الكاشير</span><h2>طلب جديد</h2></div><button type="button" class="icon-close" data-close>×</button></div>
-  <input type="hidden" name="customer_id" id="selected-customer-id">
-  <div class="form-grid"><label>اسم الزبون<input id="order-customer-name" name="customer_name" autocomplete="off" required></label><label>رقم الهاتف<input id="order-customer-phone" name="customer_phone" autocomplete="off" inputmode="tel" required></label><div id="order-customer-suggestions" class="customer-results wide" hidden></div><label>موعد التسليم<input name="due_date" type="datetime-local"></label><label>طريقة الدفع<select name="payment_method"><option>نقدي</option><option>بطاقة</option><option>آجل</option></select></label></div>
+<dialog id="new-order" {{ 'data-auto-open=1' if auto_open_order }}><form method="post" action="{{ url_for('create_order') }}" class="modal-card"><div class="modal-head"><div><span class="eyebrow">الكاشير</span><h2>طلب جديد</h2></div><button type="button" class="icon-close" data-close>×</button></div>
+  <input type="hidden" name="customer_id" id="selected-customer-id" value="{{ selected_customer.id if selected_customer else '' }}">
+  <div class="form-grid"><label>الزبون المسجل<input id="order-customer-name" name="customer_name" autocomplete="off" placeholder="ابحث بالاسم" value="{{ selected_customer.name if selected_customer else '' }}" required></label><label>رقم الهاتف<input id="order-customer-phone" name="customer_phone" autocomplete="off" placeholder="ابحث برقم الهاتف" value="{{ selected_customer.phone if selected_customer else '' }}" inputmode="tel" required></label><div id="order-customer-suggestions" class="customer-results wide" hidden></div><p class="wide customer-first-note">الزبون غير موجود؟ <a href="{{ url_for('customers') }}">أنشئ ملف زبون أولاً</a> ثم أضف طلبه.</p><label>موعد التسليم<input name="due_date" type="datetime-local"></label><label>طريقة الدفع<select name="payment_method"><option>نقدي</option><option>بطاقة</option><option>آجل</option></select></label></div>
   <div class="service-picker" id="service-picker" data-services='{{ services|tojson }}'>
     <div class="picker-head"><div><h3>اختيار الخدمة</h3><span>اختر الفئة ثم الخدمة، أو أضف خدمة استثنائية يدوياً.</span></div><button type="button" class="soft" id="show-manual-service">+ إضافة يدوية</button></div>
     <div class="service-selectors">

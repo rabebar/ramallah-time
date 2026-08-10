@@ -2,6 +2,7 @@ document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener
 document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>button.closest('dialog')?.close()));
 document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close()}));
 document.querySelectorAll('tr[data-href]').forEach(row=>row.addEventListener('click',()=>location.href=row.dataset.href));
+document.querySelector('dialog[data-auto-open="1"]')?.showModal();
 
 const cart=document.getElementById('cart');
 const cartItems=[];
@@ -138,3 +139,5 @@ if(newCategorySelect){
 }
 const serviceTableSearch=document.getElementById('service-table-search');
 if(serviceTableSearch)serviceTableSearch.addEventListener('input',()=>{const query=serviceTableSearch.value.trim().toLowerCase();document.querySelectorAll('[data-service-row]').forEach(row=>{const values=[row.textContent,...[...row.querySelectorAll('input,select')].map(field=>field.value)].join(' ').toLowerCase();row.hidden=Boolean(query&&!values.includes(query))})});
+const customerDirectorySearch=document.getElementById('customer-directory-search');
+if(customerDirectorySearch)customerDirectorySearch.addEventListener('input',()=>{const query=customerDirectorySearch.value.trim().toLowerCase();document.querySelectorAll('[data-customer-card]').forEach(card=>card.hidden=Boolean(query&&!card.textContent.toLowerCase().includes(query)))});
