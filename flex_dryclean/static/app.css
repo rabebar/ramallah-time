@@ -658,6 +658,10 @@ dialog::backdrop {
 .invoice-actions { display: flex; gap: 10px; }
 .invoice-edit-form { width: min(1080px,94vw); }
 .edit-invoice-hint { color: var(--muted); margin-top: 0; }
+.field-title { display: block; font-weight: 800; margin-bottom: 8px; color: var(--ink); }
+.date-parts { display: grid; grid-template-columns: .8fr .8fr 1.25fr; gap: 8px; margin-bottom: 10px; }
+.date-parts label { font-size: .78rem; }
+.date-parts input { text-align: center; padding-inline: 8px; }
 .invoice-edit-list { display: grid; gap: 9px; margin: 14px 0; }
 .invoice-edit-row { display: grid; grid-template-columns: 1.5fr .55fr .7fr .65fr 1fr .7fr 36px; gap: 8px; align-items: center; }
 .invoice-edit-row input,.invoice-edit-row select { min-width: 0; }

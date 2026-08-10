@@ -171,7 +171,7 @@ class FlexMountedAppTest(unittest.TestCase):
 
         due_date_change = self.client.post(
             f"/flex/orders/{latest_order['id']}/due-date",
-            data={"due_date": "2026-08-14T15:30"},
+            data={"due_day": "14", "due_month": "8", "due_year": "2026", "due_time": "15:30"},
         )
         self.assertEqual(due_date_change.status_code, 302)
         with self.module.db() as connection:
@@ -181,8 +181,10 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertEqual(changed_due_date, "2026-08-14T15:30")
 
         order_page = self.client.get(f"/flex/orders/{latest_order['id']}")
-        self.assertIn(b'2026-08-14T15:30', order_page.data)
         self.assertIn(b'/due-date', order_page.data)
+        self.assertIn(b'name="due_day" type="number" min="1" max="31" value="14"', order_page.data)
+        self.assertIn(b'name="due_month" type="number" min="1" max="12" value="08"', order_page.data)
+        self.assertIn(b'name="due_year" type="number" min="2026" max="2100" value="2026"', order_page.data)
 
 
 if __name__ == "__main__":

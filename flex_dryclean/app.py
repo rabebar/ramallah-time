@@ -98,6 +98,19 @@ def service_catalog_rows():
     return rows
 
 
+def requested_due_date():
+    """Read a delivery date in the explicit day/month/year order used by FLEX."""
+    if not any(request.form.get(name) for name in ("due_day", "due_month", "due_year", "due_time")):
+        return (request.form.get("due_date") or "").strip() or None
+    day = int(request.form.get("due_day") or 0)
+    month = int(request.form.get("due_month") or 0)
+    year = int(request.form.get("due_year") or 0)
+    time_value = (request.form.get("due_time") or "00:00").strip()
+    hour, minute = (int(part) for part in time_value.split(":", 1))
+    value = datetime(year, month, day, hour, minute)
+    return value.strftime("%Y-%m-%dT%H:%M")
+
+
 @contextmanager
 def db():
     connection = sqlite3.connect(DB_PATH)
@@ -692,6 +705,11 @@ def edit_order(order_id):
     discount = max(float(request.form.get("discount") or 0), 0)
     subtotal = sum(item[4] for item in prepared)
     total = max(subtotal - discount, 0)
+    try:
+        due_date = requested_due_date()
+    except (TypeError, ValueError):
+        flash("تحقق من يوم وشهر وسنة ووقت التسليم.", "error")
+        return redirect(url_for("order_detail", order_id=order_id))
     with db() as connection:
         order = connection.execute("SELECT * FROM orders WHERE id=? AND business_id=?", (order_id, business_id)).fetchone()
         if not order:
@@ -707,7 +725,7 @@ def edit_order(order_id):
         )
         connection.execute(
             "UPDATE orders SET due_date=?,discount=?,subtotal=?,total=?,notes=? WHERE id=?",
-            (request.form.get("due_date") or None, discount, subtotal, total, request.form.get("notes", "").strip(), order_id),
+            (due_date, discount, subtotal, total, request.form.get("notes", "").strip(), order_id),
         )
         connection.execute(
             "INSERT INTO audit_log(business_id,event_type,summary) VALUES(?,'order_edited',?)",
@@ -721,7 +739,11 @@ def edit_order(order_id):
 @login_required
 def update_due_date(order_id):
     business_id = current_business_id()
-    due_date = (request.form.get("due_date") or "").strip() or None
+    try:
+        due_date = requested_due_date()
+    except (TypeError, ValueError):
+        flash("تحقق من يوم وشهر وسنة ووقت التسليم.", "error")
+        return redirect(url_for("order_detail", order_id=order_id))
     with db() as connection:
         order = connection.execute(
             "SELECT order_no,due_date FROM orders WHERE id=? AND business_id=?",
