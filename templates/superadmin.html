@@ -1337,6 +1337,11 @@
                                     <button class="btn-sm btn-reject">إيقاف</button>
                                 </form>
                                 {% endif %}
+                                <form method="POST" action="/superadmin/flex/accounts/{{ account.id }}/subscription" onsubmit="return confirm('حذف حساب المغسلة نهائيًا؟ سيتم حذف الزبائن والطلبات والفواتير والدفعات والمصروفات، ولا يمكن التراجع عن ذلك.')">
+                                    <input type="hidden" name="_csrf_token" value="{{ admin_csrf_token }}">
+                                    <input type="hidden" name="action" value="delete">
+                                    <button class="btn-sm btn-reject">حذف نهائي</button>
+                                </form>
                             </div>
                         </td>
                     </tr>

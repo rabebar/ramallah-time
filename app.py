@@ -559,7 +559,7 @@ app.config.update(
 # It deliberately uses a separate session cookie and the same Render process;
 # no additional Render service is required.
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
-from flex_dryclean.app import app as flex_app, db as flex_db
+from flex_dryclean.app import app as flex_app, db as flex_db, delete_business_account
 app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {"/flex": flex_app})
 
 BOT_USER_AGENT_PATTERN = re.compile(
@@ -4406,7 +4406,11 @@ def super_admin_update_flex_subscription(business_id):
         if not account:
             flash('حساب FLEX غير موجود.', 'error')
             return redirect(url_for('super_admin') + '#flex-management')
-        if action == 'suspend':
+        if action == 'delete':
+            account_name = account['name']
+            delete_business_account(flex_connection, business_id)
+            flash(f"تم حذف حساب FLEX لمغسلة {account_name} نهائيًا مع جميع بياناته.", 'success')
+        elif action == 'suspend':
             flex_connection.execute(
                 "UPDATE businesses SET subscription_status='suspended' WHERE id=?", (business_id,)
             )

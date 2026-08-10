@@ -126,6 +126,22 @@ def db():
         connection.close()
 
 
+def delete_business_account(connection, business_id):
+    """Permanently remove one FLEX tenant and all of its operational data."""
+    order_ids = [
+        row[0] for row in connection.execute(
+            "SELECT id FROM orders WHERE business_id=?", (business_id,)
+        ).fetchall()
+    ]
+    if order_ids:
+        placeholders = ",".join("?" for _ in order_ids)
+        connection.execute(f"DELETE FROM order_items WHERE order_id IN ({placeholders})", order_ids)
+        connection.execute(f"DELETE FROM payments WHERE order_id IN ({placeholders})", order_ids)
+    for table in ("orders", "customers", "services", "expenses", "audit_log", "cash_days", "users"):
+        connection.execute(f"DELETE FROM {table} WHERE business_id=?", (business_id,))
+    return connection.execute("DELETE FROM businesses WHERE id=?", (business_id,)).rowcount
+
+
 def init_db():
     schema = """
     CREATE TABLE IF NOT EXISTS settings (

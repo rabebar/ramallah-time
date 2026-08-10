@@ -198,6 +198,19 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertIn(b'14/08/2026', order_page.data)
         self.assertIn(b'class="print-footer"', order_page.data)
 
+        with self.module.db() as connection:
+            connection.execute(
+                "INSERT INTO expenses(business_id,expense_date,category,amount,note) VALUES(?,?,?,?,?)",
+                (1, "2026-08-10", "مواد", 25, "Deletion test"),
+            )
+            deleted = self.module.delete_business_account(connection, 1)
+            self.assertEqual(deleted, 1)
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM businesses").fetchone()[0], 0)
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM users WHERE business_id=1").fetchone()[0], 0)
+            for table in ("orders", "customers", "expenses", "order_items", "payments"):
+                self.assertEqual(connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0], 0)
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM services WHERE business_id=1").fetchone()[0], 0)
+
 
 if __name__ == "__main__":
     unittest.main()
