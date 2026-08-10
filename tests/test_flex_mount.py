@@ -169,6 +169,21 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertEqual(edited_item["service_name"], "Edited item")
         self.assertEqual(edited_item["item_note"], "Updated")
 
+        due_date_change = self.client.post(
+            f"/flex/orders/{latest_order['id']}/due-date",
+            data={"due_date": "2026-08-14T15:30"},
+        )
+        self.assertEqual(due_date_change.status_code, 302)
+        with self.module.db() as connection:
+            changed_due_date = connection.execute(
+                "SELECT due_date FROM orders WHERE id=?", (latest_order["id"],)
+            ).fetchone()["due_date"]
+        self.assertEqual(changed_due_date, "2026-08-14T15:30")
+
+        order_page = self.client.get(f"/flex/orders/{latest_order['id']}")
+        self.assertIn(b'2026-08-14T15:30', order_page.data)
+        self.assertIn(b'/due-date', order_page.data)
+
 
 if __name__ == "__main__":
     unittest.main()

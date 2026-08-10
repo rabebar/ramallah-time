@@ -717,6 +717,30 @@ def edit_order(order_id):
     return redirect(url_for("order_detail", order_id=order_id))
 
 
+@app.post("/orders/<int:order_id>/due-date")
+@login_required
+def update_due_date(order_id):
+    business_id = current_business_id()
+    due_date = (request.form.get("due_date") or "").strip() or None
+    with db() as connection:
+        order = connection.execute(
+            "SELECT order_no,due_date FROM orders WHERE id=? AND business_id=?",
+            (order_id, business_id),
+        ).fetchone()
+        if not order:
+            return "الطلب غير موجود", 404
+        connection.execute(
+            "UPDATE orders SET due_date=? WHERE id=? AND business_id=?",
+            (due_date, order_id, business_id),
+        )
+        connection.execute(
+            "INSERT INTO audit_log(business_id,event_type,summary) VALUES(?,'due_date_changed',?)",
+            (business_id, f"تغيير موعد تسليم {order['order_no']} من {order['due_date'] or 'غير محدد'} إلى {due_date or 'غير محدد'}"),
+        )
+    flash("تم تحديث موعد التسليم.", "success")
+    return redirect(url_for("order_detail", order_id=order_id))
+
+
 @app.post("/orders/<int:order_id>/status")
 @login_required
 def update_status(order_id):
