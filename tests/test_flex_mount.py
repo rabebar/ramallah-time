@@ -32,6 +32,9 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertEqual(manifest.status_code, 200)
         self.assertEqual(manifest.json["start_url"], "/flex/")
         self.assertEqual(manifest.json["scope"], "/flex/")
+        icon_sizes = {icon["sizes"] for icon in manifest.json["icons"]}
+        self.assertIn("192x192", icon_sizes)
+        self.assertIn("512x512", icon_sizes)
         manifest.close()
         asset = self.client.get("/flex/static/flex-app-icon.png")
         self.assertEqual(asset.status_code, 200)
