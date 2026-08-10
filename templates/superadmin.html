@@ -1513,9 +1513,10 @@
     });
     function showAdminPanel(){
       const isMoeen=location.hash.startsWith("#moeen");
+      const isFlex=location.hash.startsWith("#flex");
       const isNotifications=location.hash.startsWith("#notifications");
       const isSecurity=location.hash.startsWith("#security");
-      const selected=isSecurity?"security":isNotifications?"notifications":isMoeen?"moeen":"stores";
+      const selected=isSecurity?"security":isNotifications?"notifications":isFlex?"flex":isMoeen?"moeen":"stores";
       document.querySelectorAll("[data-admin-panel]").forEach(section=>{
         section.classList.toggle("is-visible",section.dataset.adminPanel===selected);
       });
