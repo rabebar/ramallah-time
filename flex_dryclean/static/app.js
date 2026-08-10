@@ -6,10 +6,14 @@ document.querySelectorAll('tr[data-href]').forEach(row=>row.addEventListener('cl
 const cart=document.getElementById('cart');
 const cartItems=[];
 const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+const appScript=document.querySelector('script[src*="/static/app.js"]');
+const appBase=appScript?new URL('../',appScript.src).pathname:'./';
+const quantityRules=unit=>unit==='قطعة'?{min:1,step:1}:{min:0.1,step:0.1};
+const applyQuantityRules=(input,unit)=>{const rules=quantityRules(unit);input.min=String(rules.min);input.step=String(rules.step);if(Number(input.value)<rules.min)input.value=String(rules.min)};
 function renderCart(){
   if(!cart)return;
   if(!cartItems.length){cart.innerHTML='<p class="empty">لم تتم إضافة قطع بعد.</p>';return;}
-  cart.innerHTML=cartItems.map((item,index)=>`<div class="cart-line"><span><b>${escapeHtml(item.name)}</b><small>${Number(item.price).toFixed(2)} ₪ / ${escapeHtml(item.unit)}</small>${item.note?`<small class="item-note">ملاحظة: ${escapeHtml(item.note)}</small>`:''}</span><input type="hidden" name="item_type[]" value="${item.manual?'manual':'catalog'}"><input type="hidden" name="service_id[]" value="${item.manual?'':item.id}"><input type="hidden" name="manual_name[]" value="${escapeHtml(item.manual?item.name:'')}"><input type="hidden" name="item_unit[]" value="${escapeHtml(item.unit)}"><input type="hidden" name="item_price[]" value="${Number(item.price)}"><input type="hidden" name="item_note[]" value="${escapeHtml(item.note||'')}"><input type="hidden" name="save_manual[]" value="${item.save?'1':'0'}"><input aria-label="الكمية" name="quantity[]" type="number" min="0.01" step="0.01" value="${item.quantity}"><b>${(item.price*item.quantity).toFixed(2)} ₪</b><button type="button" data-remove="${index}">×</button></div>`).join('');
+  cart.innerHTML=cartItems.map((item,index)=>{const rules=quantityRules(item.unit);return `<div class="cart-line"><span><b>${escapeHtml(item.name)}</b><small>${Number(item.price).toFixed(2)} ₪ / ${escapeHtml(item.unit)}</small>${item.note?`<small class="item-note">ملاحظة: ${escapeHtml(item.note)}</small>`:''}</span><input type="hidden" name="item_type[]" value="${item.manual?'manual':'catalog'}"><input type="hidden" name="service_id[]" value="${item.manual?'':item.id}"><input type="hidden" name="manual_name[]" value="${escapeHtml(item.manual?item.name:'')}"><input type="hidden" name="item_unit[]" value="${escapeHtml(item.unit)}"><input type="hidden" name="item_price[]" value="${Number(item.price)}"><input type="hidden" name="item_note[]" value="${escapeHtml(item.note||'')}"><input type="hidden" name="save_manual[]" value="${item.save?'1':'0'}"><input aria-label="الكمية" name="quantity[]" type="number" min="${rules.min}" step="${rules.step}" value="${item.quantity}"><b>${(item.price*item.quantity).toFixed(2)} ₪</b><button type="button" data-remove="${index}">×</button></div>`}).join('');
   cart.querySelectorAll('input[name="quantity[]"]').forEach((input,index)=>input.addEventListener('input',()=>{cartItems[index].quantity=Number(input.value||1);renderCart()}));
   cart.querySelectorAll('[data-remove]').forEach(button=>button.addEventListener('click',()=>{cartItems.splice(Number(button.dataset.remove),1);renderCart()}));
 }
@@ -27,7 +31,7 @@ if(servicePicker){
     serviceSelect.innerHTML='<option value="">اختر الخدمة</option>'+options.map(service=>`<option value="${service.id}">${escapeHtml(service.name)} — ${Number(service.price).toFixed(2)} ₪ / ${escapeHtml(service.unit)}</option>`).join('');
     serviceSelect.disabled=!options.length; addSelected.disabled=true;
   });
-  serviceSelect.addEventListener('change',()=>addSelected.disabled=!serviceSelect.value);
+  serviceSelect.addEventListener('change',()=>{const service=services.find(item=>String(item.id)===serviceSelect.value);addSelected.disabled=!service;if(service)applyQuantityRules(serviceQuantity,service.unit)});
   addSelected.addEventListener('click',()=>{
     const service=services.find(item=>String(item.id)===serviceSelect.value); if(!service)return;
     const quantity=Math.max(Number(serviceQuantity.value||1),0.01);
@@ -37,11 +41,14 @@ if(servicePicker){
     renderCart(); serviceQuantity.value='1'; serviceNote.value='';
   });
   document.getElementById('show-manual-service').addEventListener('click',()=>{manualForm.hidden=!manualForm.hidden; if(!manualForm.hidden)document.getElementById('manual-service-name').focus()});
+  const manualUnit=document.getElementById('manual-service-unit');
+  const manualQuantity=document.getElementById('manual-service-quantity');
+  manualUnit.addEventListener('change',()=>applyQuantityRules(manualQuantity,manualUnit.value));
   document.getElementById('add-manual-service').addEventListener('click',()=>{
     const name=document.getElementById('manual-service-name').value.trim();
     const unit=document.getElementById('manual-service-unit').value;
     const price=Math.max(Number(document.getElementById('manual-service-price').value||0),0);
-    const quantity=Math.max(Number(document.getElementById('manual-service-quantity').value||1),0.01);
+    const quantity=Math.max(Number(manualQuantity.value||1),quantityRules(unit).min);
     const note=document.getElementById('manual-service-note').value.trim();
     if(!name){document.getElementById('manual-service-name').focus();return;}
     cartItems.push({id:`manual-${Date.now()}`,name,unit,price,quantity,note,manual:true,save:document.getElementById('manual-service-save').checked});
@@ -49,8 +56,39 @@ if(servicePicker){
   });
 }
 
+const customerLookupInput=document.getElementById('customer-lookup-input');
+const customerLookupResults=document.getElementById('customer-lookup-results');
+const orderCustomerName=document.getElementById('order-customer-name');
+const orderCustomerPhone=document.getElementById('order-customer-phone');
+const orderCustomerSuggestions=document.getElementById('order-customer-suggestions');
+const selectedCustomerId=document.getElementById('selected-customer-id');
+let customerTimer;
+const fetchCustomers=async query=>{
+  if(query.trim().length<2)return [];
+  const response=await fetch(`${appBase}api/customers?q=${encodeURIComponent(query.trim())}`);
+  return response.ok?(await response.json()).customers:[];
+};
+const customerMarkup=(customers,compact=false)=>customers.length?customers.map(customer=>`<article class="customer-result" data-customer-id="${customer.id}" data-customer-name="${escapeHtml(customer.name)}" data-customer-phone="${escapeHtml(customer.phone)}"><div><b>${escapeHtml(customer.name)}</b><span>${escapeHtml(customer.phone)} · ${customer.open_count} طلب مفتوح</span></div>${compact?'<button type="button" class="soft customer-select">اختيار</button>':`<div class="customer-open-orders">${customer.orders.length?customer.orders.map(order=>`<a href="${appBase}orders/${order.id}">${escapeHtml(order.order_no)} · ${escapeHtml(order.status)}${order.due_date?` · ${escapeHtml(order.due_date.replace('T',' '))}`:''}</a>`).join(''):'<span>لا توجد طلبات مفتوحة</span>'}</div><button type="button" class="soft customer-new-order">طلب جديد</button>`}</article>`).join(''):'<p class="empty">لم يُعثر على زبون مطابق. يمكنك إنشاء زبون جديد.</p>';
+const runCustomerSearch=(input,results,compact=false)=>{
+  clearTimeout(customerTimer);
+  const query=input.value;
+  if(query.trim().length<2){results.hidden=true;results.innerHTML='';return;}
+  customerTimer=setTimeout(async()=>{const customers=await fetchCustomers(query);results.innerHTML=customerMarkup(customers,compact);results.hidden=false;},220);
+};
+if(customerLookupInput)customerLookupInput.addEventListener('input',()=>runCustomerSearch(customerLookupInput,customerLookupResults));
+[orderCustomerName,orderCustomerPhone].filter(Boolean).forEach(input=>input.addEventListener('input',()=>{selectedCustomerId.value='';runCustomerSearch(input,orderCustomerSuggestions,true)}));
+document.addEventListener('click',event=>{
+  const card=event.target.closest('.customer-result'); if(!card)return;
+  if(event.target.closest('.customer-select,.customer-new-order')){
+    selectedCustomerId.value=card.dataset.customerId;
+    orderCustomerName.value=card.dataset.customerName;
+    orderCustomerPhone.value=card.dataset.customerPhone;
+    orderCustomerSuggestions.hidden=true;
+    document.getElementById('new-order')?.showModal();
+  }
+});
+
 if('serviceWorker' in navigator){
-  const appScript=document.querySelector('script[src*="/static/app.js"]');
   if(appScript){
     const workerUrl=new URL('../sw.js',appScript.src);
     const workerScope=new URL('../',appScript.src).pathname;

@@ -416,15 +416,22 @@ def create_order():
     quantities = request.form.getlist("quantity[]")
     item_notes = request.form.getlist("item_note[]")
     save_manual = request.form.getlist("save_manual[]")
+    selected_customer_id = request.form.get("customer_id", type=int)
     if not name or not phone or not item_types:
         flash("أدخل بيانات الزبون وأضف خدمة واحدة على الأقل.", "error")
         return redirect(url_for("dashboard"))
     with db() as connection:
         customer_key = f"{business_id}:{phone}"
-        customer = connection.execute("SELECT id FROM customers WHERE business_id=? AND phone=?", (business_id, customer_key)).fetchone()
+        customer = None
+        if selected_customer_id:
+            customer = connection.execute(
+                "SELECT id FROM customers WHERE business_id=? AND id=?", (business_id, selected_customer_id)
+            ).fetchone()
+        if not customer:
+            customer = connection.execute("SELECT id FROM customers WHERE business_id=? AND phone=?", (business_id, customer_key)).fetchone()
         if customer:
             customer_id = customer["id"]
-            connection.execute("UPDATE customers SET name=? WHERE id=?", (name, customer_id))
+            connection.execute("UPDATE customers SET name=?,phone=?,display_phone=? WHERE id=?", (name, customer_key, phone, customer_id))
         else:
             customer_id = connection.execute(
                 "INSERT INTO customers(business_id,name,phone,display_phone) VALUES(?,?,?,?)", (business_id, name, customer_key, phone)
@@ -471,6 +478,8 @@ def create_order():
                 service_name = service["name"]
                 unit = service["unit"]
                 unit_price = service["price"]
+            if unit == "قطعة":
+                quantity = float(max(int(round(quantity)), 1))
             line_total = quantity * unit_price
             item_note = (item_notes[index] if index < len(item_notes) else "").strip()
             subtotal += line_total
@@ -497,6 +506,44 @@ def create_order():
         )
     flash(f"تم حفظ الطلب {order_no} بنجاح.", "success")
     return redirect(url_for("order_detail", order_id=order_id))
+
+
+@app.get("/api/customers")
+@login_required
+def customer_lookup():
+    business_id = current_business_id()
+    query = request.args.get("q", "").strip()
+    if len(query) < 2:
+        return jsonify(customers=[])
+    term = f"%{query}%"
+    digits = re.sub(r"[^0-9+]", "", query)
+    phone_term = f"%{digits}%" if digits else term
+    with db() as connection:
+        customers = connection.execute(
+            """SELECT c.id,c.name,COALESCE(c.display_phone,'') phone,
+                      COUNT(o.id) order_count,
+                      SUM(CASE WHEN o.id IS NOT NULL AND o.status!='تم التسليم' THEN 1 ELSE 0 END) open_count,
+                      MAX(o.created_at) last_order_at
+               FROM customers c LEFT JOIN orders o ON o.customer_id=c.id AND o.business_id=c.business_id
+               WHERE c.business_id=? AND (c.name LIKE ? OR COALESCE(c.display_phone,'') LIKE ?)
+               GROUP BY c.id,c.name,c.display_phone
+               ORDER BY open_count DESC,last_order_at DESC LIMIT 10""",
+            (business_id, term, phone_term),
+        ).fetchall()
+        result = []
+        for customer in customers:
+            open_orders = connection.execute(
+                """SELECT id,order_no,status,due_date,total,paid FROM orders
+                   WHERE business_id=? AND customer_id=? AND status!='تم التسليم'
+                   ORDER BY id DESC LIMIT 5""",
+                (business_id, customer["id"]),
+            ).fetchall()
+            result.append({
+                "id": customer["id"], "name": customer["name"], "phone": customer["phone"],
+                "order_count": customer["order_count"], "open_count": customer["open_count"] or 0,
+                "orders": [dict(order) for order in open_orders],
+            })
+    return jsonify(customers=result)
 
 
 @app.get("/orders/<int:order_id>")

@@ -614,6 +614,37 @@ dialog::backdrop {
   margin-top: 4px;
   white-space: normal;
 }
+.customer-lookup-panel {
+  display: grid;
+  grid-template-columns: minmax(260px,.8fr) minmax(360px,1.2fr);
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.customer-lookup-copy h2 { margin: 4px 0; }
+.customer-lookup-copy p { margin: 0; color: var(--muted); }
+.customer-lookup-box { position: relative; }
+.customer-lookup-box > input { width: 100%; font-size: 17px; }
+.customer-results {
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  padding: 8px;
+  max-height: 310px;
+  overflow: auto;
+  box-shadow: 0 16px 40px rgba(15,48,68,.12);
+  position: relative;
+  z-index: 8;
+}
+.customer-results[hidden] { display: none; }
+.customer-result { display: grid; grid-template-columns: minmax(150px,.8fr) minmax(220px,1.2fr) auto; gap: 12px; align-items: center; padding: 10px; border-bottom: 1px solid var(--line); }
+.customer-result:last-child { border-bottom: 0; }
+.customer-result > div:first-child { display: grid; gap: 3px; }
+.customer-result span { color: var(--muted); font-size: 13px; }
+.customer-open-orders { display: flex; flex-wrap: wrap; gap: 6px; }
+.customer-open-orders a { padding: 7px 9px; border-radius: 9px; background: var(--wash); color: var(--ink); font-size: 13px; text-decoration: none; }
+#order-customer-suggestions .customer-result { grid-template-columns: 1fr auto; }
 @media (max-width: 800px) {
   .service-selectors,
   .manual-service-form {
@@ -626,4 +657,7 @@ dialog::backdrop {
     align-items: flex-start;
     gap: 12px;
   }
+  .customer-lookup-panel { grid-template-columns: 1fr; gap: 14px; }
+  .customer-result { grid-template-columns: 1fr auto; }
+  .customer-open-orders { grid-column: 1 / -1; }
 }

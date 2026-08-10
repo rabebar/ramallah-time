@@ -66,7 +66,7 @@ class FlexMountedAppTest(unittest.TestCase):
             "item_price[]": "17.5",
             "item_note[]": "Handle carefully",
             "save_manual[]": "1",
-            "quantity[]": "2",
+            "quantity[]": "2.4",
             "discount": "0",
             "paid": "0",
         })
@@ -75,8 +75,37 @@ class FlexMountedAppTest(unittest.TestCase):
             item = connection.execute("SELECT * FROM order_items ORDER BY id DESC LIMIT 1").fetchone()
             saved = connection.execute("SELECT * FROM services WHERE name='Special item'").fetchone()
         self.assertEqual(item["line_total"], 35)
+        self.assertEqual(item["quantity"], 2)
         self.assertEqual(item["item_note"], "Handle carefully")
         self.assertIsNotNone(saved)
+
+        lookup = self.client.get("/flex/api/customers?q=Customer")
+        self.assertEqual(lookup.status_code, 200)
+        customer = lookup.json["customers"][0]
+        self.assertEqual(customer["open_count"], 1)
+        self.assertEqual(customer["orders"][0]["status"], "مستلم")
+
+        second = self.client.post("/flex/orders", data={
+            "customer_id": str(customer["id"]),
+            "customer_name": "Customer",
+            "customer_phone": "0599111222",
+            "item_type[]": "manual",
+            "service_id[]": "",
+            "manual_name[]": "Second item",
+            "item_unit[]": "كيلو",
+            "item_price[]": "10",
+            "item_note[]": "",
+            "save_manual[]": "0",
+            "quantity[]": "1.5",
+            "discount": "0",
+            "paid": "0",
+        })
+        self.assertEqual(second.status_code, 302)
+        with self.module.db() as connection:
+            self.assertEqual(connection.execute("SELECT COUNT(*) count FROM customers").fetchone()["count"], 1)
+            weighted = connection.execute("SELECT * FROM order_items ORDER BY id DESC LIMIT 1").fetchone()
+        self.assertEqual(weighted["quantity"], 1.5)
+        self.assertEqual(weighted["line_total"], 15)
 
 
 if __name__ == "__main__":
