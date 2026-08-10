@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}اشتراك FLEX{% endblock %}
+{% block content %}
+<section class="subscription-gate">
+  <div class="subscription-card">
+    <img src="{{ url_for('static',filename='flex-logo-light.png') }}" alt="FLEX">
+    {% if subscription.subscription_status == 'active' %}
+      <span class="subscription-state active">الاشتراك فعّال</span>
+      <h1>برنامج FLEX جاهز للعمل</h1>
+      <p>يمكنك الآن إدارة الزبائن والطلبات والفواتير من حساب المغسلة.</p>
+      {% if subscription.subscription_end %}<div class="subscription-date">صالح حتى {{ subscription.subscription_end[:10] }}</div>{% endif %}
+      <a class="primary" href="{{ url_for('dashboard') }}">الدخول إلى البرنامج</a>
+    {% elif subscription.subscription_status == 'expired' %}
+      <span class="subscription-state expired">انتهى الاشتراك</span>
+      <h1>جدّد الاشتراك للعودة إلى العمل</h1>
+      <p>بيانات المغسلة محفوظة، ويعود البرنامج للعمل فور تأكيد التجديد.</p>
+      <a class="primary" href="https://wa.me/970592776784?text=مرحبًا،%20أرغب%20بتجديد%20اشتراك%20FLEX" target="_blank" rel="noopener">طلب التجديد عبر واتساب</a>
+    {% else %}
+      <span class="subscription-state pending">بانتظار التفعيل</span>
+      <h1>حساب المغسلة تم إنشاؤه</h1>
+      <p>بعد إتمام الدفع، يراجع RT Studio الطلب ويمنح الحساب إذن تشغيل FLEX.</p>
+      <div class="subscription-plans">
+        <div><b>3 أشهر</b><span>150₪</span><small>الإجمالي أول مرة 350₪</small></div>
+        <div><b>6 أشهر</b><span>300₪</span><small>الإجمالي أول مرة 500₪</small></div>
+        <div class="featured"><b>سنة</b><span>500₪</span><small>الإجمالي أول مرة 700₪</small></div>
+      </div>
+      <p class="setup-note">تشمل الدفعة الأولى 200₪ رسوم تأسيس وإعداد تدفع مرة واحدة فقط.</p>
+      <a class="primary" href="https://wa.me/970592776784?text=مرحبًا،%20أنشأت%20حساب%20FLEX%20وأرغب%20بإتمام%20الاشتراك" target="_blank" rel="noopener">إتمام الاشتراك عبر واتساب</a>
+    {% endif %}
+    <small>اسم المغسلة: {{ subscription.name }} · رقم الحساب: {{ subscription.phone }}</small>
+    <form method="post" action="{{ url_for('logout') }}"><button class="outline full">تسجيل الخروج</button></form>
+  </div>
+</section>
+{% endblock %}

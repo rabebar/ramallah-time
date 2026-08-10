@@ -142,9 +142,11 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
 .service-choice-card { position: relative; overflow: hidden; padding: 28px; border-radius: 22px; background: #fff; border: 1px solid #e2e7e4; box-shadow: 0 16px 44px rgba(16,43,37,.08); }
 .service-choice-card.moeen { background: linear-gradient(145deg,#102b25,#173d34); color: #fff; border: 0; }
 .service-choice-card.custom { background: linear-gradient(145deg,#171b2f,#29243f); color:#fff; border:0; }
+.service-choice-card.flex-product { background:linear-gradient(145deg,#eaf9fd,#fff);border-color:#b9e3ee; }
 .service-choice-card .service-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; margin-bottom: 18px; background: #eef2ff; color: #5b54dc; font-size: 20px; font-weight: 800; }
 .service-choice-card.moeen .service-icon { background: rgba(216,185,108,.16); color: #e4c777; }
 .service-choice-card.custom .service-icon { background:rgba(255,255,255,.1);color:#d8b96c; }
+.service-choice-card.flex-product .service-icon { background:#168eb4;color:#fff; }
 .service-choice-card h3 { font-size: 21px; margin-bottom: 9px; }
 .service-choice-card p { min-height: 56px; color: #667085; font-size: 13px; line-height: 1.8; }
 .service-choice-card.moeen p { color: #c9d8d2; }
@@ -454,7 +456,8 @@ body.ltr .wa-float { left: auto; right: 24px; }
  <div class="nav-links">
   <a href="#products" data-ar="المنتجات الرقمية" data-en="Digital Products">المنتجات الرقمية</a>
   <a href="/products/stores" data-ar="المتاجر" data-en="Online Stores">المتاجر</a>
-  <a href="/products/moeen" data-ar="مُعين التنفيذي" data-en="Moeen Executive">مُعين التنفيذي</a>
+ <a href="/products/moeen" data-ar="مُعين التنفيذي" data-en="Moeen Executive">مُعين التنفيذي</a>
+  <a href="/products/flex" data-ar="FLEX للمغاسل" data-en="FLEX Laundry">FLEX للمغاسل</a>
   <button class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</button>
   <a href="/login" class="nav-login" data-ar="دخول المتاجر" data-en="Store Login">دخول المتاجر</a>
   <a href="/moeen-executive/" class="nav-login" data-ar="دخول مُعين" data-en="Moeen Login">دخول مُعين</a>
@@ -530,7 +533,7 @@ body.ltr .wa-float { left: auto; right: 24px; }
  <div class="service-choice-head">
   <span class="section-label" data-ar="كتالوج RT Studio" data-en="RT Studio Catalog">كتالوج RT Studio</span>
   <h2 id="serviceChoiceTitle" data-ar="اختر المنتج الرقمي المناسب لك" data-en="Choose the Right Digital Product">اختر المنتج الرقمي المناسب لك</h2>
-  <p data-ar="ثلاثة مسارات واضحة، ولكل منتج تجربته وسعره وخطوة البدء الخاصة به." data-en="Three clear paths, each with its own pricing, trial, and next step.">ثلاثة مسارات واضحة، ولكل منتج تجربته وسعره وخطوة البدء الخاصة به.</p>
+  <p data-ar="أربعة مسارات واضحة، ولكل منتج سعره وخطوة البدء الخاصة به." data-en="Four clear paths, each with its own pricing and next step.">أربعة مسارات واضحة، ولكل منتج سعره وخطوة البدء الخاصة به.</p>
  </div>
  <div class="service-choice-grid">
   <article class="service-choice-card">
@@ -553,6 +556,17 @@ body.ltr .wa-float { left: auto; right: 24px; }
    <div class="product-actions">
     <a class="service-choice-action" href="/moeen-executive/register" data-ar="ابدأ التجربة" data-en="Start Trial">ابدأ التجربة</a>
     <a class="product-link" href="/products/moeen" data-ar="صفحة المنتج" data-en="Product Page">صفحة المنتج</a>
+   </div>
+  </article>
+  <article class="service-choice-card flex-product">
+   <span class="product-label" data-ar="إدارة المغاسل" data-en="Laundry Management">إدارة المغاسل</span>
+   <div class="service-icon">F</div>
+   <h3 data-ar="FLEX للمغاسل والدراي كلين" data-en="FLEX for Laundry and Dry Cleaning">FLEX للمغاسل والدراي كلين</h3>
+   <p data-ar="نظام لإدارة الزبائن والطلبات والأسعار والفواتير ومواعيد التسليم والدفعات والمصروفات اليومية." data-en="Manage customers, orders, pricing, invoices, delivery dates, payments, and daily expenses.">نظام لإدارة الزبائن والطلبات والأسعار والفواتير ومواعيد التسليم والدفعات والمصروفات اليومية.</p>
+   <div class="product-price"><strong>150₪</strong><span data-ar="لثلاثة أشهر · تأسيس 200₪ مرة واحدة" data-en="for 3 months · ₪200 one-time setup">لثلاثة أشهر · تأسيس 200₪ مرة واحدة</span></div>
+   <div class="product-actions">
+    <a class="service-choice-action" href="/flex/register" data-ar="إنشاء حساب مغسلة" data-en="Create Laundry Account">إنشاء حساب مغسلة</a>
+    <a class="product-link" href="/products/flex" data-ar="صفحة المنتج" data-en="Product Page">صفحة المنتج</a>
    </div>
   </article>
   <article class="service-choice-card custom">

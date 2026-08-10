@@ -44,7 +44,14 @@ class FlexMountedAppTest(unittest.TestCase):
             "password": "StrongPass123",
         })
         self.assertEqual(registered.status_code, 302)
-        self.assertTrue(registered.headers["Location"].endswith("/flex/settings/business"))
+        self.assertTrue(registered.headers["Location"].endswith("/flex/subscription"))
+        subscription_page = self.client.get("/flex/subscription")
+        self.assertIn("بانتظار التفعيل".encode(), subscription_page.data)
+        with self.module.db() as connection:
+            created_business = connection.execute("SELECT subscription_status,setup_paid FROM businesses WHERE id=1").fetchone()
+            self.assertEqual(created_business["subscription_status"], "pending")
+            self.assertEqual(created_business["setup_paid"], 0)
+            connection.execute("UPDATE businesses SET subscription_status='active',subscription_end='2027-08-10T12:00' WHERE id=1")
         dashboard = self.client.get("/flex/")
         self.assertEqual(dashboard.status_code, 200)
         self.assertIn(b"/flex/static/app.css", dashboard.data)
@@ -93,6 +100,8 @@ class FlexMountedAppTest(unittest.TestCase):
             "phone": "0599000022",
             "password": "StrongPass123",
         })
+        with self.module.db() as connection:
+            connection.execute("UPDATE businesses SET subscription_status='active',subscription_end='2027-08-10T12:00'")
         self.client.post("/flex/customers", data={
             "name": "Customer Full Four Name", "phone_prefix": "+970", "phone": "599111222", "address": "Ramallah",
         })

@@ -534,6 +534,12 @@
                 <span>مُعين التنفيذي</span>
                 {% if active_moeen_trial_count %}<b class="nav-count">{{ active_moeen_trial_count }}</b>{% endif %}
             </a>
+            <a href="#flex-management" class="nav-item" data-panel-link="flex">
+                <i data-lucide="shirt"></i>
+                <span>FLEX للمغاسل</span>
+                {% set pending_flex = flex_accounts|selectattr('subscription_status','equalto','pending')|list|length %}
+                {% if pending_flex %}<b class="nav-count">{{ pending_flex }}</b>{% endif %}
+            </a>
             <a href="#notifications" class="nav-item" data-panel-link="notifications">
                 <i data-lucide="send"></i>
                 <span>إشعارات مُعين</span>
@@ -1287,6 +1293,56 @@
                     {% else %}
                     <tr><td colspan="8" style="text-align:center;padding:36px;color:var(--text-muted);">لم تُنشأ حسابات مُعين التنفيذي بعد.</td></tr>
                     {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="table-container admin-panel" data-admin-panel="flex" id="flex-management">
+            <div class="table-title">إدارة اشتراكات FLEX للمغاسل</div>
+            <div class="logs-toolbar">
+                <p>رسوم التأسيس 200₪ مرة واحدة · 3 أشهر 150₪ · 6 أشهر 300₪ · سنة 500₪. فعّل الحساب بعد التحقق من الدفع.</p>
+                <a class="logs-copy" href="/products/flex" target="_blank">فتح صفحة المنتج</a>
+            </div>
+            <table>
+                <thead><tr><th>المغسلة</th><th>صاحب الحساب</th><th>الحالة</th><th>انتهاء الاشتراك</th><th>آخر دخول</th><th>الإجراءات</th></tr></thead>
+                <tbody>
+                {% for account in flex_accounts %}
+                    <tr>
+                        <td><strong>{{ account.name }}</strong><small style="display:block;color:var(--text-muted);">{{ account.phone or '—' }}</small><small style="display:block;color:var(--text-muted);">{{ 'تم دفع التأسيس' if account.setup_paid else 'رسوم التأسيس 200₪ مطلوبة' }}</small></td>
+                        <td><strong>{{ account.owner_name or '—' }}</strong><small style="display:block;color:var(--text-muted);">{{ account.login_phone or '' }}</small></td>
+                        <td>
+                            {% if account.subscription_status == 'active' %}<span class="badge badge-active">نشط</span>
+                            {% elif account.subscription_status == 'pending' %}<span class="badge badge-pending">بانتظار الدفع والتفعيل</span>
+                            {% elif account.subscription_status == 'expired' %}<span class="badge badge-pending">منتهي</span>
+                            {% else %}<span class="badge badge-pending">موقوف</span>{% endif %}
+                        </td>
+                        <td>{{ account.subscription_end[:10] if account.subscription_end else 'غير محدد' }}</td>
+                        <td>{{ account.last_seen[:16]|replace('T',' ') if account.last_seen else 'لم يدخل بعد' }}</td>
+                        <td>
+                            <div class="moeen-actions">
+                                <form method="POST" action="/superadmin/flex/accounts/{{ account.id }}/subscription">
+                                    <input type="hidden" name="_csrf_token" value="{{ admin_csrf_token }}">
+                                    <input type="hidden" name="action" value="activate">
+                                    <select name="months">
+                                        <option value="3">3 أشهر · 150₪</option>
+                                        <option value="6">6 أشهر · 300₪</option>
+                                        <option value="12">سنة · 500₪</option>
+                                    </select>
+                                    <button class="btn-sm btn-approve">{% if account.subscription_status == 'pending' %}تفعيل بعد الدفع{% else %}تجديد{% endif %}</button>
+                                </form>
+                                {% if account.subscription_status == 'active' %}
+                                <form method="POST" action="/superadmin/flex/accounts/{{ account.id }}/subscription" onsubmit="return confirm('إيقاف تشغيل FLEX لهذا الحساب؟ ستبقى بياناته محفوظة.')">
+                                    <input type="hidden" name="_csrf_token" value="{{ admin_csrf_token }}">
+                                    <input type="hidden" name="action" value="suspend">
+                                    <button class="btn-sm btn-reject">إيقاف</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" style="text-align:center;padding:36px;color:var(--text-muted);">لا توجد حسابات FLEX بعد.</td></tr>
+                {% endfor %}
                 </tbody>
             </table>
         </section>

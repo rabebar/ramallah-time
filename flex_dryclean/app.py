@@ -243,6 +243,15 @@ def init_db():
     """
     with db() as connection:
         connection.executescript(schema)
+        business_columns = {row[1] for row in connection.execute("PRAGMA table_info(businesses)")}
+        if "subscription_status" not in business_columns:
+            connection.execute("ALTER TABLE businesses ADD COLUMN subscription_status TEXT NOT NULL DEFAULT 'active'")
+        if "subscription_end" not in business_columns:
+            connection.execute("ALTER TABLE businesses ADD COLUMN subscription_end TEXT")
+        if "last_seen" not in business_columns:
+            connection.execute("ALTER TABLE businesses ADD COLUMN last_seen TEXT")
+        if "setup_paid" not in business_columns:
+            connection.execute("ALTER TABLE businesses ADD COLUMN setup_paid INTEGER NOT NULL DEFAULT 1")
         for table in ("services", "customers", "orders", "expenses", "payments", "audit_log"):
             columns = {row[1] for row in connection.execute(f"PRAGMA table_info({table})")}
             if "business_id" not in columns:
@@ -321,6 +330,37 @@ def login_required(view):
     return wrapped
 
 
+@app.before_request
+def enforce_business_subscription():
+    if not session.get("user_id"):
+        return None
+    allowed = {"subscription", "logout", "static", "service_worker", "health"}
+    if request.endpoint in allowed:
+        return None
+    with db() as connection:
+        business = connection.execute(
+            "SELECT subscription_status,subscription_end FROM businesses WHERE id=?",
+            (current_business_id(),),
+        ).fetchone()
+        if not business:
+            session.clear()
+            return redirect(url_for("login"))
+        expired = False
+        if business["subscription_end"]:
+            try:
+                expired = datetime.fromisoformat(business["subscription_end"]) < datetime.now()
+            except ValueError:
+                expired = True
+        if business["subscription_status"] != "active" or expired:
+            if expired and business["subscription_status"] == "active":
+                connection.execute(
+                    "UPDATE businesses SET subscription_status='expired' WHERE id=?",
+                    (current_business_id(),),
+                )
+            return redirect(url_for("subscription"))
+    return None
+
+
 @app.context_processor
 def inject_business_profile():
     with db() as connection:
@@ -350,6 +390,17 @@ def login_post():
     session["user_id"] = user["id"]
     session["business_id"] = user["business_id"]
     session["role"] = user["role"]
+    with db() as connection:
+        connection.execute(
+            "UPDATE businesses SET last_seen=? WHERE id=?",
+            (datetime.now().isoformat(timespec="seconds"), user["business_id"]),
+        )
+        business = connection.execute(
+            "SELECT subscription_status,subscription_end FROM businesses WHERE id=?",
+            (user["business_id"],),
+        ).fetchone()
+    if not business or business["subscription_status"] != "active":
+        return redirect(url_for("subscription"))
     return redirect(url_for("dashboard"))
 
 
@@ -372,7 +423,10 @@ def register_post():
         if connection.execute("SELECT 1 FROM users WHERE phone=?", (phone,)).fetchone():
             flash("رقم الهاتف مسجل مسبقًا.", "error")
             return redirect(url_for("register"))
-        business_id = connection.execute("INSERT INTO businesses(name,phone) VALUES(?,?)", (business_name, phone)).lastrowid
+        business_id = connection.execute(
+            "INSERT INTO businesses(name,phone,subscription_status,setup_paid) VALUES(?,?,'pending',0)",
+            (business_name, phone),
+        ).lastrowid
         user_id = connection.execute(
             "INSERT INTO users(business_id,full_name,phone,password_hash) VALUES(?,?,?,?)",
             (business_id, full_name, phone, generate_password_hash(password)),
@@ -386,8 +440,18 @@ def register_post():
     session["user_id"] = user_id
     session["business_id"] = business_id
     session["role"] = "owner"
-    flash("أهلًا بك في FLEX. راجع بيانات المغسلة والأسعار قبل بدء العمل.", "success")
-    return redirect(url_for("business_settings"))
+    flash("تم إنشاء الحساب. يصبح البرنامج جاهزًا بعد تأكيد الاشتراك من RT Studio.", "success")
+    return redirect(url_for("subscription"))
+
+
+@app.get("/subscription")
+@login_required
+def subscription():
+    with db() as connection:
+        business = connection.execute(
+            "SELECT * FROM businesses WHERE id=?", (current_business_id(),)
+        ).fetchone()
+    return render_template("subscription.html", subscription=business)
 
 
 @app.post("/logout")

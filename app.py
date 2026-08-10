@@ -559,7 +559,7 @@ app.config.update(
 # It deliberately uses a separate session cookie and the same Render process;
 # no additional Render service is required.
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
-from flex_dryclean.app import app as flex_app
+from flex_dryclean.app import app as flex_app, db as flex_db
 app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {"/flex": flex_app})
 
 BOT_USER_AGENT_PATTERN = re.compile(
@@ -2143,6 +2143,7 @@ def render_public_product(product, lang):
     paths = {
         'stores': {'ar': '/products/stores', 'en': '/en/products/stores'},
         'moeen': {'ar': '/products/moeen', 'en': '/en/products/moeen'},
+        'flex': {'ar': '/products/flex', 'en': '/en/products/flex'},
         'custom': {'ar': '/services/custom-websites', 'en': '/en/services/custom-websites'},
     }
     return render_template(
@@ -2165,6 +2166,12 @@ def stores_product(lang):
 @app.route('/en/products/moeen', defaults={'lang': 'en'})
 def moeen_product(lang):
     return render_public_product('moeen', lang)
+
+
+@app.route('/products/flex', defaults={'lang': 'ar'})
+@app.route('/en/products/flex', defaults={'lang': 'en'})
+def flex_product(lang):
+    return render_public_product('flex', lang)
 
 
 @app.route('/services/custom-websites', defaults={'lang': 'ar'})
@@ -4344,6 +4351,14 @@ def super_admin():
     moeen_broadcasts = cursor.fetchall()
     conn.close()
 
+    with flex_db() as flex_connection:
+        flex_accounts = [dict(row) for row in flex_connection.execute(
+            """SELECT b.*,u.full_name owner_name,u.phone login_phone
+               FROM businesses b
+               LEFT JOIN users u ON u.business_id=b.id AND u.role='owner'
+               ORDER BY b.created_at DESC"""
+        ).fetchall()]
+
     return render_template('superadmin.html',
                            stats={'total_users': t_users, 'total_products': t_products, 'total_credits': t_credits},
                            users=users,
@@ -4363,6 +4378,7 @@ def super_admin():
                            active_moeen_trial_count=active_moeen_trial_count,
                            moeen_push_stats=moeen_push_stats,
                            moeen_broadcasts=moeen_broadcasts,
+                           flex_accounts=flex_accounts,
                            push_configured=bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY),
                            vapid_public_key=VAPID_PUBLIC_KEY,
                            subscription_plans=SUBSCRIPTION_PLANS,
@@ -4372,6 +4388,45 @@ def super_admin():
                            removebg_configured=bool(REMOVEBG_API_KEY),
                            admin_password_changed_at=admin_password_changed_at,
                            now=datetime.utcnow())  # <--- هذا هو السطر الذي كان ناقصاً
+
+
+@app.post('/superadmin/flex/accounts/<int:business_id>/subscription')
+def super_admin_update_flex_subscription(business_id):
+    if not session.get('is_superadmin'):
+        return redirect(url_for('super_admin_login'))
+    action = request.form.get('action', 'activate')
+    try:
+        months = max(1, min(int(request.form.get('months', '3')), 24))
+    except (TypeError, ValueError):
+        months = 3
+    with flex_db() as flex_connection:
+        account = flex_connection.execute(
+            "SELECT id,name,subscription_end FROM businesses WHERE id=?", (business_id,)
+        ).fetchone()
+        if not account:
+            flash('حساب FLEX غير موجود.', 'error')
+            return redirect(url_for('super_admin') + '#flex-management')
+        if action == 'suspend':
+            flex_connection.execute(
+                "UPDATE businesses SET subscription_status='suspended' WHERE id=?", (business_id,)
+            )
+            flash(f"تم إيقاف تشغيل FLEX لمغسلة {account['name']}.", 'success')
+        else:
+            base = datetime.now()
+            if account['subscription_end']:
+                try:
+                    current_end = datetime.fromisoformat(account['subscription_end'])
+                    if current_end > base:
+                        base = current_end
+                except ValueError:
+                    pass
+            subscription_end = base + timedelta(days=months * 30)
+            flex_connection.execute(
+                "UPDATE businesses SET subscription_status='active',subscription_end=?,setup_paid=1 WHERE id=?",
+                (subscription_end.isoformat(timespec='minutes'), business_id),
+            )
+            flash(f"تم تفعيل FLEX لمغسلة {account['name']} لمدة {months} أشهر.", 'success')
+    return redirect(url_for('super_admin') + '#flex-management')
 
 @app.post('/superadmin/push/subscribe')
 def superadmin_push_subscribe():
@@ -5167,9 +5222,11 @@ def sitemap_xml():
         ('https://www.rtstudio.store/join', None),
         ('https://www.rtstudio.store/products/stores', None),
         ('https://www.rtstudio.store/products/moeen', None),
+        ('https://www.rtstudio.store/products/flex', None),
         ('https://www.rtstudio.store/services/custom-websites', None),
         ('https://www.rtstudio.store/en/products/stores', None),
         ('https://www.rtstudio.store/en/products/moeen', None),
+        ('https://www.rtstudio.store/en/products/flex', None),
         ('https://www.rtstudio.store/en/services/custom-websites', None),
     ]
     for s in stores:

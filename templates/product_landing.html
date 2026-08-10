@@ -42,6 +42,27 @@
       ('Device synchronization', 'Link your phone and computer with a temporary code to access the same information.'),
       ('Privacy and encryption', 'Your content is encrypted on your device before syncing and is not visible in the RT Studio dashboard.')
     ] %}
+  {% elif product == 'flex' %}
+    {% set page_title = 'FLEX Laundry Management' %}
+    {% set eyebrow = 'A practical system for dry cleaners' %}
+    {% set headline = 'Customers, orders, invoices, and daily cash in one clear system' %}
+    {% set summary = 'FLEX gives laundry owners a focused workspace for customer records, service pricing, order tracking, delivery reminders, invoices, payments, expenses, and Excel exports.' %}
+    {% set price = '₪200 one-time setup · ₪150 for 3 months · ₪300 for 6 months · ₪500 yearly' %}
+    {% set primary_url = '/flex/register' %}
+    {% set primary_label = 'Create a Laundry Account' %}
+    {% set login_url = '/flex/login' %}
+    {% set login_label = 'FLEX Login' %}
+    {% set accent = '#168eb4' %}
+    {% set hero_visual = '/flex/static/flex-logo-light.png' %}
+    {% set hero_visual_alt = 'FLEX laundry management system' %}
+    {% set features = [
+      ('Customer records', 'Save customer names, phone numbers, addresses, and order history.'),
+      ('Orders and delivery reminders', 'Build itemized orders and receive a clear reminder when delivery is due.'),
+      ('Flexible service pricing', 'Define clothing, cleaning treatment, unit, and price for your own laundry.'),
+      ('Invoices and payments', 'Edit an invoice before printing and track paid and outstanding amounts.'),
+      ('Daily income and expenses', 'Review daily receipts, expenses, and cash figures from one dashboard.'),
+      ('Maintenance and updates', 'The subscription includes hosting, general updates, maintenance, and routine support.')
+    ] %}
   {% else %}
     {% set page_title = 'Custom Website and Web System Design' %}
     {% set eyebrow = 'Made-to-order development' %}
@@ -64,6 +85,27 @@
       ('Local support', 'Direct communication and Arabic follow-up after launch.')
     ] %}
   {% endif %}
+{% elif product == 'flex' %}
+  {% set page_title = 'FLEX لإدارة المغاسل' %}
+  {% set eyebrow = 'نظام عملي للدراي كلين والمغاسل' %}
+  {% set headline = 'الزبائن والطلبات والفواتير والحساب اليومي في نظام واحد' %}
+  {% set summary = 'يمنح FLEX صاحب المغسلة مساحة واضحة لإدارة ملفات الزبائن وأسعار الخدمات والطلبات ومواعيد التسليم والفواتير والدفعات والمصروفات والتصدير إلى إكسل.' %}
+  {% set price = '200₪ تأسيس مرة واحدة · 150₪ لثلاثة أشهر · 300₪ لستة أشهر · 500₪ سنويًا' %}
+  {% set primary_url = '/flex/register' %}
+  {% set primary_label = 'إنشاء حساب مغسلة' %}
+  {% set login_url = '/flex/login' %}
+  {% set login_label = 'دخول FLEX' %}
+  {% set accent = '#168eb4' %}
+  {% set hero_visual = '/flex/static/flex-logo-light.png' %}
+  {% set hero_visual_alt = 'برنامج FLEX لإدارة المغاسل والدراي كلين' %}
+  {% set features = [
+    ('ملفات الزبائن', 'حفظ الاسم ورقم الهاتف والعنوان وسجل الطلبات لكل زبون.'),
+    ('الطلبات ومواعيد التسليم', 'إنشاء طلب مفصل والتنبيه عند اقتراب موعد تسليمه.'),
+    ('أسعار تناسب كل مغسلة', 'تحديد القطعة وطريقة المعالجة والوحدة والسعر وفق عمل المغسلة.'),
+    ('الفواتير والدفعات', 'تعديل الفاتورة قبل طباعتها ومتابعة المدفوع والمبلغ المتبقي.'),
+    ('الدخل والمصروفات اليومية', 'متابعة المقبوضات والمصروفات وحركة اليوم من لوحة واحدة.'),
+    ('الصيانة والتحديثات', 'يشمل الاشتراك الاستضافة والتحديثات العامة والصيانة والدعم المعتاد.')
+  ] %}
 {% else %}
 {% if product == 'stores' %}
   {% set page_title = 'متجر RT Studio' %}
