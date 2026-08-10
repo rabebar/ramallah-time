@@ -1,13 +1,15 @@
 {
   "name": "FLEX",
   "short_name": "FLEX",
-  "start_url": "./",
+  "id": "/flex/",
+  "start_url": "/flex/",
+  "scope": "/flex/",
   "display": "standalone",
   "background_color": "#f4fbfd",
   "theme_color": "#269fc2",
   "lang": "ar",
   "dir": "rtl",
   "icons": [
-    {"src": "static/flex-app-icon.png", "sizes": "1254x1254", "type": "image/png", "purpose": "any maskable"}
+    {"src": "/flex/static/flex-app-icon.png", "sizes": "1254x1254", "type": "image/png", "purpose": "any maskable"}
   ]
 }

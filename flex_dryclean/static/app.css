@@ -73,6 +73,13 @@ nav a:hover {
   margin-right: auto;
   color: var(--muted);
 }
+.install-flex-button { border:1px solid #b9e3ee;background:#edf9fc;color:var(--sky-dark);border-radius:11px;padding:10px 13px;font:700 13px Tajawal;cursor:pointer;white-space:nowrap; }
+.install-flex-button:hover { background:#dff4f9; }
+.install-flex-button[hidden] { display:none; }
+@media (display-mode:standalone) and (min-width:1000px) {
+  .shell { width:calc(100vw - 64px);max-width:1600px;min-height:calc(100vh - 150px); }
+  .topbar { padding-inline:32px; }
+}
 .shell {
   width: min(1500px, 94vw);
   margin: 36px auto 80px;
@@ -508,6 +515,7 @@ dialog::backdrop {
   .topbar nav {
     display: none;
   }
+  .install-flex-button { font-size:11px;padding:9px 10px; }
   .shell {
     width: 94vw;
     margin-top: 22px;

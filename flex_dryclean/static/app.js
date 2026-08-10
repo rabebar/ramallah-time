@@ -4,6 +4,28 @@ document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('cli
 document.querySelectorAll('tr[data-href]').forEach(row=>row.addEventListener('click',()=>location.href=row.dataset.href));
 document.querySelector('dialog[data-auto-open="1"]')?.showModal();
 
+let flexInstallPrompt=null;
+const flexInstallButtons=[...document.querySelectorAll('[data-flex-install]')];
+const flexStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+const updateFlexInstallButtons=()=>flexInstallButtons.forEach(button=>button.hidden=flexStandalone);
+window.addEventListener('beforeinstallprompt',event=>{
+  event.preventDefault();
+  flexInstallPrompt=event;
+  updateFlexInstallButtons();
+});
+window.addEventListener('appinstalled',()=>flexInstallButtons.forEach(button=>button.hidden=true));
+flexInstallButtons.forEach(button=>button.addEventListener('click',async()=>{
+  if(flexInstallPrompt){
+    await flexInstallPrompt.prompt();
+    await flexInstallPrompt.userChoice;
+    flexInstallPrompt=null;
+  }else{
+    button.textContent='من قائمة المتصفح اختر «تثبيت FLEX»';
+    setTimeout(()=>button.textContent='تثبيت FLEX على الكمبيوتر',5000);
+  }
+}));
+updateFlexInstallButtons();
+
 const cart=document.getElementById('cart');
 const cartItems=[];
 const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));

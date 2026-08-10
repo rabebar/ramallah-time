@@ -25,7 +25,14 @@ class FlexMountedAppTest(unittest.TestCase):
         self.temp_dir.cleanup()
 
     def test_register_login_assets_and_isolation_mount(self):
-        self.assertEqual(self.client.get("/flex/login").status_code, 200)
+        login_page = self.client.get("/flex/login")
+        self.assertEqual(login_page.status_code, 200)
+        self.assertIn(b'data-flex-install', login_page.data)
+        manifest = self.client.get("/flex/static/manifest.webmanifest")
+        self.assertEqual(manifest.status_code, 200)
+        self.assertEqual(manifest.json["start_url"], "/flex/")
+        self.assertEqual(manifest.json["scope"], "/flex/")
+        manifest.close()
         asset = self.client.get("/flex/static/flex-app-icon.png")
         self.assertEqual(asset.status_code, 200)
         asset.close()
