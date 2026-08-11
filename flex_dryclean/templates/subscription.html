@@ -8,7 +8,7 @@
       <span class="subscription-state active">الاشتراك فعّال</span>
       <h1>برنامج FLEX جاهز للعمل</h1>
       <p>يمكنك الآن إدارة الزبائن والطلبات والفواتير من حساب المغسلة.</p>
-      {% if subscription.subscription_end %}<div class="subscription-date">صالح حتى {{ subscription.subscription_end[:10] }}</div>{% endif %}
+      {% if subscription.subscription_end %}<div class="subscription-date">صالح حتى {{ subscription.subscription_end|date_dmy }}</div>{% endif %}
       <a class="primary" href="{{ url_for('dashboard') }}">الدخول إلى البرنامج</a>
     {% elif subscription.subscription_status == 'expired' %}
       <span class="subscription-state expired">انتهى الاشتراك</span>

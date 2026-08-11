@@ -100,6 +100,8 @@ def service_catalog_rows():
 
 def requested_due_date():
     """Read a delivery date in the explicit day/month/year order used by FLEX."""
+    if not request.form.get("due_day") and not request.form.get("due_date"):
+        return None
     if not any(request.form.get(name) for name in ("due_day", "due_month", "due_year", "due_time")):
         return (request.form.get("due_date") or "").strip() or None
     day = int(request.form.get("due_day") or 0)
@@ -326,6 +328,32 @@ def money(value):
     return f"{float(value or 0):,.2f}"
 
 
+def date_dmy(value):
+    """Display stored ISO dates consistently as day/month/year."""
+    raw = str(value or "").strip()
+    match = re.match(r"^(\d{4})-(\d{2})-(\d{2})", raw)
+    return f"{match.group(3)}/{match.group(2)}/{match.group(1)}" if match else raw
+
+
+def datetime_dmy(value):
+    raw = str(value or "").strip()
+    formatted = date_dmy(raw)
+    time_match = re.search(r"[T ](\d{2}:\d{2})", raw)
+    return f"{formatted} · {time_match.group(1)}" if time_match else formatted
+
+
+def requested_calendar_date(prefix, fallback=None):
+    """Build a validated ISO date from explicit day/month/year inputs."""
+    if not any(request.form.get(f"{prefix}_{part}") for part in ("day", "month", "year")):
+        return (request.form.get(prefix) or fallback or today()).strip()
+    value = date(
+        int(request.form.get(f"{prefix}_year") or 0),
+        int(request.form.get(f"{prefix}_month") or 0),
+        int(request.form.get(f"{prefix}_day") or 0),
+    )
+    return value.isoformat()
+
+
 def normalized_phone(prefix, local_phone):
     digits = re.sub(r"\D", "", local_phone or "").lstrip("0")
     country = "972" if str(prefix).replace("+", "").replace("00", "") == "972" else "970"
@@ -333,6 +361,8 @@ def normalized_phone(prefix, local_phone):
 
 
 app.jinja_env.filters["money"] = money
+app.jinja_env.filters["date_dmy"] = date_dmy
+app.jinja_env.filters["datetime_dmy"] = datetime_dmy
 
 
 def current_business_id():
@@ -390,7 +420,7 @@ def enforce_business_subscription():
 @app.context_processor
 def inject_business_profile():
     with db() as connection:
-        return {"business": business_profile(connection)}
+        return {"business": business_profile(connection), "current_date": today()}
 
 
 @app.get("/login")
@@ -575,7 +605,18 @@ def dashboard():
 @login_required
 def cash_accounts():
     business_id = current_business_id()
-    selected_date = request.args.get("date", today())
+    try:
+        if request.args.get("date_day"):
+            selected_date = date(
+                int(request.args.get("date_year") or 0),
+                int(request.args.get("date_month") or 0),
+                int(request.args.get("date_day") or 0),
+            ).isoformat()
+        else:
+            selected_date = request.args.get("date", today())
+    except (TypeError, ValueError):
+        flash("أدخل تاريخًا صحيحًا بالترتيب: يوم، شهر، سنة.", "error")
+        selected_date = today()
     with db() as connection:
         order_summary = connection.execute(
             """SELECT COUNT(*) order_count,COALESCE(SUM(total),0) sales
@@ -669,7 +710,7 @@ def create_order():
         order_id = connection.execute(
             """INSERT INTO orders(business_id,customer_id,due_date,discount,paid,payment_method,notes)
                VALUES(?,?,?,?,?,?,?)""",
-            (business_id, customer_id, request.form.get("due_date") or None, discount, paid,
+            (business_id, customer_id, requested_due_date(), discount, paid,
              request.form.get("payment_method", "نقدي"), request.form.get("notes", "").strip()),
         ).lastrowid
         subtotal = 0
@@ -977,17 +1018,22 @@ def add_payment(order_id):
 @login_required
 def create_expense():
     business_id = current_business_id()
+    try:
+        expense_date = requested_calendar_date("expense_date")
+    except (TypeError, ValueError):
+        flash("أدخل تاريخًا صحيحًا بالترتيب: يوم، شهر، سنة.", "error")
+        return redirect(url_for("cash_accounts", date=today()))
     amount = float(request.form.get("amount") or 0)
     if amount <= 0:
         flash("أدخل مبلغ مصروف صحيحًا.", "error")
-        return redirect(url_for("cash_accounts", date=request.form.get("expense_date", today())))
+        return redirect(url_for("cash_accounts", date=expense_date))
     with db() as connection:
         connection.execute(
             "INSERT INTO expenses(business_id,expense_date,category,amount,note) VALUES(?,?,?,?,?)",
-            (business_id, request.form.get("expense_date", today()), request.form.get("category", "أخرى"), amount, request.form.get("note", "").strip()),
+            (business_id, expense_date, request.form.get("category", "أخرى"), amount, request.form.get("note", "").strip()),
         )
     flash("تم تسجيل المصروف.", "success")
-    return redirect(url_for("cash_accounts", date=request.form.get("expense_date", today())))
+    return redirect(url_for("cash_accounts", date=expense_date))
 
 
 @app.post("/cash/close")
@@ -1129,11 +1175,11 @@ def export_report():
     order_headers = ["رقم الطلب", "التاريخ", "الزبون", "الهاتف", "الحالة", "الإجمالي", "المدفوع", "المتبقي", "موعد التسليم"]
     orders_sheet.append(order_headers)
     for row in orders:
-        orders_sheet.append([row["order_no"], row["created_at"], row["customer_name"], row["customer_phone"], row["status"], row["total"], row["paid"], row["total"]-row["paid"], row["due_date"]])
+        orders_sheet.append([row["order_no"], datetime_dmy(row["created_at"]), row["customer_name"], row["customer_phone"], row["status"], row["total"], row["paid"], row["total"]-row["paid"], datetime_dmy(row["due_date"])])
     expense_sheet = workbook.create_sheet("المصروفات")
     expense_sheet.append(["التاريخ", "التصنيف", "المبلغ", "الملاحظة"])
     for row in expenses:
-        expense_sheet.append([row["expense_date"], row["category"], row["amount"], row["note"]])
+        expense_sheet.append([date_dmy(row["expense_date"]), row["category"], row["amount"], row["note"]])
     payments_sheet = workbook.create_sheet("المقبوضات")
     payments_sheet.append(["التاريخ", "رقم الطلب", "الزبون", "المبلغ", "طريقة الدفع", "الملاحظة"])
     for row in payments:

@@ -24,7 +24,7 @@
       <a class="{{ 'active' if request.endpoint=='business_settings' }}" href="{{ url_for('business_settings') }}">بيانات المغسلة</a>
     </nav><form class="logout-form" method="post" action="{{ url_for('logout') }}"><button>خروج</button></form>{% endif %}
     <button class="install-flex-button" type="button" data-flex-install>تثبيت FLEX على الكمبيوتر</button>
-    <div class="top-date">{{ selected_date or '' }}</div>
+    <div class="top-date">{{ selected_date|date_dmy if selected_date else '' }}</div>
   </header>
   <main class="shell">
     {% with messages = get_flashed_messages(with_categories=true) %}

@@ -182,6 +182,10 @@ class FlexMountedAppTest(unittest.TestCase):
             "quantity[]": "2.4",
             "discount": "0",
             "paid": "0",
+            "due_day": "13",
+            "due_month": "8",
+            "due_year": "2026",
+            "due_time": "14:45",
         })
         self.assertEqual(response.status_code, 302)
         order_page = self.client.get(response.headers["Location"])
@@ -190,6 +194,8 @@ class FlexMountedAppTest(unittest.TestCase):
         with self.module.db() as connection:
             item = connection.execute("SELECT * FROM order_items ORDER BY id DESC LIMIT 1").fetchone()
             saved = connection.execute("SELECT * FROM services WHERE name='Special item'").fetchone()
+            created_due_date = connection.execute("SELECT due_date FROM orders ORDER BY id DESC LIMIT 1").fetchone()["due_date"]
+        self.assertEqual(created_due_date, "2026-08-13T14:45")
         self.assertEqual(item["line_total"], 35)
         self.assertEqual(item["quantity"], 2)
         self.assertEqual(item["item_note"], "Handle carefully")
@@ -263,6 +269,20 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertIn(b'14/08/2026', order_page.data)
         self.assertIn(b'class="print-footer"', order_page.data)
         self.assertIn(b'<bdi class="phone-ltr">+970599111222</bdi>', order_page.data)
+
+        cash_page = self.client.get("/flex/cash-accounts?date_day=10&date_month=8&date_year=2026")
+        self.assertEqual(cash_page.status_code, 200)
+        self.assertIn("حركة 10/08/2026".encode(), cash_page.data)
+        expense_response = self.client.post("/flex/expenses", data={
+            "category": "مواد", "amount": "12", "note": "Date format test",
+            "expense_date_day": "11", "expense_date_month": "8", "expense_date_year": "2026",
+        })
+        self.assertEqual(expense_response.status_code, 302)
+        with self.module.db() as connection:
+            self.assertEqual(
+                connection.execute("SELECT expense_date FROM expenses ORDER BY id DESC LIMIT 1").fetchone()["expense_date"],
+                "2026-08-11",
+            )
 
         with self.module.db() as connection:
             connection.execute(
