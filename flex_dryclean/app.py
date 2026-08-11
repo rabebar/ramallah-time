@@ -694,6 +694,13 @@ def create_order():
     if not name or not phone or not item_types:
         flash("أدخل بيانات الزبون وأضف خدمة واحدة على الأقل.", "error")
         return redirect(url_for("dashboard"))
+    try:
+        due_date = requested_due_date()
+        discount = max(float(request.form.get("discount") or 0), 0)
+        paid = max(float(request.form.get("paid") or 0), 0)
+    except (TypeError, ValueError, IndexError):
+        flash("تحقق من التاريخ والمبالغ والكميات قبل حفظ الطلب.", "error")
+        return redirect(url_for("dashboard", customer=selected_customer_id, new_order=1))
     with db() as connection:
         customer_key = f"{business_id}:{phone}"
         customer = connection.execute(
@@ -705,12 +712,10 @@ def create_order():
             return redirect(url_for("dashboard"))
         customer_id = customer["id"]
         name, phone = customer["name"], customer["phone"]
-        discount = max(float(request.form.get("discount") or 0), 0)
-        paid = max(float(request.form.get("paid") or 0), 0)
         order_id = connection.execute(
             """INSERT INTO orders(business_id,customer_id,due_date,discount,paid,payment_method,notes)
                VALUES(?,?,?,?,?,?,?)""",
-            (business_id, customer_id, requested_due_date(), discount, paid,
+            (business_id, customer_id, due_date, discount, paid,
              request.form.get("payment_method", "نقدي"), request.form.get("notes", "").strip()),
         ).lastrowid
         subtotal = 0

@@ -196,6 +196,17 @@ class FlexMountedAppTest(unittest.TestCase):
             saved = connection.execute("SELECT * FROM services WHERE name='Special item'").fetchone()
             created_due_date = connection.execute("SELECT due_date FROM orders ORDER BY id DESC LIMIT 1").fetchone()["due_date"]
         self.assertEqual(created_due_date, "2026-08-13T14:45")
+
+        invalid_date = self.client.post("/flex/orders", data={
+            "customer_id": str(customer_id), "customer_name": "Customer",
+            "customer_phone": "+970599111222", "item_type[]": "manual",
+            "manual_name[]": "Invalid date item", "item_unit[]": "قطعة",
+            "item_price[]": "5", "quantity[]": "1", "due_day": "31",
+            "due_month": "2", "due_year": "2027", "due_time": "10:00",
+        })
+        self.assertEqual(invalid_date.status_code, 302)
+        with self.module.db() as connection:
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM orders").fetchone()[0], 1)
         self.assertEqual(item["line_total"], 35)
         self.assertEqual(item["quantity"], 2)
         self.assertEqual(item["item_note"], "Handle carefully")
