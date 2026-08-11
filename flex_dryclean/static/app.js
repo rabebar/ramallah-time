@@ -4,6 +4,20 @@ document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('cli
 document.querySelectorAll('tr[data-href]').forEach(row=>row.addEventListener('click',()=>location.href=row.dataset.href));
 document.querySelector('dialog[data-auto-open="1"]')?.showModal();
 
+const flexNavToggle=document.querySelector('[data-flex-nav-toggle]');
+const flexMainNav=document.getElementById('flex-main-nav');
+if(flexNavToggle&&flexMainNav){
+  flexNavToggle.addEventListener('click',()=>{
+    const open=flexMainNav.classList.toggle('is-open');
+    flexNavToggle.setAttribute('aria-expanded',String(open));
+  });
+  document.addEventListener('click',event=>{
+    if(!flexMainNav.classList.contains('is-open')||flexMainNav.contains(event.target)||flexNavToggle.contains(event.target))return;
+    flexMainNav.classList.remove('is-open');
+    flexNavToggle.setAttribute('aria-expanded','false');
+  });
+}
+
 let flexInstallPrompt=null;
 const flexInstallButtons=[...document.querySelectorAll('[data-flex-install]')];
 const flexStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;

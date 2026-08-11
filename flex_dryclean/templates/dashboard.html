@@ -18,7 +18,7 @@
       <form class="scan-search" id="scan-form"><input id="scan-input" value="{{ query }}" placeholder="رقم الطلب، الهاتف أو امسح الباركود" autocomplete="off"><button>بحث</button></form>
     </div>
     <div class="table-wrap"><table><thead><tr><th>الطلب</th><th>الزبون</th><th>الحالة</th><th>القيمة</th><th>المتبقي</th><th>الموعد</th></tr></thead><tbody>
-      {% for order in orders %}<tr data-href="{{ url_for('order_detail',order_id=order.id) }}"><td><b>{{ order.order_no }}</b><small>{{ order.created_at[:16] }}</small></td><td>{{ order.customer_name }}<small>{{ order.customer_phone }}</small></td><td><span class="status {{ 'done' if order.status=='تم التسليم' else 'ready' if order.status=='جاهز' else '' }}">{{ order.status }}</span></td><td>{{ order.total|money }} ₪</td><td>{{ (order.total-order.paid)|money }} ₪</td><td>{{ order.due_date or '—' }}</td></tr>
+      {% for order in orders %}<tr data-href="{{ url_for('order_detail',order_id=order.id) }}"><td><b>{{ order.order_no }}</b><small>{{ order.created_at[:16] }}</small></td><td>{{ order.customer_name }}<small>{{ order.customer_phone }}</small></td><td><span class="status {{ 'done' if order.status=='تم التسليم' else 'ready' if order.status=='جاهز' else '' }}">{{ order.status }}</span></td><td>{{ order.total|money }} ₪</td><td>{{ (order.total-order.paid)|money }} ₪</td><td>{% if order.due_date %}<span class="formatted-date">{{ order.due_date[8:10] }}/{{ order.due_date[5:7] }}/{{ order.due_date[:4] }}<small>{{ order.due_date[11:16] }}</small></span>{% else %}—{% endif %}</td></tr>
       {% else %}<tr><td colspan="6" class="empty">لا توجد طلبات بعد.</td></tr>{% endfor %}
     </tbody></table></div>
   </div>

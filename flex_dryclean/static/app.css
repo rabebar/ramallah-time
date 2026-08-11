@@ -3,13 +3,13 @@
   --sky-dark: #269fc2;
   --navy: #123e56;
   --ink: #173744;
-  --muted: #728b95;
+  --muted: #607a84;
   --line: #d9ebf1;
   --wash: #f4fbfd;
   --white: #fff;
   --success: #14a58a;
   --danger: #d94b58;
-  --shadow: 0 18px 55px rgba(35, 112, 139, 0.12);
+  --shadow: 0 12px 34px rgba(35, 112, 139, 0.09);
 }
 * {
   box-sizing: border-box;
@@ -28,7 +28,7 @@ body {
   display: flex;
   align-items: center;
   padding: 0 4vw;
-  gap: 45px;
+  gap: 24px;
   position: sticky;
   top: 0;
   z-index: 20;
@@ -69,6 +69,12 @@ nav a:hover {
   background: var(--wash);
   color: var(--sky-dark);
 }
+nav a.active {
+  background: #e7f7fb;
+  color: var(--sky-dark);
+  box-shadow: inset 0 -2px 0 var(--sky-dark);
+}
+.nav-toggle { display:none;border:1px solid var(--line);background:var(--wash);color:var(--navy);border-radius:10px;padding:9px 12px;font:700 14px Tajawal;cursor:pointer; }
 .top-date {
   margin-right: auto;
   color: var(--muted);
@@ -82,17 +88,17 @@ nav a:hover {
 }
 .shell {
   width: min(1500px, 94vw);
-  margin: 36px auto 80px;
+  margin: 26px auto 70px;
 }
 .hero-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 30px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 .hero-row h1 {
-  font-size: clamp(26px, 3vw, 43px);
+  font-size: clamp(26px, 2.6vw, 38px);
   max-width: 790px;
   margin: 4px 0 8px;
   line-height: 1.2;
@@ -183,7 +189,7 @@ nav a:hover {
   gap: 20px;
 }
 .panel {
-  padding: 23px;
+  padding: 21px;
 }
 .orders-panel {
   padding: 0;
@@ -265,6 +271,16 @@ td small {
   display: block;
   color: var(--muted);
   margin-top: 3px;
+}
+.formatted-date { display:inline-grid;gap:2px;direction:ltr;text-align:center;white-space:nowrap; }
+.formatted-date small { margin:0; }
+
+@media (max-width: 1220px) and (min-width: 701px) {
+  .topbar { gap:12px;padding-inline:2vw; }
+  nav { gap:2px; }
+  nav a { padding:9px 8px;font-size:14px; }
+  .brand { font-size:20px; }
+  .install-flex-button { padding:9px 10px;font-size:12px; }
 }
 .status {
   display: inline-flex;
@@ -635,9 +651,13 @@ dialog::backdrop {
     padding: 0 18px;
     gap: 15px;
   }
-  .topbar nav {
-    display: none;
-  }
+  .nav-toggle { display:inline-flex;align-items:center;justify-content:center; }
+  .topbar nav { display:none;position:absolute;top:68px;right:12px;left:12px;padding:10px;border:1px solid var(--line);border-radius:15px;background:#fff;box-shadow:0 16px 38px rgba(15,48,68,.16); }
+  .topbar nav.is-open { display:grid;grid-template-columns:1fr 1fr;gap:6px; }
+  .topbar nav a { padding:11px 12px; }
+  .topbar nav a.active { box-shadow:inset -3px 0 0 var(--sky-dark); }
+  .brand-text { display:none; }
+  .logout-form button { padding-inline:10px; }
   .install-flex-button { font-size:11px;padding:9px 10px; }
   .shell {
     width: 94vw;

@@ -70,6 +70,8 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertIn('id="service-quantity"'.encode(), dashboard.data)
         self.assertIn('id="service-note"'.encode(), dashboard.data)
         self.assertIn('id="live-order-total"'.encode(), dashboard.data)
+        self.assertIn('data-flex-nav-toggle'.encode(), dashboard.data)
+        self.assertIn('class="active" href="/flex/"'.encode(), dashboard.data)
         self.assertIn("زبون جديد".encode(), dashboard.data)
         with self.module.db() as connection:
             self.assertEqual(connection.execute("SELECT phone FROM users WHERE id=1").fetchone()["phone"], "+972599000011")
@@ -240,6 +242,10 @@ class FlexMountedAppTest(unittest.TestCase):
                 "SELECT due_date FROM orders WHERE id=?", (latest_order["id"],)
             ).fetchone()["due_date"]
         self.assertEqual(changed_due_date, "2026-08-14T15:30")
+
+        dashboard_with_due_date = self.client.get("/flex/")
+        self.assertIn(b'class="formatted-date"', dashboard_with_due_date.data)
+        self.assertIn(b'14/08/2026', dashboard_with_due_date.data)
 
         order_page = self.client.get(f"/flex/orders/{latest_order['id']}")
         self.assertIn(b'/due-date', order_page.data)
