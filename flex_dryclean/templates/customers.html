@@ -8,9 +8,10 @@
 <div class="panel">
   <div class="panel-head"><div><h2>الزبائن المسجلون</h2><p>الاسم، الهاتف، العنوان وسجل الطلبات.</p></div><input id="customer-directory-search" class="service-table-search" placeholder="ابحث بالاسم أو الهاتف أو العنوان"></div>
   <div class="customer-directory" id="customer-directory">
-    {% for customer in customers %}<a class="customer-directory-card" data-customer-card href="{{ url_for('customer_detail',customer_id=customer.id) }}"><div><b>{{ customer.name }}</b><span>{{ customer.phone }}</span><small>{{ customer.address }}</small></div><strong>{{ customer.order_count }} طلب</strong></a>
+    {% for customer in customers %}<a class="customer-directory-card" data-customer-card href="{{ url_for('customer_detail',customer_id=customer.id) }}"><div><b>{{ customer.name }}</b><bdi class="phone-ltr">{{ customer.phone }}</bdi><small>{{ customer.address }}</small></div><strong>{{ customer.order_count }} طلب</strong></a>
     {% else %}<p class="empty">لا يوجد زبائن بعد. ابدأ بإضافة أول زبون.</p>{% endfor %}
   </div>
+  <p class="empty" id="customer-search-empty" hidden>لا يوجد زبون مطابق لهذا البحث.</p>
 </div>
 <dialog id="add-customer" {{ 'data-auto-open=1' if request.args.get('new') }}>
   <form method="post" action="{{ url_for('create_customer') }}" class="modal-card small">

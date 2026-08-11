@@ -148,7 +148,7 @@ const fetchCustomers=async query=>{
   const response=await fetch(`${appBase}api/customers?q=${encodeURIComponent(query.trim())}`);
   return response.ok?(await response.json()).customers:[];
 };
-const customerMarkup=customers=>customers.length?customers.map(customer=>`<article class="customer-result"><div><b>${escapeHtml(customer.name)}</b><span>${escapeHtml(customer.phone)} · ${escapeHtml(customer.address||'')} · ${customer.open_count} طلب مفتوح</span></div><div class="customer-open-orders">${customer.orders.length?customer.orders.map(order=>`<a href="${appBase}orders/${order.id}">${escapeHtml(order.order_no)} · ${escapeHtml(order.status)}${order.due_date?` · ${escapeHtml(order.due_date.replace('T',' '))}`:''}</a>`).join(''):'<span>لا توجد طلبات مفتوحة</span>'}</div><a class="soft" href="${appBase}customers/${customer.id}">فتح ملف الزبون</a></article>`).join(''):'<p class="empty">لم يُعثر على زبون مطابق. أضفه أولاً من زر «زبون جديد».</p>';
+const customerMarkup=customers=>customers.length?customers.map(customer=>`<article class="customer-result"><div><b>${escapeHtml(customer.name)}</b><span><bdi class="phone-ltr">${escapeHtml(customer.phone)}</bdi> · ${escapeHtml(customer.address||'')} · ${customer.open_count} طلب مفتوح</span></div><div class="customer-open-orders">${customer.orders.length?customer.orders.map(order=>`<a href="${appBase}orders/${order.id}">${escapeHtml(order.order_no)} · ${escapeHtml(order.status)}${order.due_date?` · ${escapeHtml(order.due_date.replace('T',' '))}`:''}</a>`).join(''):'<span>لا توجد طلبات مفتوحة</span>'}</div><a class="soft" href="${appBase}customers/${customer.id}">فتح ملف الزبون</a></article>`).join(''):'<p class="empty">لم يُعثر على زبون مطابق. أضفه أولاً من زر «زبون جديد».</p>';
 const runCustomerSearch=(input,results,compact=false)=>{
   clearTimeout(customerTimer);
   const query=input.value;
@@ -208,7 +208,24 @@ if(newCategorySelect){
 const serviceTableSearch=document.getElementById('service-table-search');
 if(serviceTableSearch)serviceTableSearch.addEventListener('input',()=>{const query=serviceTableSearch.value.trim().toLowerCase();document.querySelectorAll('[data-service-row]').forEach(row=>{const values=[row.textContent,...[...row.querySelectorAll('input,select')].map(field=>field.value)].join(' ').toLowerCase();row.hidden=Boolean(query&&!values.includes(query))})});
 const customerDirectorySearch=document.getElementById('customer-directory-search');
-if(customerDirectorySearch)customerDirectorySearch.addEventListener('input',()=>{const query=customerDirectorySearch.value.trim().toLowerCase();document.querySelectorAll('[data-customer-card]').forEach(card=>card.hidden=Boolean(query&&!card.textContent.toLowerCase().includes(query)))});
+if(customerDirectorySearch){
+  const normalizeArabic=value=>String(value||'').toLowerCase().normalize('NFKD').replace(/[\u064b-\u065f\u0670]/g,'').replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه');
+  const phoneDigits=value=>String(value||'').replace(/\D/g,'').replace(/^0+/,'').replace(/^(970|972)/,'');
+  const emptyResult=document.getElementById('customer-search-empty');
+  customerDirectorySearch.addEventListener('input',()=>{
+    const query=customerDirectorySearch.value.trim();
+    const normalizedQuery=normalizeArabic(query);
+    const queryPhone=phoneDigits(query);
+    let visible=0;
+    document.querySelectorAll('[data-customer-card]').forEach(card=>{
+      const textMatch=!query||normalizeArabic(card.textContent).includes(normalizedQuery);
+      const phoneMatch=Boolean(queryPhone.length>=3&&phoneDigits(card.textContent).includes(queryPhone));
+      card.hidden=!(textMatch||phoneMatch);
+      if(!card.hidden)visible+=1;
+    });
+    if(emptyResult)emptyResult.hidden=!query||visible>0;
+  });
+}
 
 const invoiceEditList=document.getElementById('invoice-edit-list');
 const updateInvoiceEditTotal=()=>{

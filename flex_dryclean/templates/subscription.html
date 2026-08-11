@@ -27,7 +27,7 @@
       <p class="setup-note">تشمل الدفعة الأولى 200₪ رسوم تأسيس وإعداد تدفع مرة واحدة فقط.</p>
       <a class="primary" href="https://wa.me/970592776784?text=مرحبًا،%20أنشأت%20حساب%20FLEX%20وأرغب%20بإتمام%20الاشتراك" target="_blank" rel="noopener">إتمام الاشتراك عبر واتساب</a>
     {% endif %}
-    <small>اسم المغسلة: {{ subscription.name }} · رقم الحساب: {{ subscription.phone }}</small>
+    <small>اسم المغسلة: {{ subscription.name }} · رقم الحساب: <bdi class="phone-ltr">{{ subscription.phone }}</bdi></small>
     <form method="post" action="{{ url_for('logout') }}"><button class="outline full">تسجيل الخروج</button></form>
   </div>
 </section>

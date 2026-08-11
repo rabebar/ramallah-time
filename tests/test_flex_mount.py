@@ -97,6 +97,13 @@ class FlexMountedAppTest(unittest.TestCase):
         with self.module.db() as connection:
             saved_item = connection.execute("SELECT service_name FROM order_items ORDER BY id DESC LIMIT 1").fetchone()
         self.assertEqual(saved_item["service_name"], "قميص — كوي فقط")
+        order_search_by_local_phone = self.client.get("/flex/?q=0599111000")
+        self.assertIn(b"FLEX-000001", order_search_by_local_phone.data)
+        order_search_by_number = self.client.get("/flex/?q=FLEX-000001")
+        self.assertIn(b"FLEX-000001", order_search_by_number.data)
+        lookup_by_local_phone = self.client.get("/flex/api/customers?q=0599111")
+        self.assertEqual(lookup_by_local_phone.status_code, 200)
+        self.assertEqual(lookup_by_local_phone.json["customers"][0]["id"], catalog_customer["id"])
         closing_date = self.module.today()
         with self.module.db() as connection:
             order_id = connection.execute("SELECT id FROM orders ORDER BY id DESC LIMIT 1").fetchone()["id"]
@@ -255,6 +262,7 @@ class FlexMountedAppTest(unittest.TestCase):
         self.assertIn(b'class="print-delivery"', order_page.data)
         self.assertIn(b'14/08/2026', order_page.data)
         self.assertIn(b'class="print-footer"', order_page.data)
+        self.assertIn(b'<bdi class="phone-ltr">+970599111222</bdi>', order_page.data)
 
         with self.module.db() as connection:
             connection.execute(

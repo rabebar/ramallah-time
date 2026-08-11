@@ -230,6 +230,15 @@ textarea:focus {
   border-color: var(--sky);
   box-shadow: 0 0 0 3px rgba(99, 201, 231, 0.15);
 }
+.phone-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+  white-space: nowrap;
+  text-align: left;
+}
+input[inputmode="tel"],
+#order-customer-phone { direction:ltr;text-align:left;unicode-bidi:plaintext; }
 .scan-search input {
   border-radius: 0 11px 11px 0;
 }

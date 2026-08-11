@@ -504,7 +504,7 @@ def dashboard():
         params = [business_id]
         where = "WHERE o.business_id=?"
         if query:
-            normalized = re.sub(r"[^0-9]", "", query)
+            normalized = re.sub(r"[^0-9]", "", query).lstrip("0")
             where += " AND (o.order_no LIKE ? OR c.name LIKE ? OR c.display_phone LIKE ?)"
             params.extend([f"%{query}%", f"%{query}%", f"%{normalized or query}%"])
         orders = connection.execute(
@@ -747,7 +747,7 @@ def customer_lookup():
     if len(query) < 2:
         return jsonify(customers=[])
     term = f"%{query}%"
-    digits = re.sub(r"[^0-9+]", "", query)
+    digits = re.sub(r"[^0-9]", "", query).lstrip("0")
     phone_term = f"%{digits}%" if digits else term
     with db() as connection:
         customers = connection.execute(

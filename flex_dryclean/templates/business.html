@@ -10,7 +10,7 @@
     <label>ملاحظة أسفل الفاتورة<textarea name="invoice_note" rows="3" placeholder="مثال: يرجى إبراز الفاتورة عند الاستلام">{{ profile.invoice_note }}</textarea></label>
     <button class="primary">حفظ بيانات المغسلة</button>
   </form>
-  <aside class="panel invoice-preview"><span class="eyebrow">معاينة</span><h2>{{ profile.business_name }}</h2><p>{{ profile.business_phone or 'رقم الهاتف' }}</p><p>{{ profile.business_address or 'عنوان المغسلة' }}</p><div class="preview-line"></div><img class="invoice-preview-logo" src="{{ url_for('static',filename='flex-logo-light.png') }}" alt="FLEX"></aside>
+  <aside class="panel invoice-preview"><span class="eyebrow">معاينة</span><h2>{{ profile.business_name }}</h2><p><bdi class="phone-ltr">{{ profile.business_phone or 'رقم الهاتف' }}</bdi></p><p>{{ profile.business_address or 'عنوان المغسلة' }}</p><div class="preview-line"></div><img class="invoice-preview-logo" src="{{ url_for('static',filename='flex-logo-light.png') }}" alt="FLEX"></aside>
 </section>
 <section class="panel notification-settings"><div><span class="eyebrow">تنبيهات المواعيد</span><h2>تنبيهات هذا الكمبيوتر</h2><p>فعّلها ليظهر تنبيه عندما توجد طلبات اقترب موعد تسليمها.</p></div><button type="button" class="outline" id="enable-notifications">تفعيل التنبيهات</button></section>
 {% endblock %}
