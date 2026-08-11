@@ -1316,8 +1316,8 @@
                             {% elif account.subscription_status == 'expired' %}<span class="badge badge-pending">منتهي</span>
                             {% else %}<span class="badge badge-pending">موقوف</span>{% endif %}
                         </td>
-                        <td>{{ account.subscription_end[:10] if account.subscription_end else 'غير محدد' }}</td>
-                        <td>{{ account.last_seen[:16]|replace('T',' ') if account.last_seen else 'لم يدخل بعد' }}</td>
+                        <td>{% if account.subscription_end %}{{ account.subscription_end[8:10] }}/{{ account.subscription_end[5:7] }}/{{ account.subscription_end[:4] }}{% else %}غير محدد{% endif %}</td>
+                        <td>{% if account.last_seen %}{{ account.last_seen[8:10] }}/{{ account.last_seen[5:7] }}/{{ account.last_seen[:4] }} · {{ account.last_seen[11:16] }}{% else %}لم يدخل بعد{% endif %}</td>
                         <td>
                             <div class="moeen-actions">
                                 <form method="POST" action="/superadmin/flex/accounts/{{ account.id }}/subscription">
