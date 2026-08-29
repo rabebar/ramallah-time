@@ -76,6 +76,16 @@ const fallbackAuthorImage = "data:image/svg+xml;charset=UTF-8," + encodeURICompo
   <path d="M34 140c8-33 28-50 46-50s38 17 46 50" fill="#c9a877"/>
 </svg>`);
 
+const canonicalAuthorImages = {
+  "ربيع البرغوثي": mizanUrl("/rabee-albarghouti-author.png")
+};
+
+function authorImageFor(item) {
+  return canonicalAuthorImages[String(item.authorName || "").trim()]
+    || item.authorImage
+    || fallbackAuthorImage;
+}
+
 const seedNews = [
   {
     id: makeId(),
@@ -574,7 +584,7 @@ function authorBlock(item) {
 
   return `
     <div class="author-mini">
-      <img src="${item.authorImage || fallbackAuthorImage}" alt="">
+      <img src="${authorImageFor(item)}" alt="صورة ${item.authorName || "كاتب المقال"}">
       <span>${item.authorName || "كاتب المقال"}</span>
     </div>
   `;

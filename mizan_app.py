@@ -43,6 +43,7 @@ MIZAN_TELEGRAM_CHAT_ID = os.environ.get("MIZAN_TELEGRAM_CHAT_ID", "").strip()
 MIZAN_MAX_BODY_SIZE = int(os.environ.get("MIZAN_MAX_BODY_SIZE", 25 * 1024 * 1024))
 
 MIZAN_ROOT = Path(__file__).resolve().parent / "static" / "mizan"
+RABEE_AUTHOR_IMAGE = "/mizan-political/rabee-albarghouti-author.png"
 _storage_lock = threading.Lock()
 _storage_ready = False
 
@@ -175,6 +176,15 @@ def _ensure_storage() -> None:
             cur.execute(
                 "CREATE INDEX IF NOT EXISTS mizan_visits_recent_idx "
                 "ON mizan_visit_events(visitor_hash, user_agent_hash, path, created_at)"
+            )
+            cur.execute(
+                """
+                UPDATE mizan_news_items
+                SET author_image = %s
+                WHERE TRIM(author_name) = %s
+                  AND author_image IS DISTINCT FROM %s
+                """,
+                (RABEE_AUTHOR_IMAGE, "ربيع البرغوثي", RABEE_AUTHOR_IMAGE),
             )
             conn.commit()
         finally:
