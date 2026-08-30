@@ -17,7 +17,7 @@ import threading
 import time
 import uuid
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, urljoin
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -589,12 +589,41 @@ def _notify_telegram(item: dict) -> None:
         public_url = f"{request.host_url.rstrip('/')}/mizan-political"
     post_url = f"{public_url}/post/{quote(item['id'])}"
     category = f"\nالقسم: {html.escape(item['category'])}" if item.get("category") else ""
-    summary = f"\n\n{html.escape(item['summary'])}" if item.get("summary") else ""
+    raw_summary = str(item.get("summary") or "")
+    summary = f"\n\n{html.escape(raw_summary)}" if raw_summary else ""
     text = (
         f"<b>{html.escape(item['title'])}</b>{category}{summary}"
         f'\n\n<a href="{html.escape(post_url)}">قراءة المادة كاملة</a>'
     )
     try:
+        image = str(item.get("image") or "").strip()
+        if image and not image.startswith("data:"):
+            image_url = urljoin(f"{public_url}/", image)
+            # Telegram photo captions are limited to 1024 characters. Keep the
+            # useful article context while leaving room for the link and markup.
+            caption_summary = raw_summary[:700]
+            caption = (
+                f"<b>{html.escape(item['title'])}</b>{category}"
+                + (f"\n\n{html.escape(caption_summary)}" if caption_summary else "")
+                + f'\n\n<a href="{html.escape(post_url)}">قراءة المادة كاملة</a>'
+            )
+            response = requests.post(
+                f"https://api.telegram.org/bot{MIZAN_TELEGRAM_BOT_TOKEN}/sendPhoto",
+                json={
+                    "chat_id": MIZAN_TELEGRAM_CHAT_ID,
+                    "photo": image_url,
+                    "caption": caption,
+                    "parse_mode": "HTML",
+                },
+                timeout=15,
+            )
+            if response.ok:
+                return
+            LOGGER.warning(
+                "Mizan Telegram photo notification failed (%s); falling back to text",
+                response.text,
+            )
+
         response = requests.post(
             f"https://api.telegram.org/bot{MIZAN_TELEGRAM_BOT_TOKEN}/sendMessage",
             json={
@@ -834,7 +863,12 @@ def _render_index(item_id: str | None = None) -> Response:
             f'<meta property="og:url" content="{html.escape(canonical)}">\n'
         )
         if image and not image.startswith("data:"):
-            meta += f'<meta property="og:image" content="{html.escape(image)}">\n'
+            absolute_image = urljoin(f"{MIZAN_PUBLIC_URL}/", image)
+            meta += (
+                f'<meta property="og:image" content="{html.escape(absolute_image)}">\n'
+                '<meta name="twitter:card" content="summary_large_image">\n'
+                f'<meta name="twitter:image" content="{html.escape(absolute_image)}">\n'
+            )
         page = page.replace("</head>", meta + "</head>")
 
     try:
