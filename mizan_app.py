@@ -18,7 +18,7 @@ import threading
 import time
 import uuid
 from pathlib import Path
-from urllib.parse import quote, urljoin
+from urllib.parse import quote, unquote, urljoin, urlparse
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -583,21 +583,32 @@ def _analytics() -> dict:
 
 def _send_telegram_photo(item: dict, image_url: str, caption: str) -> tuple[bool, str]:
     try:
-        image_response = requests.get(
-            image_url,
-            headers={"User-Agent": "MizanPoliticalBot/1.0"},
-            timeout=20,
-        )
-        image_response.raise_for_status()
-        content_type = image_response.headers.get("content-type", "").split(";", 1)[0]
+        parsed_image = urlparse(image_url)
+        local_prefix = "/mizan-political/"
+        if parsed_image.path.startswith(local_prefix):
+            relative_name = unquote(parsed_image.path[len(local_prefix) :])
+            local_image = (MIZAN_ROOT / relative_name).resolve()
+            if MIZAN_ROOT.resolve() not in local_image.parents or not local_image.is_file():
+                raise ValueError("Local article image was not found")
+            image_bytes = local_image.read_bytes()
+            content_type = mimetypes.guess_type(local_image.name)[0] or ""
+        else:
+            image_response = requests.get(
+                image_url,
+                headers={"User-Agent": "MizanPoliticalBot/1.0"},
+                timeout=20,
+            )
+            image_response.raise_for_status()
+            image_bytes = image_response.content
+            content_type = image_response.headers.get("content-type", "").split(";", 1)[0]
         if content_type not in {"image/jpeg", "image/png", "image/gif", "image/webp"}:
             raise ValueError(f"Unsupported image type: {content_type}")
-        if len(image_response.content) > 10 * 1024 * 1024:
+        if len(image_bytes) > 10 * 1024 * 1024:
             raise ValueError("Source image exceeds 10 MB")
 
         # Normalize every source to a conservative JPEG. This avoids Telegram
         # rejecting unusual PNG colour modes, metadata, or remote encodings.
-        with Image.open(BytesIO(image_response.content)) as source:
+        with Image.open(BytesIO(image_bytes)) as source:
             source = ImageOps.exif_transpose(source)
             source.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
             if source.mode in {"RGBA", "LA"}:
