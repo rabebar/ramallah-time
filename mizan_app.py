@@ -579,9 +579,9 @@ def _analytics() -> dict:
         conn.close()
 
 
-def _notify_telegram(item: dict) -> None:
+def _notify_telegram(item: dict) -> bool:
     if not MIZAN_TELEGRAM_BOT_TOKEN or not MIZAN_TELEGRAM_CHAT_ID:
-        return
+        return False
     request_host = request.host.split(":", 1)[0].lower()
     if request_host == MIZAN_HOST:
         public_url = request.host_url.rstrip("/")
@@ -618,7 +618,7 @@ def _notify_telegram(item: dict) -> None:
                 timeout=15,
             )
             if response.ok:
-                return
+                return True
             LOGGER.warning(
                 "Mizan Telegram photo notification failed (%s); falling back to text",
                 response.text,
@@ -635,8 +635,10 @@ def _notify_telegram(item: dict) -> None:
             timeout=10,
         )
         response.raise_for_status()
+        return True
     except Exception:
         LOGGER.exception("Mizan Telegram notification failed")
+        return False
 
 
 @mizan_bp.get("/api/news")
@@ -678,6 +680,18 @@ def api_news_delete(item_id: str):
         conn.commit()
     finally:
         conn.close()
+    return jsonify(ok=True)
+
+
+@mizan_bp.post("/api/news/<path:item_id>/telegram")
+def api_news_telegram(item_id: str):
+    if not _require_admin():
+        return jsonify(error="Unauthorized"), 401
+    item = _get_news_item(item_id)
+    if not item:
+        return jsonify(error="Article not found"), 404
+    if not _notify_telegram(item):
+        return jsonify(error="Telegram publishing failed"), 502
     return jsonify(ok=True)
 
 

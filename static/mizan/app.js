@@ -251,6 +251,16 @@ async function deleteNewsFromServer(id) {
   return true;
 }
 
+async function publishNewsToTelegram(id) {
+  if (!serverMode) {
+    throw new Error("Server publishing is unavailable");
+  }
+  return apiRequest(`/api/news/${encodeURIComponent(id)}/telegram`, {
+    method: "POST",
+    headers: adminHeaders()
+  });
+}
+
 function adminHeaders() {
   return {
     "x-admin-user": currentAdmin,
@@ -711,6 +721,7 @@ function renderAdminNews() {
         <p>${categoryNames[item.category]} · ${placementName(item.placement)}</p>
       </div>
       <div class="row-actions">
+        <button class="ghost" type="button" data-telegram="${item.id}">إعادة النشر على تلغرام</button>
         <button class="ghost" type="button" data-edit="${item.id}">تعديل</button>
         <button class="danger" type="button" data-delete="${item.id}">حذف</button>
       </div>
@@ -1017,6 +1028,22 @@ document.addEventListener("click", async (event) => {
     renderSite();
     renderAdminNews();
     renderAdminSummary();
+  }
+
+  const telegramButton = event.target.closest("[data-telegram]");
+  if (telegramButton) {
+    const originalLabel = telegramButton.textContent;
+    telegramButton.disabled = true;
+    telegramButton.textContent = "جارٍ النشر…";
+    try {
+      await publishNewsToTelegram(telegramButton.dataset.telegram);
+      telegramButton.textContent = "تم النشر ✓";
+    } catch {
+      telegramButton.disabled = false;
+      telegramButton.textContent = originalLabel;
+      alert("تعذر إعادة النشر على تلغرام. تحقق من إعدادات البوت ورابط الصورة.");
+    }
+    return;
   }
 
   const editButton = event.target.closest("[data-edit]");
