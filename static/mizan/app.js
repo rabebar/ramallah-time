@@ -1038,10 +1038,10 @@ document.addEventListener("click", async (event) => {
     try {
       await publishNewsToTelegram(telegramButton.dataset.telegram);
       telegramButton.textContent = "تم النشر ✓";
-    } catch {
+    } catch (error) {
       telegramButton.disabled = false;
       telegramButton.textContent = originalLabel;
-      alert("تعذر إعادة النشر على تلغرام. تحقق من إعدادات البوت ورابط الصورة.");
+      alert(`تعذر إعادة النشر على تلغرام: ${error.message || "خطأ غير معروف"}`);
     }
     return;
   }

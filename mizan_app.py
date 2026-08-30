@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import html
+from io import BytesIO
 import json
 import logging
 import mimetypes
@@ -23,6 +24,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import requests
 from flask import Blueprint, Response, jsonify, request, send_from_directory
+from PIL import Image, ImageOps
 
 from database import get_db_connection
 
@@ -579,7 +581,7 @@ def _analytics() -> dict:
         conn.close()
 
 
-def _send_telegram_photo(item: dict, image_url: str, caption: str) -> bool:
+def _send_telegram_photo(item: dict, image_url: str, caption: str) -> tuple[bool, str]:
     try:
         image_response = requests.get(
             image_url,
@@ -588,15 +590,25 @@ def _send_telegram_photo(item: dict, image_url: str, caption: str) -> bool:
         )
         image_response.raise_for_status()
         content_type = image_response.headers.get("content-type", "").split(";", 1)[0]
-        if content_type not in {"image/jpeg", "image/png", "image/gif"}:
-            raise ValueError(f"Unsupported Telegram image type: {content_type}")
+        if content_type not in {"image/jpeg", "image/png", "image/gif", "image/webp"}:
+            raise ValueError(f"Unsupported image type: {content_type}")
         if len(image_response.content) > 10 * 1024 * 1024:
-            raise ValueError("Telegram image exceeds 10 MB")
-        extension = {
-            "image/jpeg": "jpg",
-            "image/png": "png",
-            "image/gif": "gif",
-        }[content_type]
+            raise ValueError("Source image exceeds 10 MB")
+
+        # Normalize every source to a conservative JPEG. This avoids Telegram
+        # rejecting unusual PNG colour modes, metadata, or remote encodings.
+        with Image.open(BytesIO(image_response.content)) as source:
+            source = ImageOps.exif_transpose(source)
+            source.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
+            if source.mode in {"RGBA", "LA"}:
+                background = Image.new("RGB", source.size, "white")
+                background.paste(source, mask=source.getchannel("A"))
+                source = background
+            elif source.mode != "RGB":
+                source = source.convert("RGB")
+            photo_buffer = BytesIO()
+            source.save(photo_buffer, format="JPEG", quality=90, optimize=True)
+            photo_bytes = photo_buffer.getvalue()
         response = requests.post(
             f"https://api.telegram.org/bot{MIZAN_TELEGRAM_BOT_TOKEN}/sendPhoto",
             data={
@@ -606,24 +618,28 @@ def _send_telegram_photo(item: dict, image_url: str, caption: str) -> bool:
             },
             files={
                 "photo": (
-                    f"mizan-{item['id']}.{extension}",
-                    image_response.content,
-                    content_type,
+                    f"mizan-{item['id']}.jpg",
+                    photo_bytes,
+                    "image/jpeg",
                 )
             },
             timeout=30,
         )
         if response.ok:
-            return True
-        LOGGER.warning("Mizan Telegram photo notification failed: %s", response.text)
-    except Exception:
+            return True, ""
+        error = response.text[:800]
+        LOGGER.warning("Mizan Telegram photo notification failed: %s", error)
+        return False, error
+    except Exception as exc:
         LOGGER.exception("Mizan Telegram photo upload failed")
-    return False
+        return False, str(exc)[:800]
 
 
-def _notify_telegram(item: dict, *, allow_text_fallback: bool = True) -> bool:
+def _notify_telegram(
+    item: dict, *, allow_text_fallback: bool = True
+) -> tuple[bool, str]:
     if not MIZAN_TELEGRAM_BOT_TOKEN or not MIZAN_TELEGRAM_CHAT_ID:
-        return False
+        return False, "Telegram bot settings are missing"
     request_host = request.host.split(":", 1)[0].lower()
     if request_host == MIZAN_HOST:
         public_url = request.host_url.rstrip("/")
@@ -649,14 +665,15 @@ def _notify_telegram(item: dict, *, allow_text_fallback: bool = True) -> bool:
                 + (f"\n\n{html.escape(caption_summary)}" if caption_summary else "")
                 + f'\n\n<a href="{html.escape(post_url)}">قراءة المادة كاملة</a>'
             )
-            if _send_telegram_photo(item, image_url, caption):
-                return True
+            photo_sent, photo_error = _send_telegram_photo(item, image_url, caption)
+            if photo_sent:
+                return True, ""
 
             if not allow_text_fallback:
-                return False
+                return False, photo_error
 
         elif not allow_text_fallback:
-            return False
+            return False, "The article does not have a public image URL"
 
         response = requests.post(
             f"https://api.telegram.org/bot{MIZAN_TELEGRAM_BOT_TOKEN}/sendMessage",
@@ -669,10 +686,10 @@ def _notify_telegram(item: dict, *, allow_text_fallback: bool = True) -> bool:
             timeout=10,
         )
         response.raise_for_status()
-        return True
-    except Exception:
+        return True, ""
+    except Exception as exc:
         LOGGER.exception("Mizan Telegram notification failed")
-        return False
+        return False, str(exc)[:800]
 
 
 @mizan_bp.get("/api/news")
@@ -724,8 +741,9 @@ def api_news_telegram(item_id: str):
     item = _get_news_item(item_id)
     if not item:
         return jsonify(error="Article not found"), 404
-    if not _notify_telegram(item, allow_text_fallback=False):
-        return jsonify(error="Telegram publishing failed"), 502
+    published, error = _notify_telegram(item, allow_text_fallback=False)
+    if not published:
+        return jsonify(error=error or "Telegram publishing failed"), 502
     return jsonify(ok=True)
 
 
