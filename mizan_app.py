@@ -658,10 +658,15 @@ def _notify_telegram(
         public_url = f"{request.host_url.rstrip('/')}/mizan-political"
     post_url = f"{public_url}/post/{quote(item['id'])}"
     category = f"\nالقسم: {html.escape(item['category'])}" if item.get("category") else ""
+    author = (
+        f"\nبقلم: {html.escape(str(item['authorName']))}"
+        if item.get("authorName")
+        else ""
+    )
     raw_summary = str(item.get("summary") or "")
     summary = f"\n\n{html.escape(raw_summary)}" if raw_summary else ""
     text = (
-        f"<b>{html.escape(item['title'])}</b>{category}{summary}"
+        f"<b>{html.escape(item['title'])}</b>{author}{category}{summary}"
         f'\n\n<a href="{html.escape(post_url)}">قراءة المادة كاملة</a>'
     )
     try:
@@ -670,9 +675,9 @@ def _notify_telegram(
             image_url = urljoin(f"{public_url}/", image)
             # Telegram photo captions are limited to 1024 characters. Keep the
             # useful article context while leaving room for the link and markup.
-            caption_summary = raw_summary[:700]
+            caption_summary = raw_summary[:600]
             caption = (
-                f"<b>{html.escape(item['title'])}</b>{category}"
+                f"<b>{html.escape(item['title'])}</b>{author}{category}"
                 + (f"\n\n{html.escape(caption_summary)}" if caption_summary else "")
                 + f'\n\n<a href="{html.escape(post_url)}">قراءة المادة كاملة</a>'
             )
