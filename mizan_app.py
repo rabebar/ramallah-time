@@ -579,7 +579,49 @@ def _analytics() -> dict:
         conn.close()
 
 
-def _notify_telegram(item: dict) -> bool:
+def _send_telegram_photo(item: dict, image_url: str, caption: str) -> bool:
+    try:
+        image_response = requests.get(
+            image_url,
+            headers={"User-Agent": "MizanPoliticalBot/1.0"},
+            timeout=20,
+        )
+        image_response.raise_for_status()
+        content_type = image_response.headers.get("content-type", "").split(";", 1)[0]
+        if content_type not in {"image/jpeg", "image/png", "image/gif"}:
+            raise ValueError(f"Unsupported Telegram image type: {content_type}")
+        if len(image_response.content) > 10 * 1024 * 1024:
+            raise ValueError("Telegram image exceeds 10 MB")
+        extension = {
+            "image/jpeg": "jpg",
+            "image/png": "png",
+            "image/gif": "gif",
+        }[content_type]
+        response = requests.post(
+            f"https://api.telegram.org/bot{MIZAN_TELEGRAM_BOT_TOKEN}/sendPhoto",
+            data={
+                "chat_id": MIZAN_TELEGRAM_CHAT_ID,
+                "caption": caption,
+                "parse_mode": "HTML",
+            },
+            files={
+                "photo": (
+                    f"mizan-{item['id']}.{extension}",
+                    image_response.content,
+                    content_type,
+                )
+            },
+            timeout=30,
+        )
+        if response.ok:
+            return True
+        LOGGER.warning("Mizan Telegram photo notification failed: %s", response.text)
+    except Exception:
+        LOGGER.exception("Mizan Telegram photo upload failed")
+    return False
+
+
+def _notify_telegram(item: dict, *, allow_text_fallback: bool = True) -> bool:
     if not MIZAN_TELEGRAM_BOT_TOKEN or not MIZAN_TELEGRAM_CHAT_ID:
         return False
     request_host = request.host.split(":", 1)[0].lower()
@@ -607,22 +649,14 @@ def _notify_telegram(item: dict) -> bool:
                 + (f"\n\n{html.escape(caption_summary)}" if caption_summary else "")
                 + f'\n\n<a href="{html.escape(post_url)}">قراءة المادة كاملة</a>'
             )
-            response = requests.post(
-                f"https://api.telegram.org/bot{MIZAN_TELEGRAM_BOT_TOKEN}/sendPhoto",
-                json={
-                    "chat_id": MIZAN_TELEGRAM_CHAT_ID,
-                    "photo": image_url,
-                    "caption": caption,
-                    "parse_mode": "HTML",
-                },
-                timeout=15,
-            )
-            if response.ok:
+            if _send_telegram_photo(item, image_url, caption):
                 return True
-            LOGGER.warning(
-                "Mizan Telegram photo notification failed (%s); falling back to text",
-                response.text,
-            )
+
+            if not allow_text_fallback:
+                return False
+
+        elif not allow_text_fallback:
+            return False
 
         response = requests.post(
             f"https://api.telegram.org/bot{MIZAN_TELEGRAM_BOT_TOKEN}/sendMessage",
@@ -690,7 +724,7 @@ def api_news_telegram(item_id: str):
     item = _get_news_item(item_id)
     if not item:
         return jsonify(error="Article not found"), 404
-    if not _notify_telegram(item):
+    if not _notify_telegram(item, allow_text_fallback=False):
         return jsonify(error="Telegram publishing failed"), 502
     return jsonify(ok=True)
 
