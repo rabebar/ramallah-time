@@ -17,9 +17,14 @@
     .glucose-promo-copy strong { display: block; color: #23433a; font-size: 13px; font-weight: 700; }
     .glucose-promo-copy span { display: block; color: #756c5e; font-size: 11px; }
     .glucose-promo-action { flex: 0 0 auto; padding: 6px 10px; background: #23433a; color: #fff; font-size: 11px; font-weight: 700; white-space: nowrap; }
-    @media (max-width: 760px) {
-      .search-promo-stack { width: 100%; flex: 1 1 100%; }
+    @media (max-width: 920px) {
+      .search-promo-stack { width: 100%; max-width: 620px; flex: 1 1 auto; }
+    }
+    @media (max-width: 620px) {
+      .search-promo-stack { max-width: none; }
       .glucose-promo { padding: 8px 10px; }
+      .glucose-promo-copy span { font-size: 10px; }
+      .glucose-promo-action { padding: 6px 8px; font-size: 10px; }
     }
   </style>
 </head>
@@ -274,4 +279,3 @@
   <script src="/app.js"></script>
 </body>
 </html>
-```</assistant>
