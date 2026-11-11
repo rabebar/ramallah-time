@@ -143,22 +143,29 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
 .service-choice-card.moeen { background: linear-gradient(145deg,#102b25,#173d34); color: #fff; border: 0; }
 .service-choice-card.custom { background: linear-gradient(145deg,#171b2f,#29243f); color:#fff; border:0; }
 .service-choice-card.flex-product { background:linear-gradient(145deg,#eaf9fd,#fff);border-color:#b9e3ee; }
+.service-choice-card.health { background: linear-gradient(145deg,#eefcf6,#ffffff); border-color:#cfead9; }
 .service-choice-card .service-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; margin-bottom: 18px; background: #eef2ff; color: #5b54dc; font-size: 20px; font-weight: 800; }
 .service-choice-card.moeen .service-icon { background: rgba(216,185,108,.16); color: #e4c777; }
 .service-choice-card.custom .service-icon { background:rgba(255,255,255,.1);color:#d8b96c; }
 .service-choice-card.flex-product .service-icon { background:#168eb4;color:#fff; }
+.service-choice-card.health .service-icon { background:#dcfce7; color:#15803d; }
 .service-choice-card h3 { font-size: 21px; margin-bottom: 9px; }
 .service-choice-card p { min-height: 56px; color: #667085; font-size: 13px; line-height: 1.8; }
 .service-choice-card.moeen p { color: #c9d8d2; }
 .service-choice-card.custom p { color:#d5d3df; }
+.service-choice-card.health p { color: #49615a; }
 .product-label{display:inline-flex;margin-bottom:13px;padding:5px 9px;border-radius:999px;background:#f1f0ff;color:#574fcf;font-size:9px;font-weight:800}
 .service-choice-card.moeen .product-label,.service-choice-card.custom .product-label{background:#ffffff12;color:#efd787}
+.service-choice-card.health .product-label{background:#e0f7eb;color:#166534}
 .product-price{display:flex;align-items:baseline;gap:5px;margin-top:17px;color:#1f2937}.product-price strong{font-size:25px}.product-price span{font-size:10px;color:#7a8580}
 .service-choice-card.moeen .product-price,.service-choice-card.custom .product-price{color:#fff}.service-choice-card.moeen .product-price span,.service-choice-card.custom .product-price span{color:#c9d8d2}
+.service-choice-card.health .product-price { color: #123b2f; }
+.service-choice-card.health .product-price span { color: #4b5563; }
 .product-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:18px}.product-actions .service-choice-action{margin-top:0}.product-link{color:#5d6672;font-size:11px;font-weight:700;text-decoration:none;padding:10px}.service-choice-card.moeen .product-link,.service-choice-card.custom .product-link{color:#e9e5d9}
 .service-choice-action { display: inline-flex; align-items: center; justify-content: center; margin-top: 19px; min-height: 46px; padding: 0 22px; border-radius: 11px; text-decoration: none; font-size: 13px; font-weight: 800; background: #6c63ff; color: #fff; }
 .service-choice-card.moeen .service-choice-action { background: #d8b96c; color: #102b25; }
 .service-choice-card.custom .service-choice-action{background:#d8b96c;color:#171b2f}
+.service-choice-card.health .service-choice-action{ background: linear-gradient(135deg,#16a34a,#22c55e); color:#fff; }
 .portfolio-showcase{display:grid;grid-template-columns:minmax(300px,.95fr) minmax(0,1.05fr);gap:0;overflow:hidden;margin:22px 0 30px;border:1px solid #e2ddd0;border-radius:26px;background:#fff;box-shadow:0 18px 55px rgba(25,52,45,.1)}
 .portfolio-visual{position:relative;min-height:320px;background:#193d34}.portfolio-visual img{display:block;width:100%;height:100%;object-fit:cover;object-position:top}.portfolio-visual:after{content:"مشروع حي";position:absolute;top:18px;right:18px;padding:7px 11px;border-radius:999px;background:#173f35;color:#f0d58c;font-size:10px;font-weight:800;box-shadow:0 8px 20px #102b2540}
 .portfolio-content{display:flex;flex-direction:column;justify-content:center;padding:34px}.portfolio-kicker{color:#9a6b12;font-size:11px;font-weight:800;margin-bottom:8px}.portfolio-content h3{font-size:clamp(24px,3vw,36px);color:#173f35;margin-bottom:10px}.portfolio-content>p{color:#66766f;font-size:13px;line-height:1.9}.portfolio-features{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.portfolio-features span{padding:7px 10px;border:1px solid #dfe8e4;border-radius:9px;background:#f6faf8;color:#385a50;font-size:10px;font-weight:700}.portfolio-credit{display:block;color:#8a938f;font-size:10px;margin-bottom:15px}.portfolio-action{align-self:flex-start;padding:12px 18px;border-radius:11px;background:#173f35;color:#fff;text-decoration:none;font-size:12px;font-weight:800}.portfolio-action:hover{background:#205c4d}
@@ -600,6 +607,17 @@ body.ltr .wa-float { left: auto; right: 24px; }
    <div class="product-actions">
     <a class="service-choice-action" href="#" onclick="openWA('custom');return false" data-ar="اطلب استشارة" data-en="Request Consultation">اطلب استشارة</a>
     <a class="product-link" href="/services/custom-websites" data-ar="صفحة الخدمة" data-en="Service Page">صفحة الخدمة</a>
+   </div>
+  </article>
+  <article class="service-choice-card health">
+   <span class="product-label" data-ar="تطبيق صحي" data-en="Health App">تطبيق صحي</span>
+   <div class="service-icon">S</div>
+   <h3 data-ar="سجل السكر" data-en="Blood Sugar Log">سجل السكر</h3>
+   <p data-ar="تطبيق يحفظ مستويات السكر اليومية، يسهّل تسجيل الوجبات والقراءات، ويمنحك تنبيهات وتقريرًا سهل المتابعة." data-en="An app that saves your daily sugar levels, makes it easy to log meals and readings, and gives you reminders and a simple follow-up report.">تطبيق يحفظ مستويات السكر اليومية، يسهّل تسجيل الوجبات والقراءات، ويمنحك تنبيهات وتقريرًا سهل المتابعة.</p>
+   <div class="product-price"><strong>مجاني</strong><span data-ar="APK مباشر" data-en="Direct APK">APK مباشر</span></div>
+   <div class="product-actions">
+    <a class="service-choice-action" href="https://github.com/rabebar/ramallah-time/releases/download/v1.0.0/-.apk" target="_blank" rel="noopener noreferrer" data-ar="تحميل التطبيق" data-en="Download App">تحميل التطبيق</a>
+    <a class="product-link" href="https://github.com/rabebar/ramallah-time/releases/download/v1.0.0/-.apk" target="_blank" rel="noopener noreferrer" data-ar="APK" data-en="APK">APK</a>
    </div>
   </article>
  </div>
