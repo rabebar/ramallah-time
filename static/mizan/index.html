@@ -6,6 +6,22 @@
   <meta name="description" content="مؤسسة الميزان السياسي للأبحاث والترجمة الإعلامية: ترجمات دقيقة وتحليل سياسي علمي بعيدًا عن الضجيج.">
   <title>مؤسسة الميزان السياسي للأبحاث والترجمة الإعلامية</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .search-promo-stack { width: min(390px, 42vw); flex: 0 1 390px; display: grid; gap: 9px; }
+    .search-promo-stack .search-box { width: 100%; }
+    .glucose-promo { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid #e2d9c4; background: #fffcf5; color: #211d17; text-decoration: none; box-shadow: 0 5px 14px rgba(35, 28, 15, .06); transition: border-color .2s ease, box-shadow .2s ease; }
+    .glucose-promo:hover { border-color: #a2793f; box-shadow: 0 8px 18px rgba(35, 28, 15, .1); }
+    .glucose-promo-icon { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 50%; background: #eef1e9; color: #23433a; }
+    .glucose-promo-icon svg { width: 20px; height: 20px; }
+    .glucose-promo-copy { min-width: 0; flex: 1; line-height: 1.45; }
+    .glucose-promo-copy strong { display: block; color: #23433a; font-size: 13px; font-weight: 700; }
+    .glucose-promo-copy span { display: block; color: #756c5e; font-size: 11px; }
+    .glucose-promo-action { flex: 0 0 auto; padding: 6px 10px; background: #23433a; color: #fff; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    @media (max-width: 760px) {
+      .search-promo-stack { width: 100%; flex: 1 1 100%; }
+      .glucose-promo { padding: 8px 10px; }
+    }
+  </style>
 </head>
 <body>
   <div class="breaking-bar">
@@ -26,10 +42,22 @@
           <span>للأبحاث والترجمة الإعلامية</span>
         </div>
       </div>
-      <form class="search-box" id="searchForm" role="search">
-        <input id="searchInput" type="search" placeholder="ابحث في الأخبار والتحليلات">
-        <button type="submit">بحث</button>
-      </form>
+      <div class="search-promo-stack">
+        <form class="search-box" id="searchForm" role="search">
+          <input id="searchInput" type="search" placeholder="ابحث في الأخبار والتحليلات">
+          <button type="submit">بحث</button>
+        </form>
+        <a class="glucose-promo" href="https://github.com/rabebar/ramallah-time/releases/download/v1.0.0/-.apk" target="_blank" rel="noopener noreferrer" aria-label="تحميل تطبيق سجل السكر لتسجيل قراءات مستويات السكر في الدم">
+          <span class="glucose-promo-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2S6.5 9.4 6.5 14a5.5 5.5 0 0 0 11 0c0-4.6-5.5-10.8-5.5-10.8Z"/><path d="M9.5 14.5h1.7l1-2.2 1.4 4 1-1.8h1"/></svg>
+          </span>
+          <span class="glucose-promo-copy">
+            <strong>سجل السكر</strong>
+            <span>لتسجيل قراءات مستويات السكر في الدم</span>
+          </span>
+          <span class="glucose-promo-action">تحميل التطبيق</span>
+        </a>
+      </div>
     </div>
 
     <nav class="nav" aria-label="أقسام الموقع">
@@ -246,3 +274,4 @@
   <script src="/app.js"></script>
 </body>
 </html>
+```</assistant>
