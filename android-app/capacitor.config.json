@@ -1,0 +1,13 @@
+{
+  "appId": "store.rtstudio.moeen",
+  "appName": "مُعين التنفيذي",
+  "webDir": "www",
+  "server": {
+    "url": "https://rtstudio.store/moeen-executive/",
+    "cleartext": false,
+    "allowNavigation": ["rtstudio.store"]
+  },
+  "android": {
+    "backgroundColor": "#102b25"
+  }
+}
