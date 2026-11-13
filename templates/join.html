@@ -133,7 +133,7 @@ h1 .accent { background: linear-gradient(135deg, var(--blue), var(--green)); -we
 .hero-benefit span { display: block; color: #667085; font-size: 12px; line-height: 1.6; }
 .hero-signup-shell { max-width: 620px; margin: 0 auto 54px; padding: 0 20px; }
 .moeen-spotlight{max-width:1220px;margin:30px auto 4px;padding:28px 32px;border-radius:26px;background:linear-gradient(135deg,#102b25,#17483b);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:28px;box-shadow:0 22px 60px rgba(16,43,37,.2)}
-.moeen-spotlight-kicker{display:inline-block;color:#e4c777;font-size:11px;font-weight:800;margin-bottom:6px}.moeen-spotlight h2{font-size:clamp(26px,3vw,40px);margin-bottom:5px}.moeen-spotlight p{max-width:760px;color:#cbdad5;font-size:13px;line-height:1.8}.moeen-spotlight>a{flex:0 0 auto;background:#d8b96c;color:#102b25;text-decoration:none;border-radius:13px;padding:14px 23px;font-size:13px;font-weight:800}.moeen-prices{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 8px}.moeen-prices span{background:#ffffff12;border:1px solid #ffffff1c;border-radius:9px;padding:7px 10px;font-size:11px}.moeen-prices b{color:#efd787}.moeen-spotlight small{color:#9fb8af;font-size:10px}
+.moeen-spotlight-kicker{display:inline-block;color:#e4c777;font-size:11px;font-weight:800;margin-bottom:6px}.moeen-spotlight h2{font-size:clamp(26px,3vw,40px);margin-bottom:5px}.moeen-spotlight p{max-width:760px;color:#cbdad5;font-size:13px;line-height:1.8}.moeen-spotlight-actions{display:flex;flex:0 0 auto;gap:8px;flex-wrap:wrap}.moeen-spotlight-actions>a{background:#d8b96c;color:#102b25;text-decoration:none;border-radius:13px;padding:14px 23px;font-size:13px;font-weight:800}.moeen-spotlight-actions>a.secondary{background:transparent;color:#f1e4bd;border:1px solid #d8b96c}.moeen-prices{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 8px}.moeen-prices span{background:#ffffff12;border:1px solid #ffffff1c;border-radius:9px;padding:7px 10px;font-size:11px}.moeen-prices b{color:#efd787}.moeen-spotlight small{color:#9fb8af;font-size:10px}
 .service-choice { max-width: 1120px; margin: 16px auto 42px; padding: 0 22px; }
 .service-choice-head { text-align: center; margin-bottom: 20px; }
 .service-choice-head h2 { font-size: clamp(24px,3vw,36px); margin-bottom: 7px; }
@@ -355,7 +355,7 @@ body.ltr .wa-float { left: auto; right: 24px; }
 
 /* Mobile */
 @media (max-width: 768px) {
- .moeen-spotlight{margin:18px 16px 0;padding:24px 20px;align-items:stretch;flex-direction:column}.moeen-spotlight>a{text-align:center}
+ .moeen-spotlight{margin:18px 16px 0;padding:24px 20px;align-items:stretch;flex-direction:column}.moeen-spotlight-actions>a{text-align:center;flex:1}
  .service-choice-grid { grid-template-columns: 1fr; }
  .service-choice-card p { min-height: 0; }
  .hero-section { display: flex; flex-direction: column; padding: 28px 18px 24px; gap: 28px; }
@@ -544,7 +544,7 @@ body.ltr .wa-float { left: auto; right: 24px; }
 
 <section class="moeen-spotlight" aria-labelledby="moeenSpotlightTitle">
  <div>
-  <span class="moeen-spotlight-kicker" data-ar="مساعد شخصي للمدير والمسؤول" data-en="A Personal Assistant for Leaders">مساعد شخصي للمدير والمسؤول</span>
+  <span class="moeen-spotlight-kicker" data-ar="تطبيق Android للإدارة التنفيذية" data-en="Android App for Executive Productivity">تطبيق Android للإدارة التنفيذية</span>
   <h2 id="moeenSpotlightTitle" data-ar="مُعين التنفيذي ينظّم يومك ويذكّرك بما لا يجب أن يفوتك" data-en="Moeen Executive Organizes Your Day and Keeps You on Track">مُعين التنفيذي ينظّم يومك ويذكّرك بما لا يجب أن يفوتك</h2>
   <p data-ar="سجّل ملاحظاتك كتابةً أو بصوتك، رتّب مواعيد الاجتماعات والمتابعات والاتصالات، واحفظ جهات الاتصال في مكان شخصي واحد. يصلك التنبيه في موعده، وتتزامن بياناتك المشفّرة بين الهاتف والكمبيوتر." data-en="Capture notes by text or voice, organize meetings, follow-ups, and calls, and keep contacts in one personal workspace. Receive timely reminders and securely sync encrypted data between phone and computer.">سجّل ملاحظاتك كتابةً أو بصوتك، رتّب مواعيد الاجتماعات والمتابعات والاتصالات، واحفظ جهات الاتصال في مكان شخصي واحد. يصلك التنبيه في موعده، وتتزامن بياناتك المشفّرة بين الهاتف والكمبيوتر.</p>
   <div class="moeen-prices">
@@ -555,7 +555,7 @@ body.ltr .wa-float { left: auto; right: 24px; }
   </div>
   <small data-ar="تجربة مجانية 48 ساعة · دون بطاقة ائتمان · يبدأ الاشتراك من 45₪ لكل 3 أشهر" data-en="48-hour free trial · No credit card · Plans start at 45 ILS for 3 months">تجربة مجانية 48 ساعة · دون بطاقة ائتمان · يبدأ الاشتراك من 45₪ لكل 3 أشهر</small>
  </div>
- <a href="/moeen-executive/register" data-ar="جرّب مُعين مجانًا" data-en="Try Moeen Free">جرّب مُعين مجانًا</a>
+ <div class="moeen-spotlight-actions"><a href="/static/downloads/moeen-executive.apk" download data-ar="تحميل تطبيق Android" data-en="Download Android App">تحميل تطبيق Android</a><a class="secondary" href="/moeen-executive/register" data-ar="جرّب النسخة web مجانًا" data-en="Try the web version free">جرّب النسخة web مجانًا</a></div>
 </section>
 
 <section class="service-choice" id="products" aria-labelledby="serviceChoiceTitle">
@@ -577,13 +577,14 @@ body.ltr .wa-float { left: auto; right: 24px; }
    </div>
   </article>
   <article class="service-choice-card moeen">
-   <span class="product-label" data-ar="إدارة تنفيذية" data-en="Executive Productivity">إدارة تنفيذية</span>
+   <span class="product-label" data-ar="تطبيق Android" data-en="Android App">تطبيق Android</span>
    <div class="service-icon">م</div>
    <h3 data-ar="مُعين التنفيذي" data-en="Moeen Executive">مُعين التنفيذي</h3>
-   <p data-ar="مساعد شخصي يذكّرك بالمواعيد والاجتماعات، يحفظ ملاحظاتك المكتوبة والصوتية، وينظم المتابعات والاتصالات وجهات الاتصال على الهاتف والكمبيوتر." data-en="A personal assistant for reminders, meetings, written and voice notes, follow-ups, calls, and contacts across phone and computer.">مساعد شخصي يذكّرك بالمواعيد والاجتماعات، يحفظ ملاحظاتك المكتوبة والصوتية، وينظم المتابعات والاتصالات وجهات الاتصال على الهاتف والكمبيوتر.</p>
-   <div class="product-price"><strong>15₪</strong><span data-ar="ما يعادل شهريًا · الحد الأدنى 3 أشهر" data-en="monthly equivalent · 3-month minimum">ما يعادل شهريًا · الحد الأدنى 3 أشهر</span></div>
+   <p data-ar="تطبيق Android مستقل للمدير والمسؤول: يذكّرك بالمواعيد والاجتماعات، يحفظ الملاحظات المكتوبة والصوتية، وينظم المتابعات والاتصالات وجهات الاتصال مع مزامنة مشفّرة." data-en="A dedicated Android app for managers and executives: reminders, written and voice notes, follow-ups, calls, contacts, and encrypted sync.">تطبيق Android مستقل للمدير والمسؤول: يذكّرك بالمواعيد والاجتماعات، يحفظ الملاحظات المكتوبة والصوتية، وينظم المتابعات والاتصالات وجهات الاتصال مع مزامنة مشفّرة.</p>
+   <div class="product-price"><strong>APK</strong><span data-ar="تحميل مباشر · يعمل مع نسخة الويب" data-en="direct download · works with the web version">تحميل مباشر · يعمل مع نسخة الويب</span></div>
    <div class="product-actions">
-    <a class="service-choice-action" href="/moeen-executive/register" data-ar="ابدأ التجربة" data-en="Start Trial">ابدأ التجربة</a>
+    <a class="service-choice-action" href="/static/downloads/moeen-executive.apk" download data-ar="تحميل التطبيق" data-en="Download App">تحميل التطبيق</a>
+    <a class="product-link" href="/moeen-executive/register" data-ar="جرّب web" data-en="Try web">جرّب web</a>
     <a class="product-link" href="/products/moeen" data-ar="صفحة المنتج" data-en="Product Page">صفحة المنتج</a>
    </div>
   </article>
